@@ -218,9 +218,9 @@ fn the_map_tints_exactly_the_legal_sites_and_explains_every_other_tile() {
     assert_eq!(tinted, legal);
     let table = site_blockers(&v);
     assert_eq!(table.len(), v.tiles.len());
-    for i in 0..v.tiles.len() {
+    for (i, blocked) in table.iter().enumerate() {
         let h = hex_at(&v, i);
-        assert_eq!(table[i], site_blocker(&v, h), "{h:?}");
+        assert_eq!(*blocked, site_blocker(&v, h), "{h:?}");
         assert_eq!(site_blocker(&v, h).is_none(), legal.contains(&h), "{h:?}");
         s.units.get_mut(&id).unwrap().pos = h;
         assert_eq!(

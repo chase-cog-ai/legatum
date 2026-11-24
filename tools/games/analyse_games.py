@@ -248,6 +248,20 @@ FRAME_FIELDS = ("turn", "frames", "slow_frames", "frame_p95_ms10", "input_p95_ms
                 "map_draw_mean_ms10", "units")
 
 
+LONG_CAUSES = (("long_draw_ms", "map drawing"), ("long_terrain_ms", "terrain painting"), ("long_engine_ms", "engine calls"))
+
+
+def long_causes(frames: list[dict], long_ms: int) -> str:
+    """What filled the long tasks, for records that say (2026-11-24 on): ' (engine calls 60%, ...)' or ''."""
+    def ms(key):
+        return sum(v for f in frames if isinstance(v := f.get(key), int) and not isinstance(v, bool) and 0 <= v <= 10**9)
+    if not long_ms or not any(k in f for f in frames for k, _ in LONG_CAUSES):
+        return ""
+    parts = [(min(100, round(100 * ms(k) / long_ms)), name) for k, name in LONG_CAUSES]
+    other = max(0, 100 - sum(p for p, _ in parts))
+    return " (" + ", ".join(f"{name} {p}%" for p, name in parts + [(other, "interface and other")]) + ")"
+
+
 def frame_summary(frames: list[dict]) -> str | None:
     """One line on how smoothly the browser ran (archive `frame_times`, one row per turn; the perf supervisor reads it)."""
     # Uploaded data: keep only rows whose fields are all whole numbers in a sane range, so a crafted upload can
@@ -266,7 +280,7 @@ def frame_summary(frames: list[dict]) -> str | None:
     draw_mean = sum(f["map_draw_mean_ms10"] * f["map_draws"] for f in frames) / max(1, draws) / 10
     return (f"- Smoothness ({len(frames)} turns): {slow}/{total} frames over 50 ms; worst turn {worst['turn']} "
             f"(frame p95 {worst['frame_p95_ms10'] / 10:.0f} ms, {worst['units']} units in view); input lag p95 worst "
-            f"{laggy['input_p95_ms']} ms on turn {laggy['turn']}; long tasks {long_ms / 1000:.1f} s; "
+            f"{laggy['input_p95_ms']} ms on turn {laggy['turn']}; long tasks {long_ms / 1000:.1f} s{long_causes(frames, long_ms)}; "
             f"map draw mean {draw_mean:.1f} ms")
 
 

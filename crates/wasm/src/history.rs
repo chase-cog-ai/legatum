@@ -174,6 +174,14 @@ pub struct TurnFrameTime {
     /// Main-thread tasks over 50 ms: how many, and their summed length.
     pub long_tasks: u32,
     pub long_task_ms: u32,
+    /// What filled those long tasks, where the app can name it: map drawing, painting terrain chunks, and engine
+    /// calls (with their JSON). The rest (interface rendering, layout, garbage collection) is `long_task_ms` less these.
+    #[serde(default)]
+    pub long_draw_ms: u32,
+    #[serde(default)]
+    pub long_terrain_ms: u32,
+    #[serde(default)]
+    pub long_engine_ms: u32,
     /// Map canvas draws: how many, mean (tenths of ms) and worst.
     pub map_draws: u32,
     pub map_draw_mean_ms10: u32,
@@ -190,6 +198,8 @@ pub struct TurnFrameTime {
 impl TurnFrameTime {
     fn valid(&self) -> bool {
         self.frame_p50_ms10 <= self.frame_p95_ms10
+            && self.long_draw_ms as u64 + self.long_terrain_ms as u64 + self.long_engine_ms as u64
+                <= self.long_task_ms as u64 + 3
             && self.canvas_mp10 <= 2_000
             && self.frames <= 10_000_000
     }
@@ -821,6 +831,9 @@ mod tests {
             input_max_ms: 130,
             long_tasks: 2,
             long_task_ms: 140,
+            long_draw_ms: 20,
+            long_terrain_ms: 60,
+            long_engine_ms: 30,
             map_draws: 700,
             map_draw_mean_ms10: 52,
             map_draw_max_ms: 31,

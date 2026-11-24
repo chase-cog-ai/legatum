@@ -1248,7 +1248,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     performance.measure('legatum:mapDraw', { start: t0, end: t0 + ms });
   perf.frames++;
   perf.drawMs += ms;
-  noteMapDraw(ms);
+  noteMapDraw(ms, terrain.lastWorkMs);
   perf.workMs += terrain.lastWorkMs;
   perf.maxMs = Math.max(perf.maxMs, ms);
   // City banners, so hover cards can keep clear of them (a card over your own city's banner hides it).

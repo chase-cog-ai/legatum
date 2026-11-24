@@ -225,7 +225,7 @@ async function readApi(request: Request, env: Env, path: string): Promise<Respon
   if (!tokenMatches(request.headers.get("Authorization"), env.READ_TOKEN)) return json({ error: "not found" }, 404);
   if (request.method !== "GET") return json({ error: "method not allowed" }, 405);
   if (path === "/v1/read/games") {
-    const cursor = new URL(request.url).searchParams.get("cursor") ?? undefined;
+    const cursor = new URL(request.url).searchParams.get("cursor") || undefined; // an empty `cursor=` is the first page, not a marker
     const page = await env.GAMES.list({ prefix: "games/", cursor, limit: 1000, include: ["customMetadata"] });
     return json({
       // `key` in the custom metadata is the upload key's hash; the listing's `key` is the object's name.

@@ -877,6 +877,15 @@ impl Game {
         }))
     }
 
+    /// `site_blocker` for every tile, in tile-index order: one view parse answers every hover on that view.
+    pub fn site_blockers(view_json: &str) -> Result<String, JsError> {
+        js(guard(|| {
+            let view: legatum_core::PlayerView =
+                serde_json::from_str(view_json).map_err(|e| e.to_string())?;
+            to_json(&legatum_core::settlement::site_blockers(&view))
+        }))
+    }
+
     /// Threat tint from the fogged view, using the same reach calculation as settlement advice.
     pub fn known_threats(view_json: &str) -> Result<String, JsError> {
         js(guard(|| {

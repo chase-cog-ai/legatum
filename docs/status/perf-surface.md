@@ -31,7 +31,8 @@ unwatched. First seeded 2026-11-22 from a code survey (`addEventListener`, `requ
 | Map draw (full and clipped frames) | camera, hover, pulses, selection | units, cities, pixels on screen | `frame_times` map draws; `battle-hover.cjs` |
 | Terrain chunk cache (render, stale repaint, field rebuild) | zoom, pan to new ground, each turn | explored land, device pixel ratio | `frame_times` long tasks; `window.legatumMap.terrain` counters |
 | Minimap and world backdrop loops | every frame while the map is up | map size | **unwatched** |
-| React renders on hover and selection (top bar width check, panels, tooltips) | pointer move, select | cities, panel content | `frame_times` input lag only; no per-component number |
+| React renders on hover and selection (top bar width check, panels, tooltips) | pointer move, select | cities, panel content | `frame_times` input lag, and long tasks less the named causes; no per-component number |
+| Engine calls made while hovering or planning (each one that takes the view parses all of it) | pointer move, select, panels | view size (over 1 MB late) | `frame_times` `long_engine_ms` |
 | Idle cost: frames drawn when nothing changes | a tab left open | nothing (should be zero) | **unwatched** (battery, fan) |
 | Combat effects, celebrations, the era reveal, score ledger animation | battles, wonders, era change | units in the fight | **unwatched** |
 | Sound: decode and mix | first gesture, every cue | cues per turn | **unwatched** |
@@ -85,3 +86,6 @@ One line per sweep: date, the rows taken, what was measured, what changed in the
 
 - 2026-11-22: page seeded. No rows measured yet beyond what the day's fixes covered (hover redraw, upload
   replay, terrain cache after a turn).
+- 2026-11-24: engine calls on hover measured from a player's 132-turn game replayed with a profiler: the
+  found-city check sent the whole view per pointer move (fixed, one call per view). New row and a watcher
+  (`long_engine_ms`); long tasks now split into map drawing, terrain painting, engine calls and the rest.

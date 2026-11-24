@@ -2,12 +2,23 @@
 import { Game } from './wasm-pkg/legatum.js';
 import { minCityGap, terrainYieldsFor, unitClass } from './data';
 import { empireOfPlayer } from './empires';
+import { engineWork } from './frameTelemetry';
+import { tileIndex } from './hex';
 import { UNIT_ACTIONS, orderUnit } from './orders';
 import type { Faction, Hex, Order, PlayerView, SettlementScore, SettlementSite, SiteBlocker, Terrain, UnitView, Yields } from './types';
 
 export const terrainYields = (faction: Faction, terrain: Terrain): Yields => ({ ...terrainYieldsFor(faction, terrain) });
-export const siteBlocker = (view: PlayerView, pos: Hex): SiteBlocker | null =>
-  JSON.parse(Game.site_blocker(JSON.stringify(view), pos.q, pos.r));
+const siteBlockerTables = new WeakMap<PlayerView, (SiteBlocker | null)[]>();
+/**
+ * Why a tile is not a legal city site (the core's rule). The engine answers for every tile in one call per view and
+ * the table is kept with the view: a per-tile call sent the whole view (over 1 MB late in a game) across for each
+ * hovered tile, a stall of 50 ms or more per pointer move with a founder selected. Views are never changed in place.
+ */
+export function siteBlocker(view: PlayerView, pos: Hex): SiteBlocker | null {
+  let table = siteBlockerTables.get(view);
+  if (!table) siteBlockerTables.set(view, table = engineWork(() => JSON.parse(Game.site_blockers(JSON.stringify(view))) as (SiteBlocker | null)[]));
+  return table[tileIndex(pos, view.width, view.height)] ?? null;
+}
 export const knownLegalSite = (view: PlayerView, pos: Hex): boolean => siteBlocker(view, pos) === null;
 
 /** A short label for Found City. A prior failed attempt may have been a transient clash. */
@@ -51,7 +62,7 @@ export function reservedSettlements(view: PlayerView, unit: number, orders: Orde
   });
 }
 export const settlementScores = (view: PlayerView, unit: UnitView, reserved: Hex[]): SettlementScore[] =>
-  JSON.parse(Game.settlement_sites(JSON.stringify(view), unit.id, JSON.stringify(reserved)));
+  engineWork(() => JSON.parse(Game.settlement_sites(JSON.stringify(view), unit.id, JSON.stringify(reserved))));
 const coloniaSiteCache = new WeakMap<PlayerView, boolean | null>();
 /**
  * Rome: whether any site this view knows founds the Colonia Victrix for its first founder. It is the Settle lens's own
@@ -69,12 +80,12 @@ export function coloniaSiteKnown(view: PlayerView): boolean | null {
   return known;
 }
 export const settlementSite = (view: PlayerView, unit: UnitView, pos: Hex, reserved: Hex[]): SettlementSite | null =>
-  JSON.parse(Game.settlement_site(JSON.stringify(view), unit.id, pos.q, pos.r, JSON.stringify(reserved)));
+  engineWork(() => JSON.parse(Game.settlement_site(JSON.stringify(view), unit.id, pos.q, pos.r, JSON.stringify(reserved))));
 /** Detailed sites for tests and inspected advice; the live map uses the compact score list. */
 export const settlementSites = (view: PlayerView, unit: UnitView, reserved: Hex[] = [], only?: Hex): SettlementSite[] =>
   only ? [settlementSite(view, unit, only, reserved)].filter((site): site is SettlementSite => site !== null)
-    : JSON.parse(Game.settlement_sites_full(JSON.stringify(view), unit.id, JSON.stringify(reserved)));
-export const knownThreats = (view: PlayerView): number[] => JSON.parse(Game.known_threats(JSON.stringify(view)));
+    : engineWork(() => JSON.parse(Game.settlement_sites_full(JSON.stringify(view), unit.id, JSON.stringify(reserved))));
+export const knownThreats = (view: PlayerView): number[] => engineWork(() => JSON.parse(Game.known_threats(JSON.stringify(view))));
 const reachCache = new WeakMap<PlayerView, Map<string, Set<number>>>();
 /**
  * Which of these known enemies can reach `pos` by moving next turn. One engine call for all of them, remembered per view:
@@ -88,7 +99,7 @@ export function unitsCanReach(view: PlayerView, units: readonly UnitView[], pos:
   if (!cache) reachCache.set(view, cache = new Map());
   const hit = cache.get(key);
   if (hit) return hit;
-  const reach = new Set<number>(JSON.parse(Game.units_can_reach(JSON.stringify(view), JSON.stringify(ids), pos.q, pos.r)));
+  const reach = new Set<number>(engineWork(() => JSON.parse(Game.units_can_reach(JSON.stringify(view), JSON.stringify(ids), pos.q, pos.r))));
   cache.set(key, reach);
   return reach;
 }

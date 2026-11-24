@@ -8,6 +8,7 @@ export interface TurnFrameTime {
   frames: number; frame_p50_ms10: number; frame_p95_ms10: number; frame_max_ms: number; slow_frames: number;
   inputs: number; input_p95_ms: number; input_max_ms: number;
   long_tasks: number; long_task_ms: number;
+  long_draw_ms: number; long_terrain_ms: number; long_engine_ms: number;
   map_draws: number; map_draw_mean_ms10: number; map_draw_max_ms: number;
   units: number; cities: number; zoom100: number;
   canvas_mp10: number;
@@ -15,6 +16,14 @@ export interface TurnFrameTime {
 
 /** What was on the map: units and cities in view, the zoom, and the canvas's device pixels. */
 export interface Scene { units: number; cities: number; zoom: number; canvasPixels: number }
+
+/**
+ * Work the app can name when a long task is counted: drawing the map, painting terrain chunks (part of a draw), and
+ * calls into the engine (with packing and unpacking their JSON). The rest of a long task (React, layout, garbage
+ * collection) is `long_task_ms` less these three.
+ */
+export type WorkKind = 'draw' | 'terrain' | 'engine';
+const WORK_KINDS: WorkKind[] = ['draw', 'terrain', 'engine'];
 
 /** Gaps between frames are kept in a histogram of 1 ms buckets (the last one holds everything from 500 ms up). */
 const BUCKETS = 501;
@@ -26,6 +35,7 @@ export class FrameStats {
   frames = 0; frameMax = 0; slow = 0;
   inputCount = 0; inputMax = 0;
   longTasks = 0; longTaskMs = 0;
+  longBy: Record<WorkKind, number> = { draw: 0, terrain: 0, engine: 0 };
   draws = 0; drawMs = 0; drawMax = 0;
 
   frame(gapMs: number) {
@@ -39,7 +49,13 @@ export class FrameStats {
     this.inputs[Math.min(BUCKETS - 1, Math.max(0, Math.round(latencyMs)))]++;
     this.inputMax = Math.max(this.inputMax, latencyMs);
   }
-  longTask(ms: number) { this.longTasks++; this.longTaskMs += ms; }
+  /** A long task, and how much of it each kind of known work filled (`by`, never more than the task itself). */
+  longTask(ms: number, by?: Partial<Record<WorkKind, number>>) {
+    this.longTasks++; this.longTaskMs += ms;
+    if (!by) return;
+    const known = WORK_KINDS.reduce((sum, k) => sum + (by[k] ?? 0), 0), scale = known > ms ? ms / known : 1;
+    for (const k of WORK_KINDS) this.longBy[k] += (by[k] ?? 0) * scale;
+  }
   draw(ms: number) { this.draws++; this.drawMs += ms; this.drawMax = Math.max(this.drawMax, ms); }
 
   summary(turn: number, scene: Scene): TurnFrameTime {
@@ -50,6 +66,7 @@ export class FrameStats {
       frame_max_ms: Math.round(this.frameMax), slow_frames: this.slow,
       inputs: this.inputCount, input_p95_ms: Math.round(percentile(this.inputs, this.inputCount, 0.95)), input_max_ms: Math.round(this.inputMax),
       long_tasks: this.longTasks, long_task_ms: Math.round(this.longTaskMs),
+      long_draw_ms: Math.floor(this.longBy.draw), long_terrain_ms: Math.floor(this.longBy.terrain), long_engine_ms: Math.floor(this.longBy.engine),
       map_draws: this.draws, map_draw_mean_ms10: this.draws ? Math.round(this.drawMs / this.draws * 10) : 0, map_draw_max_ms: Math.round(this.drawMax),
       units: scene.units, cities: scene.cities, zoom100: Math.round(scene.zoom * 100),
       canvas_mp10: Math.min(2000, Math.round(scene.canvasPixels / 100_000)),
@@ -70,6 +87,37 @@ function percentile(hist: Uint32Array, count: number, k: number): number {
 
 let stats = new FrameStats();
 let started = false;
+
+/** Recent named work, newest last. `share` is the part of the span that was this kind (terrain inside a draw). */
+interface Span { kind: WorkKind; start: number; end: number; share: number }
+const SPAN_LIMIT = 512, SPAN_MIN_MS = 0.2, SPAN_JOIN_MS = 1;
+const spans: Span[] = [];
+
+/** Named work ran from `start` to `end` (page time, ms). Tiny spans are dropped; back-to-back ones are joined. */
+export function noteWork(kind: WorkKind, start: number, end: number, share = 1) {
+  if (!started || end - start < SPAN_MIN_MS || share <= 0) return;
+  const last = spans[spans.length - 1];
+  if (last && last.kind === kind && last.share === share && start - last.end <= SPAN_JOIN_MS && start >= last.start) { last.end = end; return; }
+  spans.push({ kind, start, end, share });
+  if (spans.length > SPAN_LIMIT) spans.splice(0, SPAN_LIMIT / 2);
+}
+
+/** Run `fn` and count it as engine work. */
+export function engineWork<T>(fn: () => T): T {
+  if (!started) return fn();
+  const t0 = performance.now();
+  try { return fn(); } finally { noteWork('engine', t0, performance.now()); }
+}
+
+/** How much of the task from `start` lasting `ms` each kind of named work filled. */
+export function workIn(start: number, ms: number, from: Span[] = spans): Partial<Record<WorkKind, number>> {
+  const by: Partial<Record<WorkKind, number>> = {};
+  for (const s of from) {
+    const overlap = Math.min(s.end, start + ms) - Math.max(s.start, start);
+    if (overlap > 0) by[s.kind] = (by[s.kind] ?? 0) + overlap * s.share;
+  }
+  return by;
+}
 
 /** Start counting (once per page). Frames and inputs count only while the tab is visible. */
 export function startFrameTelemetry() {
@@ -96,14 +144,20 @@ export function startFrameTelemetry() {
     requestAnimationFrame(() => setTimeout(() => { moveWaiting = false; stats.input(performance.now() - stamp); }, 0));
   }, { capture: true, passive: true });
   try {
-    new PerformanceObserver((list) => { for (const e of list.getEntries()) stats.longTask(e.duration); }).observe({ type: 'longtask' });
+    new PerformanceObserver((list) => { for (const e of list.getEntries()) stats.longTask(e.duration, workIn(e.startTime, e.duration)); }).observe({ type: 'longtask' });
   } catch {
     // Safari and Firefox have no long-task timing: the frame gaps still show stalls.
   }
 }
 
-/** A map canvas draw took `ms` (render.ts). */
-export function noteMapDraw(ms: number) { stats.draw(ms); }
+/** A map canvas draw that just ended took `ms`, of which `terrainMs` painted terrain chunks (render.ts). */
+export function noteMapDraw(ms: number, terrainMs = 0) {
+  stats.draw(ms);
+  if (!started || ms <= 0) return;
+  const end = performance.now(), terrain = Math.min(1, Math.max(0, terrainMs / ms));
+  noteWork('draw', end - ms, end, 1 - terrain);
+  noteWork('terrain', end - ms, end, terrain);
+}
 
 /** This turn's summary, and start the next turn's from zero. */
 export function takeTurnFrameTime(turn: number, scene: Scene): TurnFrameTime {

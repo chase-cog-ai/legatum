@@ -79,7 +79,9 @@ Client telemetry rides in the recording but never in a hash: `turn_times` (activ
 session) and `frame_times` (`TurnFrameTime` in `crates/wasm/src/history.rs`, filled by `app/src/frameTelemetry.ts`).
 `frame_times` has one row per turn the player viewed: `frames`, `frame_p50_ms10` and `frame_p95_ms10` (gaps in
 tenths of ms), `frame_max_ms`, `slow_frames` (gaps over 50 ms), `inputs`, `input_p95_ms`, `input_max_ms`,
-`long_tasks`, `long_task_ms`, `map_draws`, `map_draw_mean_ms10`, `map_draw_max_ms`, `units`, `cities`, `zoom100`
+`long_tasks`, `long_task_ms`, `long_draw_ms`, `long_terrain_ms` and `long_engine_ms` (how much of the long tasks was
+map drawing, terrain chunk painting and engine calls; the rest is interface work; added 2026-11-24, absent in
+older records), `map_draws`, `map_draw_mean_ms10`, `map_draw_max_ms`, `units`, `cities`, `zoom100`
 and `canvas_mp10` (map canvas in tenths of a megapixel). It identifies no browser, window or screen. It is
 optional and default-empty (omitted when empty), added in 2026-11 without a `RULES_VERSION` bump, so saves from
 before it still load; it is uploaded with the game and summarised by `tools/games/analyse_games.py`.

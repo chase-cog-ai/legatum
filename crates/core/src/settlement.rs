@@ -115,6 +115,14 @@ pub fn site_blocker(view: &PlayerView, pos: Hex) -> Option<SiteBlocker> {
         .then_some(SiteBlocker::FailedBefore)
 }
 
+/// `site_blocker` for every tile of the view, in tile-index order. The app asks once per view and looks
+/// tiles up, instead of sending the whole view across for each hovered tile.
+pub fn site_blockers(view: &PlayerView) -> Vec<Option<SiteBlocker>> {
+    (0..view.tiles.len())
+        .map(|i| site_blocker(view, hex_at(view, i)))
+        .collect()
+}
+
 /// How good a site is on a fixed scale that means the same on every map and in every game.
 /// The measure is `SettlementSite::quality` (`base_site_score`): the city's Food, Production and Gold
 /// over its three-hex work radius (the outer ring at half weight), known resources, nearby

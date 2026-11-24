@@ -31,16 +31,18 @@ it.skipIf(!available)('lists legal fogged sites with compact scores and on-deman
       if (variant === 2) v.cities.push({ owner: v.me, id: 100, name: 'Home', population: 2, hp: 200, max_hp: 200, strength: 20, walls: false, citadel: false, great_works: [], visible: true, detail: null, pos: hexAt(i + 10, v.width), is_capital: true });
     }
     const reserved = variant === 2 ? [hexAt(100, v.width)] : [];
+    // The app's site table is kept per view object, and this test edits `v` in place: ask it about a fresh copy.
+    const seen = structuredClone(v);
     const expected = settlementSites(v, u, reserved);
     const scores = JSON.parse(Game.settlement_sites(JSON.stringify(v), u.id, JSON.stringify(reserved)));
     expect(scores).toEqual(expected.map(({ pos, score, quality, band, border_risk, rank, travel_turns }) => ({ pos, score, quality, band, border_risk, rank, travel_turns })));
     // The lens tints exactly the legal sites (core's rule, the mirror's rule and the list agree), and every other explored tile has a reason.
-    const legal = v.tiles.flatMap((_, i) => knownLegalSite(v, hexAt(i, v.width)) ? [tileIndex(hexAt(i, v.width), v.width, v.height)] : []);
+    const legal = v.tiles.flatMap((_, i) => knownLegalSite(seen, hexAt(i, v.width)) ? [tileIndex(hexAt(i, v.width), v.width, v.height)] : []);
     expect(scores.map((s: { pos: { q: number; r: number } }) => tileIndex(s.pos, v.width, v.height)).sort((a: number, b: number) => a - b)).toEqual(legal);
     for (let i = 0; i < v.tiles.length; i += 7) {
       const pos = hexAt(i, v.width);
-      expect(JSON.parse(Game.site_blocker(JSON.stringify(v), pos.q, pos.r))).toEqual(siteBlocker(v, pos));
-      expect(siteBlocker(v, pos) === null).toBe(knownLegalSite(v, pos));
+      expect(JSON.parse(Game.site_blocker(JSON.stringify(v), pos.q, pos.r))).toEqual(siteBlocker(seen, pos));
+      expect(siteBlocker(seen, pos) === null).toBe(knownLegalSite(seen, pos));
     }
     // Full explanations are fetched only for inspected sites, including reserved spacing.
     for (const site of [expected[0], expected.at(-1), expected.find((s) => s.rank === 1)].filter((s) => !!s)) {

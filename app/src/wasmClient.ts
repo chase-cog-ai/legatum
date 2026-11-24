@@ -8,7 +8,7 @@
 // save() is opaque (u64 bitset words): store the string as-is, never re-serialize it.
 // forecast() returns BattleForecast JSON or the string "null". A Rust panic throws
 // RuntimeError "unreachable" (real message on console.error); recreate from the last save.
-import type { TurnFrameTime } from './frameTelemetry';
+import { engineWork, type TurnFrameTime } from './frameTelemetry';
 import type { GameClient } from './client';
 import type { WhyCategory, WhyQuestion } from './why';
 import type { TrainingEngine, TrainingFinish, TrainingProgress } from './training';
@@ -99,7 +99,22 @@ export async function createWasmClient(): Promise<GameClient> {
     );
   }
   const mod = await loadWasmModule();
-  return new WasmClient(mod.Game);
+  return timedClient(new WasmClient(mod.Game));
+}
+
+/** Every call into the client counts as engine work in the frame telemetry (what filled a long task). */
+function timedClient(client: WasmClient): GameClient {
+  const wrapped = new Map<PropertyKey, unknown>();
+  return new Proxy(client, {
+    get(target, key) {
+      const value = Reflect.get(target, key, target);
+      if (typeof value !== 'function') return value;
+      let fn = wrapped.get(key);
+      if (!fn) wrapped.set(key, fn = (...args: unknown[]) => engineWork(() => Reflect.apply(value, target, args)));
+      return fn;
+    },
+    set: (target, key, value) => Reflect.set(target, key, value, target),
+  });
 }
 
 export class WasmClient implements GameClient, TrainingEngine {

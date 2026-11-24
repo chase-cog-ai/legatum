@@ -43,6 +43,11 @@ class Smoothness(unittest.TestCase):
         self.assertIn("worst turn 126 (frame p95 90 ms, 60 units in view)", line)
         self.assertIn("input lag p95 worst 140 ms on turn 126", line)
         self.assertIsNone(ag.frame_summary([]))
+        # Records from 2026-11-24 say what filled the long tasks; text in those fields is ignored, not printed.
+        self.assertNotIn("engine calls", line)
+        told = ag.frame_summary([dict(row, long_draw_ms=400, long_terrain_ms=600, long_engine_ms=2000),
+                                 dict(calm, long_engine_ms="<b>")])
+        self.assertIn("long tasks 4.0 s (map drawing 10%, terrain painting 15%, engine calls 50%, interface and other 25%)", told)
 
 
 class Due(unittest.TestCase):

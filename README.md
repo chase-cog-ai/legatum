@@ -105,7 +105,7 @@ These clips are recorded from the running game.
 - **A public victory race.** A team wins by holding its VP target for ten turns: 10 VP for one empire, 20 for a team of two. VP come from World Age cards (one random card per Age, 1 VP each, kept for good), rival original capitals while you hold them, world wonders and faction goals. A team also wins when it is the only one still holding an original capital of its own.
 - **Solo or together.** Single Player is you against one to seven AI empires (five by default). Multiplayer is online: Host Game lists your game for others and Join Game shows the games that are open (all games are public for now). The co-op setup puts two humans on one team against six AI empires.
 - **Art and sound.** All of the art is AI-generated (see [How it was made](#how-it-was-made)). The music and sound effects are third-party works: CC0 recordings by Kenney and others; music, battle sounds and land sounds from 0 A.D. by Wildfire Games under CC BY-SA 3.0; later-era music from FreeCol (CC BY 4.0) and Unknown Horizons (CC BY-SA 3.0); and three Freesound recordings under CC BY 4.0 and 3.0. Credits are in the game.
-- **A post-game report.** The victory race over time, empires over time, an event timeline and a statistics table.
+- **A post-game report.** The victory race over time, empires over time, an event timeline and a statistics table. For recorded solo games, watch your map change turn by turn as you saw it during the game.
 
 ## Play it
 

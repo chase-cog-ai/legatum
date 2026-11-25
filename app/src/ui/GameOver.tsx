@@ -8,6 +8,7 @@ import { HOLD_TURNS, turnsWord } from '../victoryHold';
 import { postGame } from '../postgame';
 import { GameReveal, type RevealTone } from './GameReveal';
 import { PostGameReport } from './PostGameReport';
+import { GameReplay } from './GameReplay';
 import './gameOver.css';
 
 /** How the game was won: the last team standing, the last original capital, holding the VP target, or the most VP at the turn limit. */
@@ -47,6 +48,8 @@ export function GameOver() {
   });
   const eliminationTurn = useGame((s) => s.views ? s.eliminationTurns[s.views[s.seat].me] : undefined);
   const resolveToEnd = useGame((s) => s.resolveToEnd);
+  const client = useGame((s) => s.client);
+  const online = useGame((s) => s.net !== null);
   const disconnected = useGame((s) => s.client?.kind === 'remote' && s.net?.conn !== 'open');
   const net = useGame((s) => s.client?.kind === 'remote' ? s.net : null);
   const set = useGame((s) => s.set);
@@ -57,6 +60,9 @@ export function GameOver() {
   const visible = !!view && (view.finished ? !dismissed : defeated && !defeatDismissed.includes(view.me));
   const pg = useMemo(() => (view?.finished ? postGame(view) : null), [view]);
   const reporting = visible && !!view?.finished && !!pg && stage === 'report';
+  const [recording, setRecording] = useState<{ data: string | null } | null>(null);
+  const returnFromReplay = useRef(false);
+  const replaying = reporting && recording !== null;
   // The reveal settles (every animation finished) on a click, a key or its own timer; the report is always settled.
   const [settled, setSettled] = useState(false);
   const [revealKey, setRevealKey] = useState(0);
@@ -64,6 +70,7 @@ export function GameOver() {
     if (defeated && view) set({ defeatDismissed: [...defeatDismissed, view.me], reportOpen: false, techOpen: false });
     else set({ outcomeDismissed: true });
   };
+  const backFromReplay = () => { returnFromReplay.current = true; setRecording(null); };
   useLayoutEffect(() => {
     const el = dialog.current;
     if (!visible || !el) return;
@@ -83,10 +90,14 @@ export function GameOver() {
   useLayoutEffect(() => {
     if (!visible) return;
     const el = dialog.current;
-    const target = el?.querySelector<HTMLElement>(reporting ? '[role="tab"][aria-selected="true"]' : '[data-go-primary]');
+    const selector = replaying ? '[data-replay-focus]'
+      : reporting ? returnFromReplay.current ? '[data-watch-replay]' : '[role="tab"][aria-selected="true"]'
+      : '[data-go-primary]';
+    returnFromReplay.current = false;
+    const target = el?.querySelector<HTMLElement>(selector);
     target?.focus({ preventScroll: true });
-  }, [visible, reporting, revealKey, !!pg]);
-  useEffect(() => { if (!visible) setSettled(false); }, [visible]);
+  }, [visible, reporting, replaying, revealKey, !!pg]);
+  useEffect(() => { if (!visible) { setSettled(false); setRecording(null); } }, [visible]);
   if (!visible || !view) return null;
   const tracks = buildTracks(view);
   const winner = tracks.find((t) => t.team === view.winner);
@@ -112,11 +123,15 @@ export function GameOver() {
   const toTitle = () => exitToTitle();
   const openReport = () => { setSettled(true); set({ outcomeStage: 'report' }); };
   const replay = () => { setSettled(false); setRevealKey((k) => k + 1); set({ outcomeStage: 'reveal' }); };
+  const watchReplay = reporting && !online && client?.kind === 'wasm' && client.canWatchReplay?.(view.me) ? () => {
+    try { setRecording({ data: client.replayRecording?.(view.me) ?? null }); }
+    catch { setRecording({ data: null }); }
+  } : undefined;
   return (
     <dialog ref={dialog} className={`modal gameover go-end ${reporting ? 'go-report' : 'go-reveal'} ${won ? 'won' : draw ? 'draw' : 'lost'}`}
       aria-labelledby={titleId}
-      data-stage={reporting ? 'report' : 'reveal'}
-      onCancel={(e) => { e.preventDefault(); dismiss(); }}
+      data-stage={replaying ? 'replay' : reporting ? 'report' : 'reveal'}
+      onCancel={(e) => { e.preventDefault(); if (replaying) backFromReplay(); else dismiss(); }}
       onClose={(e) => { if (!closing.current && !e.currentTarget.open) dismiss(); }}
       onKeyDown={(e) => {
         e.stopPropagation();
@@ -126,16 +141,22 @@ export function GameOver() {
           setSettled(true);
           return;
         }
-        if (e.key === 'Escape') { e.preventDefault(); dismiss(); }
+        if (e.key === 'Escape') { e.preventDefault(); if (replaying) backFromReplay(); else dismiss(); }
         if (e.key !== 'Tab') return;
-        const stops = [...e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), [tabindex="0"]')];
+        const stops = [...e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), [tabindex="0"]')]
+          .filter((el) => !el.closest('[hidden]'));
         const first = stops[0], last = stops.at(-1);
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
       }}>
       {reporting && pg ? (
-        <PostGameReport view={view} pg={pg} titleId={titleId} title={title} ribbon={ribbon} reason={reason} kicker={kicker} hero={hero} tone={tone}
-          onTitle={toTitle} onMap={dismiss} onReplay={replay} />
+        <>
+          <div className="replay-report" hidden={replaying}>
+            <PostGameReport view={view} pg={pg} titleId={replaying ? undefined : titleId} title={title} ribbon={ribbon} reason={reason} kicker={kicker} hero={hero} tone={tone}
+              onTitle={toTitle} onMap={dismiss} onReplay={replay} onWatchReplay={watchReplay} />
+          </div>
+          {replaying && <GameReplay player={view.me} recording={recording.data} titleId={titleId} onBack={backFromReplay} />}
+        </>
       ) : (
         <GameReveal key={revealKey} tracks={tracks} winner={winner ?? null} hero={hero} titleId={titleId} title={title} ribbon={ribbon}
           reason={reason} finish={finish} kicker={kicker} tone={tone} settled={settled} onSettle={() => setSettled(true)}

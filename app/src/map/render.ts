@@ -92,6 +92,7 @@ export type PendingMark = 'explore' | 'move' | 'sleep' | 'heal' | 'skip' | 'foun
 
 export interface RenderInput {
   view: PlayerView;
+  terrainScope?: object;
   cityFocuses?: ReadonlyMap<number, import('../types').CityBuildFocus | null>;
   /** What each own city was told to build this turn (an order not yet resolved), so its banner shows the choice at once. */
   cityBuilds?: ReadonlyMap<number, ProductionItem>;
@@ -190,11 +191,19 @@ export interface TerritoryOverlay {
 // ---- caches: one terrain cache per (look, seat, map, dpr) ----
 
 const caches = new Map<string, TerrainCache>();
+const scopedCaches = new WeakMap<object, { key: string; view: PlayerView; cache: TerrainCache }>();
 let lastView: PlayerView | null = null;
 let labelCache: { view: PlayerView; labels: MapLabel[] } | null = null;
 
-function terrainFor(view: PlayerView, style: MapStyle, dpr: number): TerrainCache {
+function terrainFor(view: PlayerView, style: MapStyle, dpr: number, scope?: object): TerrainCache {
   const key = `${style.id}|${view.me}|${view.width}x${view.height}|${dpr}|${getBorderVariant()}|${getTerrainVariant()}`;
+  if (scope) {
+    const previous = scopedCaches.get(scope);
+    const cache = previous?.key === key ? previous.cache : new TerrainCache(view, style, dpr);
+    if (previous?.key === key && previous.view !== view) cache.update(view);
+    scopedCaches.set(scope, { key, view, cache });
+    return cache;
+  }
   let c = caches.get(key);
   if (!c) {
     // Keep at most the two seats of the current look and map.
@@ -274,7 +283,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
   const hexPx = HEX_SIZE * z;
   const factionOf = new Map<number, Faction>(view.players.map((pl) => [pl.id, pl.faction]));
 
-  const terrain = terrainFor(view, S, dpr);
+  const terrain = terrainFor(view, S, dpr, inp.terrainScope);
   const overlays = inp.overlays ?? DEFAULT_OVERLAYS;
   terrain.setArtFade(artFadeFor(inp.lens, overlays));
   const moments = inp.moments ?? null;

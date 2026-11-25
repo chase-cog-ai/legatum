@@ -75,6 +75,11 @@ No seat credentials, authorization headers, tokens, pending socket messages or c
 addresses enter the recording. Archives intentionally contain full game information for the
 owner's analysis, including information hidden by fog in the player UI.
 
+**Watching a finished solo game.** The report's **Watch replay** action runs the saved orders in a
+local worker and checks each turn's hash. The worker sends back only the original player's map view
+and the turning points that player could see. A recording started from a legacy save begins at that
+save, not at the opening of the game. Watching it does not modify the save or the archive.
+
 Client telemetry rides in the recording but never in a hash: `turn_times` (active play seconds per turn and
 session) and `frame_times` (`TurnFrameTime` in `crates/wasm/src/history.rs`, filled by `app/src/frameTelemetry.ts`).
 `frame_times` has one row per turn the player viewed: `frames`, `frame_p50_ms10` and `frame_p95_ms10` (gaps in

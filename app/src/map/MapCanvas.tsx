@@ -808,8 +808,8 @@ export function MapCanvas({ inspectRequest }: { inspectRequest?: Hex | null }) {
     const ro = new ResizeObserver(() => { if (!resizeFrame) resizeFrame = requestAnimationFrame(resize); });
     resize();
     ro.observe(wrap);
-    onIconLoad(() => (dirty.current = true));
-    onMapFeatureLoad(() => (dirty.current = true));
+    const offIcons = onIconLoad(() => (dirty.current = true));
+    const offFeatures = onMapFeatureLoad(() => (dirty.current = true));
     const offCityArt = onCityArtLoad(() => (dirty.current = true));
     const offImprovementArt = onImprovementArtLoad(() => (dirty.current = true));
     const offLandmarkArt = onLandmarkArtLoad(() => (dirty.current = true));
@@ -869,6 +869,8 @@ export function MapCanvas({ inspectRequest }: { inspectRequest?: Hex | null }) {
     return () => {
       setMapProjector(null);
       unregister();
+      offIcons();
+      offFeatures();
       offCityArt();
       offImprovementArt();
       offLandmarkArt();

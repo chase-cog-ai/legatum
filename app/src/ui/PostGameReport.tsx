@@ -194,11 +194,11 @@ function StatsTab({ pg, playTime }: { pg: PostGame; playTime: ReturnType<typeof 
 }
 
 export function PostGameReport({
-  view, pg, titleId, title, ribbon, reason, kicker, hero, tone, onTitle, onMap, onReplay,
+  view, pg, titleId, title, ribbon, reason, kicker, hero, tone, onTitle, onMap, onReplay, onWatchReplay,
 }: {
   view: PlayerView;
   pg: PostGame;
-  titleId: string;
+  titleId?: string;
   title: string;
   ribbon: string;
   reason: string | null;
@@ -208,6 +208,7 @@ export function PostGameReport({
   onTitle(): void;
   onMap(): void;
   onReplay(): void;
+  onWatchReplay?(): void;
 }) {
   const client = useGame((s) => s.client);
   const playTime = playTimeSummary(client?.archive?.());
@@ -255,6 +256,7 @@ export function PostGameReport({
       <div className="pg-body">{body}</div>
       <footer className="go-actions pg-actions">
         <button className="btn primary" onClick={onTitle}>Return to title</button>
+        {onWatchReplay && <button className="btn" type="button" data-watch-replay onClick={onWatchReplay}>Watch replay</button>}
         <button className="btn" onClick={onMap}>Keep looking at the map</button>
         <button className="btn quiet" onClick={onReplay}>Replay the reveal</button>
         {lead && <span className="pg-sign" aria-hidden="true"><Star size={7} /> {pg.lastTurn - pg.firstTurn + 1} turns recorded</span>}

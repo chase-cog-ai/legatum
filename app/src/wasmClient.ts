@@ -37,6 +37,8 @@ interface WasmGame {
   hash(): string;
   turn(): number;
   archive(): string;
+  can_watch_replay(player: number): boolean;
+  replay_recording(player: number): string;
   public_archive?(): string;
   record_turn_time?(turn: number, endedAt: string, activeSeconds: number, era: number, sessionId: string): void;
   record_frame_time?(timeJson: string): void;
@@ -58,12 +60,16 @@ interface WasmGameClass {
   site_blocker(view: string, q: number, r: number): string;
 }
 
-interface WasmModule {
+export interface WasmModule {
   explore_step(view: string, unit: number): string;
   advisor_orders(view: string): string;
   city_automation_orders(view: string, orders: string): string;
   default?: (input?: unknown) => Promise<unknown>;
   Game: WasmGameClass;
+  GameReplay: new (recording: string, player: number) => {
+    info(): string;
+    frame(turn: number): string;
+  };
 }
 
 // Vite resolves the optional package at build time. Playwright also imports
@@ -197,6 +203,8 @@ export class WasmClient implements GameClient, TrainingEngine {
   }
 
   archive(): string { return this.g.archive(); }
+  canWatchReplay(player: number): boolean { return this.g.can_watch_replay(player); }
+  replayRecording(player: number): string { return this.g.replay_recording(player); }
   publicArchive(): string { return this.g.public_archive ? this.g.public_archive() : this.g.archive(); }
   recordTurnTime(turn: number, endedAt: string, activeSeconds: number, era: number, sessionId: string) {
     this.g.record_turn_time?.(turn, endedAt, activeSeconds, era, sessionId);

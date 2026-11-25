@@ -7,6 +7,7 @@
 pub mod history;
 pub mod host;
 pub mod json;
+mod replay;
 pub mod rusher;
 pub mod scenario;
 pub mod session;
@@ -1037,6 +1038,19 @@ impl Game {
     /// Portable full-information archive for the owner. This never includes online seat tokens.
     pub fn archive(&self) -> Result<String, JsError> {
         js(guard(|| {
+            to_json(self.session.history.as_ref().ok_or("No recorded history")?)
+        }))
+    }
+
+    pub fn can_watch_replay(&self, player: u8) -> bool {
+        replay::available(&self.session, PlayerId(player))
+    }
+
+    pub fn replay_recording(&self, player: u8) -> Result<String, JsError> {
+        js(guard(|| {
+            if !self.can_watch_replay(player) {
+                return Err("No finished solo recording".into());
+            }
             to_json(self.session.history.as_ref().ok_or("No recorded history")?)
         }))
     }

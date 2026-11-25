@@ -6,6 +6,7 @@ import { overlayBox } from '../overlayHelpers';
 import { coreFixture } from '../../src/test/coreFixture';
 import { gameOverCoreSave } from '../../src/test/gameOverFixture';
 import { postGameSave } from '../../src/test/postGameFixture';
+import { replayFixture } from '../../src/test/replayFixture';
 import { siegeFixture } from '../../src/test/siegeFixture';
 import { SIZES, loadFixture, shot, showMoment, type GameWindow } from './helpers';
 
@@ -72,6 +73,56 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
         await shot(p, size, `${prefix}e-end-map-after-${fixture}`);
       } finally { await context.close(); }
     }
+  });
+
+  test('watch the finished solo game, then return to the same report', async ({ page }) => {
+    const { game, turn } = await replayFixture();
+    await loadFixture(page, game, turn);
+    await page.getByTestId('game-reveal').click({ position: { x: 6, y: 6 } });
+    await page.getByRole('button', { name: 'See the game report' }).click();
+    await page.getByRole('tab', { name: 'Timeline' }).click();
+    const watch = page.getByRole('button', { name: 'Watch replay' });
+    const liveBefore = await page.evaluate(() => {
+      const s = (window as unknown as GameWindow).legatum.getState();
+      return [s.client?.save(), s.views?.[s.seat].turn, s.orders];
+    });
+    await watch.click();
+    const replay = page.getByTestId('match-replay');
+    const atlas = page.getByTestId('replay-atlas');
+    const slider = replay.getByRole('slider', { name: 'Replay turn' });
+    await expect(replay.getByRole('heading', { name: 'Game replay' })).toBeFocused();
+    await expect(atlas).toHaveAttribute('data-turn', '0');
+    await expect(replay.getByRole('button', { name: 'Previous turn' })).toBeDisabled();
+    await shot(page, size, '26r-replay-opening');
+    const mapPixels = () => atlas.locator('canvas').evaluate((el) => (el as HTMLCanvasElement).toDataURL());
+    const opening = await mapPixels();
+    await replay.getByRole('button', { name: 'Next turn' }).click();
+    await expect(atlas).toHaveAttribute('data-turn', '1');
+    await slider.press('End');
+    await expect(atlas).toHaveAttribute('data-turn', String(turn - 1));
+    await expect.poll(mapPixels).not.toBe(opening);
+    await expect(replay.getByRole('button', { name: 'Next turn' })).toBeDisabled();
+    await shot(page, size, '26s-replay-ending');
+    await slider.press('Home');
+    await expect(atlas).toHaveAttribute('data-turn', '0');
+    const milestone = replay.getByRole('complementary', { name: 'Turning points' }).getByRole('button').last();
+    await milestone.click();
+    await expect(atlas).toHaveAttribute('data-turn', String(turn - 1));
+    await replay.getByLabel('Speed').selectOption('4');
+    await replay.getByRole('button', { name: 'Play again' }).click();
+    await expect(replay.getByRole('button', { name: 'Pause' })).toBeVisible();
+    await expect(atlas).not.toHaveAttribute('data-turn', String(turn - 1));
+    await replay.getByRole('button', { name: 'Pause' }).click();
+    await expect(replay.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(replay).toHaveCount(0);
+    await expect(watch).toBeFocused();
+    await expect(page.getByRole('tab', { name: 'Timeline' })).toHaveAttribute('aria-selected', 'true');
+    const liveAfter = await page.evaluate(() => {
+      const s = (window as unknown as GameWindow).legatum.getState();
+      return [s.client?.save(), s.views?.[s.seat].turn, s.orders];
+    });
+    expect(liveAfter).toEqual(liveBefore);
   });
   test('8.9.4 features: the Cities overview, the map overlays and the air wing ready card', async ({ page }) => {
     test.setTimeout(150_000);

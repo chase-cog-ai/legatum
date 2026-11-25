@@ -22,6 +22,8 @@ it.each(['Melee', 'Ranged'] as const)('passes explicit %s mode through the WASM 
     hash() { return '0'; }
     turn() { return 1; }
     archive() { return '{}'; }
+    can_watch_replay() { return false; }
+    replay_recording() { return '{}'; }
     fork_archive() {}
   }
   const client = new WasmClient(Game);
@@ -54,6 +56,8 @@ it('keeps the live game when replacement construction or loading fails', async (
     hash() { return '0'; }
     turn() { return 1; }
     archive() { return '{}'; }
+    can_watch_replay() { return false; }
+    replay_recording() { return '{}'; }
     fork_archive() {}
     free() { freed.push(this.id); }
   }

@@ -39,7 +39,7 @@ function resourceImage(resource: string, sourceSize: 32 | 64 | 256): HTMLImageEl
   const url = resourceArtUrl(resource, sourceSize);
   if (!url || typeof Image === 'undefined') { resourceImages.set(key, null); return null; }
   const img = new Image();
-  img.onload = () => { loads++; onLoad?.(); };
+  img.onload = iconLoaded;
   img.src = url;
   resourceImages.set(key, img);
   return null;
@@ -73,7 +73,7 @@ export function resourceArtUrl(resource: string, sourceSize: 32 | 64 | 256 = 64)
 
 const images = new Map<string, HTMLImageElement | null>();
 const tinted = new Map<string, HTMLCanvasElement>();
-let onLoad: (() => void) | null = null;
+const onLoad = new Set<() => void>();
 let loads = 0;
 
 /** Bumped whenever an icon image finishes loading (sprite caches key on it). */
@@ -84,12 +84,13 @@ export function iconEpoch(): number {
 /** Another image set (the painted unit art) finished loading: sprite caches rebuild and the map redraws. */
 export function iconLoaded() {
   loads++;
-  onLoad?.();
+  onLoad.forEach((cb) => cb());
 }
 
 /** Called when an icon image finishes loading (the map redraws). */
 export function onIconLoad(cb: () => void) {
-  onLoad = cb;
+  onLoad.add(cb);
+  return () => { onLoad.delete(cb); };
 }
 
 function image(name: string): HTMLImageElement | null {
@@ -105,7 +106,7 @@ function image(name: string): HTMLImageElement | null {
   const img = new Image();
   img.onload = () => {
     loads++;
-    onLoad?.();
+    onLoad.forEach((cb) => cb());
   };
   img.src = url;
   images.set(name, img);

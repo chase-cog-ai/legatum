@@ -4,12 +4,13 @@ const urls = import.meta.glob<string>('../assets/map-features/*.png', {
   eager: true, query: '?url', import: 'default',
 });
 const images = new Map<string, HTMLImageElement>();
-let onLoad: (() => void) | null = null;
+const onLoad = new Set<() => void>();
 
 export type MapFeature = 'camp' | 'ruin';
 
 export function onMapFeatureLoad(cb: () => void) {
-  onLoad = cb;
+  onLoad.add(cb);
+  return () => { onLoad.delete(cb); };
 }
 
 /** The authored far mark carries the identity when detailed miniatures no longer read. */
@@ -23,7 +24,7 @@ export function mapFeatureImage(kind: MapFeature, far: boolean, visible: boolean
     const url = urls[`../assets/map-features/${name}`];
     if (!url || typeof Image === 'undefined') return null;
     image = new Image();
-    image.onload = () => onLoad?.();
+    image.onload = () => onLoad.forEach((cb) => cb());
     image.src = url;
     images.set(name, image);
     return null;

@@ -583,26 +583,39 @@ impl Recording {
     }
 
     pub fn replay(&self) -> Result<GameState, String> {
+        let mut state = self.replay_start()?;
+        for t in &self.tape.turns {
+            state = replay_turn(&state, t)?.0;
+        }
+        Ok(state)
+    }
+
+    pub(crate) fn replay_start(&self) -> Result<GameState, String> {
         self.validate()?;
         self.compatible()?;
-        let mut state = match &self.initial_state {
+        let state = match &self.initial_state {
             Some(s) => json::parse_state(s)?,
-            None => self.tape.initial_state(),
+            None => legatum_core::try_new_game(&self.tape.setup)?,
         };
         if state.hash() != self.tape.initial_hash {
             return Err("first divergent turn: 0 (initial state)".into());
         }
-        for t in &self.tape.turns {
-            if state.turn != t.turn || state.finished {
-                return Err(format!("invalid replay turn {}", t.turn));
-            }
-            state = legatum_core::resolve_turn(&state, &t.orders).0;
-            if state.hash().to_string() != t.hash {
-                return Err(format!("first divergent turn: {}", t.turn));
-            }
-        }
         Ok(state)
     }
+}
+
+pub(crate) fn replay_turn(
+    state: &GameState,
+    t: &TapeTurn,
+) -> Result<(GameState, Vec<legatum_core::Event>), String> {
+    if state.turn != t.turn || state.finished {
+        return Err(format!("invalid replay turn {}", t.turn));
+    }
+    let (next, events) = legatum_core::resolve_turn(state, &t.orders);
+    if next.hash().to_string() != t.hash {
+        return Err(format!("first divergent turn: {}", t.turn));
+    }
+    Ok((next, events))
 }
 
 /// Where `Recording::anonymized_resuming` stopped: the renamed game's state and hashes after the last

@@ -36,6 +36,8 @@ export interface GameClient {
   load(json: string): void;
   /** Full owner history, available from the real local engine only. */
   archive?(): string;
+  canWatchReplay?(player: number): boolean;
+  replayRecording?(player: number): string;
   /** The same history with every seat under its default name, for upload. */
   publicArchive?(): string;
   recordTurnTime?(turn: number, endedAt: string, activeSeconds: number, era: number, sessionId: string): void;

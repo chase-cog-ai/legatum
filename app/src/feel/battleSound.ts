@@ -1,7 +1,7 @@
 // Which sounds a battle makes, and when: read off the same plan the map animates (map/combatFx.ts),
 // so a volley is heard as it leaves the bow and a clash as the lines meet. Only weapons we have a
-// recording for make a sound (docs/design/sound-sources.md): a musket, a drone strike and
-// the fall of a gunpowder-age unit stay silent. Pure, so it is tested without audio.
+// recording for make a sound (docs/design/sound-sources.md): the fall of a gunpowder-age unit
+// stays silent. Pure, so it is tested without audio.
 import type { CombatPlan } from '../map/combatFx';
 import type { UnitKind } from '../types';
 import type { BattleCue, BattleSound } from './sound';
@@ -14,7 +14,7 @@ export const MAX_BATTLE_CUES = 10;
  * volleys open every turn and would leave the clash, the deaths and the collapse silent.
  */
 export const CUE_QUOTA: [BattleSound, number][] = [
-  ['collapse', MAX_BATTLE_CUES], ['death', 2], ['explosion', 2], ['clash', 2], ['gunshot', 2], ['cannon', 2], ['shellFire', 1], ['aircraft', 1], ['jet', 1],
+  ['collapse', MAX_BATTLE_CUES], ['death', 2], ['explosion', 2], ['clash', 2], ['gunshot', 2], ['cannon', 2], ['musket', 2], ['shellFire', 1], ['aircraft', 1], ['jet', 1], ['drone', 1],
   ['siegeHit', 2], ['arrowHit', 2], ['bow', 2], ['siegeLaunch', 1], ['hooves', 1],
 ];
 /** The same sound twice inside this window reads as one. */
@@ -39,7 +39,9 @@ export function battleSoundCues(plan: CombatPlan | null | undefined): BattleCue[
     } else if (s.kind === 'stone') {
       add(s.launch, 'siegeLaunch', s.seed);
       add(s.launch + s.flight, 'siegeHit', s.seed);
-    } else if (s.kind === 'ball') add(s.launch, 'cannon', s.seed);
+    } else if (s.kind === 'shot') add(s.launch, 'musket', s.seed);
+    else if (s.kind === 'drone') add(s.launch, 'drone', s.seed);
+    else if (s.kind === 'ball') add(s.launch, 'cannon', s.seed);
     else if (s.kind === 'shell') {
       add(s.launch, 'shellFire', s.seed);
       add(s.launch + s.flight, 'explosion', s.seed);
@@ -50,7 +52,7 @@ export function battleSoundCues(plan: CombatPlan | null | undefined): BattleCue[
     }
   }
   for (const c of plan.clashes) {
-    if (c.guns) { if (c.rifles) add(c.t, 'gunshot', c.seed); continue; }
+    if (c.guns) { add(c.t, c.rifles ? 'gunshot' : 'musket', c.seed); continue; }
     if (c.mounted) add(c.t - HOOVES_LEAD_MS, 'hooves', c.seed);
     add(c.t, 'clash', c.seed);
   }

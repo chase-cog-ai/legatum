@@ -40,7 +40,7 @@ import type { Rect } from './compass';
 import type { LensTile, MapLens } from './lenses';
 import { drawLens, drawOwnerOverlay } from './drawLens';
 import { artFadeFor, DEFAULT_OVERLAYS, ownerWashScale, type OverlaySet } from './overlays';
-import { drawYieldIcons, yieldClusterRects, YIELD_FILL } from './yieldIcons';
+import { drawYieldIcons, foldedBonuses, yieldClusterRects, YIELD_FILL } from './yieldIcons';
 import { drawImprovements } from './improvementArt';
 import { drawResourceIcons, medallionTop, resourceDetail, STACK_LIFT, type Cover } from './resourceIcons';
 import { drawRoads } from './roadArt';
@@ -340,7 +340,16 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
   // Tile yields sit under every unit and banner: quiet enough to leave on.
   // A neighbour's medallion, yield cluster or wonder badge never sits on a town (or its walls): they keep clear of its footprint.
   const townCovers = cityArtCovers(view, toScreen, z, hexPx);
-  if (inp.yieldTiles?.length) drawYieldIcons(ctx, inp.yieldTiles, cam, w, h, view.width, dpr, look, inp.lens === 'settle', townCovers);
+  // A unit resting on a wonder's tile covers its middle: the bonus keeps clear of its counter.
+  const tokenCovers = isFar(hexPx) ? [] : view.units.filter((u) => view.tiles[tileIndex(u.pos, view.width, view.height)]?.wonder).map((u) => {
+    const p = toScreen(inp.unitPos.get(u.id) ?? hexToPixel(u.pos, HEX_SIZE)), t = tokenHalf(hexPx);
+    return { x: p.x - t, y: p.y - t, w: t * 2, h: t * 2 };
+  });
+  // Where the yield icons show and there is room, a wonder tile's "+25%" folds into its cluster (after the boosted yield) and
+  // the tile gets no pill; a cramped or unit-covered cluster leaves the bonus to the pill (foldedBonuses).
+  const folded = overlays.yields ? foldedBonuses(inp.yieldTiles ?? [], cam, w, h, view.width, townCovers, tokenCovers) : new Set<number>();
+  const yieldTiles = (inp.yieldTiles ?? []).map((t) => t.bonus && !folded.has(t.index) ? { ...t, bonus: undefined } : t);
+  if (yieldTiles.length) drawYieldIcons(ctx, yieldTiles, cam, w, h, view.width, dpr, look, inp.lens === 'settle', townCovers);
   // Banner positions are known up front so the resource medallions below them can keep clear.
   const bannerMotion = moments?.hold.banner;
   // Known resources, on every lens (as in Civ): top of the hex, under units and banners.
@@ -348,13 +357,8 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     ? { ...view, tiles: view.tiles.map((tile, i) => moments.hold.resources.has(i) ? { ...tile, resource: null } : tile) }
     : view;
   drawResourceIcons(ctx, iconView, cam, w, h, dpr, look, bannerCovers, overlays.resources, townCovers);
-  // A natural wonder's bonus, on its tile: above the lens tint and yield icons, under units and banners.
-  // A unit resting on the wonder's tile covers its middle: the pill keeps clear of its counter.
-  const tokenCovers = isFar(hexPx) ? [] : view.units.filter((u) => view.tiles[tileIndex(u.pos, view.width, view.height)]?.wonder).map((u) => {
-    const p = toScreen(inp.unitPos.get(u.id) ?? hexToPixel(u.pos, HEX_SIZE)), t = tokenHalf(hexPx);
-    return { x: p.x - t, y: p.y - t, w: t * 2, h: t * 2 };
-  });
-  const wonderPillsOverUnits = drawWonderBadges(ctx, view, cam, w, h, dpr, overlays.yields, [...bannerCovers, ...townCovers], tokenCovers);
+  // A natural wonder's bonus, on its tile: above the lens tint and yield icons, under units and banners (folded or as its pill).
+  const wonderPillsOverUnits = drawWonderBadges(ctx, view, cam, w, h, dpr, overlays.yields, [...bannerCovers, ...townCovers], tokenCovers, folded);
 
   // World transform for vector overlays.
   const worldT = () => ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * (w / 2 - cam.x * z), dpr * (h / 2 - cam.y * z));
@@ -1067,7 +1071,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     const unitsAt = new Map<number, number>();
     for (const u of view.units) { const t = tileIndex(u.pos, W, H); unitsAt.set(t, (unitsAt.get(t) ?? 0) + 1); }
     drawLens(ctx, inp.lensTiles, cam, w, h, W, dpr, look, 'labels', unitBottoms, [...(inp.lensAvoid ?? []), ...bannerCovers],
-      (i) => medallions && view.tiles[i]?.resource && view.tiles[i]?.explored ? medallionTop(hexPx, cityAt.has(i), (unitsAt.get(i) ?? 0) > 1) : 0, { yieldsOn: overlays.yields, yieldRects: overlays.yields && inp.lensTiles.some((t) => t.rank) ? yieldClusterRects(inp.yieldTiles ?? [], cam, w, h, W, cityArtCovers(view, (p) => worldToScreen(cam, w, h, p.x, p.y), z, hexPx)) : [] });
+      (i) => medallions && view.tiles[i]?.resource && view.tiles[i]?.explored ? medallionTop(hexPx, cityAt.has(i), (unitsAt.get(i) ?? 0) > 1) : 0, { yieldsOn: overlays.yields, yieldRects: overlays.yields && inp.lensTiles.some((t) => t.rank) ? yieldClusterRects(yieldTiles, cam, w, h, W, cityArtCovers(view, (p) => worldToScreen(cam, w, h, p.x, p.y), z, hexPx)) : [] });
   }
 
   if (inp.reportArrow && inp.reportArrow.alpha > 0) {

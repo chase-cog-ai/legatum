@@ -73,15 +73,17 @@ These are heard, not felt, and are not `feel.*` events: the map schedules them i
 | Catapult throw, stone hit | A stone shot leaves and lands | 1 throw, 2 hits a turn |
 | Hooves, clash | A melee clash before gunpowder; hooves lead a mounted charge | 1 hooves, 2 clashes a turn |
 | Death cry | A pre-gunpowder unit falls | 2 a turn |
-| Gunshot | A melee of rifle-armed units meets (the Industrial era or later; muskets are silent) | 2 a turn |
+| Gunshot | A melee of rifle-armed units meets (the Industrial era or later) | 2 a turn |
+| Musket | A musket volley leaves, or a melee of musket-armed units meets (the Renaissance) | 2 a turn |
+| Drone | A combat drone flies in | 1 a turn |
 | Cannon | A cannon fires | 2 a turn |
 | Shell fire, explosion | Artillery or a tank gun fires, and its shell lands; a bomber's bombs land | 1 firing, 2 explosions a turn |
 | Aircraft, jet | An aircraft's run, 1.5 s before its bombs are released: the propeller recording for the Biplane, Fighter and Bomber, the jet recording for the jets and stealth aircraft | 1 each a turn |
 | Collapse | A city is razed | every one |
 | Land and sea loop (birds, wind, cold wind, waves) | The land or sea under the middle of the map view, read every 1.5 s; two readings must agree | one loop, on the Effects bus at half level |
 
-At most 10 battle sounds a turn, chosen by consequence in the order collapse, death, explosion, clash, gunshot, cannon, shell fire, aircraft, jet, stone hit, arrow hit, bow, throw, hooves. The same sound inside 160 ms is one sound. Battle sound follows the map-animation setting and plays nothing for a musket, a drone strike or the fall of a gunpowder-age unit (no recording we may ship).
+At most 10 battle sounds a turn, chosen by consequence in the order collapse, death, explosion, clash, gunshot, cannon, musket, shell fire, aircraft, jet, drone, stone hit, arrow hit, bow, throw, hooves. The same sound inside 160 ms is one sound. Battle sound follows the map-animation setting and plays nothing for the fall of a gunpowder-age unit (no recording we may ship).
 
-Music follows the listener's era as well as its people: tracks marked `eras` in the manifest play only then (the 0 A.D. music in eras 1 to 3, the FreeCol and Unknown Horizons music in eras 4 to 7, the Warzone 2100 music in eras 8 and 9), except a people's opening track, which stays in rotation all game. A new era never cuts the track that is playing.
+Music follows the listener's era as well as its people: tracks marked `eras` in the manifest play only then (the 0 A.D. music in eras 1 to 3, the FreeCol and Unknown Horizons music in eras 4 and 5, the Battle for Wesnoth music in eras 6 and 7, the Warzone 2100 music in eras 8 and 9), except a people's opening track, which stays in rotation all game. A new era never cuts the track that is playing.
 
 The land and sea loop is one hook, `map/useLandSound.ts`, used by both the 2D and the 3D map. Battle sound is scheduled by the 2D map only, because the 3D map does not draw battles yet; when it does, it calls `playBattleSounds(battleSoundCues(plan), elapsed)` against its own animation clock.

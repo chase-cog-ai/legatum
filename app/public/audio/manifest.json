@@ -1210,12 +1210,12 @@
     "license": "CC-BY-4.0",
     "attribution": "\"Sunrise\" by Alexander Zhelanov and Stian Grenborgen, from FreeCol (https://www.freecol.org/), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), edited for Legatum",
     "modified": "leading 0.00 s and trailing 0.00 s below -60 dBFS trimmed; static gain -8.1 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -7.1 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1229,12 +1229,12 @@
     "license": "CC-BY-4.0",
     "attribution": "\"Founders\" by Alexander Zhelanov and Stian Grenborgen, from FreeCol (https://www.freecol.org/), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), edited for Legatum",
     "modified": "leading 0.00 s and trailing 0.72 s below -60 dBFS trimmed; static gain -5.2 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.0 LUFS, -5.0 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1248,12 +1248,12 @@
     "license": "CC-BY-4.0",
     "attribution": "\"Tailwind\" by Alexander Zhelanov and Stian Grenborgen, from FreeCol (https://www.freecol.org/), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), edited for Legatum",
     "modified": "leading 0.00 s and trailing 0.00 s below -60 dBFS trimmed; static gain -6.6 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -5.5 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1267,12 +1267,12 @@
     "license": "CC-BY-4.0",
     "attribution": "\"Settlers Routine\" by Alexander Zhelanov and Stian Grenborgen, from FreeCol (https://www.freecol.org/), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), edited for Legatum",
     "modified": "leading 0.02 s and trailing 0.00 s below -60 dBFS trimmed; static gain -6.9 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -6.4 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1286,12 +1286,12 @@
     "license": "CC-BY-4.0",
     "attribution": "\"Fearless Sailors\" by Alexander Zhelanov and Stian Grenborgen, from FreeCol (https://www.freecol.org/), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), edited for Legatum",
     "modified": "leading 0.00 s and trailing 0.00 s below -60 dBFS trimmed; static gain -8.2 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.0 LUFS, -6.7 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1305,12 +1305,12 @@
     "license": "CC-BY-4.0",
     "attribution": "\"Free Colonist\" by Alexander Zhelanov and Stian Grenborgen, from FreeCol (https://www.freecol.org/), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), edited for Legatum",
     "modified": "leading 0.17 s and trailing 0.80 s below -60 dBFS trimmed; static gain -7.1 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.0 LUFS, -6.4 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1358,12 +1358,12 @@
     "license": "CC-BY-SA-3.0",
     "attribution": "\"Unknown Horizons Main Theme\" by Tobias Escher, from Unknown Horizons (https://unknown-horizons.org/), CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/), edited for Legatum",
     "modified": "leading 0.25 s and trailing 0.04 s below -60 dBFS trimmed; static gain -11.7 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -10.4 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1377,12 +1377,12 @@
     "license": "CC-BY-SA-3.0",
     "attribution": "\"Gameplay 3\" by Tobias Escher, from Unknown Horizons (https://unknown-horizons.org/), CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/), edited for Legatum",
     "modified": "leading 0.02 s and trailing 0.00 s below -60 dBFS trimmed; static gain -9.4 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -9.0 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1396,12 +1396,12 @@
     "license": "CC-BY-SA-3.0",
     "attribution": "\"Gameplay 4\" by Tobias Escher, from Unknown Horizons (https://unknown-horizons.org/), CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/), edited for Legatum",
     "modified": "leading 0.58 s and trailing 1.08 s below -60 dBFS trimmed; static gain -9.5 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -8.8 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1415,12 +1415,12 @@
     "license": "CC-BY-SA-3.0",
     "attribution": "\"Beware the Ship's Kobold!\" by Tobias Escher, from Unknown Horizons (https://unknown-horizons.org/), CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/), edited for Legatum",
     "modified": "leading 1.15 s and trailing 0.02 s below -60 dBFS trimmed; static gain -7.8 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.0 LUFS, -7.8 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Peace music every people hears, from the Renaissance to the World War era.",
+    "rationale": "Peace music every people hears, in the Renaissance and Industrial eras.",
     "mood": "peace",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1434,12 +1434,12 @@
     "license": "CC-BY-SA-3.0",
     "attribution": "\"Battle\" by the Unknown Horizons team, from Unknown Horizons (https://unknown-horizons.org/), CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/), edited for Legatum",
     "modified": "leading 0.00 s and trailing 3.08 s below -60 dBFS trimmed; static gain -0.7 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -6.1 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Plays during an empire war, from the Renaissance to the World War era.",
+    "rationale": "Plays during an empire war, in the Renaissance and Industrial eras.",
     "mood": "war",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1453,12 +1453,12 @@
     "license": "CC-BY-SA-3.0",
     "attribution": "\"Sea Fight\" by the Unknown Horizons team, from Unknown Horizons (https://unknown-horizons.org/), CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/), edited for Legatum",
     "modified": "leading 0.00 s and trailing 1.07 s below -60 dBFS trimmed; static gain -9.7 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.0 LUFS, -8.8 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
-    "rationale": "Plays during an empire war, from the Renaissance to the World War era.",
+    "rationale": "Plays during an empire war, in the Renaissance and Industrial eras.",
     "mood": "war",
     "peoples": [],
     "eras": [
       4,
-      7
+      5
     ]
   },
   {
@@ -1671,5 +1671,161 @@
     "license": "CC0-1.0",
     "modified": "two 5 s clips of the one recording joined with a 0.5 s equal-power crossfade and closed into a 8.99 s loop the same way; 40 Hz high-pass; static gain -12.0 dB to -29.9 LUFS; encoded as AAC-LC 64 kb/s stereo .m4a",
     "rationale": "Waves when the view is over the sea."
+  },
+  {
+    "file": "music/journeys-end.m4a",
+    "events": [
+      "music:journeys-end"
+    ],
+    "title": "Journey's End",
+    "author": "Mattias Westlund",
+    "source": "https://raw.githubusercontent.com/wesnoth/wesnoth/master/data/core/music/journeys_end.ogg",
+    "license": "GPL-2.0-or-later",
+    "attribution": "\"Journey's End\" by Mattias Westlund, from The Battle for Wesnoth (https://www.wesnoth.org/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "modified": "leading 0.47 s and trailing 3.09 s below -60 dBFS trimmed; static gain -4.3 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -4.3 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
+    "rationale": "Peace music every people hears, in the Machine Age and the World War era.",
+    "mood": "peace",
+    "peoples": [],
+    "eras": [
+      6,
+      7
+    ]
+  },
+  {
+    "file": "music/breaking-the-chains.m4a",
+    "events": [
+      "music:breaking-the-chains"
+    ],
+    "title": "Breaking the Chains",
+    "author": "Mattias Westlund",
+    "source": "https://raw.githubusercontent.com/wesnoth/wesnoth/master/data/core/music/breaking_the_chains.ogg",
+    "license": "GPL-2.0-or-later",
+    "attribution": "\"Breaking the Chains\" by Mattias Westlund, from The Battle for Wesnoth (https://www.wesnoth.org/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "modified": "leading 0.40 s and trailing 2.71 s below -60 dBFS trimmed; static gain -2.4 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -2.5 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
+    "rationale": "Peace music every people hears, in the Machine Age and the World War era.",
+    "mood": "peace",
+    "peoples": [],
+    "eras": [
+      6,
+      7
+    ]
+  },
+  {
+    "file": "music/nunc-dimittis.m4a",
+    "events": [
+      "music:nunc-dimittis"
+    ],
+    "title": "Nunc Dimittis",
+    "author": "Jeremy Nicoll",
+    "source": "https://raw.githubusercontent.com/wesnoth/wesnoth/master/data/core/music/nunc_dimittis.ogg",
+    "license": "GPL-2.0-or-later",
+    "attribution": "\"Nunc Dimittis\" by Jeremy Nicoll, from The Battle for Wesnoth (https://www.wesnoth.org/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "modified": "leading 0.43 s and trailing 1.02 s below -60 dBFS trimmed; static gain -3.3 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -3.2 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
+    "rationale": "Peace music every people hears, in the Machine Age and the World War era.",
+    "mood": "peace",
+    "peoples": [],
+    "eras": [
+      6,
+      7
+    ]
+  },
+  {
+    "file": "music/casualties-of-war.m4a",
+    "events": [
+      "music:casualties-of-war"
+    ],
+    "title": "Casualties of War",
+    "author": "Tyler Johnson",
+    "source": "https://raw.githubusercontent.com/wesnoth/wesnoth/master/data/core/music/casualties_of_war.ogg",
+    "license": "GPL-2.0-or-later",
+    "attribution": "\"Casualties of War\" by Tyler Johnson, from The Battle for Wesnoth (https://www.wesnoth.org/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "modified": "leading 0.29 s and trailing 1.27 s below -60 dBFS trimmed; cut to the first 240 s with a 6 s fade-out; static gain -3.9 dB toward -20 LUFS with the true peak under -2 dBTP (now -23.3 LUFS, -2.1 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
+    "rationale": "Plays during an empire war, in the Machine Age and the World War era.",
+    "mood": "war",
+    "peoples": [],
+    "eras": [
+      6,
+      7
+    ]
+  },
+  {
+    "file": "music/the-city-falls.m4a",
+    "events": [
+      "music:the-city-falls"
+    ],
+    "title": "The City Falls",
+    "author": "Doug Kaufman",
+    "source": "https://raw.githubusercontent.com/wesnoth/wesnoth/master/data/core/music/the_city_falls.ogg",
+    "license": "GPL-2.0-or-later",
+    "attribution": "\"The City Falls\" by Doug Kaufman, from The Battle for Wesnoth (https://www.wesnoth.org/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "modified": "leading 0.46 s and trailing 0.52 s below -60 dBFS trimmed; cut to the first 240 s with a 6 s fade-out; static gain -3.3 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -3.0 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
+    "rationale": "Plays during an empire war, in the Machine Age and the World War era.",
+    "mood": "war",
+    "peoples": [],
+    "eras": [
+      6,
+      7
+    ]
+  },
+  {
+    "file": "music/weight-of-revenge.m4a",
+    "events": [
+      "music:weight-of-revenge"
+    ],
+    "title": "Weight of Revenge",
+    "author": "Doug Kaufman",
+    "source": "https://raw.githubusercontent.com/wesnoth/wesnoth/master/data/core/music/weight_of_revenge.ogg",
+    "license": "GPL-2.0-or-later",
+    "attribution": "\"Weight of Revenge\" by Doug Kaufman, from The Battle for Wesnoth (https://www.wesnoth.org/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "modified": "leading 0.93 s and trailing 0.88 s below -60 dBFS trimmed; cut to the first 240 s with a 6 s fade-out; static gain -6.3 dB toward -20 LUFS with the true peak under -2 dBTP (now -20.1 LUFS, -5.5 dBTP); transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped",
+    "rationale": "Plays during an empire war, in the Machine Age and the World War era.",
+    "mood": "war",
+    "peoples": [],
+    "eras": [
+      6,
+      7
+    ]
+  },
+  {
+    "file": "fx/musket-1.m4a",
+    "events": [
+      "fx:musket:1"
+    ],
+    "title": "Musket shot (thunderstick.ogg)",
+    "author": "Richard Kettering (Jetrel)",
+    "source": "https://raw.githubusercontent.com/wesnoth/wesnoth/master/data/core/sounds/thunderstick.ogg",
+    "attribution": "\"Musket shot (thunderstick.ogg)\" by Richard Kettering (Jetrel), from The Battle for Wesnoth (https://www.wesnoth.org/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "rationale": "A musket fires.",
+    "license": "GPL-2.0-or-later",
+    "modified": "silence trimmed, cut to at most 2.5 s, 3 ms fade-in and 10 ms fade-out; static gain -8.0 dB (now -20.0 LUFS, -4.2 dBTP); mixed to mono, resampled to 44.1 kHz, encoded as AAC-LC 64 kb/s .m4a; metadata stripped",
+    "gain": 0.63
+  },
+  {
+    "file": "fx/musket-2.m4a",
+    "events": [
+      "fx:musket:2"
+    ],
+    "title": "Musket shot (thunderstick-miss.ogg)",
+    "author": "Richard Kettering (Jetrel)",
+    "source": "https://raw.githubusercontent.com/wesnoth/wesnoth/master/data/core/sounds/thunderstick-miss.ogg",
+    "attribution": "\"Musket shot (thunderstick-miss.ogg)\" by Richard Kettering (Jetrel), from The Battle for Wesnoth (https://www.wesnoth.org/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "rationale": "A musket fires.",
+    "license": "GPL-2.0-or-later",
+    "modified": "silence trimmed, cut to at most 2.5 s, 3 ms fade-in and 10 ms fade-out; static gain +5.2 dB (now -31.4 LUFS, -5.1 dBTP); mixed to mono, resampled to 44.1 kHz, encoded as AAC-LC 64 kb/s .m4a; metadata stripped",
+    "gain": 1.6
+  },
+  {
+    "file": "fx/drone.m4a",
+    "events": [
+      "fx:drone:1"
+    ],
+    "title": "Drone engine (vtol-move.ogg)",
+    "author": "the Warzone 2100 Project",
+    "source": "https://archive.ubuntu.com/ubuntu/pool/universe/w/warzone2100/warzone2100-data_4.4.2-1build3_all.deb (usr/share/games/warzone2100/base.wz: audio/sfx/vehicle/vtol-move.ogg)",
+    "attribution": "\"Drone engine (vtol-move.ogg)\" by the Warzone 2100 Project (https://wz2100.net/), GPL v2 or later (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), edited for Legatum",
+    "rationale": "A combat drone flies in.",
+    "license": "GPL-2.0-or-later",
+    "modified": "silence trimmed, cut to at most 2.5 s, 3 ms fade-in and 10 ms fade-out; static gain -3.4 dB (now -20.2 LUFS, -6.9 dBTP); mixed to mono, resampled to 44.1 kHz, encoded as AAC-LC 64 kb/s .m4a; metadata stripped",
+    "gain": 0.64
   }
 ]

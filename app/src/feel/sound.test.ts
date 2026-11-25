@@ -120,7 +120,7 @@ describe('event -> sound mapping', () => {
 
   it('turns the shelf with the era: the ancient pieces give way, a people keeps its opening track', () => {
     for (const era of [1, 3]) expect(sound.musicPool({ mood: 'peace', people: 'Rome', era })).toEqual(sound.musicPool({ mood: 'peace', people: 'Rome' }));
-    for (const era of [4, 7]) {
+    for (const era of [4, 5]) {
       const sparta = sound.musicPool({ mood: 'peace', people: 'Sparta', era });
       expect(sparta[0]).toBe('music/only-300-stood.m4a');
       expect(sparta).not.toContain('music/forging-a-city-state.m4a');
@@ -131,7 +131,13 @@ describe('event -> sound mapping', () => {
       expect(sparta.length).toBeGreaterThanOrEqual(8);
       expect(sound.musicPool({ mood: 'war', people: 'Sparta', era })).toEqual(['music/war.m4a', 'music/battle.m4a', 'music/sea-fight.m4a']);
     }
-    // The Modern and Future eras leave the age of sail behind.
+    // The Machine Age and the World War era have orchestral music of their own.
+    for (const era of [6, 7]) {
+      expect(sound.musicPool({ mood: 'peace', people: 'Sparta', era })).toEqual(['music/only-300-stood.m4a', 'music/atlas.m4a',
+        'music/journeys-end.m4a', 'music/breaking-the-chains.m4a', 'music/nunc-dimittis.m4a']);
+      expect(sound.musicPool({ mood: 'war', people: 'Sparta', era })).toEqual(['music/war.m4a', 'music/casualties-of-war.m4a', 'music/the-city-falls.m4a', 'music/weight-of-revenge.m4a']);
+    }
+    // The Modern and Future eras leave both behind.
     for (const era of [8, 9]) {
       expect(sound.musicPool({ mood: 'peace', people: 'Sparta', era })).toEqual(['music/only-300-stood.m4a', 'music/atlas.m4a',
         'music/incoming-transmission.m4a', 'music/advanced-manufacturing.m4a', 'music/new-dawn.m4a', 'music/undisclosed-location.m4a']);
@@ -166,7 +172,7 @@ describe('event -> sound mapping', () => {
         expect(t.gain, t.file).toBeLessThanOrEqual(1.6);
       }
     }
-    for (const name of ['gunshot', 'cannon', 'shellFire', 'explosion', 'aircraft', 'jet'] as const) expect(sound.BATTLE_FILES[name]?.length, name).toBeGreaterThanOrEqual(1);
+    for (const name of ['gunshot', 'cannon', 'shellFire', 'explosion', 'aircraft', 'jet', 'musket', 'drone'] as const) expect(sound.BATTLE_FILES[name]?.length, name).toBeGreaterThanOrEqual(1);
     for (const file of Object.values(sound.AMBIENCE_FILES)) expect(fs.existsSync(path.join(AUDIO, file)), file).toBe(true);
     expect(Object.keys(sound.AMBIENCE_FILES).sort()).toEqual(['birds', 'sea', 'snow', 'wind']);
     expect(sound.ambienceFor('Forest')).toBe('birds');

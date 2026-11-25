@@ -36,7 +36,8 @@ What this does not cover
   battle sounds and the sounds of the land from 0 A.D. by Wildfire Games under CC BY-SA 3.0,
   later-era music from Unknown Horizons and the Warzone 2100 soundtracks under CC BY-SA 3.0 (the edited files stay under
   CC BY-SA 3.0) and from FreeCol under CC BY 4.0, and three Freesound recordings under CC BY 4.0
-  and CC BY 3.0. See app/public/audio/CREDITS.md and
+  and CC BY 3.0, and nine files from The Battle for Wesnoth and Warzone 2100 under the GPL,
+  version 2 or later. See app/public/audio/CREDITS.md and
   app/public/audio/licenses/.
 - Fonts (Cormorant and Libre Franklin, SIL Open Font License 1.1), installed from npm through
   `@fontsource` and not stored in this repository.

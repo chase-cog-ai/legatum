@@ -5,6 +5,7 @@ import { useSyncExternalStore } from 'react';
 import type { PlayerView } from '../types';
 import { hexAt, neighbors, tileIndex } from '../hex';
 import { tileYields } from '../resources';
+import { WONDER_INFO } from '../wonders';
 import { playerColor } from '../theme';
 import { yieldEntries, type LensTile, type MapLens } from './lenses';
 
@@ -95,7 +96,8 @@ export function buildOverlayTiles(view: PlayerView, overlays: OverlaySet): Overl
     const base = { index, faded: !t.visible };
     if (overlays.yields && !towns.has(index)) {
       const yields = yieldEntries(tileYields(faction, t));
-      if (yields.length) out.yields.push({ ...base, tint: '', yields });
+      const bonus = t.wonder ? WONDER_INFO[t.wonder].yield : undefined;
+      if (yields.length || bonus) out.yields.push({ ...base, tint: '', yields, ...(bonus ? { bonus } : {}) });
     }
     if (overlays.borders && t.owner !== null) {
       // A light wash with the owner's hairline; the numeral sits only on the border tiles, at normal zoom.

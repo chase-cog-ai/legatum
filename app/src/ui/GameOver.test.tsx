@@ -248,7 +248,10 @@ it('with a recorded history, the reveal leads to the game report, whose primary 
   expect(document.activeElement?.textContent).toContain('Empires over time');
   act(() => button(' Timeline')?.click() ?? [...host.querySelectorAll<HTMLButtonElement>('[role="tab"]')][2].click());
   expect(host.querySelector('.pg-timeline')?.textContent).toContain('You founded Kyoto');
-  act(() => [...host.querySelectorAll<HTMLButtonElement>('[role="tab"]')][3].click());
+  // This test client keeps no AI record, so the rivals tab says so instead of standing empty.
+  act(() => host.querySelector<HTMLButtonElement>('[role="tab"][data-tab="rivals"]')!.click());
+  expect(host.querySelector('.pg-rivals')?.textContent).toContain('No rival plans were recorded for this game');
+  act(() => host.querySelector<HTMLButtonElement>('[role="tab"][data-tab="stats"]')!.click());
   expect(host.querySelectorAll('.pg-table tbody tr')).toHaveLength(useGame.getState().views![0].players.length);
 });
 

@@ -298,8 +298,8 @@ export function eraAt(bands: EraBand[], turn: number): number {
 }
 
 /** The chronicle grouped by era, newest era last, for the timeline's headings. */
-export function timelineByEra(pg: PostGame, entries: TimelineEntry[]): { era: number; name: string; from: number; to: number; entries: TimelineEntry[] }[] {
-  const groups = new Map<number, TimelineEntry[]>();
+export function timelineByEra<T extends { turn: number }>(pg: PostGame, entries: T[]): { era: number; name: string; from: number; to: number; entries: T[] }[] {
+  const groups = new Map<number, T[]>();
   for (const t of entries) {
     const era = eraAt(pg.eras, t.turn);
     if (!groups.has(era)) groups.set(era, []);

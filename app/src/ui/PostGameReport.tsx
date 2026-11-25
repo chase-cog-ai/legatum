@@ -1,6 +1,7 @@
 // The post-game report, Civ-style: the VP race over the whole game (the headline), each empire's cities,
-// population, Science, Gold and military over time, a timeline of the landmark events, and a statistics table.
-// Everything comes from the core's recorded history (`PlayerView.history`, only once the game is over).
+// population, Science, Gold and military over time, a timeline of the landmark events, what each AI rival was
+// planning, and a statistics table. Everything comes from the core's recorded history (`PlayerView.history`) and,
+// for the rival plans, the AI seats' own decision logs; the engine releases both only once the game is over.
 import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Star } from '../brand/ornaments';
 import { GROWTH_METRICS, METRICS, drawnLength, seriesOf, timelineByEra, type Metric, type PostGame, type ReportEmpire, type StatRow } from '../postgame';
@@ -13,13 +14,15 @@ import { PortraitFrame, PortraitRoundel, Ribbon } from './premium';
 import type { RevealTone } from './GameReveal';
 import { useGame } from '../store';
 import { playTimeReportLine, playTimeSummary } from '../playTime';
+import { parseAiTimeline, rivalStories, type RivalStory } from '../rivalPlans';
 
-type Tab = 'race' | 'growth' | 'timeline' | 'stats';
+type Tab = 'race' | 'growth' | 'timeline' | 'rivals' | 'stats';
 export const POSTGAME_ARMY_TEXT = 'highest army points reached';
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'race', label: 'Victory race', icon: 'vp' },
   { id: 'growth', label: 'Empires over time', icon: 'emblem-growth' },
   { id: 'timeline', label: 'Timeline', icon: 'emblem-milestone' },
+  { id: 'rivals', label: 'Rival plans', icon: 'title-strongest-army' },
   { id: 'stats', label: 'Statistics', icon: 'title-most-advanced' },
 ];
 
@@ -142,6 +145,72 @@ function TimelineTab({ pg, view }: { pg: PostGame; view: PlayerView }) {
   );
 }
 
+/** What each AI rival was working towards, from its own decision log (rivalPlans.ts). */
+function RivalsTab({ pg, stories }: { pg: PostGame; stories: RivalStory[] }) {
+  const [picked, setPicked] = useState<PlayerId | null>(null);
+  const story = stories.find((s) => s.empire.id === picked) ?? stories[0];
+  const scroll = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => { scroll.current?.scrollTo({ top: 0 }); }, [story?.empire.id]);
+  const face = (id: PlayerId) => pg.empires.find((e) => e.id === id);
+  if (!story) {
+    return (
+      <div className="pg-tab pg-rivals" role="tabpanel" aria-label="Rival plans">
+        <p className="pg-empty">No rival plans were recorded for this game. They are kept for games against AI empires, from the first turn you play in this version.</p>
+      </div>
+    );
+  }
+  const groups = timelineByEra(pg, story.entries);
+  return (
+    <div className="pg-tab pg-rivals" role="tabpanel" aria-label="Rival plans">
+      <div className="pg-plot">
+        <div className="pg-rival">
+          <div className="pg-rival-head">
+            <PortraitRoundel faction={story.empire.faction} size={34} color={playerColor(story.empire.id)} fallen={!story.empire.alive} />
+            <div>
+              <h3>{story.empire.name}{story.empire.winner && <Star size={8} className="pg-key-star" />}</h3>
+              <p>{story.summary}{story.empire.fell !== undefined && ` Fell on turn ${story.empire.fell}.`}</p>
+            </div>
+          </div>
+          <div className="pg-scroll" tabIndex={0} ref={scroll} aria-label={`What ${story.empire.name} planned, in turn order`}>
+            {groups.map((g) => (
+              <section key={g.era} className="pg-era">
+                <h3><span>{g.name} era</span><small>turns {g.from}–{g.to}</small></h3>
+                <ol>
+                  {g.entries.map((t, i) => (
+                    <li key={`${t.turn}-${i}`} className={`pg-event pg-plan ${t.tone}`}>
+                      <span className="pg-turn">{t.turn}</span>
+                      <RingMedallion icon={t.icon} tone={t.tone === 'against' ? 'bad' : 'neutral'} size={24} sign={t.tone === 'against' ? 'Against you' : undefined} />
+                      <span className="pg-faces">
+                        {t.who.slice(0, 2).map((id) => { const e = face(id); return e ? <PortraitRoundel key={id} faction={e.faction} size={20} color={playerColor(id)} /> : null; })}
+                      </span>
+                      <span className="pg-ev-text">{t.text}</span>
+                      {t.chance !== undefined && <span className="pg-odds" title={`${story.empire.name} gave itself a ${t.chance}% chance to win the game when it made this choice`}>{t.chance}%</span>}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ))}
+            {!story.entries.length && <p className="pg-empty">{story.empire.name} kept no record of its plans.</p>}
+          </div>
+        </div>
+        <div className="pg-legend" role="radiogroup" aria-label="Rival">
+          {stories.map((s) => (
+            <button key={s.empire.id} type="button" role="radio" aria-checked={s === story} className={`pg-key ${s === story ? 'on' : ''}`}
+              onClick={() => setPicked(s.empire.id)} title={s.againstYou ? `${s.empire.name}: ${s.againstYou} ${s.againstYou === 1 ? 'decision' : 'decisions'} aimed at you` : `${s.empire.name}: nothing aimed at you`}>
+              <i style={{ background: s.empire.ink }} />
+              <PortraitRoundel faction={s.empire.faction} size={20} color={playerColor(s.empire.id)} fallen={!s.empire.alive} />
+              <span className="pg-key-name">{s.empire.name}</span>
+              <b>{s.againstYou || ''}</b>
+              {s.empire.winner && <Star size={8} className="pg-key-star" />}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="pg-note">Each rival's own record of what it decided, kept as it played and shown only now the game is over. Red marks are decisions aimed at you; the number beside a rival counts them. The percentage is the chance to win the rival gave itself when it changed plans.</p>
+    </div>
+  );
+}
+
 const COLS: { key: keyof Omit<StatRow, 'empire'>; label: string; icon: string; title: string }[] = [
   { key: 'vp', label: 'VP', icon: 'vp', title: 'VP at the end' },
   { key: 'peakVp', label: 'Peak VP', icon: 'vp', title: 'Most VP held at any point' },
@@ -211,6 +280,7 @@ export function PostGameReport({
 }) {
   const client = useGame((s) => s.client);
   const playTime = playTimeSummary(client?.archive?.());
+  const stories = useMemo(() => rivalStories(view, pg, parseAiTimeline(client?.aiTimeline?.())), [client, view, pg]);
   const [tab, setTab] = useState<Tab>('race');
   const [focus, setFocus] = useState<PlayerId | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -226,6 +296,7 @@ export function PostGameReport({
   if (tab === 'race') body = <RaceTab pg={pg} view={view} focus={focus} onFocus={setFocus} />;
   else if (tab === 'growth') body = <GrowthTab pg={pg} view={view} focus={focus} onFocus={setFocus} />;
   else if (tab === 'timeline') body = <TimelineTab pg={pg} view={view} />;
+  else if (tab === 'rivals') body = <RivalsTab pg={pg} stories={stories} />;
   else body = <StatsTab pg={pg} playTime={playTime} />;
   const lead: ReportEmpire | undefined = pg.empires.find((e) => e.id === hero[0]?.id);
   return (

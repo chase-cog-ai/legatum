@@ -123,6 +123,42 @@ for (const size of SIZES) {
       });
     }
 
+    test('end of game: the report shows what each rival was planning', async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await load(page, 'rival-plans');
+      await page.locator('.gr-actions .btn.primary').click();
+      const report = page.getByTestId('postgame-report');
+      await page.locator('[role="tab"][data-tab="rivals"]').click();
+      const panel = report.getByRole('tabpanel', { name: 'Rival plans' });
+      // Seven AI rivals, the first picked; its story opens with the plan it started on.
+      const rivals = panel.getByRole('radio');
+      await expect(rivals).toHaveCount(7);
+      await expect(rivals.first()).toHaveAttribute('aria-checked', 'true');
+      await expect(panel.locator('.pg-plan').first()).toContainText('Began by growing its own empire');
+      await expect(panel.locator('.pg-odds').first()).toHaveText(/^\d+%$/);
+      await snap(page, 'rival-plans-first', size);
+      await fits(page, size);
+      // A rival that moved against the player: its count shows on the right, its lines carry the warning mark.
+      const hostile = rivals.filter({ has: page.locator('b:not(:empty)') }).first();
+      await hostile.click();
+      await expect(hostile).toHaveAttribute('aria-checked', 'true');
+      await expect(panel.locator('.pg-plan.against').first()).toBeVisible();
+      await expect(panel.locator('.pg-plan.against').first()).toContainText(/\byou\b|\byours\b/);
+      await panel.locator('.pg-plan.against').first().scrollIntoViewIfNeeded();
+      await snap(page, 'rival-plans-against-you', size);
+      await fits(page, size);
+    });
+
+    test('end of game: a game with no AI record says so', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await load(page, 'swiss-win');
+      await page.locator('.gr-actions .btn.primary').click();
+      await page.locator('[role="tab"][data-tab="rivals"]').click();
+      await expect(page.getByRole('tabpanel', { name: 'Rival plans' })).toContainText('No rival plans were recorded for this game');
+      await fits(page, size);
+    });
+
     test('end of game: reduced motion stands finished at once', async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await load(page, 'swiss-win');

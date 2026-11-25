@@ -115,6 +115,9 @@ pub struct Session {
     /// with his orders, and what it has seen (`legatum_ai::why`). Never saved; a loaded game
     /// starts them cold. The shadow has its own seed, so the game's RNG and hash are untouched.
     pub why: BTreeMap<PlayerId, (legatum_ai::ScriptedBrain, legatum_ai::why::History)>,
+    /// Names of cities that no longer exist, so the post-game AI timeline can still name a
+    /// razed target (`ai_timeline`). Saved as `razed_city_names` once there is one.
+    pub razed_city_names: BTreeMap<legatum_core::CityId, String>,
 }
 
 impl Session {
@@ -154,6 +157,7 @@ impl Session {
             outcomes: Default::default(),
             training_run: None,
             why: BTreeMap::new(),
+            razed_city_names: BTreeMap::new(),
         }
     }
 
@@ -422,6 +426,11 @@ impl Session {
             }
         }
         let (next, events) = resolve_turn(&self.state, &effective);
+        for (id, city) in &self.state.cities {
+            if !next.cities.contains_key(id) {
+                self.razed_city_names.insert(*id, city.name.clone());
+            }
+        }
         self.state = next;
         self.invalidate_state_hash();
         if let Some(history) = &mut self.history {
@@ -446,6 +455,10 @@ impl Session {
             value["ai_opponent_memory"] =
                 serde_json::to_value(memories).expect("AI opponent memory JSON");
         }
+        if !self.razed_city_names.is_empty() {
+            value["razed_city_names"] =
+                serde_json::to_value(&self.razed_city_names).expect("city names JSON");
+        }
         value.to_string()
     }
 
@@ -457,12 +470,13 @@ impl Session {
         let mut value: serde_json::Value = serde_json::from_str(save).map_err(|e| e.to_string())?;
         // Take the session's own fields off the tree; the rest is the engine state, decoded from
         // this same tree rather than by parsing the text a second time.
-        let (archive, opponent_memory) = match value.as_object_mut() {
+        let (archive, opponent_memory, razed) = match value.as_object_mut() {
             Some(fields) => (
                 fields.remove("archive"),
                 fields.remove("ai_opponent_memory"),
+                fields.remove("razed_city_names"),
             ),
-            None => (None, None),
+            None => (None, None, None),
         };
         let state = crate::json::state_from_value(value, true)?;
         let archive = archive
@@ -474,6 +488,10 @@ impl Session {
             })
             .transpose()?;
         let mut session = Self::from_state(state, brain_for);
+        if let Some(names) = razed {
+            session.razed_city_names = serde_json::from_value(names)
+                .map_err(|e| format!("invalid saved city names: {e}"))?;
+        }
         // Brains with no assessment history learn from their next view.
         if let Some(value) = opponent_memory {
             let memories: BTreeMap<PlayerId, legatum_ai::OpponentMemory> =

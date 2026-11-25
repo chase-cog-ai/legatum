@@ -4,6 +4,7 @@
 //! The logic lives in plain-Rust functions (`Result<_, String>`) so it is testable natively;
 //! the `#[wasm_bindgen]` methods only convert errors to `JsError`.
 
+pub mod ai_timeline;
 pub mod history;
 pub mod host;
 pub mod json;
@@ -739,6 +740,11 @@ impl Game {
         }))
     }
 
+    /// What each AI seat was planning, from its own logs. Only once the game is finished.
+    pub fn ai_timeline_json(&self) -> Result<String, String> {
+        to_json(&ai_timeline::ai_timeline(&self.session)?)
+    }
+
     /// Per-seat planning time of the last End Turn as `[[seat, ms, searched], ...]`
     /// (`seat-timing` builds; empty otherwise).
     pub fn seat_timings_json(&self) -> String {
@@ -1027,6 +1033,12 @@ impl Game {
     #[cfg(feature = "seat-timing")]
     pub fn seat_timings(&self) -> String {
         self.seat_timings_json()
+    }
+
+    /// Each AI seat's plans, campaigns and feared rivals over the game (the post-game report).
+    /// An error until the game is finished.
+    pub fn ai_timeline(&self) -> Result<String, JsError> {
+        js(guard(|| self.ai_timeline_json()))
     }
 
     /// Full state JSON. Opaque to JavaScript: pass it back to `load`.

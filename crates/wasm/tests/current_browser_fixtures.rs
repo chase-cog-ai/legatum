@@ -63,6 +63,10 @@ fn current_browser_saves_load() {
             "postgame-rival",
             include_str!("../../../app/src/test/fixtures/postgame-rival-win.current.json"),
         ),
+        (
+            "postgame-rival-plans",
+            include_str!("../../../app/src/test/fixtures/postgame-rival-plans.current.json"),
+        ),
     ] {
         if let Err(error) = Game::from_save_json(state) {
             failures.push(format!("{name}: {error}"));

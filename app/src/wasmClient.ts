@@ -38,6 +38,7 @@ interface WasmGame {
   turn(): number;
   archive(): string;
   public_archive?(): string;
+  ai_timeline?(): string;
   record_turn_time?(turn: number, endedAt: string, activeSeconds: number, era: number, sessionId: string): void;
   record_frame_time?(timeJson: string): void;
   fork_archive(): void;
@@ -197,6 +198,10 @@ export class WasmClient implements GameClient, TrainingEngine {
   }
 
   archive(): string { return this.g.archive(); }
+  aiTimeline(): string | null {
+    // The engine refuses (throws) while the game is still being played.
+    try { return this.g.ai_timeline?.() ?? null; } catch { return null; }
+  }
   publicArchive(): string { return this.g.public_archive ? this.g.public_archive() : this.g.archive(); }
   recordTurnTime(turn: number, endedAt: string, activeSeconds: number, era: number, sessionId: string) {
     this.g.record_turn_time?.(turn, endedAt, activeSeconds, era, sessionId);

@@ -36,6 +36,8 @@ export interface GameClient {
   load(json: string): void;
   /** Full owner history, available from the real local engine only. */
   archive?(): string;
+  /** Each AI seat's own record of its plans as JSON (rivalPlans.ts), or null until the game is finished. */
+  aiTimeline?(): string | null;
   /** The same history with every seat under its default name, for upload. */
   publicArchive?(): string;
   recordTurnTime?(turn: number, endedAt: string, activeSeconds: number, era: number, sessionId: string): void;

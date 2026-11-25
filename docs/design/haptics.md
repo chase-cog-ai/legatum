@@ -34,7 +34,7 @@ This is the single source of truth for Legatum haptics. Add a row before adding 
 | `buildingComplete` | A viewer building completed (Great Work: see below) | `impactFeedback('light')` |
 | `greatWork` | Viewer Great Work, faction goal or milestone VP gained | `notificationFeedback('success')` + `impactFeedback('heavy')` |
 | `vpGained` | Viewer VP increased from a title | `impactFeedback('medium')` |
-| `vpGained` | A treaty took effect for the viewer's team (an accepted Peace, Alliance or Open Borders offer, with any deal Gold); its moment card's `sting.notable` hook voices it | `impactFeedback('medium')` |
+| `vpGained` | A treaty took effect for the viewer's team (an accepted Peace, Alliance or Open Borders offer, with any deal Gold); its moment card's tier sting voices it (`sting.notable`; `sting.major` for an Alliance) | `impactFeedback('medium')` |
 | `vpLost` | The viewer lost a title | `notificationFeedback('warning')` |
 | `warning` | Bankruptcy disband forecast, a city starving, or an enemy adjacent to a city (first time only) | `notificationFeedback('warning')` |
 | `eliminated` | The viewer is eliminated | `notificationFeedback('error')` then `impactFeedback('heavy')` |

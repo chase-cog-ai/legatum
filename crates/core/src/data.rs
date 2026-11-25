@@ -1191,6 +1191,12 @@ pub fn wall_level_label(level: u8) -> &'static str {
 pub const BUILT_IN_SIEGE_NOTE: &str =
     "covers Walls through level IV in the Industrial era, one more level in each later era";
 
+/// Whether a unit next to a defender flanks it: land military units, so not Scouts, aircraft or
+/// civilians.
+pub fn flanks(kind: UnitKind) -> bool {
+    land_military(kind)
+}
+
 /// Land military units: not Scouts, not aircraft.
 fn land_military(kind: UnitKind) -> bool {
     unit_stats(kind).military && kind != UnitKind::Scout && !is_aircraft(kind)
@@ -1258,6 +1264,12 @@ pub fn siege_gold(kind: UnitKind) -> i32 {
 /// stands on an adjacent tile at the fight's stage. One neighbour is enough (a line does not
 /// stack). Only the Spearman kind is a Hoplite: an upgraded unit is a Phalangite and loses it.
 pub const HOPLITE_PHALANX_STRENGTH: i32 = 5;
+
+/// Flanking: the strength a melee attack on a unit gains for each other military unit of the
+/// attacker's team standing next to the defender (`combat::flanking_bonus`).
+pub const FLANKING_STRENGTH: i32 = 2;
+/// The most flanking units that count: a fourth and fifth add nothing.
+pub const FLANKING_MAX_UNITS: u8 = 3;
 
 /// Whether this faction's unit of this kind is a Spartan Hoplite.
 pub fn is_hoplite(faction: Faction, kind: UnitKind) -> bool {

@@ -388,6 +388,30 @@ pub fn add_phalanx_rules(
 /// The breakdown line the phalanx adds.
 pub const PHALANX_LABEL: &str = "Phalanx: next to another Hoplite";
 
+/// The breakdown lines flanking adds, by the number of flanking units that count.
+pub const FLANKING_LABELS: [&str; data::FLANKING_MAX_UNITS as usize] = [
+    "Flanking: 1 other unit next to the defender",
+    "Flanking: 2 other units next to the defender",
+    "Flanking: 3 or more other units next to the defender",
+];
+
+/// Flanking: `data::FLANKING_STRENGTH` for each of `flankers`, up to `data::FLANKING_MAX_UNITS`.
+pub fn flanking_bonus(flankers: u8) -> i32 {
+    i32::from(flankers.min(data::FLANKING_MAX_UNITS)) * data::FLANKING_STRENGTH
+}
+
+/// Add the flanking line to a melee attacker's strength. `flankers` is the number of other
+/// military units of the attacker's team next to the defender, judged by the caller at the
+/// fight's stage (`rules::battle::flankers`); it is 0 for a shot, a meeting engagement and any
+/// attack on a city tile.
+pub fn add_flanking(b: &mut Breakdown, flankers: u8) {
+    if let Some(label) =
+        FLANKING_LABELS.get(usize::from(flankers.min(data::FLANKING_MAX_UNITS)).wrapping_sub(1))
+    {
+        b.add(*label, flanking_bonus(flankers));
+    }
+}
+
 /// Build an attacker's strength in the same order for resolution and both forecasts.
 /// `meeting` is only meaningful for a melee fight; `city` adds the city-specific modifiers.
 /// `faction` is the owner's (its faction-wide rules); `made_by` the faction whose version of the

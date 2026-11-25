@@ -116,6 +116,26 @@ pub fn has_phalanx_neighbour(state: &GameState, u: &crate::state::Unit) -> bool 
         })
 }
 
+/// Flanking: how many other military units of `attacker`'s team stand next to `defender` in this
+/// snapshot (`combat::add_flanking`, `data::flanks`). A unit inside a city cannot be flanked.
+pub fn flankers(state: &GameState, attacker: &crate::state::Unit, defender: Hex) -> u8 {
+    if state.setup.rule_experiments.no_flanking || state.city_at(defender).is_some() {
+        return 0;
+    }
+    let n = defender
+        .neighbors()
+        .into_iter()
+        .filter(|h| {
+            state.units_at(*h).any(|o| {
+                o.id != attacker.id
+                    && data::flanks(o.kind)
+                    && state.same_team(o.owner, attacker.owner)
+            })
+        })
+        .count();
+    n as u8
+}
+
 /// The siege tier of `u`, the Walls its attacks on a city ignore (`data::siege_cover`): every
 /// tier for an Industrial or later land unit, the highest siege technology its owner knows when
 /// the unit has bought Siege, 0 otherwise.
@@ -227,6 +247,12 @@ fn plan_fight_inner(
             true,
             kind == FightKind::Ranged,
         );
+        if kind == FightKind::Melee {
+            combat::add_flanking(
+                &mut attacker_strength,
+                flankers(state, a, state.units[&d].pos),
+            );
+        }
     }
     let (at, mut defender_strength) = match target {
         Target::Unit(d) => {

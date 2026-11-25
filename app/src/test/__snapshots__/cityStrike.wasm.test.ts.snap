@@ -3458,7 +3458,7 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
       "q": 9,
       "r": 8,
     },
-    "attacker_hp_after": 93,
+    "attacker_hp_after": 94,
     "attacker_owner": 0,
     "attacker_roll": 87,
     "attacker_strength": {
@@ -3467,11 +3467,15 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
           "Spearman",
           20,
         ],
+        [
+          "Flanking: 2 other units next to the defender",
+          4,
+        ],
       ],
-      "total": 20,
+      "total": 24,
     },
-    "damage_to_attacker": 7,
-    "damage_to_defender": 37,
+    "damage_to_attacker": 6,
+    "damage_to_defender": 43,
     "defender": {
       "kind": "Unit",
       "owner": 1,
@@ -3507,7 +3511,7 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
       "q": 10,
       "r": 7,
     },
-    "attacker_hp_after": 95,
+    "attacker_hp_after": 96,
     "attacker_owner": 0,
     "attacker_roll": 99,
     "attacker_strength": {
@@ -3516,11 +3520,15 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
           "Spearman",
           20,
         ],
+        [
+          "Flanking: 2 other units next to the defender",
+          4,
+        ],
       ],
-      "total": 20,
+      "total": 24,
     },
-    "damage_to_attacker": 5,
-    "damage_to_defender": 42,
+    "damage_to_attacker": 4,
+    "damage_to_defender": 49,
     "defender": {
       "kind": "Unit",
       "owner": 1,
@@ -3556,7 +3564,7 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
       "q": 11,
       "r": 8,
     },
-    "attacker_hp_after": 95,
+    "attacker_hp_after": 96,
     "attacker_owner": 0,
     "attacker_roll": 98,
     "attacker_strength": {
@@ -3565,11 +3573,15 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
           "Spearman",
           20,
         ],
+        [
+          "Flanking: 2 other units next to the defender",
+          4,
+        ],
       ],
-      "total": 20,
+      "total": 24,
     },
-    "damage_to_attacker": 5,
-    "damage_to_defender": 42,
+    "damage_to_attacker": 4,
+    "damage_to_defender": 49,
     "defender": {
       "kind": "Unit",
       "owner": 1,
@@ -3622,7 +3634,7 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
   },
   {
     "fortify": 0,
-    "hp": 93,
+    "hp": 94,
     "id": 4,
     "pos": {
       "q": 10,
@@ -3632,7 +3644,7 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
   },
   {
     "fortify": 0,
-    "hp": 95,
+    "hp": 96,
     "id": 5,
     "pos": {
       "q": 10,
@@ -3642,7 +3654,7 @@ exports[`city strike core behavior > three Soldiers split one counterattack from
   },
   {
     "fortify": 0,
-    "hp": 95,
+    "hp": 96,
     "id": 6,
     "pos": {
       "q": 11,

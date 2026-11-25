@@ -387,6 +387,8 @@ fn ui_rules_match_core() {
         "techDiffusionPerEmpire": data::TECH_DIFFUSION_PER_EMPIRE,
         "techDiffusionMax": data::TECH_DIFFUSION_MAX,
         "hoplitePhalanxStrength": data::HOPLITE_PHALANX_STRENGTH,
+        "flankingStrength": data::FLANKING_STRENGTH,
+        "flankingMaxUnits": data::FLANKING_MAX_UNITS,
         "railwayMoves": data::RAILWAY_MOVES,
         "techOrder": TechId::ALL.iter().map(|t| format!("{t:?}")).collect::<Vec<_>>(),
         "techs": techs,

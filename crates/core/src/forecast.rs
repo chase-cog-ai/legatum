@@ -199,6 +199,27 @@ pub fn forecast_city_strike(
     })
 }
 
+/// Flanking as the viewer can see it (`rules::battle::flankers` on the view): the other military
+/// units of `att`'s team next to `target`. A hidden unit is not counted.
+fn flankers(view: &PlayerView, att: &crate::view::UnitView, target: Hex) -> u8 {
+    if view.rule_experiments.no_flanking || view.cities.iter().any(|c| c.pos == target) {
+        return 0;
+    }
+    let n = target
+        .neighbors()
+        .into_iter()
+        .filter(|h| {
+            view.units.iter().any(|o| {
+                o.pos == *h
+                    && o.id != att.id
+                    && crate::data::flanks(o.kind)
+                    && view.same_team(o.owner, att.owner)
+            })
+        })
+        .count();
+    n as u8
+}
+
 /// Whether another Spartan Hoplite of `u`'s empire stands next to it among the units the viewer
 /// can see (`rules::battle::has_phalanx_neighbour` on the view). A hidden neighbour is not counted.
 fn phalanx_neighbour(view: &PlayerView, u: &crate::view::UnitView) -> bool {
@@ -624,6 +645,9 @@ pub fn forecast_attack_mode(
             true,
             ranged,
         );
+        if !ranged {
+            combat::add_flanking(&mut attacker_strength, flankers(view, &att, target));
+        }
     }
     let (mut defender_strength, defender_hp) = match defender {
         Defender::Unit {

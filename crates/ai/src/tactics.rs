@@ -1390,6 +1390,37 @@ mod bombardment_tests {
     }
 
     #[test]
+    fn flankers_turn_an_even_duel_into_an_attack_worth_making() {
+        // Core `combat::add_flanking`: the forecast the planner reads carries the flanking line.
+        let target = Hex::new(9, 8);
+        let plan = |flankers: &[Hex]| {
+            let mut b = ViewBuilder::new(24, 16)
+                .unit(1, ME, UnitKind::Spearman, Hex::new(8, 8))
+                .unit(50, ENEMY, UnitKind::Spearman, target);
+            for (i, h) in flankers.iter().enumerate() {
+                b = b.unit(2 + i as u32, ME, UnitKind::Spearman, *h);
+            }
+            let view = b.build();
+            let p = Planner::new(
+                &view,
+                Knobs::for_faction(Faction::Switzerland),
+                Faction::Switzerland,
+                7,
+            );
+            let u = *p.ctx.own_units.iter().find(|u| u.id == UnitId(1)).unwrap();
+            (
+                p.counterattack_target(u, None),
+                p.melee_forecast(u, target).unwrap().win_chance,
+            )
+        };
+        let (alone, alone_chance) = plan(&[]);
+        let (flanked, flanked_chance) = plan(&[Hex::new(10, 8), Hex::new(9, 9), Hex::new(10, 7)]);
+        assert_eq!(alone, None, "an even duel is not worth it");
+        assert_eq!(flanked, Some(target));
+        assert!(flanked_chance >= alone_chance);
+    }
+
+    #[test]
     fn a_winning_duel_is_rejected_when_the_spear_screen_takes_the_attacker() {
         let view = ViewBuilder::new(24, 16)
             .unit(1, ME, UnitKind::Horseman, Hex::new(8, 8))

@@ -56,7 +56,8 @@ pub mod rules;
 /// 57: The Mongols never have Walls (Sam, 2026-11-22: "no walls ever"): no Walls, Castle, Star Fort or later wall level in any era (it opened in the Medieval era before), and a city they capture loses its Walls line. Their Siege still opens in the Medieval era. The save shape is unchanged.
 /// 58: Walls levels replace Castle and Star Fort; upgrades are capped by era and Siege covers levels by tier. A rules-57 save is refused like any other; `wasm::json::upgrade_from_49` converts an older state for analysis tooling.
 /// 59: Egypt's Chariot Archer replaces its Archer (Sam, 2026-11-25): 3 moves, a shot 40% stronger against the melee line, and Forest or Hills without a road take its whole turn to enter. The Medjay is retired, so Egypt's Spearman is plain (no extra sight). The save shape is unchanged.
-pub const RULES_VERSION: u32 = 59;
+/// 60: Flanking: a melee attack on a unit outside a city gains 2 strength for each other land military unit of the attacker's team next to the defender, up to 3 units.
+pub const RULES_VERSION: u32 = 60;
 pub mod scenario;
 pub mod scoring;
 pub mod settlement;
@@ -89,6 +90,8 @@ mod chariot_tests;
 mod eras_tests;
 #[cfg(test)]
 mod faction_rules_tests;
+#[cfg(test)]
+mod flanking_tests;
 #[cfg(test)]
 mod keshig_tests;
 #[cfg(test)]

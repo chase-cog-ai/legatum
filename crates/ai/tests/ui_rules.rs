@@ -508,6 +508,9 @@ fn ui_rules_match_core() {
         },
         "treaty": {
             "guaranteeTurns": PEACE_TRUCE_TURNS,
+            "truceChoices": legatum_core::diplomacy::PEACE_TRUCE_CHOICES,
+            "peaceGoldMax": legatum_core::diplomacy::PEACE_GOLD_MAX,
+            "reparationsMax": legatum_core::diplomacy::PEACE_REPARATIONS_MAX,
             "Alliance": {
                 "upkeep": TreatyKind::Alliance.upkeep(),
                 "breachCost": TreatyKind::Alliance.breach_cost(),

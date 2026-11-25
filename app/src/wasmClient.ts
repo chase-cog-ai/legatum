@@ -23,6 +23,8 @@ import type {
   Hex,
   Order,
   OrderError,
+  PeaceForecast,
+  PeaceTerms,
   PlayerView,
   TurnResult,
 } from './types';
@@ -31,6 +33,7 @@ interface WasmGame {
   view(p: number): string;
   validate(p: number, ordersJson: string): string;
   forecast(p: number, unit: number, q: number, r: number, mode: AttackMode): string | null | undefined;
+  peace_forecast?(p: number, to: number, terms: string): string | null | undefined;
   assault(p: number, unit: number, q: number, r: number, mode: AttackMode, alongsideJson: string): string | null | undefined;
   end_turn(humanOrdersJson: string): string;
   save(): string;
@@ -178,6 +181,12 @@ export class WasmClient implements GameClient, TrainingEngine {
 
   forecast(player: number, unit: number, target: Hex, mode: AttackMode): BattleForecast | null {
     const s = this.g.forecast(player, unit, target.q, target.r, mode);
+    if (!s || s === 'null') return null;
+    return JSON.parse(s);
+  }
+
+  peaceForecast(player: number, to: number, terms: PeaceTerms): PeaceForecast | null {
+    const s = this.g.peace_forecast?.(player, to, JSON.stringify(terms));
     if (!s || s === 'null') return null;
     return JSON.parse(s);
   }

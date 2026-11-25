@@ -10,6 +10,8 @@ import type {
   Hex,
   Order,
   OrderError,
+  PeaceForecast,
+  PeaceTerms,
   PlayerView,
   TurnResult,
 } from './types';
@@ -29,6 +31,8 @@ export interface GameClient {
   forecast(player: number, unit: number, target: Hex, mode: AttackMode): BattleForecast | null;
   /** The whole fight at an enemy city with your other queued attacks on it (core `forecast_city_assault`). */
   assault?(player: number, unit: number, target: Hex, mode: AttackMode, alongside: AlongsideAttack[]): CityAssaultForecast | null;
+  /** How the AI empire of player `to` would answer a Peace on `terms` today; null when it is not an AI that prices terms. */
+  peaceForecast?(player: number, to: number, terms: PeaceTerms): PeaceForecast | null;
   /** Human orders keyed by seat; the client adds the AI orders and resolves the turn. */
   endTurn(humanOrders: Record<number, Order[]>): TurnResult;
   save(): string;

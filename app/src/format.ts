@@ -1276,6 +1276,28 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
         : e.to === ctx.me ? `${cap(withThe(who(ctx, e.from)))} gave you ${e.amount} Gold` : `${cap(withThe(who(ctx, e.from)))} gave ${withThe(who(ctx, e.to))} ${e.amount} Gold`, {
         players: [e.from, e.to], weight: 2, tone: e.to === ctx.me ? 'good' : 'neutral',
       });
+    case 'PeaceGoldPaid':
+      return line('diplomacy', e.from === ctx.me
+        ? `You paid ${withThe(who(ctx, e.to))} ${e.gold} Gold for Peace`
+        : e.to === ctx.me ? `${cap(withThe(who(ctx, e.from)))} paid you ${e.gold} Gold for Peace` : `${cap(withThe(who(ctx, e.from)))} paid ${withThe(who(ctx, e.to))} ${e.gold} Gold for Peace`, {
+        players: [e.from, e.to], weight: 2, tone: e.to === ctx.me ? 'good' : 'neutral',
+      });
+    case 'CityCeded': {
+      const name = ctx.cityName(e.city);
+      return line('diplomacy', e.from === ctx.me
+        ? `You handed ${name} over to ${withThe(who(ctx, e.to))} under the Peace`
+        : e.to === ctx.me ? `${cap(withThe(who(ctx, e.from)))} handed ${name} over to you under the Peace` : `${cap(withThe(who(ctx, e.from)))} handed ${name} over to ${withThe(who(ctx, e.to))} under a Peace`, {
+        at: ctx.cityPos(e.city), players: [e.from, e.to], weight: 2, tone: e.to === ctx.me ? 'good' : e.from === ctx.me ? 'bad' : 'neutral',
+        details: ['The city changed hands whole: no population was lost and no unit is locked there.'],
+      });
+    }
+    case 'ReparationsStopped':
+      return line('diplomacy', e.from === ctx.me
+        ? `You stopped paying ${withThe(who(ctx, e.to))} ${e.gold} Gold each turn: a betrayal`
+        : `${cap(withThe(who(ctx, e.from)))} stopped paying ${e.to === ctx.me ? 'you' : withThe(who(ctx, e.to))} ${e.gold} Gold each turn: a betrayal`, {
+        players: [e.from, e.to], weight: 2, tone: e.to === ctx.me ? 'bad' : 'neutral',
+        details: [e.to === ctx.me ? 'You may declare War on them at once. They stay bound by the truce.' : 'The side that was owed the Gold may declare War at once. The side that stopped stays bound by the truce.'],
+      });
     case 'CapitalLost':
       return line('victory', `${who(ctx, e.player)} no longer ${e.player === ctx.me ? 'hold' : 'holds'} the original capital ${e.name}: −1 VP`, {
         at: ctx.cityPos(e.capital), players: [e.player], weight: 2, tone: e.player === ctx.me ? 'bad' : 'neutral',

@@ -202,6 +202,8 @@ export function betrayalsBy(view: PlayerView, team: TeamId) {
 
 export function sameDiplomaticAction(a: Order,b: Order): boolean {
   if(a.type==='RespondToProposal'&&b.type==='RespondToProposal')return a.proposal===b.proposal&&a.accept===b.accept;
+  // One Peace offer per empire: its terms are part of the same action.
+  if(a.type==='ProposeTreaty'&&b.type==='ProposeTreaty')return a.to===b.to&&a.kind===b.kind;
   return JSON.stringify(a)===JSON.stringify(b);
 }
 

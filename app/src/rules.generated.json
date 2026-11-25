@@ -10019,7 +10019,7 @@
   "rocketArtilleryRange": 3,
   "rollMax": 120,
   "rollMin": 80,
-  "saveVersion": 59,
+  "saveVersion": 60,
   "settlerCostStep": 50,
   "siege": {
     "baseGold": 160,
@@ -20185,7 +20185,14 @@
       "protectedTurns": 10,
       "upkeep": 1
     },
-    "guaranteeTurns": 10
+    "guaranteeTurns": 10,
+    "peaceGoldMax": 9999,
+    "reparationsMax": 99,
+    "truceChoices": [
+      10,
+      20,
+      30
+    ]
   },
   "triangleEndsAtEraTier": 6,
   "unitHp": 100,

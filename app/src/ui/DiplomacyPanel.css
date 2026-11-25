@@ -198,3 +198,26 @@
 }
 .offer-card .offer-actions .btn { white-space: nowrap; text-align: center; max-width: 100%; }
 .diplomacy-action .btn { white-space: normal; max-width: 100%; }
+
+/* Peace terms (rules 60): one row per term, the control beside its label. */
+.peace-terms-details { margin-top: 8px; }
+.peace-terms-details > summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 28px; }
+.peace-terms { display: grid; gap: 8px; margin-top: 8px; padding: 10px; border: 1px solid var(--rule); border-radius: 6px; }
+.peace-term { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.peace-term > label, .peace-term-label { font-weight: 600; }
+.peace-term select { min-width: 0; min-height: 28px; }
+.peace-term > select:only-of-type:last-child, .peace-term > .peace-truce { grid-column: 2 / -1; }
+.peace-term input[type=number] { width: 7ch; box-sizing: content-box; padding: 2px 4px; }
+.peace-term-check { grid-template-columns: auto minmax(0, 1fr); }
+.peace-truce { display: flex; flex-wrap: wrap; gap: 6px; }
+.peace-truce-pick[aria-pressed=true] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); font-weight: 700; }
+.peace-terms-summary { margin: 0; padding-left: 18px; }
+.peace-terms-summary .cost { color: var(--bad); }
+.peace-terms-summary .gain { color: var(--good); }
+.peace-forecast { border-left: 4px solid var(--rule-2); padding: 4px 0 4px 10px; }
+.peace-forecast.accept { border-left-color: var(--good); }
+.peace-forecast.refuse { border-left-color: var(--bad); }
+.peace-forecast.counter { border-left-color: var(--accent); }
+.peace-forecast ul { margin: 4px 0; padding-left: 18px; }
+.peace-forecast p, .peace-terms-rule { margin: 0; }
+.live-terms { margin: 4px 0 8px; padding-left: 18px; }

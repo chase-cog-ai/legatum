@@ -24,6 +24,8 @@ import { RivalLevy } from './Levy';
 import { aiLevel } from '../aiLevel';
 import { publicRelationsModel } from '../relations';
 import { peaceScope, peaceScopeForAction } from '../peaceScope';
+import { isPlain, liveTerms, mirrored, offerTermLines, termLines, truceTurns } from '../peaceTerms';
+import { PeaceTermsEditor } from './PeaceTerms';
 
 const treatyName = (p: Pick<PeaceProposal, 'kind'>) => p.kind ?? 'Peace';
 
@@ -33,7 +35,7 @@ function actionLabel(action: DiplomaticAction, view: PlayerView): string {
   return o.type === 'RespondToProposal' ? (o.accept ? acceptLabel(view.diplomacy.proposals.find((p) => p.id === o.proposal), view) : declineLabel(view.diplomacy.proposals.find((p) => p.id === o.proposal), view))
     : o.type === 'DeclareWar' ? (relationWith(view, o.against)?.state === 'Alliance' ? 'Declare War on your ally' : 'Declare War')
     : o.type === 'ProposeTreaty' ? (peace ? `Offer ${peace.subject}` : `Offer ${o.kind}`)
-    : o.type === 'BreakTreaty' ? 'Leave the Alliance' : 'Withdraw offer';
+    : o.type === 'BreakTreaty' ? (relationWith(view, o.with)?.state === 'Peace' ? 'Stop paying reparations' : 'Leave the Alliance') : 'Withdraw offer';
 }
 
 /** What accepting says. */
@@ -138,6 +140,9 @@ function actionLines(action: DiplomaticAction, view: PlayerView): ForYou[] {
       return o.kind === 'Alliance' ? [...warLines(action, view, false), ...allianceCosts(action, view)]
         : [...agreeLines(action, view), { tone: 'note', text: `If accepted, Peace starts the turn after, guaranteed for ${TREATY_TERMS.guaranteeTurns} turns. Borders close.` }];
     case 'BreakTreaty':
+      if (relationWith(view, o.with)?.state === 'Peace') return [
+        { tone: 'cost', text: `A betrayal, on the public record. ${empireTitle(view, o.with)} may declare War on you at once; you stay bound by the truce` },
+        { tone: 'note', text: `The payments stop turn ${action.effective_turn}` }];
       return [...betrayalLines(action, view),
         ...(!action.betrayal && action.cost === 0 ? [{ tone: 'note' as const, text: `Free: the ${allianceTerms(view.cities.filter((c) => c.owner === view.me).length).protectedTurns}-turn protected window has passed` }] : []),
         { tone: 'note', text: `The Alliance ends turn ${action.effective_turn}: no more shared sight or open borders` }];
@@ -171,6 +176,9 @@ function Action({ action, view, orders, compact = false }: { action: DiplomaticA
   const lines = action.blocked_reason ? [] : actionLines(action, view);
   const join = !action.blocked_reason && action.order.type === 'ProposeTreaty' && action.order.kind === 'Alliance' ? joinWarLine(action, view) : null;
   const definition = action.order.type === 'ProposeTreaty' ? treatyDefinition(action.order.kind) : null;
+  const o = action.order;
+  const peaceOffer = o.type === 'ProposeTreaty' && o.kind === 'Peace' && !action.blocked_reason && !view.finished ? o : null;
+  const sent = peaceOffer ? orders.find((x): x is Extract<Order, { type: 'ProposeTreaty' }> => sameDiplomaticAction(x, peaceOffer)) : undefined;
   return <div className="diplomacy-action">
     {definition && <p className="treaty-definition"><strong>{action.order.type === 'ProposeTreaty' && action.order.kind}:</strong> {definition}</p>}
     {button}
@@ -179,6 +187,12 @@ function Action({ action, view, orders, compact = false }: { action: DiplomaticA
     {!action.blocked_reason && <span>{spends.length || (allianceOffer && (action.cost > 0 || (action.upkeep ?? 0) > 0)) ? '' : 'Free · '}{action.effective_turn === view.turn ? 'Takes effect this turn'
       : `${action.order.type === 'ProposeTreaty' ? 'Earliest activation' : 'Takes effect'} turn ${action.effective_turn}`}</span>}
     {lines.length > 0 && <Terms items={lines} className="diplomacy-action-lines" />}
+    {sent && !isPlain(sent.terms) && <div className="offer-for-you" data-testid="queued-terms"><span className="offer-for-you-label">Your terms</span><Terms items={termLines(view, sent.terms, view.team, sent.to)} /></div>}
+    {peaceOffer && !sent && <details className="peace-terms-details" data-testid="peace-terms-details">
+      <summary>Add terms: Gold, a city, a longer truce</summary>
+      <PeaceTermsEditor view={view} to={peaceOffer.to} sendLabel="Offer Peace on these terms"
+        send={(terms) => useGame.getState().editOrders((os) => queueDiplomacy(os, isPlain(terms) ? peaceOffer : { ...peaceOffer, terms }, view))} />
+    </details>}
   </div>;
 }
 
@@ -262,8 +276,8 @@ function offerForecast(p: PeaceProposal, view: PlayerView, accept: DiplomaticAct
     const near = unitsNearOurs(view, other);
     if (near.length) lines.push({ tone: 'cost', text: `You can’t attack their ${near[0].unit} ${near[0].tiles <= 1 ? 'next to' : `${near[0].tiles} tiles from`} ${near[0].near}${near.length > 1 ? ` (or their ${near.length - 1} other unit${near.length > 2 ? 's' : ''} nearby)` : ''}`, icon: 'unit-spearman' });
   }
-  lines.push({ tone: 'note', text: 'Costs no Gold' });
-  lines.push({ tone: 'gain', text: `Peace guaranteed through turn ${view.turn + TREATY_TERMS.guaranteeTurns}; after that either side may declare war`, icon: 'fortify' });
+  if (isPlain(p.terms)) lines.push({ tone: 'note', text: 'Costs no Gold' });
+  lines.push({ tone: 'gain', text: `Peace guaranteed through turn ${view.turn + truceTurns(p.terms)}; after that either side may declare war`, icon: 'fortify' });
   return lines;
 }
 
@@ -402,6 +416,9 @@ function OfferCard({ p, view, forecastView, orders, current, ending }: {
   const firstTerms = kind === 'Alliance' ? [...(accept ? warLines(accept, view) : []), ...allianceCosts(accept, view).filter((line) => line.tone !== 'note')] : offerForecast(p, view, accept);
   const moreTerms = kind === 'Alliance' ? offerForecast(p, view, accept).filter((line) => line.tone === 'gain' && !firstTerms.some((first) => first.text === line.text)) : [];
   const benefits = moreTerms.filter((line) => line.tone === 'gain');
+  const carried = kind === 'Peace' ? offerTermLines(view, p) : [];
+  const truce = truceTurns(p.terms);
+  const queuedCounter = orders.find((o): o is Extract<Order, { type: 'RespondToProposal' }> => o.type === 'RespondToProposal' && o.proposal === p.id && !o.accept && !!o.counter);
   const termBlock = <div className="offer-for-you"><span className="offer-for-you-label">For you</span><Terms items={firstTerms} /></div>;
   return <article className="diplomacy-item offer-card" style={{ ['--empire' as string]: color }} aria-labelledby={`offer-${p.id}`}>
     <div className="offer-top">
@@ -420,6 +437,7 @@ function OfferCard({ p, view, forecastView, orders, current, ending }: {
     </div>
     {scope && <p className="offer-scope">{[`Ends your war with ${empireTitle(view, proposalCounterparty(view, p, view.team))}.`, scope.reason].filter(Boolean).join(' ')}</p>}
     {kind === 'Alliance' && termBlock}
+    {carried.length > 0 && <div className="offer-for-you offer-terms" data-testid="offer-terms"><span className="offer-for-you-label">{p.counter ? 'Their counter-offer' : 'Their terms'}</span><Terms items={carried} /></div>}
     {/* The immediate costs lead, then Accept and Decline stay visible at 1000x600.
         The longer payment rule and other details stay folded below. */}
     {/* G17: an answered offer shows the answer as its state, with Undo; the other choice steps back. */}
@@ -443,6 +461,12 @@ function OfferCard({ p, view, forecastView, orders, current, ending }: {
     </div>}
     {scope && accept && !ending && !queuedDecline && <p className="offer-agree" data-testid="offer-agree">Both teams must agree.</p>}
     {accept?.blocked_reason && !queuedDecline && !ending && <p className="muted">Can’t accept now: {accept.blocked_reason}</p>}
+    {queuedCounter && <div className="offer-for-you" data-testid="queued-counter"><span className="offer-for-you-label">Your counter-offer</span><Terms items={termLines(view, queuedCounter.counter, view.team, p.from)} /></div>}
+    {kind === 'Peace' && decline && !decline.blocked_reason && !p.counter && !ending && !queuedAccept && !queuedDecline && <details className="peace-terms-details" data-testid="counter-offer">
+      <summary>Decline and offer other terms</summary>
+      <PeaceTermsEditor view={view} to={p.from} start={p.terms ? mirrored(p.terms) : undefined} sendLabel="Decline and send these terms" onlyWithTerms
+        send={(counter) => { const o = decline.order; if (o.type === 'RespondToProposal') useGame.getState().editOrders((os) => queueDiplomacy(os, { ...o, counter }, forecastView)); }} />
+    </details>}
     {kind !== 'Alliance' && termBlock}
     {benefits.length > 0 && <div className="offer-for-you offer-benefits"><Terms items={benefits} /></div>}
     <details className="offer-explanation"><summary>How this offer works</summary>
@@ -456,7 +480,8 @@ function OfferCard({ p, view, forecastView, orders, current, ending }: {
           <p>Leaving within {terms.protectedTurns} turns of signing costs <Amount n={terms.breachCost} unit="Gold" /> and is a betrayal; so is declaring war on an ally at any time. A betrayed team won’t ally with its betrayer for {terms.betrayalTurns} turns.</p>
         </>
         : <>
-          <p>Respond by turn {p.respond_by}. Acceptance now starts Peace in turn {start}, guaranteed through turn {view.turn + TREATY_TERMS.guaranteeTurns}. This turn’s attacks still resolve. Peace costs no Gold.</p>
+          <p>Respond by turn {p.respond_by}. Acceptance now starts Peace in turn {start}, guaranteed through turn {view.turn + truce}. This turn’s attacks still resolve.{carried.length === 0 && ' Peace costs no Gold.'}</p>
+          {carried.length > 0 && <p>The terms settle when the Peace is signed. A city changes hands whole: no population is lost and no unit is locked there. Gold each turn can be stopped by its payer; that is a betrayal on the public record, and it frees the other side from the truce.</p>}
           <p>Borders close. Units left inside may stay, but cannot attack, heal or fortify there; every move must approach an exit.</p>
         </>}
       <p>{RESOLUTION_RULE}</p>
@@ -543,6 +568,7 @@ function SentOffer({ p, view, forecastView, orders }: { p: PeaceProposal; view: 
       </div>
       <TreatyEmblem kind={p.kind === 'Alliance' ? 'Alliance' : 'Peace'} size={36} />
     </div>
+    {p.kind !== 'Alliance' && offerTermLines(view, p).length > 0 && <div className="offer-for-you" data-testid="sent-terms"><span className="offer-for-you-label">{ours ? 'Your terms' : 'The terms'}</span><Terms items={offerTermLines(view, p)} /></div>}
     {p.kind === 'Alliance' && <Terms items={[
       ...(terms ? warLines(terms, view) : []),
       { tone: 'cost', text: `Upkeep ${upkeep} Gold/turn`, icon: 'yield-gold' },
@@ -559,7 +585,7 @@ function fitsRelation(a: DiplomaticAction, relation: Relation): boolean {
   if (o.type === 'ProposeTreaty') return o.kind === 'Peace' ? relation.state === 'War' : o.kind === 'Alliance' && relation.state === 'Peace';
   // At Peace a plain declaration; with an ally only the explicit betrayal (the plain one is refused).
   if (o.type === 'DeclareWar') return relation.state !== 'War' && !!o.breach === (relation.state === 'Alliance');
-  if (o.type === 'BreakTreaty') return relation.state === 'Alliance';
+  if (o.type === 'BreakTreaty') return relation.state === 'Alliance' || (relation.state === 'Peace' && !a.blocked_reason);
   return true;
 }
 
@@ -678,6 +704,7 @@ export function DiplomacyPanel() {
                 {/* A Peace or an Alliance row's own lines state its terms in one sentence; only a War keeps its definition (how a Peace ends it). */}
                 {relation.state === 'War' && treatyDefinition(relation.state) && <p className="treaty-definition"><strong>{relation.state}:</strong> {treatyDefinition(relation.state)}</p>}
                 {relationText(relation, view).map((line) => <p key={line} className={line.startsWith('Protected until') ? 'diplomacy-protected' : undefined}><Amounts text={line} /></p>)}
+                {liveTerms(view, relation).length > 0 && <ul className="live-terms" data-testid="live-terms" aria-label="Terms of this Peace">{liveTerms(view, relation).map((line) => <li key={line}><Amounts text={line} /></li>)}</ul>}
                 <RivalLevy view={view} team={s.team} />
                 {/* An empire you haven't met: say so once; its Alliance offer shows disabled. */}
                 {unmet && <p className="diplomacy-blocked-reason">{notMetText(unmet.blocked_reason!, empireTitle(view, team))}</p>}

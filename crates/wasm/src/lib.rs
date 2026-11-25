@@ -739,6 +739,36 @@ impl Game {
         }))
     }
 
+    /// The forecast a player sees before sending a Peace offer: how the AI empire `to` would
+    /// answer `terms_json` (`PeaceTerms`) today, as
+    /// `{"answer":"Accept"|"Refuse"|"Counter","counter":PeaceTerms?,"reasons":[..]}`, or
+    /// `null` when `to` is not an AI that prices terms.
+    pub fn peace_forecast_json(
+        &self,
+        player: u8,
+        to: u8,
+        terms_json: &str,
+    ) -> Result<String, String> {
+        let p = self.check_player(player)?;
+        let to = self.check_player(to)?;
+        let terms: legatum_core::diplomacy::PeaceTerms =
+            serde_json::from_str(terms_json).map_err(|e| format!("invalid terms: {e}"))?;
+        let Some(verdict) = self.session.peace_forecast(p, to, &terms) else {
+            return Ok("null".into());
+        };
+        use legatum_ai::peace_deal::PeaceAnswer;
+        let (answer, counter) = match &verdict.answer {
+            PeaceAnswer::Accept => ("Accept", None),
+            PeaceAnswer::Refuse => ("Refuse", None),
+            PeaceAnswer::Counter(terms) => ("Counter", Some(terms)),
+        };
+        to_json(&serde_json::json!({
+            "answer": answer,
+            "counter": counter,
+            "reasons": verdict.reasons(),
+        }))
+    }
+
     /// Per-seat planning time of the last End Turn as `[[seat, ms, searched], ...]`
     /// (`seat-timing` builds; empty otherwise).
     pub fn seat_timings_json(&self) -> String {
@@ -964,6 +994,11 @@ impl Game {
         mode: &str,
     ) -> Result<String, JsError> {
         js(guard(|| self.forecast_json(player, unit, q, r, mode)))
+    }
+
+    /// Peace-offer forecast JSON (`peace_forecast_json`), or `null`.
+    pub fn peace_forecast(&self, player: u8, to: u8, terms_json: &str) -> Result<String, JsError> {
+        js(guard(|| self.peace_forecast_json(player, to, terms_json)))
     }
 
     /// `CityAssaultForecast` JSON, or `null` when the target is not an enemy city.

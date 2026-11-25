@@ -497,6 +497,8 @@ export interface CityView {
   has_workshop?: boolean;
   /** Whether the last visible observation showed an Air Defence: it intercepts air strikes on this city (core `BuildingKind::AirDefence`). */
   has_air_defence?: boolean;
+  /** The empire this city was captured from, while it is still held as a capture: a Peace may return it. */
+  occupied_from?: PlayerId | null;
   /** Occupation lock: the civ a military unit of yours would be locked against by ending a move in this city. */
   occupation_lock?: PlayerId | null;
   /** Completed world wonders are public in every explored city, including through fog. */
@@ -729,6 +731,10 @@ export interface Relation {
   a: TeamId;
   b: TeamId;
   state: 'Peace' | 'War' | 'Alliance';
+  /** Gold per turn a signed Peace set, through turn `until - 1`. */
+  reparations?: { from: PlayerId; to: PlayerId; gold: number; until: number } | null;
+  /** The team freed from the truce because the other side stopped its reparations. */
+  truce_released?: TeamId | null;
   security?: SecurityTreaty | null;
   effective_turn: number;
   guarantee_until: number;
@@ -737,6 +743,10 @@ export interface Relation {
   declarers: TeamId[];
 }
 export type TreatyKind = 'Peace' | 'Alliance';
+/** What a Peace offer carries (core `diplomacy::PeaceTerms`), written from the proposer's side: positive Gold and reparations are paid by the proposer, negative by the side that accepts. */
+export interface PeaceTerms { gold?: number; city?: CityId | null; return_captured?: boolean; truce?: number; reparations?: number }
+/** How an AI empire would answer a Peace offer today (wasm `peace_forecast`). */
+export interface PeaceForecast { answer: 'Accept' | 'Refuse' | 'Counter'; counter?: PeaceTerms | null; reasons: string[] }
 /** The terms of an active Alliance. Leaving before `protected_until` costs Gold and is a betrayal. */
 interface SecurityTreaty { id: number; started_turn: number; protected_until: number }
 /** `by` left an Alliance with `against` inside its protected window, or declared war on it while allied. */
@@ -752,6 +762,10 @@ export interface PeaceProposal {
   created_turn: number;
   respond_by: number;
   relation_version: number;
+  /** Peace only: what the offer carries besides the Peace. */
+  terms?: PeaceTerms;
+  /** A counter-offer: it can be accepted or declined, not countered again. */
+  counter?: boolean;
   /** Peace only: the teams that have agreed so far, the proposer first. A Peace binds only its two named teams. */
   consents?: TeamId[];
   /** Views only: the teams whose answer is still awaited (never the proposer). */
@@ -1034,6 +1048,9 @@ export interface EmpireHistory {
 export type Chronicle =
   | { kind: 'Founded'; turn: number; player: PlayerId; city: string }
   | { kind: 'Captured'; turn: number; by: PlayerId; from: PlayerId; city: string }
+  | { kind: 'Ceded'; turn: number; by: PlayerId; to: PlayerId; city: string }
+  | { kind: 'PeaceGold'; turn: number; from: PlayerId; to: PlayerId; gold: number }
+  | { kind: 'Defaulted'; turn: number; by: PlayerId; on: PlayerId }
   | { kind: 'Razed'; turn: number; by: PlayerId; from: PlayerId; city: string; ordered?: boolean }
   | { kind: 'War'; turn: number; a: TeamId; b: TeamId; by?: TeamId | null }
   | { kind: 'Peace'; turn: number; a: TeamId; b: TeamId }
@@ -1057,8 +1074,8 @@ export type Order =
   | { type: 'DeclareWar'; against: TeamId; breach?: boolean }
   /** Byzantium only, at War with `to`: pay the quoted price and begin an enforced Peace this turn. */
   | { type: 'BreakTreaty'; with: TeamId; agreement: 'Security' }
-  | { type: 'ProposeTreaty'; to: TeamId; kind: TreatyKind }
-  | { type: 'RespondToProposal'; proposal: number; accept: boolean; explanation?: DecisionExplanation }
+  | { type: 'ProposeTreaty'; to: TeamId; kind: TreatyKind; terms?: PeaceTerms }
+  | { type: 'RespondToProposal'; proposal: number; accept: boolean; counter?: PeaceTerms; explanation?: DecisionExplanation }
   | { type: 'WithdrawProposal'; proposal: number }
   | { type: 'SetAutomation'; unit: UnitId; automation: Automation | null; path?: Hex[]; stop_reason?: ExploreStopReason | null }
   | { type: 'SetAutoFire'; unit: UnitId; enabled: boolean; target?: Hex | null }
@@ -1212,6 +1229,8 @@ export type Event =
   | { type: 'CityGrew'; city: CityId; owner: PlayerId; population: number }
   | { type: 'CityStarved'; city: CityId; owner: PlayerId; population: number }
   | { type: 'CityCaptured'; city: CityId; from: PlayerId; to: PlayerId; bounty?: number }
+  | { type: 'CityCeded'; city: CityId; from: PlayerId; to: PlayerId; effective_turn: number }
+  | { type: 'PeaceGoldPaid' | 'ReparationsStopped'; from: PlayerId; to: PlayerId; gold: number; effective_turn: number }
   | { type: 'AthensCityCaptured'; city: CityId; from: PlayerId; to: PlayerId }
   | { type: 'CapitalTaken'; captor: PlayerId; capital: CityId; name: string }
   | { type: 'CapitalSacked'; captor: PlayerId; capital: CityId; name: string }

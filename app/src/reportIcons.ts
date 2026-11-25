@@ -15,6 +15,8 @@ export const CATEGORY_ICON: Record<EventCategory, string> = {
 export function eventIcon(e: Event, faction?: (player: number) => Faction | undefined, mine?: (player: number) => boolean): string | undefined {
   switch (e.type) {
     case 'CityCaptured': return 'emblem-captured';
+    case 'PeaceGoldPaid': case 'ReparationsStopped': return 'yield-gold';
+    case 'CityCeded': return 'emblem-captured';
     case 'CityRazed': return mine?.(e.by) ? 'emblem-captured' : 'ui-alert';
     case 'Battle': return e.ranged ? 'unit-archer' : 'unit-spearman';
     case 'UnitDestroyed': return unitIconName(e.unit_kind, faction?.(e.owner));

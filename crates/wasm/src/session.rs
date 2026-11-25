@@ -235,6 +235,20 @@ impl Session {
         legatum_ai::why::review(brain, history, &view, his, asked, &next_city_name)
     }
 
+    /// How the AI empire `to` would answer, this turn, a Peace `proposer` offers on `terms`
+    /// (`legatum_ai::peace_deal`). `None` for a human seat or a brain that prices no terms.
+    /// Read-only: the brain plans on a copy of its memory.
+    pub fn peace_forecast(
+        &self,
+        proposer: PlayerId,
+        to: PlayerId,
+        terms: &legatum_core::diplomacy::PeaceTerms,
+    ) -> Option<legatum_ai::peace_deal::PeaceVerdict> {
+        let (_, brain) = self.brains.get(&to)?;
+        let view = legatum_core::player_view(&self.state, to);
+        brain.peace_forecast(&view, proposer, terms)
+    }
+
     /// This turn's AI orders, computed once and kept until the turn resolves.
     pub fn pending_ai_orders(&mut self) -> &OrderMap {
         let turn = self.state.turn;

@@ -221,6 +221,16 @@ pub trait Brain: Send {
     /// Every purchase the plan layer blocked, including those not kept as events.
     /// Diagnostics (`war_trace`): why the seat does or doesn't march on an enemy city.
     #[doc(hidden)]
+    /// The answer this brain would give a Peace on `terms` from `proposer` (`peace_deal`);
+    /// `None` for brains that do not price terms.
+    fn peace_forecast(
+        &self,
+        _view: &PlayerView,
+        _proposer: legatum_core::PlayerId,
+        _terms: &legatum_core::diplomacy::PeaceTerms,
+    ) -> Option<peace_deal::PeaceVerdict> {
+        None
+    }
     fn war_diagnosis(&self, _view: &PlayerView) -> Vec<String> {
         Vec::new()
     }

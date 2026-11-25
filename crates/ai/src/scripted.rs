@@ -771,6 +771,37 @@ impl ScriptedBrain {
 }
 
 impl ScriptedBrain {
+    /// How this AI would answer, this turn, a Peace that `proposer` offers on `terms`
+    /// (`peace_deal`): the forecast the player sees before sending it. Works on a copy:
+    /// memory is untouched. The AI answers next turn, when the position may have changed.
+    pub fn peace_forecast(
+        &self,
+        view: &PlayerView,
+        proposer: legatum_core::PlayerId,
+        terms: &legatum_core::diplomacy::PeaceTerms,
+        counter: bool,
+    ) -> crate::peace_deal::PeaceVerdict {
+        let affordable = crate::supply::affordable(view);
+        let p = self.planner_through_plan(&affordable, false);
+        let other = view.team_of(proposer);
+        let plain = legatum_core::Order::ProposeTreaty {
+            to: other,
+            kind: legatum_core::diplomacy::TreatyKind::Peace,
+            terms: Default::default(),
+        };
+        let base = if p.wants_peace(other) {
+            p.treaty_score(
+                other,
+                legatum_core::diplomacy::TreatyKind::Peace,
+                &plain,
+                &crate::diplomacy::TreatyBudget::of(view),
+            )
+        } else {
+            None
+        };
+        p.peace_verdict(proposer, other, terms, base, counter)
+    }
+
     /// Diagnostics: how this AI would answer a Peace with `against` this turn, as its
     /// diplomacy sees it (after the plan is chosen), and why.
     #[doc(hidden)]
@@ -1051,6 +1082,15 @@ impl Brain for ScriptedBrain {
     }
     fn war_diagnosis(&self, view: &PlayerView) -> Vec<String> {
         ScriptedBrain::war_diagnosis(self, view)
+    }
+    fn peace_forecast(
+        &self,
+        view: &PlayerView,
+        proposer: legatum_core::PlayerId,
+        terms: &legatum_core::diplomacy::PeaceTerms,
+    ) -> Option<crate::peace_deal::PeaceVerdict> {
+        (self.planner_decisions().peace_terms > 0)
+            .then(|| ScriptedBrain::peace_forecast(self, view, proposer, terms, false))
     }
     fn blocked_expenses(&self) -> u32 {
         self.campaigns.plan.blocked_expenses

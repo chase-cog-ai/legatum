@@ -159,6 +159,19 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
     ['you sacked a capital', ev({ type: 'CapitalSacked', captor: 0, capital: 5, name: 'Rome' }), 'good'],
     ['a rival sacked a capital', ev({ type: 'CapitalSacked', captor: 2, capital: 5, name: 'Rome' }), 'neutral'],
   ],
+  PeaceGoldPaid: [
+    ['you paid for Peace', ev({ type: 'PeaceGoldPaid', from: 0, to: 2, gold: 40, effective_turn: 6 }), 'neutral'],
+    ['you were paid for Peace', ev({ type: 'PeaceGoldPaid', from: 2, to: 0, gold: 40, effective_turn: 6 }), 'good'],
+  ],
+  CityCeded: [
+    ['you handed a city over', ev({ type: 'CityCeded', city: 1, from: 0, to: 2, effective_turn: 6 }), 'bad'],
+    ['a city was handed to you', ev({ type: 'CityCeded', city: 1, from: 2, to: 0, effective_turn: 6 }), 'good'],
+    ['others', ev({ type: 'CityCeded', city: 1, from: 2, to: 3, effective_turn: 6 }), 'neutral'],
+  ],
+  ReparationsStopped: [
+    ['they stopped paying you', ev({ type: 'ReparationsStopped', from: 2, to: 0, gold: 5, effective_turn: 6 }), 'bad'],
+    ['you stopped paying', ev({ type: 'ReparationsStopped', from: 0, to: 2, gold: 5, effective_turn: 6 }), 'neutral'],
+  ],
   GoldGiven: [
     ['you gave a teammate Gold', ev({ type: 'GoldGiven', from: 0, to: 1, amount: 40 }), 'neutral'],
     ['a teammate gave you Gold', ev({ type: 'GoldGiven', from: 1, to: 0, amount: 40 }), 'good'],

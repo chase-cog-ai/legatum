@@ -25,6 +25,7 @@ fn main() {
     let offer = || Order::ProposeTreaty {
         to: TeamId(2),
         kind: TreatyKind::Peace,
+        gold: 0,
     };
     for turn in 1..=12 {
         let orders = match turn {

@@ -29,11 +29,10 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     // An attack at hand is the only primary: the turn's call to action steps back.
     await expect(page.getByRole('button', { name: /^Attack with/ })).toBeVisible();
     expect(await primaries(page)).toBe(1);
-    await revealSidebar(page, 'standings');
-    // Race rows: the roundel keeps its own column, clear of the name, and the name clear of the tokens.
-    const clash = await page.locator('.vp-row').evaluateAll((rows) => rows.some((r) => {
-      const who = r.querySelector('.vhc-who')!.getBoundingClientRect(), name = r.querySelector('.vp-label')!.getBoundingClientRect(), holds = r.querySelector('.vhc-holds')!.getBoundingClientRect();
-      return who.width < 20 || who.right > name.left + 1 || (holds.width > 0 && name.right > holds.left + 1 && Math.abs(name.top - holds.top) < 4);
+    // Rivals rows: the roundel keeps its own column, clear of the name, and the name clear of the VP.
+    const clash = await page.locator('.rivals .rv-row').evaluateAll((rows) => rows.some((r) => {
+      const who = r.querySelector('.rv-crests')!.getBoundingClientRect(), name = r.querySelector('.rv-name-col')!.getBoundingClientRect(), vp = r.querySelector('.rv-vp')!.getBoundingClientRect();
+      return who.width < 20 || who.right > name.left + 1 || name.right > vp.left + 1;
     }));
     expect(clash).toBe(false);
     await expectRaceWhole(page);
@@ -184,14 +183,14 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await dismissCelebrations(page);
     const report = await openReport(page);
     await expect(report.locator('.report-group').first()).toHaveAttribute('data-category', 'attack');
-    await expect(report.locator('.rline').first()).toContainText(/Waypost Seven was attacked: 200 → \d+ HP by 3 Spearmen/);
+    await expect(report.locator('.rline').first()).toContainText(/Waypost Seven was attacked: 200 → \d+ health by 3 Spearmen/);
     await page.mouse.move(5, size.height / 2);
     await shot(page, size, '21l-report-under-attack-first-line');
     await closeReportIfOpen(page);
     await page.evaluate(() => (window as unknown as GameWindow).legatum.getState().select(null));
     // The battle's damage numbers float over the map for a few seconds: shoot after they clear.
     await page.waitForTimeout(4000);
-    await expect(card.locator('.siege-lost')).toHaveText(/^−\d+ HP last turn$/);
+    await expect(card.locator('.siege-lost')).toHaveText(/^−\d+ last turn$/);
     await page.mouse.move(5, size.height / 2);
     await shot(page, size, '21m-city-attacked-aftermath');
   });

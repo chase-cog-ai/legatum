@@ -18,5 +18,5 @@
 .amt-word { margin-inline-start: 0.25em; }
 /* Before a ; , . : or ) the icon's own transparent side space reads as a stray space (8.9.16 review: "+3 [icon] ; upgrades"). */
 .amt-tight > .amt-icon { margin-inline-end: -0.22em; }
-/* The VP seal fills its box, so it has no side space to pull back: the full stop after it stays visible. */
-.amt-vp.amt-tight > .amt-icon { margin-inline-end: 0; }
+/* The VP seal, the Production gear and the Gold coin fill their box, so they have no side space to pull back: a comma or full stop after them stays visible. */
+.amt-vp.amt-tight > .amt-icon, .amt-production.amt-tight > .amt-icon, .amt-gold.amt-tight > .amt-icon { margin-inline-end: 0; }

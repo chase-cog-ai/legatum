@@ -496,7 +496,7 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
       const stats = await page.locator('.unit-panel .up-stats').evaluate((el) => {
         const scroller = el.closest('.unit-panel-body')!;
         const bounds = scroller.getBoundingClientRect();
-        const labels = [...el.querySelectorAll('.lbl')].filter((label) => /^(HP|Moves)$/i.test(label.textContent?.trim() ?? ''))
+        const labels = [...el.querySelectorAll('.lbl')].filter((label) => /^(Health|Moves)$/i.test(label.textContent?.trim() ?? ''))
           .map((label) => { const b = label.getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; });
         return { labels, top: bounds.top, bottom: bounds.bottom, scroll: scroller.scrollTop };
       });

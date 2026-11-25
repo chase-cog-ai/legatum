@@ -4,7 +4,7 @@
 // strokes, fills, clipped drawImage calls of art already on the map, and a one-off engraving of each sprite (`inkOf`),
 // so a turn with many moments stays cheap; nothing here uses filters, shadowBlur or per-frame canvases.
 import type { Faction, PlayerView } from '../types';
-import { cityImage, cityStem, cityTier, drawCityCanvas, markStem, spriteSize, walledTown, CITY_CANVAS, CITY_GROUND, WALLED_TOWN_SCALE } from './cityArt';
+import { cityImage, cityStem, cityTier, drawCityCanvas, markStem, spriteSize, walledTown, CITY_CANVAS, CITY_GROUND, WALL_CUT, WALLED_TOWN_SCALE } from './cityArt';
 import { CITY_DROP, CITY_WORLD } from './terrain';
 import { buildingIconName, itemName } from '../data';
 import { tintedIcon } from '../icons';
@@ -17,7 +17,7 @@ import { constructionStage, type ConstructionSite } from './constructionSites';
 import { rnd, type Pt } from './combatFx';
 import { resourceArtUrl } from '../icons';
 import { medallionSlots } from './resourceIcons';
-import { CONSTRUCTION_ANIMATION, FOUND, GLINT_MS, LINGER, GROW_MS, IMPROVE_MS, RESOURCE_REVEAL_MS, ROAD_MS, SEAL_MS, TILE_MS, buildPhases, worldOf, type FxBuild, type FxFound, type FxGlint, type FxGrow, type FxSeal, type FxTile, type MomentPlan } from './momentFx';
+import { CONSTRUCTION_ANIMATION, FOUND, GLINT_MS, WALLS_MS, LINGER, GROW_MS, IMPROVE_MS, RESOURCE_REVEAL_MS, ROAD_MS, SEAL_MS, TILE_MS, buildPhases, worldOf, type FxBuild, type FxFound, type FxGlint, type FxGrow, type FxSeal, type FxTile, type FxWalls, type MomentPlan } from './momentFx';
 
 const INK = ATLAS.tone.ink;
 const VELLUM = ATLAS.tone.vellum;
@@ -395,6 +395,82 @@ function drawGlint(ctx: CanvasRenderingContext2D, g: FxGlint, t: number, v: Mome
   ctx.restore();
 }
 
+/** A warm gilt light, laid on in soft light: near-white screened over pale stone washed the masonry out flat (UI and art review, PR 205). */
+const WALL_LIGHT = '#ffe0a0';
+const lit = new Map<string, HTMLCanvasElement | null>();
+/**
+ * The stones of a wall ring as one flat light colour, in the ring's own frame: the whole front half, and the back half
+ * only where the town does not stand in front of it (`walledTown`), so the light never runs over the houses. Made once per
+ * ring, town and size.
+ */
+function litRing(ring: HTMLImageElement, town: HTMLImageElement | null): HTMLCanvasElement | null {
+  const key = `${ring.src}|${town?.src ?? ''}|${ring.naturalWidth}`;
+  if (lit.has(key)) return lit.get(key)!;
+  let out: HTMLCanvasElement | null = null;
+  try {
+    const n = ring.naturalWidth;
+    const c = document.createElement('canvas');
+    c.width = c.height = n;
+    const g = c.getContext('2d');
+    if (g && n) {
+      g.drawImage(ring, 0, 0);
+      const fitted = town ? walledTown(town, ring) : null;
+      if (fitted) {
+        const cut = Math.round(n * WALL_CUT / CITY_CANVAS);
+        g.save(); g.beginPath(); g.rect(0, 0, n, cut); g.clip();
+        g.globalCompositeOperation = 'destination-out';
+        g.drawImage(fitted, 0, 0);
+        g.restore();
+      }
+      g.globalCompositeOperation = 'source-in';
+      g.fillStyle = WALL_LIGHT;
+      g.fillRect(0, 0, n, n);
+      out = c;
+    }
+  } catch { out = null; }
+  lit.set(key, out);
+  return out;
+}
+
+/**
+ * Walls finished or raised a level: one band of warm light runs along the new ring, left to right, and is gone (the same
+ * restrained glint a promoted unit gets; no sketch-in, no pop). Drawn on the town, under the units and banners.
+ */
+function drawWalls(ctx: CanvasRenderingContext2D, x: FxWalls, t: number, v: MomentView) {
+  const dt = t - x.t;
+  if (dt < 0 || dt > WALLS_MS || v.far) return;
+  const city = v.city(x.city);
+  if (!city?.ring) return;
+  const box = townBox(v.toScreen(worldOf(x.at)), v.zoom);
+  const ring = cityImage(city.ring, spriteSize(box.s * v.dpr));
+  if (!ring) return;
+  const town = townSprite(v.eraOf(city.owner), city.population, false, box.s * v.dpr)?.img ?? null;
+  const light = litRing(ring, town);
+  if (!light) return;
+  const k = dt / WALLS_MS;
+  // The ring spans about 3% to 97% of its box: the band's middle travels that span, so the light is on the stones throughout.
+  const s = box.s, band = s * 0.2;
+  const mid = box.x + s * (0.03 + 0.94 * easeInOut(k));
+  // Zoomed out the ring is small and the band thin: a little stronger there so it still reads as a payoff.
+  const envelope = Math.sin(Math.PI * k) * (v.zoom < 1 ? 1.3 : 1);
+  ctx.save();
+  // Soft light: the stones warm and brighten but keep their masonry (screened, pale stone went flat cream); three nested
+  // widths give the band a soft edge.
+  ctx.globalCompositeOperation = 'soft-light';
+  for (const [wide, alpha] of [[1, 0.5], [0.6, 0.7], [0.28, 0.9]] as const) {
+    const half = band * wide / 2, lean = band * 0.5;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(mid - half + lean, box.y); ctx.lineTo(mid + half + lean, box.y);
+    ctx.lineTo(mid + half - lean, box.y + s); ctx.lineTo(mid - half - lean, box.y + s); ctx.closePath();
+    ctx.clip();
+    ctx.globalAlpha = Math.min(1, alpha * envelope);
+    ctx.drawImage(light, box.x, box.y, s, s);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
 /** Under the units and banners: towns and walls being drawn, towns growing, land changing colour. */
 export function drawMomentGround(ctx: CanvasRenderingContext2D, plan: MomentPlan, t: number, v: MomentView) {
   ctx.save();
@@ -402,6 +478,7 @@ export function drawMomentGround(ctx: CanvasRenderingContext2D, plan: MomentPlan
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   for (const x of plan.tiles) drawTile(ctx, x, t, v);
+  for (const x of plan.walls) drawWalls(ctx, x, t, v);
   if (CONSTRUCTION_ANIMATION) {
     for (const f of plan.founds) drawFound(ctx, f, t, v);
     for (const g of plan.grows) drawGrow(ctx, g, t, v);

@@ -253,7 +253,8 @@ export function describeOrder(o: Order, view: PlayerView): string {
   // An offer is named by the other empire, not by its internal id.
   const offer = (dir: 'from' | 'to') => (proposal ? `offer ${dir} ${teamName(view, dir === 'from' ? proposal.from : proposal.to)}` : 'offer');
   switch (o.type) {
-    case 'BreakTreaty': return `Leave the Alliance with ${teamName(view, o.with)}${cost} · ends turn ${view.turn + 1}`;
+    case 'BreakTreaty': if (o.agreement === 'OpenBorders') return `Close borders with ${teamName(view, o.with)} · ends turn ${view.turn + 1}`;
+      return `Leave the Alliance with ${teamName(view, o.with)}${cost} · ends turn ${view.turn + 1}`;
     case 'DeclareWar': {
       const allied = view.diplomacy?.relations.some((r) => r.state === 'Alliance' && [r.a, r.b].includes(view.team) && [r.a, r.b].includes(o.against));
       return `Declare War on ${allied ? 'your ally ' : ''}${teamName(view, o.against)}${allied ? `${cost} · betrayal` : ''} · begins turn ${view.turn + 1}`;
@@ -262,13 +263,15 @@ export function describeOrder(o: Order, view: PlayerView): string {
       const action = view.diplomacy.actions.find((a) => a.order.type === 'ProposeTreaty' && a.order.to === o.to && a.order.kind === o.kind);
       const scope = action && peaceScopeForAction(view, action);
       const label = scope ? [`Offer ${scope.title}.`, scope.reason].filter(Boolean).join(' ')
-        : `Offer ${o.kind} to ${teamName(view, o.to)}`;
-      return `${label}${cost} on activation · arrives turn ${view.turn + 1}`;
+        : `Offer ${treatyLabel(o.kind)} to ${teamName(view, o.to)}`;
+      // Deal Gold: positive we pay it, negative we ask for it, when they accept.
+      const deal = !o.gold ? '' : o.gold > 0 ? ` · you pay ${o.gold} Gold if accepted` : ` · asks ${-o.gold} Gold`;
+      return `${label}${deal}${cost} on activation · arrives turn ${view.turn + 1}`;
     }
     case 'RespondToProposal':
       if (call) return o.accept ? `Join ${teamName(view, call.ally)}'s war on ${teamName(view, call.target)} · at War from turn ${view.turn + 1}`
         : `Decline ${teamName(view, call.ally)}'s call to arms against ${teamName(view, call.target)} · the Alliance stands`;
-      if (proposal && proposal.kind !== 'Alliance') {
+      if (proposal && (proposal.kind ?? 'Peace') === 'Peace') {
         const scope = peaceScope(view, proposal);
         const label = o.accept ? `Accept ${scope.subject}; when both teams agree, it ${scope.ending}.`
           : `Decline ${scope.subject}; your wars continue.`;
@@ -326,6 +329,7 @@ export function describeOrder(o: Order, view: PlayerView): string {
       return `Research ${TECH_NAME[o.tech]}`;
     case 'SetResearchQueue':
       return o.techs.length ? `Research ${o.techs.map((t) => TECH_NAME[t]).join(' → ')}` : 'Clear research queue';
+    case 'SetResearchGoal': return o.tech ? `Research goal: ${TECH_NAME[o.tech]}` : 'Clear the research goal';
     case 'SetScienceConversion': return `Convert Science to ${o.to}`;
     case 'GiveGold': return `Give ${o.amount} Gold to ${withThe(empireOfPlayer(view, o.to))}`;
     case 'Action':

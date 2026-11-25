@@ -10,6 +10,7 @@ import { Advisor, targetElement } from './Advisor';
 import { useAdvisor } from './advisorModel';
 import { CityPanel } from './CityPanel';
 import { UnitPanel } from './UnitPanel';
+import { TechTree } from './TechTree';
 
 let view: PlayerView;
 let client: FixtureClient;
@@ -59,6 +60,19 @@ it('points at the "Also" list when the build it recommends is folded inside it',
   document.body.innerHTML = '';
 });
 
+it('points at the recommended technology: its tree node first, else its era card Research now', () => {
+  const tech = view.research.available[0].tech;
+  const pick = () => targetElement({ kind: 'control', name: 'tech', value: tech });
+  const tree = render(<dialog className="tech-modal" open><TechTree view={view} faction={view.players.find((p) => p.id === view.me)!.faction} queue={[]} schedule={[]} goal={null} locked={false}
+    onResearchNow={() => {}} onQueue={() => {}} onGoal={() => {}} /></dialog>);
+  expect(pick()?.classList.contains('tree-node')).toBe(true);
+  expect(pick()?.dataset.tech).toBe(tech);
+  tree.unmount();
+  document.body.innerHTML = `<dialog class="tech-modal" open><div class="era-card" data-tech="${tech}"><button data-testid="research-now">Research now</button></div></dialog>`;
+  expect(pick()?.getAttribute('data-testid')).toBe('research-now');
+  document.body.innerHTML = '';
+});
+
 it('turns off, moves on, and pauses for busy, ready and blocking overlays', async () => {
   render(<div className="game"><Advisor /></div>);
   expect(screen.getByTestId('advisor').dataset.advisorId).toBe('welcome');
@@ -97,13 +111,14 @@ it('counts routine steps the player does, once per turn', () => {
   expect(useAdvisor.getState().practice.endTurn).toBe(1);
 });
 
-it('logs a tip when it shows, and Got it puts it away for the turn', () => {
+it('logs a tip when it shows, and Not now puts it away for the turn', () => {
   useAdvisor.setState({ seen: ['welcome', 'report', 'race'], tips: {} });
   act(() => useGame.setState({ views: [{ ...view, turn: 30, economy: { ...view.economy, gold: 400 }, supply: [] }] }));
   render(<Advisor />);
   expect(screen.getByTestId('advisor').dataset.advisorId).toBe('tip:gold');
   expect(useAdvisor.getState().tips.gold).toBe(30);
-  fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+  // A tip with a ring is dismissed by a quiet Not now; the ring is the call to action.
+  fireEvent.click(screen.getByRole('button', { name: 'Not now' }));
   expect(screen.queryByTestId('advisor')?.dataset.advisorId).not.toBe('tip:gold');
 });
 
@@ -118,4 +133,12 @@ it('a new game starts the tip log over and counts each kind', () => {
 it('rings the city panel\'s Buy a tile button', () => {
   render(<div className="city-panel"><button>Build</button><button>Buy a tile · from 50 Gold</button></div>);
   expect(targetElement({ kind: 'control', name: 'buyTile' })?.textContent).toBe('Buy a tile · from 50 Gold');
+});
+
+it('while a tile is being placed, shows only the tip that asked for it', () => {
+  useAdvisor.setState({ seen: ['welcome', 'report', 'race'], tips: {} });
+  const city = view.cities.find((c) => c.owner === view.me)!;
+  act(() => useGame.setState({ views: [{ ...view, turn: 30, economy: { ...view.economy, gold: 400 }, supply: [] }], place: { city: city.id, building: null, intent: 'tile', pick: null } }));
+  render(<Advisor />);
+  expect(screen.queryByTestId('advisor')).toBeNull();
 });

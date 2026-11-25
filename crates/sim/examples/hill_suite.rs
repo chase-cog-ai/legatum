@@ -434,6 +434,7 @@ fn scope(o: &Order) -> Scope {
         | Order::BuyTile { city, .. } => Scope::City(city.0),
         Order::SetResearch { .. }
         | Order::SetResearchQueue { .. }
+        | Order::SetResearchGoal { .. }
         | Order::SetScienceConversion { .. }
         | Order::Action {
             action: Action::ChooseFreeTechs { .. },

@@ -1,6 +1,6 @@
 // Which sounds a battle makes, and when: read off the same plan the map animates (map/combatFx.ts),
 // so a volley is heard as it leaves the bow and a clash as the lines meet. Only weapons we have a
-// recording for make a sound (docs/design/sound-sources.md): a musket, a jet, a drone strike and
+// recording for make a sound (docs/design/sound-sources.md): a musket, a drone strike and
 // the fall of a gunpowder-age unit stay silent. Pure, so it is tested without audio.
 import type { CombatPlan } from '../map/combatFx';
 import type { UnitKind } from '../types';
@@ -14,13 +14,16 @@ export const MAX_BATTLE_CUES = 10;
  * volleys open every turn and would leave the clash, the deaths and the collapse silent.
  */
 export const CUE_QUOTA: [BattleSound, number][] = [
-  ['collapse', MAX_BATTLE_CUES], ['death', 2], ['explosion', 2], ['clash', 2], ['gunshot', 2], ['cannon', 2], ['shellFire', 1], ['aircraft', 1],
+  ['collapse', MAX_BATTLE_CUES], ['death', 2], ['explosion', 2], ['clash', 2], ['gunshot', 2], ['cannon', 2], ['shellFire', 1], ['aircraft', 1], ['jet', 1],
   ['siegeHit', 2], ['arrowHit', 2], ['bow', 2], ['siegeLaunch', 1], ['hooves', 1],
 ];
 /** The same sound twice inside this window reads as one. */
 export const CUE_MERGE_MS = 160;
 const HOOVES_LEAD_MS = 450;
 const AIRCRAFT_LEAD_MS = 1500;
+
+/** The jets; every other craft is a propeller aircraft, as is a strike with no craft named (combatFx falls back to the Bomber). */
+const JETS = new Set(['JetBomber', 'JetFighter', 'StealthBomber', 'StealthFighter']);
 
 /** Units from before gunpowder: the only ones whose fall has a voice. */
 const OLD_WORLD = new Set<UnitKind>(['Scout', 'Spearman', 'Archer', 'Pikeman', 'Crossbowman', 'Horseman', 'Knight', 'Phalangite', 'CompositeArcher', 'Cataphract', 'HeirToTheThrone']);
@@ -41,8 +44,8 @@ export function battleSoundCues(plan: CombatPlan | null | undefined): BattleCue[
       add(s.launch, 'shellFire', s.seed);
       add(s.launch + s.flight, 'explosion', s.seed);
     } else if (s.kind === 'bombs') {
-      // A propeller aircraft is heard on its way in (the recording is one; a jet has none); the bombs when they land.
-      if (s.craft === 'Biplane' || s.craft === 'Bomber') add(s.launch - AIRCRAFT_LEAD_MS, 'aircraft', s.seed);
+      // An aircraft is heard on its way in, a propeller one and a jet each by its own recording; the bombs when they land.
+      add(s.launch - AIRCRAFT_LEAD_MS, s.craft && JETS.has(s.craft) ? 'jet' : 'aircraft', s.seed);
       add(s.launch + s.flight, 'explosion', s.seed);
     }
   }

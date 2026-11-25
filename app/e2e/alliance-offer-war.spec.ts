@@ -1,4 +1,3 @@
-import { revealSidebar } from './sidebarAssertions';
 // Playtest 8.9.2, turn 20 (user, 2026-10-17): "Switzerland offered me an alliance. I declined. Then I try to declare
 // war and attack... at the end of that turn it asks me to respond to the offer again, then all my units get confused
 // and I have to reissue their orders, which triggers the offer again." The app keeps one diplomatic order per empire,
@@ -57,7 +56,6 @@ async function mapPoint(page: Page, hex: Hex) {
 test('declining Switzerland’s Alliance, then declaring War and attacking, never brings the offer back or drops the attack', async ({ page }) => {
   await open(page);
   const cta = page.locator('.seatbar .cta').first();
-  await revealSidebar(page, 'standings');
   const inboxButton = page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ });
   const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
   await expect(cta).toContainText('Respond to offer');

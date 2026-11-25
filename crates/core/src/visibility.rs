@@ -430,20 +430,7 @@ fn sight_sources(state: &GameState, team: TeamId) -> Vec<(Hex, i32)> {
         .units
         .values()
         .filter(|u| state.team_of(u.owner) == team)
-        .map(|u| {
-            (
-                u.pos,
-                crate::data::UNIT_SIGHT
-                    + i32::from(
-                        !u.owner.is_barbarian()
-                            && crate::data::is_medjay_rules(
-                                state.setup.rule_experiments.faction_rules_off,
-                                state.made_by(u),
-                                u.kind,
-                            ),
-                    ),
-            )
-        })
+        .map(|u| (u.pos, crate::data::UNIT_SIGHT))
         .chain(
             state
                 .cities
@@ -637,6 +624,7 @@ mod tests {
                 last_purchase_turn: None,
                 bought: None,
                 buildings: Default::default(),
+                walls_level: 0,
                 hp: crate::data::CITY_HP,
                 last_attacked_turn: None,
                 tiles_claimed: 0,

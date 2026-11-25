@@ -11,7 +11,7 @@ import { isEliminated, useGame } from '../store';
 import type { AlongsideAttack, BattleForecast, CityAssaultForecast, CityBuildFocus, Hex, PlayerView, ProductionItem } from '../types';
 import { cityAutomationFocus, cityAutomationPreview } from '../automation';
 import { distance, hexEq, hexToPixel, pixelToHex, tileIndex, within } from '../hex';
-import { planTurns, previewRoute, roadBonusNote, routeTurnsText, routeRiskText, routeDangerText, isCalmRouteNote, type PathStep, type RouteRisk } from '../path';
+import { chariotTerrainNote, planTurns, previewRoute, roadBonusNote, routeTurnsText, routeRiskText, routeDangerText, isCalmRouteNote, type PathStep, type RouteRisk } from '../path';
 import { draw, HEX_SIZE, perf, screenToWorld, terrainStats, worldBounds, ambientClipRects, hoverClipBoxes, idleClipBoxes, type Camera, type SelectionRing, type ImproveOverlay, type PendingMark, type TerritoryOverlay } from './render';
 import { fontEpoch } from './sprites';
 import { onIconLoad } from '../icons';
@@ -28,7 +28,8 @@ import { buildOverlayTiles, overlayEmpty, useOverlays } from './overlays';
 import { settleTileNote, withProxySettler } from './settleAdvice';
 import { LensSwitcher } from './LensSwitcher';
 import { isColoniaFounder } from '../goalCities';
-import { ambienceFor, cancelBattleSounds, playBattleSounds, setAmbience, type Ambience } from '../feel/sound';
+import { cancelBattleSounds, playBattleSounds } from '../feel/sound';
+import { useLandSound } from './useLandSound';
 import { battleSoundCues } from '../feel/battleSound';
 import { isBarbarian } from '../barbarians';
 import { SettlementCard, SettlementDetails } from './SettlementCard';
@@ -174,28 +175,7 @@ export function MapCanvas({ inspectRequest }: { inspectRequest?: Hex | null }) {
     playBattleSounds(battleSoundCues(anim.plan), performance.now() - anim.start);
     return cancelBattleSounds;
   }, [anim, still]);
-  // The land under the middle of the view has a quiet sound of its own (birds, wind); the sea and the unexplored are
-  // silent. It is the most common answer over the middle tile and its neighbours, and it changes only when two readings
-  // in a row agree, so one hill in a meadow or a pan along a coast does not flip it back and forth.
-  useEffect(() => {
-    let seen: Ambience | null | undefined;
-    const listen = () => {
-      const v = useGame.getState().views?.[useGame.getState().seat];
-      const mid = pixelToHex(cam.current.x, cam.current.y, HEX_SIZE);
-      const counts = new Map<Ambience | null, number>();
-      for (const [dq, dr] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]]) {
-        const tile = v?.tiles[tileIndex({ q: mid.q + dq, r: mid.r + dr }, v.width, v.height)];
-        const a = tile?.explored ? ambienceFor(tile.terrain) : null;
-        counts.set(a, (counts.get(a) ?? 0) + 1);
-      }
-      const now = [...counts].sort((x, y) => y[1] - x[1])[0][0];
-      if (now === seen) setAmbience(now);
-      seen = now;
-    };
-    listen();
-    const id = setInterval(listen, 1500);
-    return () => { clearInterval(id); setAmbience(null); };
-  }, []);
+  useLandSound();
   const focus = useGame((s) => s.focus);
   const client = useGame((s) => s.client);
   const forecastTick = useGame((s) => s.forecastTick);
@@ -378,7 +358,7 @@ export function MapCanvas({ inspectRequest }: { inspectRequest?: Hex | null }) {
     const { path: p, risk, danger, crossed } = previewRoute(view, ownSel.pos, previewTarget, orders, ownSel.id, { avoidEnemyReach: true });
     if (!p) return { steps: null as PathStep[] | null, unreachable: previewTarget, risk: null as RouteRisk | null, warning: null as string | null };
     // Friends the route passes through are never where a turn ends (core `path::hop`).
-    const steps = planTurns(view, p, ownSel.pos, ownSel.max_moves, (h) => !!crossed?.some((c) => c.q === h.q && c.r === h.r));
+    const steps = planTurns(view, p, ownSel.pos, ownSel.max_moves, (h) => !!crossed?.some((c) => c.q === h.q && c.r === h.r), ownSel);
     return { steps, unreachable: null, risk, warning: [civilianCaptureRace(view, ownSel, previewTarget, steps.length), risk && routeRiskText(view, risk), danger && routeDangerText(danger)].filter(Boolean).join(' ') || null };
   }, [view, ownSel, previewTarget, orders]);
   /** A route warning belongs to the tile it previews (hover or the open preview card). */
@@ -1593,7 +1573,7 @@ export function MapCanvas({ inspectRequest }: { inspectRequest?: Hex | null }) {
             {forecast && ownSel && <ForecastSummary forecast={forecast} ranged={forecast.ranged} view={view} unit={ownSel} target={activePreview.target} assault={assault} />}
             {mode !== 'ranged' && routeWarningAt(activePreview.target) && <p className={isCalmRouteNote(routeWarningAt(activePreview.target)) ? 'route-note' : 'route-warning'} role={isCalmRouteNote(routeWarningAt(activePreview.target)) ? undefined : 'alert'} data-testid="route-warning">{routeWarningAt(activePreview.target)}</p>}
             {settlePreviewBlocker && <p className="route-warning" role="status" data-testid="settle-preview-blocker">{settlePreviewBlocker}</p>}
-            <p>{blockedShot ?? (mode === 'ranged' ? `Range ${ownSel?.range}` : pathInfo?.unreachable ? 'No known path to this tile.' : `${pathInfo?.steps && ownSel && previewTarget ? [routeTurnsText(pathInfo.steps, ownSel.pos, previewTarget), roadBonusNote(view, pathInfo.steps, ownSel.pos, ownSel.max_moves)].filter(Boolean).join(' ') : '1 turn path.'} Orders resolve when everyone is ready.`)}</p>
+            <p>{blockedShot ?? (mode === 'ranged' ? `Range ${ownSel?.range}` : pathInfo?.unreachable ? 'No known path to this tile.' : `${pathInfo?.steps && ownSel && previewTarget ? [routeTurnsText(pathInfo.steps, ownSel.pos, previewTarget), roadBonusNote(view, pathInfo.steps, ownSel.pos, ownSel.max_moves, ownSel)].filter(Boolean).join(' ') : '1 turn path.'} Orders resolve when everyone is ready.`)}</p>
             <button className="btn primary confirm-order" disabled={!!blockedShot} title={blockedShot ?? undefined} onClick={() => confirmOrder(activePreview)}>Confirm {mode === 'ranged' || pathAttack ? 'attack' : 'move'}</button>
             {!blockedShot && <p className="muted">{lastPointerType.current === 'mouse' ? `Or right-click to ${mode === 'ranged' || pathAttack ? 'attack' : 'move'} here.` : 'Or tap this tile again to confirm.'}</p>}
           </>}
@@ -1627,7 +1607,7 @@ export function MapCanvas({ inspectRequest }: { inspectRequest?: Hex | null }) {
       )}
       {/* One card at a time: the Peace hint is the decision here, so the tile card waits (both used the same spot). */}
       {!touchInfo && !hoveredBanner && !forecast && !airForecast && !peaceHere && hover && hoverTile && (hoverTile.explored || (view?.units.some((u) => u.heir_of != null && hexEq(u.pos, hover.hex)) ?? false)) && tileHoverReady && view && !gesture.current.contacts.length && (
-        inspectedSite ? <SettlementCard site={inspectedSite} anchor={cardAnchor!} faction={view?.players.find((p) => p.id === view.me)?.faction} /> : <TileCard view={view} hex={hover.hex} anchor={cardAnchor!} blockedReason={blockedShot || undefined} routeWarning={ownSel ? routeWarningAt(hover.hex) : undefined} reinforcement={reinforcementAt(hover.hex)} note={placeNote ?? blockedSiteNote} refusal={placeRefusal} />
+        inspectedSite ? <SettlementCard site={inspectedSite} anchor={cardAnchor!} faction={view?.players.find((p) => p.id === view.me)?.faction} /> : <TileCard view={view} hex={hover.hex} anchor={cardAnchor!} blockedReason={blockedShot || undefined} routeWarning={ownSel ? routeWarningAt(hover.hex) : undefined} reinforcement={reinforcementAt(hover.hex)} note={placeNote ?? blockedSiteNote ?? (ownSel ? chariotTerrainNote(view, ownSel, hover.hex) : undefined)} refusal={placeRefusal} />
       )}
     </div>
   );

@@ -119,6 +119,7 @@ Six faction replacements, each with the full set (`-source`, `-256`, `-64`, `-48
 | `war-elephant` | India, Knight | War elephant in quilted caparison with howdah, an archer-spearman and a mahout. |
 | `reislaufer` | Switzerland, Musketman | Reisläufer in slashed parti-coloured dress, plumed beret, pike braced upright. |
 | `panzer` | Germany, Tank | Panzer IV silhouette, skirt armour, sand and olive camouflage, no markings. |
+| `chariot-archer` | Egypt, Archer (2026-11-25, replaced the Medjay) | New Kingdom two-horse chariot with six-spoked wheels, a driver and an archer drawing a composite bow; plumed horses in striped caparisons. Master in the art-sources archive (`sources-manifest.json`), prompt in `prompts/chariot-archer.prompt.txt`; icon `unit-chariot-archer` drawn by hand. |
 
 Lessons: the first Peltast (fox cap, cream tunic) vanished on tan terrain and the first Gaesatae's overlong spear shrank the figure at 54 px, so both were regenerated with saturated cloth and a spear of about 1.3 heights. Generations that return "no image" in the reply often still saved one under `~/.codex/generated_images/<session id>/`. The generator's grey stone bases were recoloured to the older units' warm cream (hue 0.10, saturation 0.20, lightness kept) on the raw image before keying: flood-fill from the base's bottom over low-saturation pixels of the base's own lightness, then `unit-art.py`. The Reisläufer's cobbled base was already warm and was left.
 

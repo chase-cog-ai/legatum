@@ -3,7 +3,7 @@
 import type { Hex, Order, PlayerView, UnitView } from './types';
 import { distance, hexAt, hexEq, neighbors, tileIndex } from './hex';
 import { atWar, borderSteps, canEnter, neutralBlocker, relationWith } from './diplomacy';
-import { RAILWAY_MOVES, ROAD_MOVES, itemName, tileMoveCost } from './data';
+import { RAILWAY_MOVES, ROAD_MOVES, chariotStepCost, itemName, tileMoveCost } from './data';
 import { empireOfPlayer } from './empires';
 import { enemyReach } from './enemyReach';
 
@@ -100,14 +100,33 @@ export function findPath(
   return null;
 }
 
-/** Land movement over explored tiles of a view. */
-function viewCost(view: PlayerView): CostFn {
+/** The unit fields that decide what it pays for terrain. */
+export type Mover = Pick<UnitView, 'kind' | 'owner' | 'max_moves'> & { origin?: UnitView['origin'] };
+
+/** Core `GameState::is_chariot_archer`: an Archer Egypt made (its own or a hired Company). */
+export function isChariotArcher(view: PlayerView, u: Mover): boolean {
+  return u.kind === 'Archer' && (u.origin ?? view.players.find((p) => p.id === u.owner)?.faction) === 'Egypt';
+}
+
+/** The tile card's line for a Chariot Archer hovering rough ground (Forest or Hills without a road): entering takes its whole turn. */
+export function chariotTerrainNote(view: PlayerView, mover: Mover, h: Hex): string | undefined {
+  if (!isChariotArcher(view, mover)) return undefined;
+  const t = view.tiles[tileIndex(h, view.width, view.height)];
+  if (!t?.explored) return undefined;
+  const cost = tileMoveCost(t.terrain, t.road);
+  return cost != null && cost > 1 ? 'Entering takes your Chariot Archer’s whole turn.' : undefined;
+}
+
+/** Land movement over explored tiles of a view, for `mover` when given (core `GameState::unit_step_cost`). */
+function viewCost(view: PlayerView, mover?: Mover): CostFn {
+  const chariot = !!mover && isChariotArcher(view, mover);
   return (h) => {
     const i = tileIndex(h, view.width, view.height);
     if (i < 0) return null;
     const t = view.tiles[i];
     if (!t.explored || neutralBlocker(view, h)) return null;
-    return tileMoveCost(t.terrain, t.road);
+    const cost = tileMoveCost(t.terrain, t.road);
+    return chariot ? chariotStepCost(cost, mover.max_moves) : cost;
   };
 }
 
@@ -312,9 +331,9 @@ function attacksInPlace(view: PlayerView, u: Pick<UnitView, 'pos' | 'military'>,
  * like core's resolution does; friends moving out this turn are a tie-break (`routeAroundFriends`).
  */
 export function previewRoute(view: PlayerView, from: Hex, to: Hex, orders: Order[] = [], unitId?: number, options: RouteOptions = {}): RoutePreview {
-  const terrain = viewCost(view);
   const units = view.units ?? [];
   const mover = units.find((u) => u.owner === view.me && (unitId === undefined ? hexEq(u.pos, from) : u.id === unitId));
+  const terrain = viewCost(view, mover);
   const kind = mover?.kind ?? 'Spearman';
   const destinationCity = (view.cities ?? []).find((city) => hexEq(city.pos, to));
   if (mover && destinationCity && !canEnter(view, kind, destinationCity.owner, true)) return { path: null, risk: null };
@@ -442,10 +461,10 @@ export function previewRoute(view: PlayerView, from: Hex, to: Hex, orders: Order
  * stands at the start of round j + 1; the turn's last tile is where it stops. The destination is the
  * player's choice, so it is never counted.
  */
-function exposedSteps(view: PlayerView, path: Hex[], from: Hex, to: Hex, maxMoves: number, reach: ReturnType<typeof enemyReach>, crossable?: (h: Hex) => boolean): { first: boolean; hexes: Hex[] } {
+function exposedSteps(view: PlayerView, path: Hex[], from: Hex, to: Hex, mover: UnitView, reach: ReturnType<typeof enemyReach>, crossable?: (h: Hex) => boolean): { first: boolean; hexes: Hex[] } {
   const hexes: Hex[] = [];
   let first = false;
-  planTurns(view, path, from, maxMoves, crossable).filter((s) => s.turn === 1).forEach((s, i) => {
+  planTurns(view, path, from, mover.max_moves, crossable, mover).filter((s) => s.turn === 1).forEach((s, i) => {
     if (hexEq(s.hex, to) || !reach.threatened(s.hex, i + 1, s.endsTurn)) return;
     hexes.push(s.hex);
     if (i === 0) first = true;
@@ -461,9 +480,9 @@ function exposedSteps(view: PlayerView, path: Hex[], from: Hex, to: Hex, maxMove
 function saferRoute(view: PlayerView, from: Hex, to: Hex, mover: UnitView, path: Hex[], replan?: (avoid: Set<number>) => Hex[] | null, crossable?: (h: Hex) => boolean): { path: Hex[]; danger?: RouteDanger } {
   const reach = enemyReach(view);
   if (!reach.any) return { path };
-  const turnsOf = (p: Hex[]) => planTurns(view, p, from, mover.max_moves, crossable).at(-1)?.turn ?? 1;
+  const turnsOf = (p: Hex[]) => planTurns(view, p, from, mover.max_moves, crossable, mover).at(-1)?.turn ?? 1;
   const baseTurns = turnsOf(path);
-  const score = (p: Hex[]) => { const e = exposedSteps(view, p, from, to, mover.max_moves, reach, crossable); return { ...e, rank: (e.first ? 1000 : 0) + e.hexes.length }; };
+  const score = (p: Hex[]) => { const e = exposedSteps(view, p, from, to, mover, reach, crossable); return { ...e, rank: (e.first ? 1000 : 0) + e.hexes.length }; };
   let best = { path, ...score(path) };
   const avoid = new Set<number>();
   for (let tries = 0; replan && best.hexes.length && tries < 4; tries++) {
@@ -521,10 +540,10 @@ export function pathTurns(path: Hex[], cost: CostFn, maxMoves: number, movesLeft
 }
 
 /** `pathTurns` for a unit planning the coming turn from `from`: full moves, plus the road bonus when it starts on a road. */
-export function planTurns(view: PlayerView, path: Hex[], from: Hex, maxMoves: number, crossable?: (h: Hex) => boolean): PathStep[] {
+export function planTurns(view: PlayerView, path: Hex[], from: Hex, maxMoves: number, crossable?: (h: Hex) => boolean, mover?: Mover): PathStep[] {
   const roads = viewRoads(view);
   const bonus = roadMoves(view);
-  return pathTurns(path, viewCost(view), maxMoves, maxMoves + (roads?.(from) ? bonus : 0), from, roads, bonus, crossable);
+  return pathTurns(path, viewCost(view, mover), maxMoves, maxMoves + (roads?.(from) ? bonus : 0), from, roads, bonus, crossable);
 }
 
 /** "+1 move" / "+2 moves (Railways)": the extra moves a unit gets for starting a turn on a road, from the same rule the planner uses. */
@@ -537,10 +556,10 @@ export function roadBonusText(view: PlayerView): string {
  * When the route's turn count depends on starting a turn on a road (the bonus saves at least one turn), the note that says so; else null.
  * `steps` is `planTurns` output for a unit at `from` with `maxMoves`.
  */
-export function roadBonusNote(view: PlayerView, steps: PathStep[], from: Hex, maxMoves: number): string | null {
+export function roadBonusNote(view: PlayerView, steps: PathStep[], from: Hex, maxMoves: number, mover?: Mover): string | null {
   const roads = viewRoads(view);
   if (!roads || !steps.length) return null;
-  const without = pathTurns(steps.map((s) => s.hex), viewCost(view), maxMoves, maxMoves, from, roads, 0);
+  const without = pathTurns(steps.map((s) => s.hex), viewCost(view, mover), maxMoves, maxMoves, from, roads, 0);
   if ((without.at(-1)?.turn ?? 1) <= (steps.at(-1)?.turn ?? 1)) return null;
   return `Includes ${roadBonusText(view)} from starting on a road.`;
 }

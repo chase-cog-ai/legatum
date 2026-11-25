@@ -18,7 +18,7 @@ fn tomb(working: bool, turns: u32) -> TombView {
     }
 }
 
-/// An Egypt at `turn` with `vp` of `target`: a capital garrisoned by two Medjay (one on the
+/// An Egypt at `turn` with `vp` of `target`: a capital garrisoned by two Spearmen (one on the
 /// tile), a second city, and a quiet rival far away.
 fn egypt(turn: u32, vp: u32, target: u32) -> PlayerView {
     let mut v = ViewBuilder::new(40, 24)

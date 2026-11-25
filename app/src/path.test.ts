@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { findPath, pathTurns, planTurns, previewPath, previewRoute, roadBonusNote, roadBonusText, type CostFn } from './path';
+import { findPath, chariotTerrainNote, isChariotArcher, pathTurns, planTurns, previewPath, previewRoute, roadBonusNote, roadBonusText, type CostFn } from './path';
+import { chariotStepCost } from './data';
 import { fromOffset, distance, tileIndex } from './hex';
 import type { PlayerView, Terrain, TileView } from './types';
 import { reachTiles } from './map/reach';
@@ -199,5 +200,37 @@ describe('the road bonus is said where the route is previewed (Railways, hidden 
     expect(roadBonusNote(plain, planTurns(plain, path(4), from, 2), from, 2)).toBeNull();
     // Too short to matter: the same single turn either way.
     expect(roadBonusNote(rail, planTurns(rail, path(2), from, 2), from, 2)).toBeNull();
+  });
+});
+
+describe('Egypt’s Chariot Archer: Forest and Hills take its whole turn (core data::chariot_step_cost)', () => {
+  // Grassland to tile 3, then Hills; the archer starts on tile 0.
+  function corridor(faction: 'Egypt' | 'Rome') {
+    const w = 8;
+    const tiles = Array.from({ length: w }, (_, i) => ({ explored: true, visible: true, terrain: i >= 4 ? 'Hills' : 'Grassland', owner: null, ruin: false } satisfies TileView));
+    return { width: w, height: 1, me: 0, team: 0, units: [], cities: [], players: [{ id: 0, team: 0, faction }], research: { known: [] }, tiles } as unknown as PlayerView;
+  }
+  const from = fromOffset(0, 0);
+  const path = (n: number) => Array.from({ length: n }, (_, i) => fromOffset(i + 1, 0));
+  const turnOf = (view: PlayerView, maxMoves: number) =>
+    planTurns(view, path(5), from, maxMoves, undefined, { kind: 'Archer', owner: 0, max_moves: maxMoves }).map((s) => s.turn);
+  it('stops short of rough ground, then enters one tile a turn', () => {
+    expect(chariotStepCost(2, 3)).toBe(4);
+    expect(chariotStepCost(1, 3)).toBe(1);
+    expect(isChariotArcher(corridor('Egypt'), { kind: 'Archer', owner: 0, max_moves: 3 })).toBe(true);
+    expect(isChariotArcher(corridor('Rome'), { kind: 'Archer', owner: 0, max_moves: 2 })).toBe(false);
+    // Three open tiles on turn 1, then a Hill on each of turns 2 and 3.
+    expect(turnOf(corridor('Egypt'), 3)).toEqual([1, 1, 1, 2, 3]);
+    // A plain Archer: two open tiles, then one with a move left that can't pay for the Hill.
+    expect(turnOf(corridor('Rome'), 2)).toEqual([1, 1, 2, 3, 4]);
+  });
+  it('the tile card says so on rough ground only, and only for the chariot', () => {
+    const chariot = { kind: 'Archer', owner: 0, max_moves: 3 } as const;
+    expect(chariotTerrainNote(corridor('Egypt'), chariot, fromOffset(4, 0))).toContain('whole turn');
+    expect(chariotTerrainNote(corridor('Egypt'), chariot, fromOffset(2, 0))).toBeUndefined();
+    expect(chariotTerrainNote(corridor('Rome'), { ...chariot, max_moves: 2 }, fromOffset(4, 0))).toBeUndefined();
+    const road = corridor('Egypt');
+    road.tiles[4] = { ...road.tiles[4], road: 1 } as TileView;
+    expect(chariotTerrainNote(road, chariot, fromOffset(4, 0))).toBeUndefined();
   });
 });

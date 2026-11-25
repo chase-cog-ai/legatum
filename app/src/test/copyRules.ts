@@ -20,6 +20,7 @@ export interface CopyRule {
 
 /** Mechanics-speak and code terms: describe what the player gets, not the integer maths behind it. */
 export const BANNED: CopyRule[] = [
+  { pattern: /\bfoot soldiers?\b/i, reason: 'the class is the Melee line (plain-language review, 2026-11-25)', instead: '"melee units"', source: true },
   { pattern: /\bspare Food\b/i, reason: 'glossary: the Food beyond what a city eats is surplus Food (plain-language review, 2026-11-23)', instead: '"surplus Food"', source: true },
   { pattern: /\brace sidebar\b/i, reason: 'the panel is called the Victory race (master, 2026-11-22)', instead: '"Victory race"', source: true },
   { pattern: /\bresolve[sd]? when the turn ends\b/i, reason: 'code-speak (plain-language review, 2026-11-22)', instead: '"it happens when the turn ends"', source: true },
@@ -97,7 +98,7 @@ export const BANNED: CopyRule[] = [
   { pattern: /Σ/, reason: 'a maths symbol', instead: '"added up"' },
   { pattern: /\bmax(imum)? \d|\(max\b|\bmin(imum)? \d|\(min\b/i, reason: 'abbreviation or maths', instead: '"up to 5", "at least 3"' },
   { pattern: /\bresp\.|\bw\/o?\b/i, reason: 'abbreviation', instead: 'the words' },
-  { pattern: /\bhalving\b|\bera.s siege\b/i, reason: 'the Walls and Engineer rule in mechanics-speak (UI review, 2026-10-18)', instead: '"Walls halve this attack", "cancels Walls but not a Castle"', source: true },
+  { pattern: /\bhalving\b|\bera.s siege\b/i, reason: 'the Walls and Siege rule in mechanics-speak (UI review, 2026-10-18)', instead: '"Walls halve this attack", "Siege covers level I, but Walls II still reduce damage"', source: true },
   { pattern: /\bWalls: [^.]{0,60}\bfires?\b/, reason: 'the city\'s shots are "City fire"; Walls only ever means the building (8.9.6 UI review, 2026-10-19)', instead: '"City fire: Athens fires first, about -40 HP"', source: true },
   { pattern: /\bmedian score\b/i, reason: 'a statistics word on a player card (8.9.6 UI review, 2026-10-19: "Hard AI: median score N")', instead: '"a typical score of N", "most tries took N turns"', source: true },
   { pattern: /\bstockpil(e|es|ed|ing)\b|\bstored (Iron|Niter|Coal|Oil|Silicon)\b|\b(Iron|Niter|Coal|Oil|Silicon) (per|a|each) turn\b/i, reason: 'Strategic resources are supplied, not stored: there is no stockpile and no income (strategic supply, 2026-10-19)', instead: '"supplies 2 Iron", "uses 1 Iron", "Iron 5 / 6"', source: true },
@@ -118,7 +119,7 @@ export const BANNED: CopyRule[] = [
   { pattern: /\bClick for the full breakdown\b/, reason: 'a yield hover does not nag; the ⓘ remains for controls', instead: 'no footer', source: true },
   { pattern: /\bera rule\b/i, reason: 'internal wording for a resource requirement', instead: 'say which units or buildings needed the resource', source: true },
   { pattern: /\bSleep stops\b/i, reason: 'Sleep is a retired player-facing order name', instead: '"Wait stops it asking each turn."', source: true },
-  { pattern: /\bCounted above\b/i, reason: 'does not say which forecast number includes this damage', instead: 'name the unit HP loss above', source: true },
+  { pattern: /\bCounted above\b/i, reason: 'does not say which forecast number includes this damage', instead: 'name the unit health loss above', source: true },
   { pattern: /\bMine on one for \+\d+ (Niter|Oil|Silicon)\b/, reason: 'Niter, Oil and Silicon take their own works, not a Mine (era resources UI review, 2026-10-22)', instead: '"build an Oil Well on one for +1 Oil"', source: true },
   { pattern: /(Niter|Oil|Silicon)[^.]{0,60}\bwith a Mine\b/, reason: 'Niter, Oil and Silicon take their own works, not a Mine (era resources UI review, 2026-10-22)', instead: '"3 Oil with an Oil Well"', source: true },
   { pattern: /\ban (Coal|Stone|Copper|Niter|Silicon)\b/, reason: 'wrong article', instead: '"a Coal deposit"', source: true },
@@ -180,7 +181,6 @@ export const MAX_SEMICOLONS = 2;
  * is rare, and lore is the usual one.
  */
 export const EXCEPTIONS: { text: string; rule: string; why: string }[] = [
-  { text: 'Chivalry unlocks Knights, Castles and Sparta’s War Shrine', rule: 'War Shrine', why: 'the parallel text-guide-rules task owns this Guide research paragraph' },
   { text: 'standing regiments', rule: 'regiments', why: 'lore: the tagmata were regiments' },
   { text: 'trip-hammer', rule: 'hammer', why: 'lore: a real machine' },
   { text: 'Spartan citizens', rule: 'citizens', why: 'lore: the Spartiates were citizens; this is history, not a city\'s population' },

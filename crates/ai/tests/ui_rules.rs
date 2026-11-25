@@ -367,6 +367,8 @@ fn ui_rules_match_core() {
             "warElephantMoves": data::unit_stats_for(Faction::India, UnitKind::Knight).moves,
             "reislauferMountedPercent": data::REISLAUFER_MOUNTED_PERCENT,
             "panzerMoves": data::unit_stats_for(Faction::Germany, UnitKind::Tank).moves,
+            "chariotArcherMoves": data::unit_stats_for(Faction::Egypt, UnitKind::Archer).moves,
+            "chariotArcherVolleyPercent": data::CHARIOT_ARCHER_VOLLEY_PERCENT,
         },
         "indiaCapitalRadius": data::INDIA_CAPITAL_RADIUS,
         "indiaNetworkRadius": data::INDIA_NETWORK_RADIUS,
@@ -418,9 +420,9 @@ fn ui_rules_match_core() {
         "wallTiers": [
             [0, 0, 0],
             [
-                data::wall_tier([BuildingKind::Walls].iter()),
-                data::wall_tier([BuildingKind::Walls, BuildingKind::Castle].iter()),
-                data::wall_tier([BuildingKind::Walls, BuildingKind::Castle, BuildingKind::StarFort].iter()),
+                data::legacy_wall_tier([BuildingKind::Walls].iter()),
+                data::legacy_wall_tier([BuildingKind::Walls, BuildingKind::Castle].iter()),
+                data::legacy_wall_tier([BuildingKind::Walls, BuildingKind::Castle, BuildingKind::StarFort].iter()),
             ],
         ],
         "phalanxLabel": legatum_core::combat::PHALANX_LABEL,

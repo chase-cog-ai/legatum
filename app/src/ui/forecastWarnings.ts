@@ -1,6 +1,6 @@
 import type { BattleForecast, CityAssaultForecast, CityDetail, CityView, Faction, Hex, Order, PlayerView, UnitKind, UnitView } from '../types';
 import { damage } from '../combat';
-import { attacksInMelee, BUILT_IN_SIEGE_NOTE, isGreatWork, itemName, sameItem } from '../data';
+import { attacksInMelee, isGreatWork, itemName, sameItem } from '../data';
 import { wonderLostDecision, wonderRaceWarning } from '../wonderRace';
 import { Game } from '../wasm-pkg/legatum.js';
 import { effectiveProduction } from '../orders';
@@ -83,7 +83,7 @@ export function attackerRisk(f: BattleForecast, unitName: string): string | null
   if (f.ranged) return null;
   const worst = damage(f.defender_strength.total, f.attacker_strength.total, 120);
   if (f.loss_chance <= 0 && worst < f.attacker_hp) return null;
-  return `Risky: your ${unitName} may be destroyed (${f.loss_chance > 0 ? `${f.loss_chance}%` : 'under 1%'} chance).`;
+  return `Your ${unitName} could be destroyed (${f.loss_chance > 0 ? `${f.loss_chance}%` : 'under 1%'} chance).`;
 }
 
 /**
@@ -96,7 +96,7 @@ export function cityStrikeWarning(f: BattleForecast, cityName: string, unitName:
   if (!cs) return null;
   const deadly = damage(cs.city_strength.total, cs.attacker_defense.total, 120) >= f.attacker_hp;
   return {
-    text: `${cityName} will fire back: about −${fire ?? Math.min(cs.damage, f.attacker_hp)} HP to your ${unitName}${deadly ? ', and it could destroy it' : ''}. It fires at the weakest unit in range.`,
+    text: `${cityName} will fire back: about −${fire ?? Math.min(cs.damage, f.attacker_hp)} health to your ${unitName}${deadly ? ', and it could destroy it' : ''}. It fires at the weakest unit in range.`,
     details: `City ${formatBreakdown(cs.city_strength)} vs your defence ${formatBreakdown(cs.attacker_defense)}; rolls 80–120%, before movement, separate from the attack above.`,
     deadly,
   };
@@ -154,12 +154,12 @@ export function garrisonHeadline(f: BattleForecast, view: PlayerView, cityName: 
   if (!g) return null;
   const name = itemName({ kind: 'Unit', unit: g.kind }, view.players.find((p) => p.id === g.owner)?.faction);
   if (g.shielded) {
-    return `${cityName} absorbs damage first. The hit that empties its HP carries on to the ${name} garrison with the part of its damage the city did not absorb; later hits strike the garrison in full.`
+    return `${cityName} absorbs damage first. The hit that empties its health carries on to the ${name} garrison with the part of its damage the city did not absorb; later hits strike the garrison in full.`
       + (ranged ? ' Ranged fire cannot capture.' : ' A melee attacker captures if the garrison falls.');
   }
   return ranged
-    ? `${cityName} has fallen: this shot hits its ${name} garrison (${g.hp} HP). Only a melee attack can capture the city.`
-    : `${cityName} has fallen: you fight its ${name} garrison (${g.hp} HP), and destroying it captures the city.`;
+    ? `${cityName} has fallen: this shot hits its ${name} garrison (${g.hp} health). Only a melee attack can capture the city.`
+    : `${cityName} has fallen: you fight its ${name} garrison (${g.hp} health), and destroying it captures the city.`;
 }
 
 /** One line of the combined card: a thing that takes damage, its HP before and after (all numbers come from core's `CityAssaultForecast`). */
@@ -178,8 +178,8 @@ export function assaultSummary(a: CityAssaultForecast, cityName: string, garriso
     rows.push({ key: 'garrison', label: `${garrisonName ?? 'Garrison'} garrison`, hp: g.hp, after: g.hp_after, ...(g.destroyed_chance > 0 ? { note: g.destroyed_chance >= 100 ? 'destroyed' : `${g.destroyed_chance}% destroyed` } : {}) });
   }
   const left = g && g.hp_after > 0
-    ? `its ${garrisonName ?? 'garrison'} survives with about ${g.hp_after} HP`
-    : a.city_hp_after > 0 ? `${cityName} keeps about ${a.city_hp_after} HP` : '';
+    ? `its ${garrisonName ?? 'garrison'} survives with about ${g.hp_after} health`
+    : a.city_hp_after > 0 ? `${cityName} keeps about ${a.city_hp_after} health` : '';
   let capture: string;
   let captureTone: 'good' | 'bad' | 'plain';
   if (!a.can_capture) {
@@ -201,25 +201,25 @@ export function assaultSummary(a: CityAssaultForecast, cityName: string, garriso
 
 /**
  * What the city's Walls do to this attack (core `WallsForecast`): halve its damage to the city's HP, unless the attacking unit
- * has Siege. An Industrial or later unit has it built in and says so in core's words (`BUILT_IN_SIEGE_NOTE`). `siegeTier` is the viewer's own siege tier (core `data::siege_tier`), so the hint to buy Siege is shown only to a
+ * has Siege. An Industrial or later land unit has Siege built in at its own era tier. `siegeTier` is the viewer's own siege tier (core `data::siege_tier`), so the hint to buy Siege is shown only to a
  * player who knows Mathematics. Null when the target has no Walls.
  */
-export function wallsLine(f: BattleForecast, cityName: string, unitLabel: string, siegeTier: number, dealt = 0): { text: string; tone: 'good' | 'plain' } | null {
+/** The tech whose Siege covers the next Walls level, keyed by the level bought Siege covers now. */
+const NEXT_SIEGE_TECH: Record<number, string> = { 1: 'Machinery', 2: 'Metallurgy' };
+
+export function wallsLine(f: BattleForecast, cityName: string, _unitLabel: string, siegeTier: number, dealt = 0): { text: string; tone: 'good' | 'plain' } | null {
   const w = f.walls;
   if (!w) return null;
-  if (w.built_in) return { text: `Siege built in: your ${unitLabel} ${BUILT_IN_SIEGE_NOTE}.`, tone: 'good' };
-  if (w.covered >= w.tier) {
-    const ignored = ['', 'Walls', 'Walls and Castle', 'Walls, Castle and Star Fort'][w.tier];
-    return { text: `Siege: your ${unitLabel} ignores ${cityName}'s ${ignored}.`, tone: 'good' };
-  }
-  if (w.covered > 0) {
-    const defence = w.tier === 2 ? 'Castle' : 'Star Fort';
-    const tech = w.tier === 2 ? 'Machinery' : 'Metallurgy';
-    return { text: `Your Siege ignores Walls but not ${cityName}'s ${defence}: ${w.percent}% damage. ${tech} would reach it.`, tone: 'plain' };
-  }
+  const level = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'][w.tier] ?? String(w.tier);
+  const cover = `Siege covers up to level ${['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'][w.covered] ?? String(w.covered)}`;
+  const damage = w.percent >= 100 ? 'full damage' : `${w.percent}% damage`;
+  // Bought Siege still short of these Walls: name the tech that covers the next level.
+  const nextTech = !w.built_in && w.covered < w.tier ? NEXT_SIEGE_TECH[w.covered] : undefined;
+  const next = nextTech ? ` ${nextTech} covers level ${['', 'I', 'II', 'III'][w.covered + 1]}.` : '';
+  if (w.covered > 0) return { text: `Walls ${level}: ${w.built_in ? 'built-in ' : ''}${cover}, so ${damage} to ${cityName}.${next}`, tone: w.percent >= 100 ? 'good' : 'plain' };
   const withSiege = w.percent > 0 && w.percent < 100 && dealt > 0 ? Math.round((dealt * 100) / w.percent) : 0;
   return {
-    text: `Walls halve this attack on ${cityName}${siegeTier > 0 && withSiege > 0 ? `: ${dealt} HP, or ${withSiege} with Siege` : ''}.`,
+    text: `Walls ${level} halve this attack on ${cityName}${siegeTier > 0 && withSiege > 0 ? `: ${dealt} health, or ${withSiege} with Siege` : ''}.`,
     tone: 'plain',
   };
 }
@@ -228,7 +228,7 @@ export function wallsLine(f: BattleForecast, cityName: string, unitLabel: string
 export function forecastWinLabel(f: BattleForecast, city: boolean, ranged: boolean, attackerRanged: boolean): string {
   const captures = !ranged && !attackerRanged;
   if (f.garrison && !f.garrison.shielded) return captures ? 'kill the garrison, capture' : 'destroy the garrison';
-  if (city) return captures && !f.garrison ? 'capture it' : 'drop it to 0 HP';
+  if (city) return captures && !f.garrison ? 'capture it' : 'drop it to 0 health';
   return 'destroy it';
 }
 
@@ -371,5 +371,5 @@ export function reinforcementNote(view: PlayerView, unit: Pick<UnitView, 'owner'
 export function cityEntryWarning(unit: Pick<UnitView, 'kind'>, shot = false): string {
   if (shot && attacksInMelee(unit.kind)) return "A shot can't take a city. Charge it to capture it.";
   return !attacksInMelee(unit.kind) ? "Ranged units can't capture cities; move a melee unit in to take it."
-    : 'Capture requires surviving and clearing enemy units. If teammates enter together, the survivor with the most HP captures; ties use a seeded coin toss. If a combined assault kills the garrison through overflow, its strongest attacker captures.';
+    : 'Capture requires surviving and clearing enemy units. If teammates enter together, the survivor with the most health captures; ties use a seeded coin toss. If a combined assault kills the garrison through overflow, its strongest attacker captures.';
 }

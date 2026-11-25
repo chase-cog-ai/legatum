@@ -10,8 +10,8 @@ import type { GameSetup, Order } from './types';
 const available = existsSync(fileURLToPath(new URL('./wasm-pkg/legatum.js', import.meta.url)));
 let makeCore: () => WasmClient;
 
-function setup(mapSize: 'Small' | 'Standard'): GameSetup {
-  let l = setDifficulty({ ...newLobby('solo', '77'), mapSize }, 'Hard');
+function setup(mapSize: 'Small' | 'Standard', seed = '77'): GameSetup {
+  let l = setDifficulty({ ...newLobby('solo', seed), mapSize }, 'Hard');
   if (mapSize === 'Small') for (const i of [3, 4, 5, 6, 7]) l = setSlot(l, i, { kind: 'closed' });
   return buildSetup(l);
 }
@@ -49,7 +49,8 @@ describe.skipIf(!available)('Coach questions in the engine', () => {
 
   it('adds well under a second to End Turn at about turn 100 of a Standard game', async () => {
     const watched = makeCore();
-    await watched.newGame(setup('Standard'));
+    // Seed 81: his Hard Switzerland still holds 5 cities at turn 100 (rules 59; on seed 77 Egypt's Chariot Archers take his second city).
+    await watched.newGame(setup('Standard', '81'));
     const asked = { keys: [] as string[], last: null };
     const base: number[] = [];
     const extra: number[] = [];

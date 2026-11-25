@@ -136,10 +136,28 @@ fn class_bonuses(view: &PlayerView, u: &UnitView, d: &UnitView, ranged: bool) ->
                 true,
                 ranged,
             )
+            .1
+            + combat::fight_chariot_volley_for_rules(
+                off,
+                view.made_by(u),
+                u.kind,
+                d.kind,
+                true,
+                ranged,
+            )
             .1;
     let defense =
         combat::fight_class_bonus_for_rules(off, view.made_by(d), d.kind, u.kind, false, ranged).1
             + combat::fight_reislaufer_bonus_for_rules(
+                off,
+                view.made_by(d),
+                d.kind,
+                u.kind,
+                false,
+                ranged,
+            )
+            .1
+            + combat::fight_chariot_volley_for_rules(
                 off,
                 view.made_by(d),
                 d.kind,

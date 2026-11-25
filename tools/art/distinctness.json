@@ -85,7 +85,6 @@
      "phalangite",
      "tagmatic-soldier",
      "trench-infantry",
-     "medjay",
      "legionary"
     ]
    },
@@ -176,12 +175,6 @@
    "a": "landship",
    "b": "tank",
    "why": "Two separate paintings (a WWI rhomboid Early Tank and a WWII Tank) whose silhouettes sit close at map size; accepted by the user 2026-11-15; the unit's name sits beside it on every card"
-  },
-  {
-   "set": "units-miniature",
-   "a": "legionary",
-   "b": "medjay",
-   "why": "silhouette only (gist 0.78, score 0.58): two separate paintings in the set's common standing pose, shield on the left arm and spear in the right hand, as the Spearman and Hoplite also stand; a red curved scutum and banded armour against a cowhide shield and a bare chest; accepted by the lead 2026-11-15 rather than mirror or re-pose either figure"
   },
   {
    "set": "units-miniature",
@@ -434,8 +427,6 @@
     "why": "forts",
     "members": [
      "building-walls-switzerland",
-     "building-castle",
-     "building-starfort",
      "building-agoge"
     ]
    },

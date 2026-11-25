@@ -35,7 +35,7 @@ const SAYS: Record<(typeof FACTIONS)[number], string[]> = {
   Mongols: ['(Cataphract: 150)', '(Cataphract: 0)', 'Shoots or charges each turn, never both', 'Yam Relay Station only Mongols can build it'],
   Sparta: ['+5 strength next to another Hoplite (the phalanx).', 'It is lost on upgrade.', 'Agoge only Sparta can build it', 'start one level higher'],
   Athens: ['(Library: 80)', '(Library: +3)', 'Peltast replaces Composite Archer', '(Composite Archer: 2)'],
-  Egypt: ['Royal Granary replaces Granary', 'Medjay replaces Spearman'],
+  Egypt: ['Royal Granary replaces Granary', 'Chariot Archer replaces Archer'],
 };
 
 for (const size of [{ width: 1000, height: 600 }, { width: 1440, height: 900 }]) {

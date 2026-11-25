@@ -11,8 +11,8 @@ it('shows Egypt’s piece prices in Food and every other faction’s in Producti
   const granary = renderToStaticMarkup(<PieceCard faction="Egypt" piece={{ kind: 'Building', building: 'Granary' }} name="Royal Granary" factionName="Egypt" replaces="Granary" text="" />);
   expect(granary).not.toMatch(/Production/);
   expect(granary).toMatch(/Food/);
-  const medjay = renderToStaticMarkup(<PieceCard faction="Egypt" piece={{ kind: 'Unit', unit: 'Spearman' }} name="Medjay" factionName="Egypt" replaces="Spearman" text="" />);
-  expect(medjay).not.toMatch(/Production/);
+  const chariot = renderToStaticMarkup(<PieceCard faction="Egypt" piece={{ kind: 'Unit', unit: 'Archer' }} name="Chariot Archer" factionName="Egypt" replaces="Archer" text="" />);
+  expect(chariot).not.toMatch(/Production/);
   expect(uniquePieceBare('Egypt')).toMatch(/: \d+ Food\./);
   expect(FACTION_INFO.Egypt.unique).toMatch(/: \d+ Food,/);
 });

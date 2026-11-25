@@ -56,6 +56,7 @@ describe('unlock art lookup', () => {
     }
     expect(itemArtUrl({ kind: 'Building', building: 'Market' }, 'India', 128)).toMatch(/building-market-india-128/);
     expect(itemArtUrl({ kind: 'Unit', unit: 'Knight' }, 'India', 256)).toMatch(/war-elephant-256/);
+    expect(itemArtUrl({ kind: 'Unit', unit: 'Archer' }, 'Egypt', 256)).toMatch(/chariot-archer-256/);
     for (const project of ['Gold', 'Science', 'Grow'] as const) {
       expect(itemArtUrl({ kind: 'Project', project }, 'Germany', 64), project).toMatch(new RegExp(`project-${project.toLowerCase()}-64`));
     }

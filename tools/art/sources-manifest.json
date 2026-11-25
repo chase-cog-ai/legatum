@@ -142,6 +142,11 @@
    "sha256": "8e7d0af4f826eef42d714ea74d6c3a6124788cf26525293477716b39e47b6503"
   },
   {
+   "path": "app/src/assets/units/chariot-archer-source.png",
+   "bytes": 1650607,
+   "sha256": "8fcfe79e48e8dbaf2144ab50f411396aab26d55fb736eec5cf654fab65a87827"
+  },
+  {
    "path": "app/src/assets/units/composite-archer-source.png",
    "bytes": 1268442,
    "sha256": "03e04d8a0a5ef29086547d08f86a21a2d5d6ec48ab6f7ffcfc7815944541bb21"
@@ -240,11 +245,6 @@
    "path": "app/src/assets/units/mechanised-infantry-source.png",
    "bytes": 1270272,
    "sha256": "19a29066947c82f6e18602da61610e5b671d4a4cd01b37941dd75e6def837873"
-  },
-  {
-   "path": "app/src/assets/units/medjay-source.png",
-   "bytes": 776335,
-   "sha256": "b29dad48b177ff6caab48d42cf7e2b0e152a7b74ca003635c5c9b19dd27df084"
   },
   {
    "path": "app/src/assets/units/musketman-source.png",

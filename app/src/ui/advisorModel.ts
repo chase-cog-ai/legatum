@@ -1,7 +1,7 @@
 /** The advisor explains one decision from a Hard plan made from this seat's own view. */
 import { create } from 'zustand';
 import { advisorOrders } from '../automation';
-import { buildingStatsFor, itemKey, itemName, TECH_NAME } from '../data';
+import { buildingStatsFor, itemKey, itemName, TECH_NAME, wallsUpgradeName } from '../data';
 import { isThreat } from '../diplomacy';
 import { distance, hexEq } from '../hex';
 import { effectiveResearchQueue, pendingResearchQueue } from '../orders';
@@ -9,13 +9,14 @@ import { pendingDecisions } from '../turnFlow';
 import { HOLD_TURNS } from '../victoryHold';
 import { techCardUnlocks } from './techCardUnlocks';
 import { YIELD_LABEL, type YieldKey } from './yieldKeys';
+import { strategyTip, tipKind, type TipLog } from './advisorTips';
 import type { BattleForecast, CityView, Hex, Order, OrderError, PlayerView, UnitView } from '../types';
 
 /** Keep the old key: disabling first-game hints also disables the advisor. */
 export const ADVISOR_KEY = 'legatum.first-game-hints.v2';
-export type AdvisorTarget = { kind: 'tile'; hex: Hex } | { kind: 'control'; name: 'research' | 'turn' | 'race' | 'found' | 'fortify' | 'explore' | 'skip' | 'ranged' | 'build' | 'tech' | 'closeResearch'; value?: string } | null;
+export type AdvisorTarget = { kind: 'tile'; hex: Hex } | { kind: 'control'; name: 'research' | 'turn' | 'race' | 'found' | 'fortify' | 'explore' | 'skip' | 'ranged' | 'build' | 'tech' | 'closeResearch' | 'buyTile'; value?: string } | null;
 export interface AdvisorStep { instruction: string; key?: string; target: AdvisorTarget }
-export interface Suggestion { id: string; title: string; why: string; steps: AdvisorStep[]; current: number; acknowledge?: boolean }
+export interface Suggestion { id: string; title: string; why: string; steps: AdvisorStep[]; current: number; acknowledge?: boolean; tip?: boolean }
 export interface AdvisorContext {
   view: PlayerView;
   orders: Order[];
@@ -39,6 +40,32 @@ const ownUnits = (v: PlayerView) => v.units.filter((u) => u.owner === v.me);
 const factionOf = (v: PlayerView) => v.players.find((p) => p.id === v.me)?.faction ?? 'Switzerland';
 const otherSide = (v: PlayerView, owner: number) => owner !== v.me && v.players.find((p) => p.id === owner)?.team !== v.team;
 const nearestCity = (v: PlayerView, at: Hex) => ownCities(v).sort((a, b) => distance(a.pos, at) - distance(b.pos, at))[0];
+/**
+ * Routine steps (moving a unit, Fortify, Skip, Auto-explore, End turn, Close Research) are taught only until the
+ * player has done each on PRACTICE_TURNS different turns; after that the advisor stays quiet about them (user, 2026-11-25:
+ * "it doesn't need to show me where to move my unit every time"). Builds, research, Settlers, Found City and attacks
+ * are advice rather than controls, so they always show.
+ */
+export const PRACTICE_TURNS = 3;
+export type PracticeKind = 'move' | 'fortify' | 'skip' | 'explore' | 'endTurn' | 'closeResearch';
+export type Practice = Readonly<Partial<Record<PracticeKind, number>>>;
+/** The routine a unit order practises, or null when the order is advice worth showing every time. */
+export function practiceKind(order: Order | undefined, view: PlayerView): PracticeKind | null {
+  if (!order) return 'move';
+  switch (order.type) {
+    case 'MoveUnit': case 'MoveUnitPath': {
+      const unit = view.units.find((u) => u.id === order.unit);
+      if (!unit || unit.kind === 'Settler') return null;
+      const attack = view.units.some((u) => hexEq(u.pos, order.to) && otherSide(view, u.owner)) || view.cities.some((c) => hexEq(c.pos, order.to) && otherSide(view, c.owner));
+      return attack ? null : 'move';
+    }
+    case 'SleepUnit': return 'fortify';
+    case 'SkipUnit': return 'skip';
+    case 'SetAutomation': return order.automation === 'Explore' ? 'explore' : null;
+    default: return null;
+  }
+}
+const learned = (practice: Practice, kind: PracticeKind | null) => kind !== null && (practice[kind] ?? 0) >= PRACTICE_TURNS;
 const validOrders = (ctx: AdvisorContext) => ctx.orders.filter((_, i) => !ctx.errors?.some((e) => e.index === i));
 
 /** One honest reason drawn from visible facts. Forecast odds appear only when the client supplies them. */
@@ -55,6 +82,7 @@ export function advisorWhy(order: Order, view: PlayerView, city?: CityView, unit
       if (!units) return `You have no military units guarding ${city.name}.`;
       return `You have ${units} military ${units === 1 ? 'unit' : 'units'} for ${cities} ${cities === 1 ? 'city' : 'cities'}.`;
     }
+    if (item.kind === 'Building' && item.building === 'UpgradeWalls') return `Upgrade Walls adds city strength in ${city.name}.`;
     if (item.kind === 'Building') {
       const yields = buildingStatsFor(factionOf(view), item.building).yields;
       const gain = (['food', 'production', 'gold', 'science'] as YieldKey[]).find((key) => (yields[key] ?? 0) > 0);
@@ -101,7 +129,7 @@ const selected = (ctx: AdvisorContext, kind: string, id: number) => ctx.selectio
 
 function citySuggestion(ctx: AdvisorContext, city: CityView, order?: Extract<Order, { type: 'SetProduction' | 'SetProductionQueue' }>): Suggestion {
   const item = order?.type === 'SetProduction' ? order.item : order?.queue[0];
-  const name = item && itemName(item, factionOf(ctx.view));
+  const name = item && (item.kind === 'Building' && item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, factionOf(ctx.view))) : itemName(item, factionOf(ctx.view)));
   return { id: `city:${city.id}`, title: name ? `Build ${name} in ${city.name}` : `Choose a build in ${city.name}`,
     why: order ? advisorWhy(order, ctx.view, city) : `${city.name} needs a build to use its Production.`,
     current: selected(ctx, 'city', city.id) ? 1 : 0,
@@ -148,7 +176,7 @@ function unitSuggestion(ctx: AdvisorContext, unit: UnitView, order?: Order): Sug
   return action ? { ...base, title: action.title, steps: [first, { instruction: action.instruction, key: ctx.touch ? undefined : action.key, target: action.target }] } : null;
 }
 
-export function advisorSuggestion(ctx: AdvisorContext, seen: readonly string[], skipped: readonly string[]): Suggestion | null {
+export function advisorSuggestion(ctx: AdvisorContext, seen: readonly string[], skipped: readonly string[], practice: Practice = {}, tips: TipLog = {}): Suggestion | null {
   const v = ctx.view;
   if (v.finished || v.players.find((p) => p.id === v.me)?.alive === false) return null;
   if (v.turn === 1 && !seen.includes('welcome')) return { id: 'welcome', title: 'Your advisor will guide you', why: "I'll suggest what to do each turn and show you where to click.", steps: [], current: 0, acknowledge: true };
@@ -160,7 +188,7 @@ export function advisorSuggestion(ctx: AdvisorContext, seen: readonly string[], 
   // Research is chosen but its panel is still open: closing it is the next step, since the rest of the turn is behind it.
   // Only after a choice made this turn, so opening Research later to browse isn't nagged; "Not now" dismisses it.
   const chosen = pendingResearchQueue(orders);
-  if (ctx.techOpen && chosen?.length && !skipped.includes('closeResearch')) {
+  if (ctx.techOpen && chosen?.length && !skipped.includes('closeResearch') && !learned(practice, 'closeResearch')) {
     const tech = TECH_NAME[chosen[0]];
     return { id: 'closeResearch', title: 'Close Research', why: tech ? `${tech} is chosen. Your other decisions are on the map.` : 'Your research is chosen. Your other decisions are on the map.',
       steps: [{ instruction: `${ctx.touch ? 'Tap' : 'Click'} Close.`, key: ctx.touch ? undefined : 'Esc', target: control('closeResearch') }], current: 0 };
@@ -172,6 +200,11 @@ export function advisorSuggestion(ctx: AdvisorContext, seen: readonly string[], 
     const d = decisions[firstUnanswered], id = `answer:${d.kind}:${'id' in d ? d.id : ''}`;
     return { id, title: 'Answer this first', why: d.label, current: 0,
       steps: [{ instruction: `${ctx.touch ? 'Tap' : 'Click'} ${ctx.turnLabel ?? d.label}.`, target: control('turn') }] };
+  }
+  // Situational advice comes before the routine decisions, but never interrupts a unit or panel already in hand.
+  if (seen.includes('welcome') && !ctx.techOpen) {
+    const tip = strategyTip(v, tips, ctx.touch, ctx.selection, validOrders(ctx));
+    if (tip && !skipped.includes(tip.id) && (!ctx.selection || tip.current > 0)) return tip;
   }
   // Follow the screen: the open Research panel or the selected city or unit is the decision in hand.
   const inHand = (d: (typeof decisions)[number]) => (d.kind === 'research' && ctx.techOpen)
@@ -193,40 +226,81 @@ export function advisorSuggestion(ctx: AdvisorContext, seen: readonly string[], 
       const unit = ownUnits(v).find((u) => u.id === d.id);
       if (!unit) continue;
       const choice = plan?.find((o) => 'unit' in o && o.unit === unit.id);
+      if (learned(practice, choice ? practiceKind(choice, v) : unit.kind === 'Settler' ? null : 'move')) continue;
       const suggestion = unitSuggestion(ctx, unit, choice) ?? unitSuggestion(ctx, unit);
       if (suggestion) return suggestion;
     }
   }
-  if (decisions.length) return null;
+  if (decisions.length || learned(practice, 'endTurn')) return null;
   const solo = ctx.humans <= 1 && !ctx.remote; // Matches the turn button's label (SeatBar).
   return { id: 'endTurn', title: solo ? 'End the turn' : 'Ready for the turn', why: 'Your orders are set. Every empire’s orders happen together.',
     steps: [{ instruction: `${ctx.touch ? 'Tap' : 'Click'} ${solo ? 'End turn' : 'Ready'}.`, key: ctx.touch ? undefined : 'Return', target: control('turn', 'end') }], current: 0 };
 }
 
-interface AdvisorPreferences { enabled: boolean; seen: string[] }
+interface AdvisorPreferences { enabled: boolean; seen: string[]; practice: Practice; tips: TipLog }
 export function readAdvisorPreferences(): AdvisorPreferences {
   try {
     const raw: unknown = JSON.parse(globalThis.localStorage?.getItem(ADVISOR_KEY) ?? 'null');
     if (raw && typeof raw === 'object') {
-      const p = raw as { enabled?: unknown; seen?: unknown; tutorial?: unknown };
-      return { enabled: p.enabled !== false, seen: Array.isArray(p.seen) ? p.seen.filter((x): x is string => typeof x === 'string') : Array.isArray(p.tutorial) ? p.tutorial.filter((x): x is string => typeof x === 'string') : [] };
+      const p = raw as { enabled?: unknown; seen?: unknown; tutorial?: unknown; practice?: unknown };
+      return { enabled: p.enabled !== false, practice: readPractice(p.practice), tips: readTips((p as { tips?: unknown }).tips), seen: Array.isArray(p.seen) ? p.seen.filter((x): x is string => typeof x === 'string') : Array.isArray(p.tutorial) ? p.tutorial.filter((x): x is string => typeof x === 'string') : [] };
     }
   } catch { /* Storage may be unavailable. */ }
-  return { enabled: true, seen: [] };
+  return { enabled: true, seen: [], practice: {}, tips: {} };
 }
-function savePreferences(p: AdvisorPreferences) {
-  try { globalThis.localStorage?.setItem(ADVISOR_KEY, JSON.stringify(p)); } catch { /* Session state still works. */ }
+const PRACTICE_KINDS: readonly PracticeKind[] = ['move', 'fortify', 'skip', 'explore', 'endTurn', 'closeResearch'];
+function readPractice(raw: unknown): Practice {
+  if (!raw || typeof raw !== 'object') return {};
+  const out: Partial<Record<PracticeKind, number>> = {};
+  for (const kind of PRACTICE_KINDS) {
+    const n = (raw as Record<string, unknown>)[kind];
+    if (typeof n === 'number' && Number.isFinite(n) && n > 0) out[kind] = Math.min(Math.floor(n), PRACTICE_TURNS);
+  }
+  return out;
+}
+function readTips(raw: unknown): TipLog {
+  if (!raw || typeof raw !== 'object') return {};
+  return Object.fromEntries(Object.entries(raw as Record<string, unknown>).filter((e): e is [string, number] => typeof e[1] === 'number' && Number.isFinite(e[1])));
+}
+function savePreferences({ enabled, seen, practice, tips }: AdvisorPreferences) {
+  try { globalThis.localStorage?.setItem(ADVISOR_KEY, JSON.stringify({ enabled, seen, practice, tips })); } catch { /* Session state still works. */ }
 }
 interface AdvisorState extends AdvisorPreferences {
   skippedTurn: number;
   skipped: string[];
   markSeen(id: string): void;
+  /** Turn-scoped, so a routine done twice in one turn counts once. */
+  practisedTurn: number;
+  practised: PracticeKind[];
+  practise(kinds: readonly PracticeKind[], turn: number): void;
+  resetPractice(): void;
+  /** Record a tip as shown on this turn. An earlier turn than any logged means a new game: the log starts over. */
+  noteTip(key: string, turn: number): void;
   skip(id: string, turn: number): void;
   setEnabled(enabled: boolean): void;
 }
 export const useAdvisor = create<AdvisorState>((set) => ({
-  ...readAdvisorPreferences(), skippedTurn: -1, skipped: [],
+  ...readAdvisorPreferences(), skippedTurn: -1, skipped: [], practisedTurn: -1, practised: [],
+  practise: (kinds, turn) => set((s) => {
+    const done = s.practisedTurn === turn ? s.practised : [];
+    const fresh = [...new Set(kinds)].filter((k) => !done.includes(k));
+    if (!fresh.length) return s;
+    const practice = { ...s.practice };
+    for (const k of fresh) practice[k] = Math.min((practice[k] ?? 0) + 1, PRACTICE_TURNS);
+    const next = { ...s, practice, practisedTurn: turn, practised: [...done, ...fresh] };
+    savePreferences(next);
+    return next;
+  }),
   markSeen: (id) => set((s) => { if (s.seen.includes(id)) return s; const next = { ...s, seen: [...s.seen, id] }; savePreferences(next); return next; }),
   skip: (id, turn) => set((s) => ({ skippedTurn: turn, skipped: [...(s.skippedTurn === turn ? s.skipped : []), id] })),
+  noteTip: (key, turn) => set((s) => {
+    if (s.tips[key] === turn) return s;
+    const newGame = Object.entries(s.tips).some(([k, t]) => !k.startsWith('#') && t > turn);
+    const log = newGame ? {} : s.tips, count = `#${tipKind(key)}`;
+    const next = { ...s, tips: { ...log, [key]: turn, [count]: (log[count] ?? 0) + 1 } };
+    savePreferences(next);
+    return next;
+  }),
+  resetPractice: () => set((s) => { const next = { ...s, practice: {}, practised: [] }; savePreferences(next); return next; }),
   setEnabled: (enabled) => set((s) => { const next = { ...s, enabled }; savePreferences(next); return next; }),
 }));

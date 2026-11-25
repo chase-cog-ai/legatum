@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { FixtureClient } from '../test/fixtureEngine';
 import { advisor_orders } from '../wasm-pkg/legatum.js';
 import { neighbors } from '../hex';
-import type { Order } from '../types';
+import type { Order, TechId } from '../types';
+import { TECH_NAME } from '../data';
 import { advisorSuggestion, advisorWhy, practiceKind, PRACTICE_TURNS, readAdvisorPreferences, useAdvisor, type AdvisorContext } from './advisorModel';
 
 async function opening() {
@@ -90,7 +91,9 @@ describe('one decision at a time', () => {
   it('uses plain facts and exact controls on touch', async () => {
     const { view, city, unit, tech, ctx } = await opening();
     const military: Order = { type: 'SetProduction', city: city.id, item: { kind: 'Unit', unit: 'Spearman' } };
-    expect(advisorSuggestion({ ...ctx(), techOpen: true, touch: true }, ['welcome'], [])?.steps[1].instruction).toMatch(/^Tap Research now on /);
+    const pick = advisorSuggestion({ ...ctx(), techOpen: true, touch: true }, ['welcome'], [])?.steps[1];
+    expect(pick?.target).toMatchObject({ kind: 'control', name: 'tech' });
+    expect(pick?.instruction).toBe(`Tap ${TECH_NAME[(pick!.target as { value: TechId }).value]}.`);
     const found = advisorSuggestion({ ...ctx([{ type: 'SetProduction', city: city.id, item: city.detail!.options[0].item }]),
       plan: [{ type: 'FoundCity', unit: unit.id }], touch: true }, ['welcome'], []);
     expect(found?.steps[1].instruction).toBe('Tap Found City.');

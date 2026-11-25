@@ -277,7 +277,7 @@ describe('the map', () => {
 describe('the moment an aircraft is ready', () => {
   it('states the job in one plain line', () => {
     expect(readyNotice('Fighter', 'Bern')).toMatchObject({ kicker: 'Aircraft ready · Bern', title: 'Fighter ready', effect: 'On guard it intercepts enemy air strikes within 4 tiles of its city, except a Stealth Bomber’s: the strike fails and the two aircraft trade damage. Order it to strike enemies within 5 tiles instead; that uses its turn.' });
-    expect(readyNotice('Bomber', 'Bern')).toMatchObject({ kicker: 'Aircraft ready · Bern', title: 'Bomber ready', effect: 'Order it to strike enemies within 8 tiles of Bern each turn, with no retaliation and +36 against city HP. A Fighter on guard or an Air Defence can intercept the strike.' });
+    expect(readyNotice('Bomber', 'Bern')).toMatchObject({ kicker: 'Aircraft ready · Bern', title: 'Bomber ready', effect: 'Order it to strike enemies within 8 tiles of Bern each turn, with no retaliation and +36 against city health. A Fighter on guard or an Air Defence can intercept the strike.' });
   });
 
   it('completing one is a card for you, with its art; ground units still get none', () => {
@@ -307,7 +307,7 @@ describe('the turn report', () => {
     expect(line.text).toMatch(/^Your Fighter from Bern intercepted Athens' Bomber: the strike did not land\.$/);
     expect(line.tone).toBe('good');
     expect(line.details[0]).toContain('traded damage');
-    expect(line.hp?.map((h) => h.text)).toEqual(['−12 HP', '−21 HP']);
+    expect(line.hp?.map((h) => h.text)).toEqual(['−12 health', '−21 health']);
   });
 
   it('says your Bomber was intercepted, and names an unseen striker as an air strike', () => {

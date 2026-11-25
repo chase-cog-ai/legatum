@@ -27,14 +27,14 @@
   box-shadow: 0 0 0 2px var(--panel), 0 0 0 3px var(--siege);
 }
 .siege-title { margin: 0; font: 700 17px/1.1 var(--display); color: var(--ink); min-width: 0; overflow-wrap: anywhere; }
-.siege-hp { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 8px; }
-.siege-bar { grid-column: 1 / -1; position: relative; height: 10px; border: 1.5px solid var(--ink); background: var(--panel-3); overflow: hidden; }
+.siege-hp { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 8px; }
+.siege-bar { flex: 0 0 100%; position: relative; height: 10px; border: 1.5px solid var(--ink); background: var(--panel-3); overflow: hidden; }
 /* HP lost last turn: a hatch beyond the fill, so the loss reads without colour. */
 .siege-lostbar { position: absolute; inset: 0 auto 0 0; background: repeating-linear-gradient(135deg, var(--siege) 0 2px, transparent 2px 5px); opacity: 0.75; }
 .siege-fillbar { position: absolute; inset: 0 auto 0 0; background: var(--siege); border-right: 1.5px solid var(--ink); }
-.siege-num { font: 700 16px/1 var(--num-font); font-variant-numeric: tabular-nums; }
+.siege-num { white-space: nowrap; font: 700 16px/1 var(--num-font); font-variant-numeric: tabular-nums; }
 .siege-of { font-weight: 600; font-size: 12px; color: var(--ink-2); margin-left: 2px; }
-.siege-lost { justify-self: end; color: var(--siege); font: 700 13px/1 var(--num-font); font-variant-numeric: tabular-nums; }
+.siege-lost { white-space: nowrap; color: var(--siege); font: 700 13px/1 var(--num-font); font-variant-numeric: tabular-nums; }
 .siege-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; }
 .siege-who { color: var(--ink-2); font-size: 12px; line-height: 1.3; min-width: 0; }
 .siege-forecast-tip { display: block; }

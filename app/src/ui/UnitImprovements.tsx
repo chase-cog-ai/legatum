@@ -73,11 +73,11 @@ export function UnitImprovements({ unit, view, check, primary, pending, gold, si
   return <section className="unit-improve" aria-label="Improve unit">
     <h3><Star size={10} /> Improve <span /></h3>
     {check && <ImproveRow label={`Upgrade to ${itemName({ kind: 'Unit', unit: check.to }, faction)}`}
-      effect={`${upgradeGain(unit, faction, check.to)}${castrumHeal ? ` · +${castrumHeal} HP from Castrum` : ''}`} icon="ui-trend-up" hotkey="U" cost={check.cost} resource={check.need}
+      effect={`${upgradeGain(unit, faction, check.to)}${castrumHeal ? ` · +${castrumHeal} health from Castrum` : ''}`} icon="ui-trend-up" hotkey="U" cost={check.cost} resource={check.need}
       primary={primary === 'upgrade'} active={pending === 'UpgradeUnit'} blocked={!!check.blocker} reasonId={upgradeReasonId} onClick={upgradeSelected}
       tip={<>
         <p>{unitStatsFor(faction, check.to).moves} moves · {unitStatsFor(faction, check.to).strength} strength before promotions{unitStatsFor(faction, check.to).ranged > 0 && ` · ${unitStatsFor(faction, check.to).ranged} ranged · range ${unitStatsFor(faction, check.to).range}`}.</p>
-        <p>{castrumHeal ? `Castrum restores ${castrumHeal} HP, to ${unit.hp + castrumHeal}/100, once for this upgrade order.` : 'Keeps its HP and promotions.'} Can act again next turn.</p>
+        <p>{castrumHeal ? `Castrum restores ${castrumHeal} health, to ${unit.hp + castrumHeal}/100, once for this upgrade order.` : 'Keeps its health and promotions.'} Can act again next turn.</p>
         {unit.siege && builtInSiege(check.to) && <p>Its Siege is built in from then on, so the Iron the bought Siege used is freed.</p>}
         <p>Treasury: <Amounts text={`${gold} Gold → ${gold - (check.cost ?? 0)} Gold`} />.</p>
         {unit.upgrade_breakdown && <BreakdownTable b={upgradeStepBreakdown(unit.upgrade_breakdown, unit.kind as UnitKind, unit.upgrade_steps?.length ? unit.upgrade_steps : [check.to], faction)} title="Upgrade cost" unit="Gold" plain />}

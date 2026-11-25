@@ -1,6 +1,6 @@
 # Supply sold by the turn: what kept it from being a way to farm the AI (2026-11-25)
 
-Rules 60 adds per-turn supply trades (`crates/core/src/supply_trade.rs`, AI in `crates/ai/src/supply_trade.rs`).
+Rules 61 adds per-turn supply trades (`crates/core/src/supply_trade.rs`, AI in `crates/ai/src/supply_trade.rs`).
 
 - **A trade is a change to `resources::supplied`, not a transfer.** Supply is not a stockpile, so the trade is a
   standing record that both sides' supply totals read. Everything that already asks "is there spare supply?"

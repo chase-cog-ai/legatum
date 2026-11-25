@@ -25,6 +25,7 @@ pub fn blank_game(setup: &GameSetup, map: Map) -> GameState {
             science_conversion: ScienceConversion::Gold,
             researching: None,
             research_queue: Vec::new(),
+            research_goal: None,
             techs: Default::default(),
             explored: BitSet::new(map.len()),
             tile_memory: vec![None; map.len()],

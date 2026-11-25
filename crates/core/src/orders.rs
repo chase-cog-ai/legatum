@@ -137,6 +137,12 @@ pub enum Order {
     SetResearchQueue {
         techs: Vec<TechId>,
     },
+    /// Head for a technology in a later era (the tech tree's goal), or clear the goal with None.
+    /// Whenever the research queue runs out, the goal fills it: the current era's technologies,
+    /// cheapest first, and the goal itself first once its era opens. Persists until it is known.
+    SetResearchGoal {
+        tech: Option<TechId>,
+    },
     /// Choose the yield generated from Science after the last technology; persists across turns.
     SetScienceConversion {
         to: ScienceConversion,

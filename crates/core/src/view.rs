@@ -1073,6 +1073,9 @@ pub struct ResearchView {
     /// exclude them.
     #[serde(default)]
     pub skipped: Vec<TechId>,
+    /// The tech tree's goal (`Player::research_goal`), if any.
+    #[serde(default)]
+    pub goal: Option<TechId>,
     pub available: Vec<TechOption>,
     /// Every existing technology, including locked nodes, at current diffusion prices.
     pub catalog: Vec<TechOption>,
@@ -2214,6 +2217,7 @@ pub fn player_view_cached(
         turns_left: current_cost.and_then(|cost| turns_needed(cost - stored, science)),
         known: player.techs.iter().copied().collect(),
         skipped: skipped.clone(),
+        goal: player.research_goal,
         catalog: TechId::ALL.into_iter().map(option).collect(),
         unlocks: crate::research::tech_unlocks_for(state, me, full, cache),
         available: TechId::ALL

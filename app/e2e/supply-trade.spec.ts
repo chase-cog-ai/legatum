@@ -1,9 +1,9 @@
-// Supply sold by the turn (rules 60), played against the real Hard AI in the WASM engine. The game is the
+// Supply sold by the turn (rules 61), played against the real Hard AI in the WASM engine. The game is the
 // playtest 8.9.2 save at turn 203 (committed for the race panel): the human Switzerland has 5 Coal to spare, India
 // (an ally) has Coal to spare, and Byzantium and Germany can use Coal. The player haggles: a lowball bid and an
 // overpriced sale are turned down with the AI's price, the sale at that price is taken, the supply and the Gold
 // move every turn, and ending the sale gives the Coal back.
-// LEGATUM_SHOTS=<dir> also writes the screenshots used in the pull request.
+// LEGATUM_SHOTS=<dir> also writes the screenshots used in the pull request (LEGATUM_SHOTS_SMALL=1 for 1000x600).
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
@@ -80,7 +80,7 @@ const shot = async (page: Page, name: string) => { if (shots) await page.screens
 
 test('the player haggles supply with the Hard AI: bad offers are refused with a price, fair ones run every turn', async ({ page }) => {
   test.setTimeout(420_000);
-  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.setViewportSize(process.env.LEGATUM_SHOTS_SMALL ? { width: 1000, height: 600 } : { width: 1440, height: 900 });
   await open(page);
   expect((await game(page)).coal.spare).toBe(5);
 

@@ -135,7 +135,7 @@ site value by 40% per travel turn after the first city, up from 10%, so both UI 
 value reaching a city before rival borders close (`core::settlement::analyze_sites`,
 `ai::civilians::choose_site`).
 
-## Supply sold by the turn (rules 60, `crates/core/src/supply_trade.rs`)
+## Supply sold by the turn (rules 61, `crates/core/src/supply_trade.rs`)
 
 An empire with strategic supply to spare lets another empire use it for Gold each turn. Supply is still not a
 stockpile: a trade moves `amount` of the seller's supply to the buyer for as long as it runs.

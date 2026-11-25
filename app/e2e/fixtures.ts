@@ -25,6 +25,9 @@ const BUILD_HINT = `Build first: LEGATUM_RELAY_URL=${E2E_RELAY} scripts/build-we
  */
 export const skipPeopleIntro = () => {
   try { if (localStorage.getItem('legatum.intro.v1') === null) localStorage.setItem('legatum.intro.v1', 'off'); } catch { /* storage is blocked: the intro shows */ }
+  // Research opens on the tech tree; the specs written for the era cards start on "This era".
+  // e2e/research-tree.spec.ts sets the tree back.
+  try { if (localStorage.getItem('legatum.research-view.v1') === null) localStorage.setItem('legatum.research-view.v1', 'era'); } catch { /* storage is blocked: the tree shows */ }
 };
 
 /**

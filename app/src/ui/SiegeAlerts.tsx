@@ -9,19 +9,19 @@ import './siege.css';
 /** The most cards shown in full; any others are one line each, still one click from their city. */
 const FULL_CARDS = 3;
 
-/** What the attackers are doing, in one line, with the damage they do: "3 Spearmen beside it · about 84 HP a turn". */
+/** What the attackers are doing, in one line, with the damage they do: "3 Spearmen from Byzantium: about −84 health a turn". */
 function whoLine(a: CityAlarm): string {
   if (a.kind === 'approach') return `${a.force} from ${a.from} within 3 tiles`;
   if (a.attackers.length) {
     const more = a.approaching.length ? ` · ${a.approaching.length} more within 3 tiles` : '';
-    return `${a.force} from ${a.from}: about ${a.perTurn} HP a turn${more}`;
+    return `${a.force} from ${a.from}: about −${a.perTurn} health a turn${more}`;
   }
   return 'Hit last turn; nothing can strike it next turn';
 }
 
 /** "−80 last turn", or the plain fact when only the city's own record is left (a loaded game). */
 function lostText(a: CityAlarm): string | null {
-  if (a.hit) return `−${a.hit.lost} HP last turn`;
+  if (a.hit) return `−${a.hit.lost} last turn`;
   return a.attackedLastTurn ? 'Took damage last turn' : null;
 }
 
@@ -47,12 +47,12 @@ function SiegeCard({ a }: { a: CityAlarm }) {
         {a.kind === 'attack' && <span className="siege-empire"> · {a.from}</span>}
         {approachingWhen && <span className="siege-approach-time"> · {approachingWhen}</span>}
       </header>
-      {a.kind === 'attack' && <div className="siege-hp" role="img" aria-label={`${a.hp} of ${a.maxHp} HP${a.hit ? `, ${a.hit.lost} lost last turn` : ''}`}>
+      {a.kind === 'attack' && <div className="siege-hp" role="img" aria-label={`${a.hp} of ${a.maxHp} health${a.hit ? `, ${a.hit.lost} lost last turn` : ''}`}>
         <span className="siege-bar" aria-hidden="true">
           <span className="siege-lostbar" style={{ width: `${before}%` }} />
           <span className="siege-fillbar" style={{ width: `${fill}%` }} />
         </span>
-        <b className="siege-num">{a.hp}<span className="siege-of">/{a.maxHp} HP</span></b>
+        <b className="siege-num">{a.hp}<span className="siege-of">/{a.maxHp} health</span></b>
         {lost && <b className="siege-lost">{lost}</b>}
       </div>}
       <Tip content={a.forecast.detail} className="siege-forecast-tip" placement="bottom">
@@ -64,7 +64,7 @@ function SiegeCard({ a }: { a: CityAlarm }) {
         <button className="btn siege-go" onClick={go} aria-label={`Go to ${a.name}`}><span className="siege-go-full">Go to city</span><span className="siege-go-short">Go</span></button>
       </div>
       {a.kind === 'attack' && <p className="siege-compact-facts">
-        <b>{a.hp}/{a.maxHp} HP</b>{lost && <> · {lost}</>} · {compactForecast}
+        <b>{a.hp}/{a.maxHp} health</b>{lost && <> · {lost}</>} · {compactForecast}
       </p>}
     </section>
   );

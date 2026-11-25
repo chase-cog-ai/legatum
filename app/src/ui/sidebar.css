@@ -134,7 +134,7 @@ h3.sidebar-section-link { margin: 0 0 5px; }
 .right-sidebar .siege-head { flex-wrap: wrap; }
 .right-sidebar .siege-title { flex: 1; font-size: 16px; }
 .right-sidebar .siege-empire, .right-sidebar .siege-compact-facts, .right-sidebar .siege-go-short { display: none; }
-.right-sidebar .siege-hp { display: grid; }
+.right-sidebar .siege-hp { display: flex; }
 .right-sidebar .siege-forecast { display: flex; font-size: 12px; }
 .right-sidebar .siege-who, .right-sidebar .siege-go-full { display: inline; }
 .right-sidebar .siege-card .siege-foot { position: static; flex-wrap: wrap; }

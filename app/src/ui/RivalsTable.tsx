@@ -16,8 +16,12 @@ export interface RivalStats { gold: number; army: number; cities: number; scienc
 
 /** A table number: "1,396", and "23k" from 10,000 up so five digits never overrun a narrow column. */
 export function shortNumber(n: number): string {
-  return Math.abs(n) >= 10_000 ? `${Math.round(n / 1000)}k` : n.toLocaleString('en-US');
+  return Math.abs(n) >= 10_000 ? `${Math.round(n / 1000)}k` : exact(n);
 }
+const exact = (n: number) => n.toLocaleString('en-US');
+
+/** " · AI 2" tells twin rows apart, so a wrap may fall before the dot but never strands the number. */
+const keepSuffix = (name: string) => name.replace(/ · AI (\d+)/g, ' ·\u00a0AI\u00a0$1');
 
 /** A team's public numbers: its members' Gold, army, cities and Science per turn added up. */
 export function teamStats(view: PlayerView, row: VpRow): RivalStats {
@@ -68,10 +72,10 @@ export function RivalsTable({ view, model, relationOf, onOpen }: {
         const cells = unmet
           ? <span className="rv-hidden rv-x" role="cell">Not met yet</span>
           : <>
-            <span className="rv-num rv-x" role="cell" title={`Gold in the treasury: ${s.gold}`}>{shortNumber(s.gold)}</span>
-            <span className={`rv-num rv-x${strong ? ' strong' : ''}`} role="cell" title={strong ? `Army points ${s.army}: ${STRONG_ARMY_RATIO} times yours or more` : `Army points ${s.army}`}>{shortNumber(s.army)}</span>
-            <span className="rv-num rv-x" role="cell" title={`Cities: ${s.cities}`}>{shortNumber(s.cities)}</span>
-            <span className="rv-num rv-x" role="cell" title={`Science per turn: ${s.science}`}>{shortNumber(s.science)}</span>
+            <span className="rv-num rv-x" role="cell" title={`Gold in the treasury: ${exact(s.gold)}`}>{shortNumber(s.gold)}</span>
+            <span className={`rv-num rv-x${strong ? ' strong' : ''}`} role="cell" title={strong ? `Army points ${exact(s.army)}: ${STRONG_ARMY_RATIO} times yours or more` : `Army points ${exact(s.army)}`}>{shortNumber(s.army)}</span>
+            <span className="rv-num rv-x" role="cell" title={`Cities: ${exact(s.cities)}`}>{shortNumber(s.cities)}</span>
+            <span className="rv-num rv-x" role="cell" title={`Science per turn: ${exact(s.science)}`}>{shortNumber(s.science)}</span>
           </>;
         const who = <span className="rv-who" role="cell">
           <span className="rv-crests">
@@ -79,7 +83,7 @@ export function RivalsTable({ view, model, relationOf, onOpen }: {
               : row.members.map((m) => <PortraitRoundel key={m.id} faction={m.faction} size={22} color={m.ink} />)}
           </span>
           <span className="rv-name-col">
-            <span className="rv-name">{label}</span>
+            <span className="rv-name">{keepSuffix(label)}</span>
             {rel && !unmet && <span className={`rv-rel ${rel.kind}${rel.declared ? ' declared' : ''}${rel.isNew ? ' new' : ''}`} title={rel.title} data-relation={rel.text}>
               <TreatyEmblem kind={rel.kind === 'war' ? 'War' : rel.kind === 'alliance' ? 'Alliance' : 'Peace'} size={12} /><span className="rv-rel-text">{rel.text}</span>
             </span>}

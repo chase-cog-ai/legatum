@@ -7,7 +7,7 @@
 import type { Page, Route } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import type { SaveFile } from '../../src/store';
-import { E2E_RELAY, expect, testWithFailingRequests } from '../fixtures';
+import { E2E_RELAY, expect, skipPeopleIntro, testWithFailingRequests } from '../fixtures';
 import { dismissInterstitials, endPlanning } from '../turnActions';
 import { chooseCapitalProduction } from '../opening';
 import { SIZES, shot, type GameWindow } from './helpers';
@@ -15,6 +15,11 @@ import { SIZES, shot, type GameWindow } from './helpers';
 const noHints = (p: Page) => p.addInitScript(() => {
   if (location.protocol.startsWith('http')) localStorage.setItem('legatum.first-game-hints.v2', JSON.stringify({ enabled: false, seen: [] }));
 });
+
+async function skipOnboarding(page: Page) {
+  await noHints(page);
+  await page.addInitScript(skipPeopleIntro);
+}
 
 async function multiplayer(page: Page) {
   await page.goto('/');
@@ -226,15 +231,15 @@ for (const size of SIZES) testWithFailingRequests.describe(`online screens ${siz
 for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.name}`, () => {
   testWithFailingRequests.use({ viewport: { width: size.width, height: size.height } });
 
-  testWithFailingRequests('host room, guest room, both on turn one, game menu', async ({ page: host, browser, baseURL, relay }) => {
+  testWithFailingRequests('host and guest play, then Continue hosts the save and the guest rejoins', async ({ page: host, browser, baseURL, relay }) => {
     testWithFailingRequests.setTimeout(420_000);
     const guestContext = await browser.newContext({ baseURL, viewport: { width: size.width, height: size.height } });
     const guest = await guestContext.newPage();
     expect(relay).toBeTruthy();
     // The relay keeps rooms for a while after a run: a unique name finds this run's room.
     const hostName = `Ada ${String(Date.now()).slice(-5)}`;
-    await noHints(host);
-    await noHints(guest);
+    await skipOnboarding(host);
+    await skipOnboarding(guest);
     await multiplayer(host);
     await host.getByLabel('Your name in the game list').fill(hostName);
     await host.getByRole('button', { name: /^Host Game/ }).click();
@@ -360,7 +365,7 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
     // Keep the standalone file-hosting path covered separately from Continue.
     const host2Context = await browser.newContext({ baseURL, viewport: { width: size.width, height: size.height } });
     const host2 = await host2Context.newPage();
-    await noHints(host2);
+    await skipOnboarding(host2);
     // A save with several human players opened with Load Game: Multiplayer opens with Host this save as the primary.
     await host2.goto('/');
     const loadChooser = host2.waitForEvent('filechooser');
@@ -395,7 +400,7 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
 
     const resumedContext = await browser.newContext({ baseURL, viewport: { width: size.width, height: size.height } });
     const resumedHost = await resumedContext.newPage();
-    await noHints(resumedHost);
+    await skipOnboarding(resumedHost);
     await resumedHost.goto('/');
     // Let the app migrate the seeded legacy slot, then reload with only the IndexedDB copy.
     await resumedHost.evaluate((s) => localStorage.setItem('legatum.autosave.v1', s), saveJson);
@@ -422,7 +427,7 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
 
     const guest2Context = await browser.newContext({ baseURL, viewport: { width: size.width, height: size.height } });
     const guest2 = await guest2Context.newPage();
-    await noHints(guest2);
+    await skipOnboarding(guest2);
     await multiplayer(guest2);
     await guest2.getByRole('button', { name: /^Join Game/ }).click();
     const row2 = guest2.locator('.online-room').filter({ hasText: resumedName });

@@ -11,8 +11,9 @@ export const MAX_STATUS_BYTES = 64 * 1024; // the host's `status` frame, which a
 
 // Tunables. Each can be overridden by a Worker var of the same name (wrangler.jsonc "vars").
 export const DEFAULT_LIMITS = {
-  MAX_ROOMS: 64, // rooms on the whole relay, hosted or waiting for their host
+  MAX_ROOMS: 256, // rooms on the whole relay, hosted or waiting for their host
   MAX_ROOMS_PER_IP: 2, // live rooms one client address may hold
+  MAX_ROOMS_PER_NET: 8, // live rooms one network (IPv4 /24, IPv6 /48) may hold, so one block of addresses cannot fill the list
   ROOM_CREATES_PER_10_MIN: 6, // room creations one client address may make in any 10 minutes
   MAX_GUESTS_PER_IP: 4, // guest sockets one client address may hold in one room
 };
@@ -53,15 +54,15 @@ export const HEARD_REPORT_MS = 25_000;
 export const MSG_LOBBY_CLOSED = "Hosting new games is paused. Try again later.";
 export const MSG_LOBBY_FULL = "This lobby is full. Try again in a few minutes.";
 export const MSG_TOO_FAST = "You are opening games too quickly. Try again in a few minutes.";
+export const MSG_TOO_MANY_ON_NETWORK = "Too many games are open from your network. Try again later.";
 export const msgTooManyRooms = (n: number): string =>
   n === 1
     ? "You already have a game open. Close it before hosting another."
     : `You already have ${n} games open. Close one before hosting another.`;
 
 /**
- * Terms that may not appear in a lobby name, matched case-insensitively against the name's letters and
- * digits with spaces and punctuation removed. A name containing one is replaced by "Game <id>".
- * Add entries here; nothing else needs to change.
+ * Terms that may not appear in a build label (`buildOk`), matched case-insensitively against its letters and
+ * digits with spaces and punctuation removed. Lobby names no longer come from hosts (`listedName`).
  */
 export const BLOCKED_NAME_TERMS: readonly string[] = [
   // A first filter for the words that make a public list unpleasant, not a complete one. A term is matched
@@ -87,6 +88,7 @@ export interface Env {
   LOBBY_OPEN?: string;
   MAX_ROOMS?: string;
   MAX_ROOMS_PER_IP?: string;
+  MAX_ROOMS_PER_NET?: string;
   ROOM_CREATES_PER_10_MIN?: string;
   MAX_GUESTS_PER_IP?: string;
 }
@@ -141,7 +143,7 @@ function graphemes(s: string): string[] {
 const foldForBlocklist = (s: string): string => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 
 /**
- * Cleans a host-supplied lobby name. Keeps letters (any script), digits, spaces and a small punctuation
+ * Cleans a host-supplied name (the lobby no longer lists one; kept for callers and tests). Keeps letters (any script), digits, spaces and a small punctuation
  * set; drops everything else, including emoji, symbols, and invisible or direction-changing characters;
  * collapses whitespace; keeps at most 3 combining marks on a letter and at most 40 visible characters.
  * Returns "" when nothing is left or the name contains a blocked term.
@@ -161,8 +163,34 @@ export function sanitizeName(raw: string, blocklist: readonly string[] = BLOCKED
   return s;
 }
 
-/** The name shown for a room whose host gave none, or none usable. */
-export const defaultName = (room: string): string => `Game ${room.slice(0, 4).toUpperCase()}`;
+/**
+ * Words for the name the public game list shows. The list never shows text a host typed: anyone can host, and
+ * a free-text name is a way to put any message in front of every player. The name is made from the room id
+ * instead, one word from each list. Every pairing must read as a plain place-like name, so add words with care.
+ */
+export const LISTED_ADJECTIVES: readonly string[] = [
+  "Amber", "Bronze", "Cedar", "Cobalt", "Copper", "Crimson", "Golden", "Granite",
+  "Indigo", "Ivory", "Jade", "Marble", "Olive", "Saffron", "Silver", "Scarlet",
+];
+export const LISTED_NOUNS: readonly string[] = [
+  "Banner", "Bridge", "Citadel", "Compass", "Delta", "Forum", "Garden", "Harbour",
+  "Highland", "Lantern", "Meadow", "Oasis", "Ridge", "River", "Steppe", "Valley",
+];
+
+const ID_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789";
+
+/** The name the game list shows for a room: two words picked by the room id, plus two id characters to tell rooms apart. */
+export function listedName(room: string): string {
+  const at = (i: number) => Math.max(0, ID_ALPHABET.indexOf(room[i] ?? "a"));
+  const adjective = LISTED_ADJECTIVES[at(0) % LISTED_ADJECTIVES.length]!;
+  const noun = LISTED_NOUNS[at(1) % LISTED_NOUNS.length]!;
+  // Digits only, so the tag never spells a word.
+  const tag = String((at(2) * 32 + at(3)) % 100).padStart(2, "0");
+  return `${adjective} ${noun} ${tag}`;
+}
+
+/** Kept for older callers: the listed name. */
+export const defaultName = listedName;
 
 /**
  * Strict validation of a POST /rooms body. Returns null when anything is off. Extra fields are dropped.
@@ -181,11 +209,36 @@ export function parseAnnounce(v: unknown): RoomAnnounce | null {
   if (typeof locked !== "boolean") return null;
   // Every player in the lobby reads the build label, so it holds only what a real label is made of
   // ("Version 0.1.0 (abc1234)", "Dev · after 9 (abc1234)", "playtest-9"): no markup, links or symbols.
-  if (!BUILD_RE.test(build)) return null;
-  return { name: sanitizeName(name), build, rules_version, protocol, locked };
+  if (!buildOk(build)) return null;
+  // Older pages still send the host's name. It is checked for shape and then dropped: the Worker lists the room
+  // under `listedName`, never under text a host typed.
+  return { name: "", build, rules_version, protocol, locked };
 }
 
-const BUILD_RE = /^[\p{L}\p{N}][\p{L}\p{N} .·()_+-]*$/u;
+const HASH = "[0-9a-f]{7,12}";
+const NUM = "\\d{1,4}(\\.\\d{1,4}){0,3}[a-z]?";
+/**
+ * The build labels the game makes (app/src/buildLabel.ts, scripts/build-web.sh, scripts/deploy-preview.sh) and
+ * nothing else. The lobby shows the label to every player whose version differs, so it may not carry free words:
+ * only fixed words, version numbers and commit hashes.
+ */
+const BUILD_FORMS: readonly RegExp[] = [
+  new RegExp(`^Version \\d{1,4}(\\.\\d{1,4}){0,3}( · web ${HASH})?( \\(${HASH}\\))?$`),
+  new RegExp(`^Playtest ${NUM}$`),
+  new RegExp(`^Dev · after ${NUM} \\(${HASH}\\)$`),
+  new RegExp(`^Dev \\(${HASH}\\)$`),
+  /^Dev build$/,
+  /^\d{1,4}(\.\d{1,4}){0,3}$/,
+  // A preview (scripts/deploy-preview.sh playtest-9): its label is the preview's name. Only these words.
+  /^(playtest|preview|test|beta)-\d{1,4}[a-z]?$/,
+];
+
+/** A build label the relay will list: one of `BUILD_FORMS`, with no blocked word. */
+export function buildOk(build: string): boolean {
+  if (build.length > MAX_BUILD || !BUILD_FORMS.some((re) => re.test(build))) return false;
+  const folded = foldForBlocklist(build);
+  return !BLOCKED_NAME_TERMS.some((t) => folded.includes(foldForBlocklist(t)));
+}
 
 /** Validate a host `summary` frame. Returns null when it is not usable (the old summary stays). */
 export function parseSummary(v: unknown): Summary | null {
@@ -246,6 +299,20 @@ export function addressKey(ip: string): string {
   const t = tail ? tail.split(":") : [];
   const groups = tail === undefined ? h : [...h, ...new Array<string>(Math.max(0, 8 - h.length - t.length)).fill("0"), ...t];
   return `${groups.slice(0, 4).map((g) => g.toLowerCase().replace(/^0+(?=.)/, "")).join(":")}::/64`;
+}
+
+/**
+ * The network a client address belongs to, for the per-network room cap: an IPv4 address's /24, an IPv6
+ * address's /48. A /48 is what one customer or one free tunnel account gets, so it bounds how many lobby rooms
+ * one person can hold by stepping through /64s.
+ */
+export function networkKey(ip: string): string {
+  const one = addressKey(ip);
+  if (!one.includes(":")) {
+    const parts = one.split(".");
+    return parts.length === 4 ? `${parts.slice(0, 3).join(".")}.0/24` : one;
+  }
+  return `${one.split(":").slice(0, 3).join(":")}::/48`;
 }
 
 /** A salted SHA-256 of a client address (see `addressKey`), 128 bits of hex. The raw address is never stored or logged. */

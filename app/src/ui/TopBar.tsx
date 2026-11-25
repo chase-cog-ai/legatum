@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { CounterDelta } from '../celebrate/MomentLane';
 import { useGame } from '../store';
-import { CALENDAR_NOTE, TECH_NAME, calendarLabel, decadenceRules } from '../data';
+import { CALENDAR_NOTE, TECH_NAME, effectiveTurnLimit, calendarLabel, decadenceRules } from '../data';
 import { effectiveResearchQueue, pendingResearchQueue } from '../orders';
 import { firstScienceForecast } from '../research';
 import { eraName, eraNumeral, queueSchedule } from './eraResearch';
@@ -21,6 +21,8 @@ import { LevyCounter } from './Levy';
 import { DecadenceNote } from './DecadenceNote';
 import { pendingSpend } from './productionPurchases';
 import { TrainingLine, TrainingTip } from './Training';
+import { hostedRoomId } from '../net/hosting';
+import { listedRoomName } from '../net/roomName';
 
 /**
  * Desktop and tablet top bar compaction, in order: each step hides more secondary text (all of it
@@ -63,6 +65,12 @@ function useTopBarCompaction(ref: RefObject<HTMLElement | null>, phone: boolean)
 /** The turn limit joins the turn label only this close to it; before that it lives in the tooltip (user, 2026-11-15). */
 const FINAL_TURNS = 25;
 
+/** The Online chip's tip for the host: keep the tab open, and the game's name in the public list so friends can find it. */
+function hostTip(roomId: string | null): string {
+  const keep = 'You host this game in this tab, so keep it open.';
+  return roomId ? `${keep} In the game list it is “${listedRoomName(roomId)}”.` : keep;
+}
+
 export function TopBar() {
   const view = useGame((s) => (s.views ? s.views[s.seat] : null));
   const orders = useGame((s) => s.orders[s.seat]);
@@ -99,9 +107,8 @@ export function TopBar() {
     <BreakdownTable b={e.bankruptcy.gold} title="Next turn Gold before bankruptcy" />
     <div className="bd-note">{FORECAST_ASSUMPTIONS}</div>
   </> : null;
-  const turnTip = `${view.turn_limit === null
-    ? 'No turn limit; play until victory.'
-    : `${Math.max(0, view.turn_limit - view.turn)} turns until the turn limit. At turn ${view.turn_limit} the highest VP wins.`} ${CALENDAR_NOTE}`;
+  const lastTurn = effectiveTurnLimit(view.turn_limit);
+  const turnTip = `${Math.max(0, lastTurn - view.turn)} turns until turn ${lastTurn}, when the team with the most VP wins. ${CALENDAR_NOTE}`;
   return (
     <header ref={bar} className="topbar" data-overlay-slot="top-bar">
       <div className="brand">
@@ -169,7 +176,7 @@ export function TopBar() {
       </div>
       <div className="tb-right">
         {net && (
-          <Tip content={net.status.is_local ? 'You host this game in this tab. Keep it open.' : net.conn === 'open' ? 'Connected to the host' : 'Connection lost: reconnecting automatically'} className={`net ${net.conn}`}>
+          <Tip content={net.status.is_local ? hostTip(hostedRoomId()) : net.conn === 'open' ? 'Connected to the host' : 'Connection lost: reconnecting automatically'} className={`net ${net.conn}`}>
             <span className={`conn-dot ${net.conn === 'open' ? 'on' : 'warn'}`} />
             {net.conn === 'open' ? 'Online' : net.conn === 'taken' ? 'Seat taken' : 'Reconnecting'}
 
@@ -178,7 +185,7 @@ export function TopBar() {
         <Tip content={<>{turnTip}<TrainingTip /></>} className="turn">
           <span className="turn-label">Turn</span>
           <b data-testid="turn-number">{view.turn}</b>
-          {view.turn_limit !== null && view.turn_limit - view.turn <= FINAL_TURNS && <span className="turn-of" data-testid="turn-of">of {view.turn_limit}</span>}
+          {lastTurn - view.turn <= FINAL_TURNS && <span className="turn-of" data-testid="turn-of">of {lastTurn}</span>}
           <span className="turn-year" data-testid="turn-year">· {calendarLabel(view.turn)}</span>
           <TrainingLine />
         </Tip>

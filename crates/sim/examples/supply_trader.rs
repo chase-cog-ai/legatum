@@ -1,4 +1,4 @@
-//! Exploiter seat `supply_trader`: can a player farm the AI through supply trades (rules 62)?
+//! Exploiter seat `supply_trader`: can a player farm the AI through supply trades (rules 63)?
 //!
 //! Eight Hard seats. Each seed is played twice: `plain` (seat 0 is plain Hard) and `trader` (seat 0 is
 //! Hard that also tries every abusive supply offer each turn). The trader keeps Hard's own orders and

@@ -43,9 +43,8 @@ jobs:
     defaults:
       run:
         working-directory: infra/relay
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    # The Cloudflare token is given to the deploy step only, never to `npm ci`: a dependency's install script
+    # must not be able to read it.
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -55,8 +54,12 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: infra/relay/package-lock.json
-      - run: npm ci
+      # No install scripts: they would run before the deploy step and could change what it runs with the token.
+      - run: npm ci --ignore-scripts
       - name: Deploy (skipped until the Cloudflare secrets exist)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "::notice::CLOUDFLARE_API_TOKEN is not set; skipping the deploy."

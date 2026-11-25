@@ -1,4 +1,4 @@
-// Supply sold by the turn (rules 62), played against the real Hard AI in the WASM engine. The game is the
+// Supply sold by the turn (rules 63), played against the real Hard AI in the WASM engine. The game is the
 // playtest 8.9.2 save at turn 203 (committed for the race panel): the human Switzerland has 5 Coal to spare, India
 // (an ally) has Coal to spare, and Byzantium and Germany can use Coal. The player haggles: a lowball bid and an
 // overpriced sale are turned down with the AI's price, the sale at that price is taken, the supply and the Gold

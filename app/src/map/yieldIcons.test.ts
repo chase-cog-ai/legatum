@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { COLLAPSE_AT, drawYieldIcons, YIELD_ORDER, yieldCluster, yieldDetail, yieldIconSize } from './yieldIcons';
+import { BONUS_TAG_FONT, bonusTagSize, COLLAPSE_AT, drawYieldIcons, foldedBonuses, YIELD_ORDER, yieldCluster, yieldDetail, yieldIconSize } from './yieldIcons';
+import { centerX, centerY, HEX_SIZE } from './grid';
 import type { LensTile } from './lenses';
 
 vi.mock('../icons', () => ({ tintedIcon: () => null }));
@@ -17,6 +18,42 @@ describe('yieldCluster', () => {
     const right = (k: string) => Math.max(...marks.filter((m) => m.kind === k).map((m) => m.x));
     const left = (k: string) => Math.min(...marks.filter((m) => m.kind === k).map((m) => m.x));
     for (let i = 1; i < YIELD_ORDER.length; i++) expect(left(YIELD_ORDER[i])).toBeGreaterThan(right(YIELD_ORDER[i - 1]));
+  });
+
+  it("folds a natural wonder's +25% into the cluster: after its yield's icons, or with the icon when the tile has none", () => {
+    const tagged = yieldCluster([{ kind: 'food', value: 2 }, { kind: 'science', value: 1 }], 10, 'food');
+    const plain = yieldCluster([{ kind: 'food', value: 2 }, { kind: 'science', value: 1 }], 10);
+    const tag = tagged.marks.find((m) => m.tag);
+    expect(tag).toMatchObject({ kind: 'food', tag: '+25%' });
+    expect(tag!.tagIcon).toBeFalsy();
+    // The tag sits after the food icons and before the science icon, and the cluster grows to hold it.
+    expect(tag!.x).toBeGreaterThan(Math.max(...tagged.marks.filter((m) => m.kind === 'food' && !m.tag).map((m) => m.x)));
+    expect(tag!.x).toBeLessThan(tagged.marks.find((m) => m.kind === 'science')!.x);
+    expect(tagged.width).toBeGreaterThan(plain.width);
+    expect(count(tagged.marks.filter((m) => !m.tag), 'food')).toBe(2);
+    // No production on the tile: the tag carries the production icon itself, and no icon counts as a point.
+    const none = yieldCluster([{ kind: 'food', value: 2 }], 10, 'production');
+    expect(none.marks.filter((m) => m.kind === 'production')).toEqual([expect.objectContaining({ tag: '+25%', tagIcon: true })]);
+  });
+
+  it('keeps the folded pill readable: a fixed size, never shrunk with the icons', () => {
+    expect(BONUS_TAG_FONT).toBeGreaterThanOrEqual(10);
+    const small = yieldCluster([{ kind: 'food', value: 2 }], 7, 'food'), big = yieldCluster([{ kind: 'food', value: 2 }], 17, 'food');
+    expect(small.height).toBeGreaterThanOrEqual(bonusTagSize(false).height);
+    expect(big.width - yieldCluster([{ kind: 'food', value: 2 }], 17).width).toBeGreaterThanOrEqual(bonusTagSize(false).width);
+  });
+
+  it('folds the bonus only where the pill fits in the hex and no unit sits on the cluster', () => {
+    const tile: LensTile = { index: 0, tint: '', faded: false, yields: [{ kind: 'food', value: 2 }, { kind: 'production', value: 1 }], bonus: 'production' };
+    const at = (zoom: number) => ({ x: centerX(0, 10), y: centerY(0, 10), zoom });
+    // Close in, it fits; at a normal zoom the readable pill is wider than the hex allows, so the tile keeps its wonder pill.
+    expect(foldedBonuses([tile], at(1.6), 800, 600, 10).has(0)).toBe(true);
+    expect(foldedBonuses([tile], at(0.9), 800, 600, 10).has(0)).toBe(false);
+    // Zoomed out to dots, nothing folds.
+    expect(foldedBonuses([tile], at(0.4), 800, 600, 10).size).toBe(0);
+    // A unit counter over the cluster: the pill (which clears or draws above counters) shows the bonus instead.
+    const r = HEX_SIZE * 1.6;
+    expect(foldedBonuses([tile], at(1.6), 800, 600, 10, [], [{ x: 400 - r * 0.4, y: 300 - r * 0.4, w: r * 0.8, h: r * 1.2 }]).has(0)).toBe(false);
   });
 
   it('collapses large values to one icon with a numeral', () => {

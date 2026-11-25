@@ -1,6 +1,6 @@
 /**
  * Game uploads (infra/games): the hosted web build sends each game's record to a private Cloudflare R2 bucket,
- * every five turns and when the game ends, so the AI can be measured and bugs found. Every seat goes under its
+ * after each of the first five turns, then every five turns, and when the game ends, so the AI can be measured and bugs found. Every seat goes under its
  * default name ("Player 1", "AI 2", from the engine's `public_archive`), and the server refuses any other name.
  * scripts/build-web.sh bakes the address in as VITE_LEGATUM_GAMES_URL; other builds leave it empty and upload nothing.
  */
@@ -10,6 +10,13 @@ export const GAMES_URL: string = String(import.meta.env.VITE_LEGATUM_GAMES_URL ?
 export const PRIVACY_URL = 'https://github.com/samcorcos/legatum#privacy';
 
 export const uploadsGames = (): boolean => GAMES_URL !== '';
+
+/**
+ * Whether the record is captured after this many ended turns: at setup (0), after each of the first five turns,
+ * then every fifth. Most games that stop do so in the first five turns, and one checkpoint at setup and one at
+ * turn 5 cannot say which of those turns a player left on.
+ */
+export const isHistoryCheckpoint = (turnsEnded: number): boolean => turnsEnded <= 5 || turnsEnded % 5 === 0;
 
 /**
  * The record to keep and upload: names removed when uploads are on, the player's coach-question answers added as
@@ -69,6 +76,8 @@ export async function uploadGameHistory(json: string): Promise<boolean> {
       method: 'PUT', body, signal: AbortSignal.timeout(30000),
       headers: { 'Content-Type': 'application/octet-stream', ...(key ? { 'X-Upload-Key': key } : {}) },
     });
+    // The answer is not needed. Release its body now; left unread, the timeout above would abort it 30 s later.
+    await response.body?.cancel().catch(() => {});
     if (response.ok) return true;
     // 400/404/409/413/422: this record will never be accepted; retrying cannot help (409: the game is stored
     // under another upload key, for example after this browser's storage was cleared). A 403 means this site is

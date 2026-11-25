@@ -42,7 +42,8 @@ it('Open Borders with Gold received: a small card with both crests, the emblem a
   expect(card).not.toBeNull();
   expect(card.getAttribute('data-tier')).toBe('notable');
   const them = empireTitle(view(), 1);
-  expect(card.querySelector('.moment-kicker')!.textContent).toBe('Borders opened');
+  expect(card.querySelector('.moment-kicker')).toBeNull(); // the title names the event
+  expect(card.querySelector('.moment-treaty-gold')!.classList.contains('gain')).toBe(true);
   expect(card.querySelector('h2')!.textContent).toBe(`Open Borders with ${them}`);
   const art = card.querySelector('[data-testid=moment-treaty]')!;
   expect(art.querySelectorAll('.medallion')).toHaveLength(2);
@@ -51,16 +52,17 @@ it('Open Borders with Gold received: a small card with both crests, the emblem a
   expect(card.querySelector('.moment-effect')!.textContent).toBe('Your units may enter each other’s land.');
   // The Gold ticks on the treasury counter, and the card is a short story card, not a held takeover.
   expect(host.querySelector('[data-celebrate-delta=gold]')!.textContent).toBe('+40');
+  expect(host.querySelector('[data-celebrate-delta=gold]')!.classList.contains('cost')).toBe(false);
   act(() => vi.advanceTimersByTime(3500));
   expect(host.querySelector('.moment-card')).toBeNull();
 });
 
-it('plays the notable sting on the small lift, and none for an offer between two other empires', async () => {
+it('an Alliance plays the major sting, and an offer between two other empires plays none', async () => {
   const events = await treatyCelebrationFixture('Alliance', 0);
   const after = view();
   const moments = useGame.getState().report!.moments![0];
   expect(feedbackForTurn(events, after)).toContain('vpGained');
-  expect(soundHooksForMoments(moments, events)).toEqual({ vpGained: 'sting.notable' });
+  expect(soundHooksForMoments(moments, events)).toEqual({ vpGained: 'sting.major' });
   const others: Event[] = [{ type: 'ProposalAccepted', proposal: { ...((events[0] as { proposal: PeaceProposal }).proposal), from: 1, to: 2 }, effective_turn: after.turn }];
   expect(momentsForTurn(others, 0, null, after)).toEqual([]);
   expect(feedbackForTurn(others, after)).not.toContain('vpGained');
@@ -72,10 +74,12 @@ it('Gold we paid shows as a payment and lowers the counter; a Peace names its gu
   const after = view();
   const events = useGame.getState().report!.events[0];
   const card = treatyMoment(events, 0, 0, after)!;
-  expect(card.kicker).toBe('Peace made');
+  expect(card.kicker).toBeUndefined();
+  expect(card.tier).toBe('notable');
+  expect(card.treaty!.upkeep).toBeUndefined();
   expect(card.title).toBe(`Peace with ${empireTitle(after, 1)}`);
   expect(card.effect).toBe(`No War between you through turn ${after.turn + 9}.`);
-  expect(card.treaty!.gold).toEqual({ amount: 60, received: false, text: `You paid ${empireTitle(after, 1)} 60 Gold` });
+  expect(card.treaty!.gold).toEqual({ amount: 60, received: false, text: `−60 Gold to ${empireTitle(after, 1)}` });
   expect(card.deltas).toEqual([{ counter: 'gold', amount: -60 }]);
   expect(card.treaty!.ours.id).toBe(0);
   expect(card.treaty!.theirs.id).toBe(after.players.find((p) => p.team === 1)!.id);
@@ -89,5 +93,18 @@ it('reduced motion stands the card still', async () => {
   render();
   expect(host.querySelector('.moment-lane')!.classList.contains('reduced')).toBe(true);
   expect(host.querySelector('[aria-label="Alliance emblem"]')).not.toBeNull();
-  expect(host.querySelector('.moment-kicker')!.textContent).toBe('Alliance signed');
+  // An Alliance is the framed big card, and states the upkeep that starts now (one Gold per city, minimum one).
+  const card = host.querySelector('.moment-card')!;
+  expect(card.getAttribute('data-tier')).toBe('major');
+  const cities = Math.max(1, view().cities.filter((c) => c.owner === view().me).length);
+  expect(card.querySelector('[data-testid=moment-treaty-upkeep]')!.textContent).toBe(`Upkeep −${cities} Gold a turn`);
+});
+
+it('Gold we paid ticks the treasury counter in red', async () => {
+  await treatyCelebrationFixture('Peace', -60);
+  render();
+  const tick = host.querySelector('[data-celebrate-delta=gold]')!;
+  expect(tick.textContent).toBe('−60');
+  expect(tick.classList.contains('cost')).toBe(true);
+  expect(host.querySelector('.moment-treaty-gold')!.classList.contains('cost')).toBe(true);
 });

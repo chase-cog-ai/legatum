@@ -24,7 +24,8 @@ it.skipIf(!available)('core says a city was hit last turn, and the alerts need n
   expect(city.detail?.attacked_last_turn).toBe(true);
   const [alarm] = citiesUnderAttack(view, null);
   expect(alarm).toMatchObject({ kind: 'attack', cityId: s.own, force: '3 Spearmen', attackedLastTurn: true, hit: null });
-  expect(alarm.forecast.text).toBe('Holds about 2 turns unless reinforced');
+  // Its Walls take half of each hit before the health (breakable Walls, rules 62).
+  expect(alarm.forecast.text).toBe('Holds about 4 turns unless reinforced');
 });
 
 it.skipIf(!available)('the AI really attacks an unwalled city, and the report leads with it', () => {

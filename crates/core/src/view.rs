@@ -1535,7 +1535,7 @@ fn improvement_view(
     if seen != Some(true) {
         return None;
     }
-    let kind = crate::improvements::kind_for(t.resource?);
+    let kind = crate::improvements::kind_for(t.resource?)?;
     let upgraded = t.owner == Some(me)
         && crate::improvements::upgraded(kind, |tech| state.player(me).techs.contains(&tech));
     Some(TileImprovement { kind, upgraded })
@@ -1546,7 +1546,7 @@ fn improvement_preview(state: &GameState, c: &City, tile: Hex) -> Option<Improve
     let resource = state.map.get(tile)?.resource?;
     let techs = &state.player(c.owner).techs;
     let knows = |t: TechId| techs.contains(&t);
-    let kind = crate::improvements::kind_for(resource);
+    let kind = crate::improvements::kind_for(resource)?;
     let upgrade_tech = crate::improvements::upgrade_tech(kind);
     Some(ImprovementPreview {
         tile,

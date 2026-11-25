@@ -2,7 +2,7 @@ import { uniquePieceBare, ARTILLERY_RULE, SIEGE_RULE, SIEGE_USES_IRON, siegeGold
 import { FACTION_SHEETS } from '../factionSheets';
 import { comparedItems, comparisonSentence, pieceComparison } from '../pieceCompare';
 import type { Resource } from '../types';
-import { RESOURCE_INFO, RESOURCES, STRATEGIC_SITE_VALUE, SUPPLY_PER_DEPOSIT, SUPPLY_PER_MINE, UNSUPPLIED_STRENGTH_PERCENT, isStrategic } from '../resources';
+import { RESOURCE_INFO, RESOURCES, STRATEGIC_SITE_VALUE, SUPPLY_PER_DEPOSIT, SUPPLY_PER_MINE, UNSUPPLIED_STRENGTH_PERCENT, isLuxury, isStrategic, LUXURY_RESOURCES, LUXURY_STORY } from '../resources';
 import { FactionSeal } from '../brand/ornaments';
 import { useGame } from '../store';
 import { SOUND_MANIFEST } from '../feel';
@@ -154,7 +154,7 @@ export function GuideContent({ section }: { section: GuideSection }) {
       <p>A tile costs {TILE_GOLD_BASE} Gold, plus {TILE_GOLD_PER_TILE} Gold for each tile the city has gained since it was founded, whether it grew or you bought it. Tiles in the second ring cost {tileRingPercent(2)}% of that, and tiles in the third ring {tileRingPercent(3)}%. A tile purchase is the city’s one purchase for the turn, shared with buying units and buildings. A tile you buy is never given back when the city loses population, and the city still gains a tile each time it grows. If two empires buy the same tile on the same turn, a random draw decides who gets it. The other keeps its Gold.</p>
       <p>{TILE_RELEASE_RULE} A city boxed in by rivals catches up on its claims when land frees up. Cities in resistance don’t claim.</p>
       <h3>Resources: strategic supply begins with Iron</h3>
-      <div className="guide-resource-art" aria-label="The nine resource deposits">{RESOURCES.map((resource) => <span key={resource}><Icon name={`resource-${resource.toLowerCase()}`} size={28} label={resource} />{resource}{isStrategic(resource) && <small>Strategic</small>}</span>)}</div>
+      <div className="guide-resource-art" aria-label="The bonus and strategic resource deposits">{RESOURCES.filter((resource) => !isLuxury(resource)).map((resource) => <span key={resource}><Icon name={`resource-${resource.toLowerCase()}`} size={28} label={resource} />{resource}{isStrategic(resource) && <small>Strategic</small>}</span>)}</div>
       <p>Medallions at the top of a tile mark resources, as in Civ. A resource gives its bonus only after its tile is improved (see Improvements below): Wheat and Cattle +{RESOURCE_INFO.Wheat.bonus.food} Food, Stone +{RESOURCE_INFO.Stone.bonus.production} Production, Copper +{RESOURCE_INFO.Copper.bonus.gold} Gold. All four are bonus resources and always visible.</p>
       <p>The Ancient era has no resource requirements. From the Classical era on, an era’s new land units and its key building use 1 of that era’s strategic resource.</p>
       <table className="guide-era-table">
@@ -173,6 +173,18 @@ export function GuideContent({ section }: { section: GuideSection }) {
       <p>The top bar shows every revealed strategic resource in its own chip, as “Iron 1 / 6”: spare supply over total supply. Before you reveal your era’s resource, a muted chip names the technology to research and its tooltip names the units and buildings it feeds. Revealed chips open each resource’s breakdown and name what uses it. If your era’s revealed resource is missing, its chip shows an alert and the tooltip names who holds the deposits you have seen. Click it to see every deposit and every building or unit that needs it, and to find the idle ones on the map.</p>
       <p>Every start has a Copper deposit two tiles away and an Iron deposit three to five tiles away, within reach of your borders or a nearby second city. Niter, Coal, Oil and Silicon lie in the borderlands between empires, so the later eras are won by expanding toward them or taking them.</p>
       <p>The Resources overlay (O) rings every known deposit: yours, unclaimed and other empires’. A red “!” marks a deposit of a resource you lack that another empire holds or nobody does. Borders grow toward known strategic deposits, and the settle lens counts known resources (+{STRATEGIC_SITE_VALUE} per strategic deposit within two tiles).</p>
+      <h3>Luxuries: rare finds</h3>
+      <div className="guide-resource-art" aria-label="The six luxuries">{LUXURY_RESOURCES.map((resource) => <span key={resource}><Icon name={`resource-${resource.toLowerCase()}`} size={28} label={resource} />{resource}</span>)}</div>
+      <p>A map has a few luxury tiles, at most one of each, away from every starting site. A luxury is always visible and adds a small bonus to its tile whenever a citizen works it. It needs no improvement. It supplies nothing and has no effect on the rest of your empire.</p>
+      <table className="guide-luxury-table">
+        <thead><tr><th>Luxury</th><th>Found on</th><th>Tile bonus</th><th>History</th></tr></thead>
+        <tbody>{LUXURY_RESOURCES.map((resource) => <tr key={resource}>
+          <td className="guide-resource-cell"><span className="guide-resource-label"><Icon name={`resource-${resource.toLowerCase()}`} size={20} /> <b>{resource}</b></span></td>
+          <td>{RESOURCE_INFO[resource].terrains.join(', ')}</td>
+          <td>{(['food', 'production', 'gold', 'science'] as const).filter((k) => RESOURCE_INFO[resource].bonus[k]).map((k) => `+${RESOURCE_INFO[resource].bonus[k]} ${k[0].toUpperCase()}${k.slice(1)}`).join(', ')}</td>
+          <td>{LUXURY_STORY[resource]}</td>
+        </tr>)}</tbody>
+      </table>
       <h3>Improvements: waking a resource</h3>
       <GuideArtRow label="The improvements and their upgrades" pieces={IMPROVEMENT_PIECES} />
       <p>There are no Builders. A city builds an <b>improvement</b> as a production item, aimed at one tile it owns and works (within {WORK_RADIUS} tiles), such as “Mine, Iron · 2 tiles NE”. Wheat takes a {IMPROVEMENT_INFO.Farm.name}, Cattle a {IMPROVEMENT_INFO.Pasture.name}, Stone a {IMPROVEMENT_INFO.Quarry.name}, Copper, Iron and Coal a {IMPROVEMENT_INFO.Mine.name}, Niter a {IMPROVEMENT_INFO.SaltpetreWorks.name}, Oil an {IMPROVEMENT_INFO.OilWell.name} and Silicon a {IMPROVEMENT_INFO.QuartzMine.name}. Quartz deposits fit for chips are scarce. Your unimproved resources show faded, with a dashed ring (dormant). Improvements cost {IMPROVEMENT_INFO.Farm.cost} to {IMPROVEMENT_INFO.Mine.cost} Production and can be bought like any item. Egypt pays in Food and builds no Quarries.</p>

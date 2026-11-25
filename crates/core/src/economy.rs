@@ -627,16 +627,16 @@ fn yields_base<const FULL: bool>(
                 continue;
             }
             let resource = tile.resource.expect("bonus");
-            let upgraded =
-                crate::improvements::upgraded(crate::improvements::kind_for(resource), knows);
-            names.push(if *h == city.pos {
-                crate::resources::name(resource).to_string()
-            } else {
-                format!(
-                    "{} ({})",
-                    crate::resources::name(resource),
-                    crate::improvements::name(crate::improvements::kind_for(resource), upgraded)
-                )
+            let improvement = crate::improvements::kind_for(resource)
+                .filter(|_| *h != city.pos)
+                .map(|kind| {
+                    crate::improvements::name(kind, crate::improvements::upgraded(kind, knows))
+                });
+            names.push(match improvement {
+                Some(improvement) => {
+                    format!("{} ({improvement})", crate::resources::name(resource))
+                }
+                None => crate::resources::name(resource).to_string(),
             });
         }
     }

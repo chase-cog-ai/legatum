@@ -1929,17 +1929,18 @@ mod tests {
         // Peaceful contests (rules 51, 2026-11-22: the stronger side takes a contested tile between empires not at War) give four cities at T50, five at T62, no VP at T100 and no win.
         // The Mongols never having Walls (rules 57, 2026-11-22) leaves the Mongol rival open, and the seat wins by elimination at T164.
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege move the win to T170.
+        // Luxury tiles (rules 60) add six bonus tiles to this map: two cities at T30, four at T50, three at T62, no VP at T100 and no win.
         assert_eq!(
             first_map_game(true),
             json!({
-                "cities_t30": 3,
+                "cities_t30": 2,
                 "cities_t50": 4,
-                "cities_t62": 5,
+                "cities_t62": 3,
                 "vp_t100": 0,
                 "vp_t60": 0,
-                "win": true,
-                "win_turn": 170,
-                "win_type": "elimination",
+                "win": false,
+                "win_turn": null,
+                "win_type": null,
             })
         );
     }
@@ -1969,13 +1970,14 @@ mod tests {
         // Peaceful contests (rules 51, 2026-11-22: the stronger side takes a contested tile between empires not at War) give four cities at T50, five at T62, no VP at T100 and no win.
         // The Mongols never having Walls (rules 57, 2026-11-22) leaves the Mongol rival open, and the seat wins by elimination at T183.
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege leave the seat with no win on this tape.
+        // Luxury tiles (rules 60) add six bonus tiles to this map: two cities at T30, four at T50 and T62, two VP at T100 and still no win.
         assert_eq!(
             first_map_game(false),
             json!({
-                "cities_t30": 3,
+                "cities_t30": 2,
                 "cities_t50": 4,
-                "cities_t62": 5,
-                "vp_t100": 0,
+                "cities_t62": 4,
+                "vp_t100": 2,
                 "vp_t60": 0,
                 "win": false,
                 "win_turn": null,

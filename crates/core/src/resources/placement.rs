@@ -285,6 +285,57 @@ pub fn place(map: &mut Map, starts: &[Hex], setup: &GameSetup, attempt: u64) -> 
     Some(())
 }
 
+/// Its own layer, so the terrain, starts, deposits and natural wonders of a seed stay as they were.
+pub const LAYER_LUXURIES: u64 = 22;
+/// A luxury sits at least this far from every start: something to find and to expand toward.
+pub const LUXURY_MIN_START_DISTANCE: i32 = 4;
+/// Luxuries keep this far apart, so no city works two.
+pub const LUXURY_SPACING: i32 = 5;
+
+/// How many luxury tiles a map has: all six at the Standard size, fewer on a smaller map.
+pub fn luxury_target(setup: &GameSetup) -> usize {
+    let all = Resource::LUXURY.len() as i32;
+    ((all * setup.width * setup.height + 768) / 1536).clamp(1, all) as usize
+}
+
+/// Luxuries (user, 2026-10-22: flavour only, like natural wonders): at most one tile of each, on
+/// its own terrain, away from the starts, from each other and from every deposit, ruin and wonder.
+/// Run after the natural wonders.
+pub fn place_luxuries(map: &mut Map, starts: &[Hex], setup: &GameSetup, attempt: u64) {
+    let mut rng = Rng::derive(setup.seed, &[purpose::MAPGEN, attempt, LAYER_LUXURIES]);
+    let mut kinds = Resource::LUXURY;
+    for i in (1..kinds.len()).rev() {
+        kinds.swap(i, rng.range(0, i as i64) as usize);
+    }
+    let target = luxury_target(setup);
+    let mut placed = Vec::<Hex>::new();
+    for kind in kinds {
+        if placed.len() == target {
+            break;
+        }
+        let open: Vec<Hex> = map
+            .hexes()
+            .filter(|&h| {
+                let t = map.get(h).unwrap();
+                free(map, h, starts)
+                    && t.wonder.is_none()
+                    && stats(kind).terrains.contains(&t.terrain)
+                    && starts
+                        .iter()
+                        .all(|s| s.distance(h) >= LUXURY_MIN_START_DISTANCE)
+                    && placed.iter().all(|p| p.distance(h) >= LUXURY_SPACING)
+                    && h.neighbors()
+                        .iter()
+                        .all(|n| map.get(*n).is_none_or(|t| t.resource.is_none()))
+            })
+            .collect();
+        if let Some(&h) = shuffled(open, &mut rng).first() {
+            set(map, h, kind);
+            placed.push(h);
+        }
+    }
+}
+
 /// The nearest free tile `min`..`max` hexes from start `seat` that is nearer to it than to any
 /// other start, facing away from the neighbours, on the resource's own terrain if possible.
 #[allow(clippy::too_many_arguments)]

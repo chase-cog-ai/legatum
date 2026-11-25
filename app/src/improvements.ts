@@ -8,11 +8,11 @@ import { distance } from './hex';
 import { RESOURCE_INFO } from './resources';
 import type { Hex, ImprovementKind, ProductionItem, Resource, TechId, TileView, Yields } from './types';
 
-type ResourceImprovement = { kind: ImprovementKind; upgradeYields: Yields };
+type ResourceImprovement = { kind: ImprovementKind | null; upgradeYields: Yields };
 const FOR_RESOURCE = RULES.improvements.forResource as unknown as Record<Resource, ResourceImprovement>;
 
-/** The improvement a resource needs (core `improvements::kind_for`). */
-export const improvementKindFor = (r: Resource): ImprovementKind => FOR_RESOURCE[r].kind;
+/** The improvement a resource takes; none for a luxury (core `improvements::kind_for`). */
+export const improvementKindFor = (r: Resource): ImprovementKind | null => FOR_RESOURCE[r].kind;
 
 /** The upgrade's extra yield (core `improvements::upgrade_yields`). */
 export const improvementUpgradeYields = (r: Resource): Yields => ({ ...FOR_RESOURCE[r].upgradeYields });
@@ -27,7 +27,9 @@ export function improvedResourceYields(r: Resource, knows: (t: TechId) => boolea
   const tech = RESOURCE_INFO[r].revealedBy;
   if (tech && !knows(tech)) return { ...ZERO };
   const bonus = RESOURCE_INFO[r].bonus;
-  const up = improvementUpgraded(improvementKindFor(r), knows) ? FOR_RESOURCE[r].upgradeYields : ZERO;
+  const kind = improvementKindFor(r);
+  if (!kind) return { ...bonus };
+  const up = improvementUpgraded(kind, knows) ? FOR_RESOURCE[r].upgradeYields : ZERO;
   const rails = ['Copper', 'Iron', 'Coal', 'Silicon'].includes(r) && knows('Railways') ? 1 : 0;
   return { food: bonus.food + up.food, production: bonus.production + up.production + rails, gold: bonus.gold + up.gold, science: bonus.science + up.science };
 }
@@ -68,8 +70,10 @@ export function improvementShortTitle(item: Extract<ProductionItem, { kind: 'Imp
  * comes from one shared check). Strategic deposits count too: their supply works as soon as they are inside the borders, but the
  * tile's own yield waits for the Mine.
  */
-export const isDormant = (tile: Pick<TileView, 'resource' | 'owner' | 'improvement'>, me: number, faction?: string): boolean =>
-  !!tile.resource && tile.owner === me && !tile.improvement && offersImprovement(faction, improvementKindFor(tile.resource));
+export const isDormant = (tile: Pick<TileView, 'resource' | 'owner' | 'improvement'>, me: number, faction?: string): boolean => {
+  const kind = tile.resource ? improvementKindFor(tile.resource) : null;
+  return !!kind && tile.owner === me && !tile.improvement && offersImprovement(faction, kind);
+};
 
 /** The Nile: Egypt has no Production, so it isn't offered the Quarry (core `view.rs::city_detail`). */
 export const offersImprovement = (faction: string | undefined, kind: ImprovementKind): boolean => !(faction === 'Egypt' && kind === 'Quarry');

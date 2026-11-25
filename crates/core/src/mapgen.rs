@@ -231,6 +231,7 @@ fn try_generate(setup: &GameSetup, options: StartOptions, attempt: u64) -> Optio
     // 6. Resources (G11): a separate seeded layer, placed after starts so it can be fair.
     crate::resources::placement::place(&mut map, &starts, setup, attempt)?;
     crate::wonders::place(&mut map, &starts, setup, attempt);
+    crate::resources::placement::place_luxuries(&mut map, &starts, setup, attempt);
 
     validate(&map, &starts).ok()?;
     crate::resources::placement::validate_rivals(&map, &starts, setup).ok()?;

@@ -35,9 +35,9 @@ impl ImprovementKind {
     ];
 }
 
-/// The improvement a resource needs.
-pub fn kind_for(resource: Resource) -> ImprovementKind {
-    match resource {
+/// The improvement a resource takes. A luxury takes none: its tile bonus needs only a citizen.
+pub fn kind_for(resource: Resource) -> Option<ImprovementKind> {
+    Some(match resource {
         Resource::Wheat => ImprovementKind::Farm,
         Resource::Cattle => ImprovementKind::Pasture,
         Resource::Stone => ImprovementKind::Quarry,
@@ -45,7 +45,13 @@ pub fn kind_for(resource: Resource) -> ImprovementKind {
         Resource::Niter => ImprovementKind::SaltpetreWorks,
         Resource::Oil => ImprovementKind::OilWell,
         Resource::Silicon => ImprovementKind::QuartzMine,
-    }
+        Resource::Silk
+        | Resource::Spices
+        | Resource::Wine
+        | Resource::Ivory
+        | Resource::Incense
+        | Resource::Furs => return None,
+    })
 }
 
 /// The improvement's name before and after its upgrade.
@@ -115,7 +121,10 @@ pub fn resource_yields(resource: Resource, knows: impl Fn(TechId) -> bool) -> Yi
         return Yields::ZERO;
     }
     let mut y = resources::stats(resource).bonus;
-    if upgraded(kind_for(resource), &knows) {
+    let Some(kind) = kind_for(resource) else {
+        return y;
+    };
+    if upgraded(kind, &knows) {
         y += upgrade_yields(resource);
     }
     if matches!(
@@ -129,10 +138,10 @@ pub fn resource_yields(resource: Resource, knows: impl Fn(TechId) -> bool) -> Yi
 }
 
 /// The resource part of a tile's yield: nothing until the tile is improved. A city centre counts
-/// as improved (the city is its improvement).
+/// as improved (the city is its improvement), and a luxury needs no improvement.
 pub fn tile_resource_yields(tile: &Tile, centre: bool, knows: impl Fn(TechId) -> bool) -> Yields {
     match tile.resource {
-        Some(r) if tile.improved || centre => resource_yields(r, knows),
+        Some(r) if tile.improved || centre || kind_for(r).is_none() => resource_yields(r, knows),
         _ => Yields::ZERO,
     }
 }
@@ -176,12 +185,20 @@ pub fn check<R: economy::Reason>(
     else {
         return Some(R::word(|| "There is no known resource on that tile".into()));
     };
-    if kind_for(resource) != kind {
+    let Some(needed) = kind_for(resource) else {
+        return Some(R::word(|| {
+            format!(
+                "{} is a luxury: it needs no improvement",
+                resources::name(resource)
+            )
+        }));
+    };
+    if needed != kind {
         return Some(R::word(|| {
             format!(
                 "{} needs a {}, not a {}",
                 resources::name(resource),
-                name(kind_for(resource), false),
+                name(needed, false),
                 name(kind, false)
             )
         }));
@@ -202,7 +219,9 @@ pub fn candidates(state: &GameState, city: &City) -> Vec<ProductionItem> {
         let Some(resource) = state.map.get(h).and_then(|t| t.resource) else {
             continue;
         };
-        let kind = kind_for(resource);
+        let Some(kind) = kind_for(resource) else {
+            continue;
+        };
         if check::<economy::Blocked>(state, city, kind, h).is_none() {
             out.push(ProductionItem::Improvement {
                 improvement: kind,

@@ -573,7 +573,7 @@ exports[`one-time actions core behavior > pays nothing for clearing a camp the r
 ]
 `;
 
-exports[`one-time actions core behavior > pays nothing for clearing a camp the rite raised, and the goal follows a cleared camp, the same way 2`] = `62`;
+exports[`one-time actions core behavior > pays nothing for clearing a camp the rite raised, and the goal follows a cleared camp, the same way 2`] = `63`;
 
 exports[`one-time actions core behavior > pays nothing for clearing a camp the rite raised, and the goal follows a cleared camp, the same way 3`] = `111`;
 

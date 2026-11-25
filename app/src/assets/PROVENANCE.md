@@ -33,5 +33,6 @@ The date range is the range of dates the repository's own records give (prompt h
 
 ## Gaps
 
+- The six luxury medallions (Silk, Spices, Wine, Ivory, Incense, Furs; 2026-11-25) are in the resource medallions row: generated with the Copper, Wheat and Stone medallions as references; prompt in `app/src/assets/resources/luxuries.prompt.txt`.
 - No prompt is stored for the map improvements, the six original resource medallions, the aircraft plan sprites or the parchment texture.
 - Where a set was generated from one shared prompt (terrain, city sets, camps and ruins), there is one prompt for the set, not one per file.

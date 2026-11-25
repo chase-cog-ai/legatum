@@ -118,8 +118,15 @@ it('explains map resources, reveals, supply and idle buildings and units (G11)',
   expect(cities).toContain('The Ancient era has no resource requirements.');
   // The era table: era, resource, what uses it, and what reveals it.
   const text = (html: string) => html.replace(/<[^>]*>/g, '').trim();
-  const rows = [...cities.matchAll(/<tr>(.*?)<\/tr>/g)].filter((m) => m[1].startsWith('<td')).map((m) => [...m[1].matchAll(/<td(?: [^>]*)?>(.*?)<\/td>/g)].map((c) => text(c[1])));
+  const eraTable = cities.match(/<table class="guide-era-table">.*?<\/table>/)![0];
+  const rows = [...eraTable.matchAll(/<tr>(.*?)<\/tr>/g)].filter((m) => m[1].startsWith('<td')).map((m) => [...m[1].matchAll(/<td(?: [^>]*)?>(.*?)<\/td>/g)].map((c) => text(c[1])));
   expect(rows.map((r) => `${r[0]} ${r[1]}`)).toEqual(['Ancient None', 'Classical Iron', 'Medieval Iron', 'Renaissance Niter', 'Industrial Coal', 'Machine Age Oil', 'World War Oil', 'Modern Oil', `Future ${eraResource(8)}`]);
+  // Luxuries (rules 60): six named tiles, each with its land, its tile bonus and one line of history.
+  const luxuryTable = cities.match(/<table class="guide-luxury-table">.*?<\/table>/)![0];
+  const luxuries = [...luxuryTable.matchAll(/<tr>(.*?)<\/tr>/g)].filter((m) => m[1].startsWith('<td')).map((m) => [...m[1].matchAll(/<td(?: [^>]*)?>(.*?)<\/td>/g)].map((c) => text(c[1])));
+  expect(luxuries.map((r) => r.slice(0, 3).join(' | '))).toEqual(['Silk | Grassland | +2 Gold', 'Spices | Forest | +1 Food, +1 Gold', 'Wine | Hills | +1 Food, +1 Gold', 'Ivory | Plains | +1 Production, +1 Gold', 'Incense | Desert | +2 Gold', 'Furs | Tundra | +1 Production, +1 Gold']);
+  expect(luxuries.every((r) => r[3].endsWith('.'))).toBe(true);
+  expect(cities).toContain('Luxuries: rare finds');
   expect(rows[3]).toEqual(['Renaissance', 'Niter', 'Musketmen, Arquebusiers, Cuirassiers and Banks', 'Gunpowder']);
   expect(rows[0][3]).toBe('—');
   expect(rows[1][3]).toBe('Iron Working');

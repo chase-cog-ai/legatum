@@ -2264,7 +2264,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Athens 63`] = `
 {
   "food": 23,
-  "gold": 7,
+  "gold": 9,
   "production": 18,
   "science": 30,
 }
@@ -2773,7 +2773,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Athens 143`] = `
 {
   "food": 23,
-  "gold": 7,
+  "gold": 9,
   "production": 27,
   "science": 30,
 }
@@ -3339,7 +3339,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Aztecs 63`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 18,
   "science": 24,
 }
@@ -3848,7 +3848,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Aztecs 143`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 27,
   "science": 24,
 }
@@ -4414,7 +4414,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Byzantium 63`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 18,
   "science": 24,
 }
@@ -4923,7 +4923,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Byzantium 143`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 27,
   "science": 24,
 }
@@ -5489,7 +5489,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Celts 63`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 18,
   "science": 24,
 }
@@ -5998,7 +5998,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Celts 143`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 27,
   "science": 24,
 }
@@ -6564,7 +6564,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Germany 63`] = `
 {
   "food": 20,
-  "gold": 9,
+  "gold": 11,
   "production": 21,
   "science": 24,
 }
@@ -7073,7 +7073,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Germany 143`] = `
 {
   "food": 20,
-  "gold": 9,
+  "gold": 11,
   "production": 31,
   "science": 24,
 }
@@ -7639,7 +7639,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for India 63`] = `
 {
   "food": 24,
-  "gold": 9,
+  "gold": 11,
   "production": 18,
   "science": 24,
 }
@@ -8148,7 +8148,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for India 143`] = `
 {
   "food": 24,
-  "gold": 9,
+  "gold": 11,
   "production": 27,
   "science": 24,
 }
@@ -8714,7 +8714,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Mongols 63`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 18,
   "science": 24,
 }
@@ -9223,7 +9223,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Mongols 143`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 27,
   "science": 24,
 }
@@ -9789,7 +9789,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Rome 63`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 18,
   "science": 24,
 }
@@ -10298,7 +10298,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Rome 143`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 27,
   "science": 24,
 }
@@ -10864,7 +10864,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Sparta 63`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 18,
   "science": 24,
 }
@@ -11373,7 +11373,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Sparta 143`] = `
 {
   "food": 23,
-  "gold": 9,
+  "gold": 11,
   "production": 27,
   "science": 24,
 }
@@ -11939,7 +11939,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Switzerland 63`] = `
 {
   "food": 23,
-  "gold": 13,
+  "gold": 15,
   "production": 18,
   "science": 24,
 }
@@ -12448,7 +12448,7 @@ exports[`WASM purchase behavior > Full-tree quotes and faction effects match WAS
 exports[`WASM purchase behavior > Full-tree quotes and faction effects match WASM for Switzerland 143`] = `
 {
   "food": 23,
-  "gold": 13,
+  "gold": 15,
   "production": 27,
   "science": 24,
 }
@@ -15561,7 +15561,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15573,7 +15573,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15585,7 +15585,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15597,7 +15597,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15609,7 +15609,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15621,7 +15621,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15633,7 +15633,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15645,7 +15645,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15657,7 +15657,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15669,7 +15669,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15681,7 +15681,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15693,7 +15693,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15705,7 +15705,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15717,7 +15717,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15729,7 +15729,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15741,7 +15741,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15753,7 +15753,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15765,7 +15765,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15788,7 +15788,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
 }
 `;
 
-exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 4`] = `1`;
+exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 4`] = `3`;
 
 exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 5`] = `
 [
@@ -15814,7 +15814,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15826,7 +15826,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15838,7 +15838,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15850,7 +15850,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15862,7 +15862,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15874,7 +15874,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15886,7 +15886,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15898,7 +15898,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15910,7 +15910,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15922,7 +15922,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15934,7 +15934,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15946,7 +15946,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15958,7 +15958,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15970,7 +15970,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15982,7 +15982,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -15994,7 +15994,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -16006,7 +16006,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -16018,7 +16018,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -16041,7 +16041,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
 }
 `;
 
-exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 8`] = `1`;
+exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 8`] = `3`;
 
 exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 9`] = `
 [
@@ -16067,7 +16067,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16079,7 +16079,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16091,7 +16091,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16103,7 +16103,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16115,7 +16115,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16127,7 +16127,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16139,7 +16139,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16151,7 +16151,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16163,7 +16163,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16175,7 +16175,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16187,7 +16187,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16199,7 +16199,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16211,7 +16211,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16223,7 +16223,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16235,7 +16235,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16247,7 +16247,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16259,7 +16259,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16271,7 +16271,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -16294,7 +16294,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
 }
 `;
 
-exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 12`] = `1`;
+exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 12`] = `3`;
 
 exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 13`] = `
 [
@@ -16320,7 +16320,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16332,7 +16332,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16344,7 +16344,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16356,7 +16356,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16368,7 +16368,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16380,7 +16380,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16392,7 +16392,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16404,7 +16404,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16416,7 +16416,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16428,7 +16428,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16440,7 +16440,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16452,7 +16452,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16464,7 +16464,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16476,7 +16476,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16488,7 +16488,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16500,7 +16500,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16512,7 +16512,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16524,7 +16524,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -16552,7 +16552,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
 }
 `;
 
-exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 16`] = `0`;
+exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for India 16`] = `2`;
 
 exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 1`] = `
 [
@@ -16578,7 +16578,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16590,7 +16590,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16602,7 +16602,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16614,7 +16614,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16626,7 +16626,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16638,7 +16638,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16650,7 +16650,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16662,7 +16662,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16674,7 +16674,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16686,7 +16686,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16698,7 +16698,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16710,7 +16710,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16722,7 +16722,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16734,7 +16734,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16746,7 +16746,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16758,7 +16758,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16770,7 +16770,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16782,7 +16782,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16805,7 +16805,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
 }
 `;
 
-exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 4`] = `108`;
+exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 4`] = `110`;
 
 exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 5`] = `
 [
@@ -16831,7 +16831,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16843,7 +16843,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16855,7 +16855,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16867,7 +16867,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16879,7 +16879,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16891,7 +16891,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16903,7 +16903,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16915,7 +16915,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16927,7 +16927,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16939,7 +16939,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16951,7 +16951,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16963,7 +16963,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16975,7 +16975,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16987,7 +16987,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -16999,7 +16999,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -17011,7 +17011,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -17023,7 +17023,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -17035,7 +17035,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -17058,7 +17058,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
 }
 `;
 
-exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 8`] = `108`;
+exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 8`] = `110`;
 
 exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 9`] = `
 [
@@ -17084,7 +17084,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17096,7 +17096,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17108,7 +17108,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17120,7 +17120,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17132,7 +17132,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17144,7 +17144,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17156,7 +17156,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17168,7 +17168,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17180,7 +17180,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17192,7 +17192,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17204,7 +17204,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17216,7 +17216,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17228,7 +17228,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17240,7 +17240,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17252,7 +17252,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17264,7 +17264,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17276,7 +17276,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17288,7 +17288,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -17311,7 +17311,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
 }
 `;
 
-exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 12`] = `108`;
+exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 12`] = `110`;
 
 exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 13`] = `
 [
@@ -17337,7 +17337,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17349,7 +17349,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17361,7 +17361,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17373,7 +17373,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17385,7 +17385,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17397,7 +17397,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17409,7 +17409,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17421,7 +17421,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17433,7 +17433,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17445,7 +17445,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17457,7 +17457,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17469,7 +17469,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17481,7 +17481,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17493,7 +17493,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17505,7 +17505,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17517,7 +17517,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17529,7 +17529,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17541,7 +17541,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -17573,7 +17573,7 @@ exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, m
 }
 `;
 
-exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 16`] = `105`;
+exports[`WASM purchase behavior > Scouts are upkeep-free and use no free slot, matching WASM for Switzerland 16`] = `107`;
 
 exports[`WASM purchase behavior > Sparta healing forecasts resolve exactly on home, foreign and allied land 1`] = `
 [
@@ -18289,7 +18289,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18300,7 +18300,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
       101,
     ],
   ],
-  "total": 107,
+  "total": 109,
 }
 `;
 
@@ -18309,7 +18309,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18320,7 +18320,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
       101,
     ],
   ],
-  "total": 107,
+  "total": 109,
 }
 `;
 
@@ -18329,7 +18329,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18344,7 +18344,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
       -3,
     ],
   ],
-  "total": 104,
+  "total": 106,
 }
 `;
 
@@ -18353,7 +18353,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18368,7 +18368,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
       -6,
     ],
   ],
-  "total": 101,
+  "total": 103,
 }
 `;
 
@@ -18377,7 +18377,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18392,7 +18392,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
       -9,
     ],
   ],
-  "total": 97,
+  "total": 99,
 }
 `;
 
@@ -18401,7 +18401,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18416,7 +18416,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
       -12,
     ],
   ],
-  "total": 94,
+  "total": 96,
 }
 `;
 
@@ -18425,7 +18425,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18440,7 +18440,7 @@ exports[`WASM purchase behavior > Swiss flat upkeep reconciles with native incom
       -15,
     ],
   ],
-  "total": 91,
+  "total": 93,
 }
 `;
 
@@ -18449,14 +18449,14 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
       5,
     ],
   ],
-  "total": 8,
+  "total": 10,
 }
 `;
 
@@ -18465,7 +18465,7 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18476,7 +18476,7 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
       1,
     ],
   ],
-  "total": 9,
+  "total": 11,
 }
 `;
 
@@ -18485,7 +18485,7 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18496,7 +18496,7 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
       4,
     ],
   ],
-  "total": 12,
+  "total": 14,
 }
 `;
 
@@ -18505,7 +18505,7 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18516,7 +18516,7 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
       12,
     ],
   ],
-  "total": 20,
+  "total": 22,
 }
 `;
 
@@ -18525,7 +18525,7 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
   "parts": [
     [
       "A",
-      3,
+      5,
     ],
     [
       "B",
@@ -18536,7 +18536,7 @@ exports[`WASM purchase behavior > Swiss interest has no maximum and fixtureClien
       500,
     ],
   ],
-  "total": 508,
+  "total": 510,
 }
 `;
 
@@ -19488,7 +19488,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19500,7 +19500,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19512,7 +19512,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19524,7 +19524,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19536,7 +19536,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19548,7 +19548,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19560,7 +19560,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19572,7 +19572,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19584,7 +19584,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19596,7 +19596,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19608,7 +19608,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19620,7 +19620,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19632,7 +19632,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19644,7 +19644,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19656,7 +19656,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19668,7 +19668,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19680,7 +19680,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19692,7 +19692,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19706,7 +19706,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
 ]
 `;
 
-exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 2`] = `1`;
+exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 2`] = `3`;
 
 exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 3`] = `
 [
@@ -19732,7 +19732,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19744,7 +19744,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19756,7 +19756,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19768,7 +19768,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19780,7 +19780,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19792,7 +19792,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19804,7 +19804,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19816,7 +19816,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19828,7 +19828,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19840,7 +19840,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19852,7 +19852,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19864,7 +19864,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19876,7 +19876,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19888,7 +19888,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19900,7 +19900,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19912,7 +19912,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19924,7 +19924,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19936,7 +19936,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 1,
+      "gold_per_turn_after": 3,
       "rate": 1,
     },
   },
@@ -19950,7 +19950,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
 ]
 `;
 
-exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 4`] = `1`;
+exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 4`] = `3`;
 
 exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 5`] = `
 [
@@ -19976,7 +19976,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -19988,7 +19988,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20000,7 +20000,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20012,7 +20012,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20024,7 +20024,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20036,7 +20036,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20048,7 +20048,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20060,7 +20060,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20072,7 +20072,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20084,7 +20084,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20096,7 +20096,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20108,7 +20108,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20120,7 +20120,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20132,7 +20132,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20144,7 +20144,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20156,7 +20156,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20168,7 +20168,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20180,7 +20180,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 0,
+      "gold_per_turn_after": 2,
       "rate": 1,
     },
   },
@@ -20194,7 +20194,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
 ]
 `;
 
-exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 6`] = `1`;
+exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 6`] = `3`;
 
 exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 7`] = `
 [
@@ -20220,7 +20220,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20232,7 +20232,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20244,7 +20244,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20256,7 +20256,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20268,7 +20268,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20280,7 +20280,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20292,7 +20292,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20304,7 +20304,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20316,7 +20316,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20328,7 +20328,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20340,7 +20340,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20352,7 +20352,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20364,7 +20364,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20376,7 +20376,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20388,7 +20388,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20400,7 +20400,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20412,7 +20412,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20424,7 +20424,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": -1,
+      "gold_per_turn_after": 1,
       "rate": 1,
     },
   },
@@ -20438,7 +20438,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for India
 ]
 `;
 
-exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 8`] = `0`;
+exports[`WASM purchase behavior > unit card upkeep previews match WASM for India around the free-slot threshold 8`] = `2`;
 
 exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 1`] = `
 [
@@ -20464,7 +20464,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20476,7 +20476,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20488,7 +20488,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20500,7 +20500,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20512,7 +20512,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20524,7 +20524,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20536,7 +20536,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20548,7 +20548,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20560,7 +20560,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20572,7 +20572,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20584,7 +20584,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20596,7 +20596,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20608,7 +20608,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20620,7 +20620,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20632,7 +20632,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20644,7 +20644,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20656,7 +20656,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20668,7 +20668,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 2,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20682,7 +20682,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
 ]
 `;
 
-exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 2`] = `108`;
+exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 2`] = `110`;
 
 exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 3`] = `
 [
@@ -20708,7 +20708,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20720,7 +20720,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20732,7 +20732,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20744,7 +20744,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20756,7 +20756,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20768,7 +20768,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20780,7 +20780,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20792,7 +20792,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20804,7 +20804,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20816,7 +20816,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20828,7 +20828,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20840,7 +20840,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20852,7 +20852,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20864,7 +20864,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20876,7 +20876,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20888,7 +20888,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20900,7 +20900,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20912,7 +20912,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": true,
       "free_slots_left": 1,
-      "gold_per_turn_after": 108,
+      "gold_per_turn_after": 110,
       "rate": 3,
     },
   },
@@ -20926,7 +20926,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
 ]
 `;
 
-exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 4`] = `108`;
+exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 4`] = `110`;
 
 exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 5`] = `
 [
@@ -20952,7 +20952,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -20964,7 +20964,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -20976,7 +20976,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -20988,7 +20988,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21000,7 +21000,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21012,7 +21012,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21024,7 +21024,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21036,7 +21036,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21048,7 +21048,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21060,7 +21060,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21072,7 +21072,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21084,7 +21084,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21096,7 +21096,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21108,7 +21108,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21120,7 +21120,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21132,7 +21132,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21144,7 +21144,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21156,7 +21156,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 105,
+      "gold_per_turn_after": 107,
       "rate": 3,
     },
   },
@@ -21170,7 +21170,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
 ]
 `;
 
-exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 6`] = `108`;
+exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 6`] = `110`;
 
 exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 7`] = `
 [
@@ -21196,7 +21196,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21208,7 +21208,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21220,7 +21220,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21232,7 +21232,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21244,7 +21244,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21256,7 +21256,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21268,7 +21268,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21280,7 +21280,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21292,7 +21292,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21304,7 +21304,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21316,7 +21316,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21328,7 +21328,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21340,7 +21340,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21352,7 +21352,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21364,7 +21364,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21376,7 +21376,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21388,7 +21388,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21400,7 +21400,7 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
     "upkeep": {
       "free": false,
       "free_slots_left": 0,
-      "gold_per_turn_after": 102,
+      "gold_per_turn_after": 104,
       "rate": 3,
     },
   },
@@ -21414,4 +21414,4 @@ exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switz
 ]
 `;
 
-exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 8`] = `105`;
+exports[`WASM purchase behavior > unit card upkeep previews match WASM for Switzerland around the free-slot threshold 8`] = `107`;

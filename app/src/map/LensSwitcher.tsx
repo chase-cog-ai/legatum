@@ -175,7 +175,7 @@ function ResourceSwatches({ supply, tip = true }: { supply: SupplyView[]; tip?: 
   </div>;
   return <div className="lens-resource-key">
     {tip ? <Tip placement="right" content={<>
-      <div>Ring shape: whose land the resource is in. Ring colour: green is a bonus resource, red a strategic one. A dashed dark ring means yours but not improved yet.</div>
+      <div>Ring shape: whose land the resource is in. Ring colour: green is a bonus resource, red a strategic one, gold a luxury. A dashed dark ring means yours but not improved yet.</div>
       <div>Strategic resources begin with Iron in the Classical era. Deposits inside your borders supply the buildings and units that need them. Copper is a bonus tile resource.</div>
       {wanted && <div>A red "!" marks a deposit of a strategic resource you lack that another empire holds or nobody does.</div>}
       {hidden.map((r) => <div key={r}>{revealHint(r)}</div>)}

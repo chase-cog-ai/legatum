@@ -1,10 +1,12 @@
 // The era table the UI reads from the core's rules (strategic supply starts in the Classical era).
 import { expect, it } from 'vitest';
 import { RULES } from './data';
-import { RESOURCES, RESOURCE_INFO, RESOURCE_ORDER, STRATEGIC_RESOURCES, SUPPLY_TIERS, buildingNeed, eraResource, isStrategic, unitNeed, upgradeNeed, resourceBenefitLines, supplyRuleText, supplyPerMine, fixClause } from './resources';
+import { LUXURY_RESOURCES, LUXURY_STORY, RESOURCES, RESOURCE_INFO, RESOURCE_ORDER, STRATEGIC_RESOURCES, SUPPLY_TIERS, buildingNeed, eraResource, isLuxury, isStrategic, unitNeed, upgradeNeed, resourceBenefitLines, supplyRuleText, supplyPerMine, fixClause } from './resources';
 
-it('the nine resources split into four bonus ones and five strategic ones in era order', () => {
-  expect(RESOURCES).toHaveLength(9);
+it('the fifteen resources split into four bonus ones, five strategic ones in era order and six luxuries', () => {
+  expect(RESOURCES).toHaveLength(15);
+  expect(RESOURCES.filter((r) => !isStrategic(r) && !isLuxury(r))).toEqual(['Wheat', 'Cattle', 'Stone', 'Copper']);
+  expect(LUXURY_RESOURCES).toEqual(['Silk', 'Spices', 'Wine', 'Ivory', 'Incense', 'Furs']);
   expect(RESOURCES.filter(isStrategic).sort()).toEqual([...STRATEGIC_RESOURCES].sort());
   expect(STRATEGIC_RESOURCES).toEqual(['Iron', 'Niter', 'Coal', 'Oil', eraResource(8)]);
   expect(RESOURCE_INFO.Copper.class).toBe('Bonus');
@@ -44,4 +46,18 @@ it('German deposit, tile, and improvement copy uses doubled supply', () => {
   expect(supplyPerMine('Germany')).toBe(2);
   expect(fixClause('Iron', true, 'Germany')).toContain('+2 Iron');
   expect(supplyRuleText('Iron', 'India')).toContain('supplies 2 Iron, 3 with a Mine');
+});
+
+it('a luxury is flavour only: a small tile bonus, always visible, no improvement, no supply, one line of history', () => {
+  for (const luxury of LUXURY_RESOURCES) {
+    const { bonus, revealedBy } = RESOURCE_INFO[luxury];
+    expect(bonus.food + bonus.production + bonus.gold + bonus.science, luxury).toBe(2);
+    expect(revealedBy, luxury).toBeNull();
+    expect(RULES.improvements.forResource[luxury].kind, luxury).toBeNull();
+    expect(Object.values(RULES.supply.unitNeeds), luxury).not.toContain(luxury);
+    expect(Object.values(RULES.supply.buildingNeeds), luxury).not.toContain(luxury);
+    expect(LUXURY_STORY[luxury], luxury).toMatch(/^[A-Z].+\.$/);
+    expect(resourceBenefitLines(luxury, [])[1]).toBe('A luxury needs no improvement');
+  }
+  expect(resourceBenefitLines('Spices', [])[0]).toBe('+1 Food, +1 Gold when a citizen works the tile');
 });

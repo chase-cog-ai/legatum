@@ -312,3 +312,31 @@ it('reads the supply a deposit gives the viewer, by the viewer\'s faction, not t
   const german = await run('Germany', 'Mongols');
   expect(german).toContain('Supplies 4 Iron inside your borders, 6 with a Mine');
 });
+
+it('a luxury leads its tile as a Luxury resource: its bonus, no improvement, one line of history', async () => {
+  const v = view('India');
+  const i = tileIndex({ q: 1, r: 1 }, v.width, v.height);
+  (v.tiles[i] as { terrain: string }).terrain = 'Grassland';
+  (v.tiles[i] as { resource?: string }).resource = 'Silk';
+  (v as unknown as { research: { known: string[] } }).research = { known: [] };
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const host = document.createElement('div'); document.body.append(host);
+  const root = createRoot(host);
+  await act(async () => root.render(createElement(TileCard, { view: v, hex: { q: 1, r: 1 } })));
+  const card = host.querySelector('.tilecard')!;
+  expect(card.querySelector('.tilecard-lead-name')!.textContent).toBe('Silk');
+  expect(card.querySelector('.tilecard-lead-kind')!.textContent).toBe('Luxury resource');
+  expect(card.querySelector('.tilecard-lead img')?.getAttribute('src')).toContain('silk');
+  const benefits = [...card.querySelectorAll('.tilecard-benefits li')].map((li) => li.textContent);
+  expect(benefits).toEqual(['+2 Gold when a citizen works the tile', 'A luxury needs no improvement']);
+  expect(card.querySelector('[data-testid="tile-luxury-story"]')!.textContent).toBe('Chinese silk reached Rome along the caravan roads later named for it.');
+  expect(card.querySelector('[data-testid="tile-improvement"]')!.textContent).toBe('Unclaimed: bring it inside your borders');
+  // Yours: nothing to build, so no dormant warning and no status line.
+  await act(async () => root.unmount());
+  v.tiles[i].owner = v.me;
+  const mine = createRoot(host);
+  await act(async () => mine.render(createElement(TileCard, { view: v, hex: { q: 1, r: 1 } })));
+  expect(host.querySelector('[data-testid="tile-improvement"]')).toBeNull();
+  expect(host.textContent).not.toContain('Dormant');
+  await act(async () => mine.unmount());
+});

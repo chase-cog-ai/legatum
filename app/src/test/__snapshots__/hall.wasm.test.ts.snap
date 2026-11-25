@@ -1574,8 +1574,8 @@ exports[`Yam Relay Station and the Mongols goal: WASM behavior > completion and 
   },
   {
     "at": {
-      "q": -5,
-      "r": 14,
+      "q": 8,
+      "r": 3,
     },
     "camp": 0,
     "type": "BarbarianCampSpawned",

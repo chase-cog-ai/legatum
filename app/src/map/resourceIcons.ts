@@ -1,13 +1,13 @@
 // Known map resources: a painted medallion at the top of the hex on every lens
 // (beside the token where a city banner covers the top), under units, banners and routes. The painting says which resource; the rim says the category
-// (bonus: a paper ring; strategic: an iron-red double rule). The view already hides strategic
+// (bonus: a paper ring; strategic: an iron-red double rule; luxury: a gold rule). The view already hides strategic
 // resources the viewer hasn't revealed, so this draws exactly what the tiles list.
 import type { LookId } from '../brand/look';
 import { MAP_STYLES } from './style';
 import { resourceArtSprite, resourceArtUrl } from '../icons';
 import { isDormant } from '../improvements';
 import { improvementDetail } from './improvementArt';
-import { isStrategic, lackedResources } from '../resources';
+import { isLuxury, isStrategic, lackedResources } from '../resources';
 import { tileIndex } from '../hex';
 import type { PlayerView } from '../types';
 import { CITY_UNIT_DROP, STACK_LIFT, centerX, centerY, HEX_SIZE, tokenHalf } from './grid';
@@ -78,7 +78,7 @@ const INK: Record<LookId, { edge: string; face: string; paper: string; red: stri
 
 };
 /** Category colours shared with the Resources overlay and its legend. */
-const CATEGORY_COLOR = { Bonus: MAP_STYLES.atlas.resources.bonus, Strategic: MAP_STYLES.atlas.resources.strategic } as const;
+const CATEGORY_COLOR = { Bonus: MAP_STYLES.atlas.resources.bonus, Strategic: MAP_STYLES.atlas.resources.strategic, Luxury: MAP_STYLES.atlas.resources.luxury } as const;
 
 /**
  * Far-tier marks (user, 2026-10-11, "Coal and iron look way too similar"): resources differ
@@ -135,6 +135,15 @@ export function drawFarMark(ctx: CanvasRenderingContext2D, x: number, y: number,
     polygon(ctx, [[x, y - h], [x + t, y - h * 0.58], [x + t, y + h * 0.62], [x, y + h], [x - t, y + h * 0.62], [x - t, y - h * 0.58]]);
     ctx.fillStyle = FAR_MARK_FILL.Silicon; ctx.fill();
     ctx.lineWidth = 1; ctx.strokeStyle = INK[look].paper; ctx.stroke();
+  } else if (isLuxury(res as never)) {
+    // A five-point star in gold: no bonus or strategic mark has points all round.
+    const outer = dot * 1.5, inner = dot * 0.65;
+    polygon(ctx, Array.from({ length: 10 }, (_, k) => {
+      const a = -Math.PI / 2 + k * Math.PI / 5, d = k % 2 ? inner : outer;
+      return [x + d * Math.cos(a), y + d * Math.sin(a)] as [number, number];
+    }));
+    ctx.fillStyle = CATEGORY_COLOR.Luxury; ctx.fill();
+    ctx.lineWidth = 1; ctx.strokeStyle = INK[look].edge; ctx.stroke();
   } else {
     ctx.arc(x, y, dot, 0, Math.PI * 2);
     ctx.fillStyle = CATEGORY_COLOR.Bonus; ctx.fill();
@@ -179,9 +188,9 @@ function drawWanted(ctx: CanvasRenderingContext2D, x: number, y: number, radius:
   ctx.beginPath(); ctx.arc(cx, cy + r * 0.5, w * 0.7, 0, Math.PI * 2); ctx.fill();
 }
 
-function drawEmphasis(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, strategic: boolean, owner: number | null, me: number, look: LookId) {
+function drawEmphasis(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, kind: 'Bonus' | 'Strategic' | 'Luxury', owner: number | null, me: number, look: LookId) {
   const ring = emphasisRing(owner, me);
-  const color = strategic ? CATEGORY_COLOR.Strategic : CATEGORY_COLOR.Bonus;
+  const color = CATEGORY_COLOR[kind];
   // A paper edge outside the ring keeps it readable on dark woods and strong lens tints.
   const reach = radius + 1.5 + (ring.double ? ring.width * 2 + 1.4 : ring.width);
   ctx.beginPath(); ctx.arc(x, y, reach + 0.7, 0, Math.PI * 2);
@@ -212,6 +221,7 @@ export function drawResourceIcons(ctx: CanvasRenderingContext2D, view: PlayerVie
     const res = t.resource;
     if (!res || !t.explored) continue;
     const strategic = isStrategic(res);
+    const kind = strategic ? 'Strategic' : isLuxury(res) ? 'Luxury' : 'Bonus';
     const x = (centerX(i, W) - cam.x) * cam.zoom + width / 2;
     const cy = (centerY(i, W) - cam.y) * cam.zoom + height / 2;
     if (x < -r || x > width + r || cy < -r * 1.5 || cy > height + r) continue;
@@ -221,7 +231,7 @@ export function drawResourceIcons(ctx: CanvasRenderingContext2D, view: PlayerVie
     if (detail === 'dots') {
       if (dormant) ctx.globalAlpha *= FAR_DORMANT_FADE;
       const d = emphasis ? dot * 1.3 : dot;
-      if (emphasis) drawEmphasis(ctx, x, cy - r * 0.62, d, strategic, t.owner, view.me, look);
+      if (emphasis) drawEmphasis(ctx, x, cy - r * 0.62, d, kind, t.owner, view.me, look);
       drawFarMark(ctx, x, cy - r * 0.62, d, res, look);
       markImprovement(ctx, x, cy - r * 0.62, d + (emphasis ? 5 : 1.5), dormant, ringed, t.visible, look);
       if (wanted(res, t.owner)) drawWanted(ctx, x, cy - r * 0.62, d * 1.6, look);
@@ -236,7 +246,7 @@ export function drawResourceIcons(ctx: CanvasRenderingContext2D, view: PlayerVie
       // No painted medallion (still loading, or none made for this resource): its far-tier mark stands in, so the deposit is never invisible.
       if (resourceArtUrl(res, 64)) continue; // The map is redrawn when the image loads.
       if (dormant) ctx.globalAlpha *= FAR_DORMANT_FADE;
-      if (emphasis) drawEmphasis(ctx, x + p.dx, cy + p.dy, p.radius * 1.15, strategic, t.owner, view.me, look);
+      if (emphasis) drawEmphasis(ctx, x + p.dx, cy + p.dy, p.radius * 1.15, kind, t.owner, view.me, look);
       drawFarMark(ctx, x + p.dx, cy + p.dy, p.radius * 0.85, res, look);
       markImprovement(ctx, x + p.dx, cy + p.dy, p.radius + (emphasis ? 8.2 : 2), dormant, ringed, t.visible, look);
       if (wanted(res, t.owner)) drawWanted(ctx, x + p.dx, cy + p.dy, p.radius * 1.3, look);
@@ -250,12 +260,12 @@ export function drawResourceIcons(ctx: CanvasRenderingContext2D, view: PlayerVie
       ctx.fillStyle = INK[look].paper; ctx.globalAlpha *= 0.8; ctx.fill(); ctx.globalAlpha /= 0.8;
     }
     ctx.drawImage(s, x + p.dx - size / 2, cy + p.dy - size / 2, size, size);
-    if (emphasis) drawEmphasis(ctx, x + p.dx, cy + p.dy, p.radius, strategic, t.owner, view.me, look);
-    // Keep the map's strategic-resource cue visible over the painted brass frame.
-    if (strategic) {
+    if (emphasis) drawEmphasis(ctx, x + p.dx, cy + p.dy, p.radius, kind, t.owner, view.me, look);
+    // Keep the map's category cue visible over the painted brass frame: red for strategic, gold for a luxury.
+    if (kind !== 'Bonus') {
       ctx.beginPath();
       ctx.arc(x + p.dx, cy + p.dy, Math.max(1, p.radius - 0.65), 0, Math.PI * 2);
-      ctx.strokeStyle = INK[look].red;
+      ctx.strokeStyle = strategic ? INK[look].red : CATEGORY_COLOR.Luxury;
       ctx.lineWidth = Math.max(0.8, 0.8 * dpr);
       ctx.stroke();
     }

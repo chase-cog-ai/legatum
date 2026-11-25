@@ -6,7 +6,7 @@ import { CVD, deltaE00, labOf, type Vision } from '../test/cvd';
 import { ATLAS } from './style';
 
 const GROUPS: Record<string, Record<string, string>> = {
-  'Resource categories (lens legend and far-zoom marks)': { Bonus: ATLAS.resources.bonus, Strategic: ATLAS.resources.strategic },
+  'Resource categories (lens legend and far-zoom marks)': { Bonus: ATLAS.resources.bonus, Strategic: ATLAS.resources.strategic, Luxury: ATLAS.resources.luxury },
   'Movement lens': { easy: ATLAS.lens.tint.easy, rough: ATLAS.lens.tint.rough, blocked: ATLAS.lens.tint.blocked },
 };
 

@@ -15,9 +15,9 @@ export interface ResourceInfo {
   revealedBy: TechId | null;
 }
 
-export const RESOURCES: Resource[] = ['Wheat', 'Cattle', 'Stone', 'Copper', 'Iron', 'Niter', 'Coal', 'Oil', 'Silicon'];
+export const RESOURCES: Resource[] = ['Wheat', 'Cattle', 'Stone', 'Copper', 'Iron', 'Niter', 'Coal', 'Oil', 'Silicon', 'Silk', 'Spices', 'Wine', 'Ivory', 'Incense', 'Furs'];
 /** Core's derived `Resource` order (the enum's declaration order), which keys its BTreeMaps and breaks ties: Coal comes before Niter, Oil and Silicon. */
-export const RESOURCE_ORDER: Resource[] = ['Wheat', 'Cattle', 'Stone', 'Copper', 'Iron', 'Coal', 'Niter', 'Oil', 'Silicon'];
+export const RESOURCE_ORDER: Resource[] = ['Wheat', 'Cattle', 'Stone', 'Copper', 'Iron', 'Coal', 'Niter', 'Oil', 'Silicon', 'Silk', 'Spices', 'Wine', 'Ivory', 'Incense', 'Furs'];
 /** The strategic resources in era order (core `Resource::STRATEGIC`). */
 export const STRATEGIC_RESOURCES = RULES.supply.strategic as unknown as Resource[];
 /** Strategic resources begin in the Classical era; Ancient has no supply requirement. */
@@ -67,6 +67,20 @@ export function resourceUsersThisEra(resource: Resource, era: number, faction?: 
 export const SUPPLY_TIERS: BuildingKind[] = (['Market', 'Forge', 'University', 'Bank', 'Factory', 'ResearchLab'] as BuildingKind[]).filter((b) => b in BUILDING_NEEDS);
 
 export const isStrategic = (r: Resource): boolean => RESOURCE_INFO[r].class === 'Strategic';
+/** Luxuries are flavour tiles, like natural wonders: a small bonus on the worked tile and nothing else (core `Resource::LUXURY`). */
+export const isLuxury = (r: Resource): boolean => RESOURCE_INFO[r].class === 'Luxury';
+export const LUXURY_RESOURCES: Resource[] = RESOURCES.filter(isLuxury);
+/** One line of real history for the tile card and the Guide. */
+export const LUXURY_STORY: Partial<Record<Resource, string>> = {
+  Silk: 'Chinese silk reached Rome along the caravan roads later named for it.',
+  Spices: 'Pepper and cinnamon crossed the Indian Ocean on the monsoon winds.',
+  Wine: 'Greek and Roman settlers planted vines wherever they founded a city.',
+  Ivory: 'Carved ivory furnished thrones from Assyria to Byzantium.',
+  Incense: 'Arabian frankincense burned in temples from Egypt to Rome.',
+  Furs: 'Northern furs were traded down the rivers from Novgorod to Baghdad.',
+};
+/** The tile card's word for a resource's kind. */
+export const resourceKindWord = (r: Resource): 'Bonus' | 'Strategic' | 'Luxury' => RESOURCE_INFO[r].class;
 
 /** The supply a building tier uses while it stands (Forge: Iron, Factory: Coal). */
 export const buildingNeed = (b: BuildingKind): Resource | null => BUILDING_NEEDS[b] ?? null;
@@ -99,7 +113,7 @@ export const needText = (r: Resource): string => `Uses 1 ${RESOURCE_INFO[r].name
 export const withArticle = (name: string): string => `${/^[AEIOU]/.test(name) ? 'an' : 'a'} ${name}`;
 
 /** The improvement a deposit of this resource takes, named by the data ("Mine", "Oil Well"; core `improvements::kind_for`). */
-const worksName = (r: Resource): string => IMPROVEMENT_INFO[improvementKindFor(r)].name;
+const worksName = (r: Resource): string => { const kind = improvementKindFor(r); return kind ? IMPROVEMENT_INFO[kind].name : 'improvement'; };
 
 /** The same with its article: "a Mine", "an Oil Well". */
 export const aWorks = (r: Resource): string => withArticle(worksName(r));
@@ -168,6 +182,7 @@ export const supplyRuleText = (r: Resource, faction?: string): string => `Each $
 export function resourceBenefitLines(r: Resource, known: readonly TechId[], faction?: string): string[] {
   const info = RESOURCE_INFO[r];
   const gain = nileYields(faction, improvementGain(r, known));
+  if (info.class === 'Luxury') return [YIELD_WORD.some(([k]) => gain[k]) ? `${bonusText(r, gain)} when a citizen works the tile` : 'No bonus for you: you have no Production', 'A luxury needs no improvement'];
   const lines = YIELD_WORD.some(([k]) => gain[k]) ? [`${bonusText(r, gain)} with ${aWorks(r)}`] : info.class === 'Strategic' ? [] : ['Nothing to build here: you have no Production'];
   if (info.class === 'Strategic') lines.push(`Supplies ${supplyPerDeposit(faction)} ${info.name} inside your borders, ${supplyPerDeposit(faction) + supplyPerMine(faction)} with ${aWorks(r)}`);
   return lines;
@@ -198,9 +213,9 @@ function improvedTileBonus(r: Resource, upgraded: boolean): Yields {
 export function tileYields(faction: Faction, tile: Pick<TileView, 'terrain' | 'resource' | 'improvement' | 'landmark'>): Yields {
   if (tile.landmark) return { food: 0, production: 0, gold: 0, science: 0 };
   if (!tile.terrain) return ZERO;
-  // A resource yields its bonus only once its tile is improved (and the upgrade's extra once the owner has it).
+  // A resource yields its bonus only once its tile is improved (and the upgrade's extra once the owner has it); a luxury needs no improvement.
   const t = terrainYields(faction, tile.terrain);
-  const b = tile.resource && tile.improvement ? improvedTileBonus(tile.resource, !!tile.improvement.upgraded) : ZERO;
+  const b = tile.resource && isLuxury(tile.resource) ? RESOURCE_INFO[tile.resource].bonus : tile.resource && tile.improvement ? improvedTileBonus(tile.resource, !!tile.improvement.upgraded) : ZERO;
   return nileYields(faction, { food: t.food + b.food, production: t.production + b.production, gold: t.gold + b.gold, science: t.science + b.science });
 }
 

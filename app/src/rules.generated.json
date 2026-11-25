@@ -9292,8 +9292,35 @@
           "science": 0
         }
       },
+      "Furs": {
+        "kind": null,
+        "upgradeYields": {
+          "food": 0,
+          "gold": 0,
+          "production": 1,
+          "science": 0
+        }
+      },
+      "Incense": {
+        "kind": null,
+        "upgradeYields": {
+          "food": 0,
+          "gold": 1,
+          "production": 0,
+          "science": 0
+        }
+      },
       "Iron": {
         "kind": "Mine",
+        "upgradeYields": {
+          "food": 0,
+          "gold": 0,
+          "production": 1,
+          "science": 0
+        }
+      },
+      "Ivory": {
+        "kind": null,
         "upgradeYields": {
           "food": 0,
           "gold": 0,
@@ -9328,6 +9355,24 @@
           "science": 0
         }
       },
+      "Silk": {
+        "kind": null,
+        "upgradeYields": {
+          "food": 0,
+          "gold": 1,
+          "production": 0,
+          "science": 0
+        }
+      },
+      "Spices": {
+        "kind": null,
+        "upgradeYields": {
+          "food": 1,
+          "gold": 0,
+          "production": 0,
+          "science": 0
+        }
+      },
       "Stone": {
         "kind": "Quarry",
         "upgradeYields": {
@@ -9339,6 +9384,15 @@
       },
       "Wheat": {
         "kind": "Farm",
+        "upgradeYields": {
+          "food": 1,
+          "gold": 0,
+          "production": 0,
+          "science": 0
+        }
+      },
+      "Wine": {
+        "kind": null,
         "upgradeYields": {
           "food": 1,
           "gold": 0,
@@ -9922,6 +9976,34 @@
         "Hills"
       ]
     },
+    "Furs": {
+      "bonus": {
+        "food": 0,
+        "gold": 1,
+        "production": 1,
+        "science": 0
+      },
+      "class": "Luxury",
+      "name": "Furs",
+      "revealedBy": null,
+      "terrains": [
+        "Tundra"
+      ]
+    },
+    "Incense": {
+      "bonus": {
+        "food": 0,
+        "gold": 2,
+        "production": 0,
+        "science": 0
+      },
+      "class": "Luxury",
+      "name": "Incense",
+      "revealedBy": null,
+      "terrains": [
+        "Desert"
+      ]
+    },
     "Iron": {
       "bonus": {
         "food": 0,
@@ -9935,6 +10017,20 @@
       "terrains": [
         "Hills",
         "Tundra"
+      ]
+    },
+    "Ivory": {
+      "bonus": {
+        "food": 0,
+        "gold": 1,
+        "production": 1,
+        "science": 0
+      },
+      "class": "Luxury",
+      "name": "Ivory",
+      "revealedBy": null,
+      "terrains": [
+        "Plains"
       ]
     },
     "Niter": {
@@ -9984,6 +10080,34 @@
         "Hills"
       ]
     },
+    "Silk": {
+      "bonus": {
+        "food": 0,
+        "gold": 2,
+        "production": 0,
+        "science": 0
+      },
+      "class": "Luxury",
+      "name": "Silk",
+      "revealedBy": null,
+      "terrains": [
+        "Grassland"
+      ]
+    },
+    "Spices": {
+      "bonus": {
+        "food": 1,
+        "gold": 1,
+        "production": 0,
+        "science": 0
+      },
+      "class": "Luxury",
+      "name": "Spices",
+      "revealedBy": null,
+      "terrains": [
+        "Forest"
+      ]
+    },
     "Stone": {
       "bonus": {
         "food": 0,
@@ -10014,12 +10138,26 @@
         "Plains",
         "Grassland"
       ]
+    },
+    "Wine": {
+      "bonus": {
+        "food": 1,
+        "gold": 1,
+        "production": 0,
+        "science": 0
+      },
+      "class": "Luxury",
+      "name": "Wine",
+      "revealedBy": null,
+      "terrains": [
+        "Hills"
+      ]
     }
   },
   "rocketArtilleryRange": 3,
   "rollMax": 120,
   "rollMin": 80,
-  "saveVersion": 59,
+  "saveVersion": 60,
   "settlerCostStep": 50,
   "siege": {
     "baseGold": 160,

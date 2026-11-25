@@ -40,10 +40,16 @@ pub enum Resource {
     Oil,
     #[serde(alias = "Lithium")]
     Silicon,
+    Silk,
+    Spices,
+    Wine,
+    Ivory,
+    Incense,
+    Furs,
 }
 
 impl Resource {
-    pub const ALL: [Resource; 9] = [
+    pub const ALL: [Resource; 15] = [
         Resource::Wheat,
         Resource::Cattle,
         Resource::Stone,
@@ -53,6 +59,12 @@ impl Resource {
         Resource::Coal,
         Resource::Oil,
         Resource::Silicon,
+        Resource::Silk,
+        Resource::Spices,
+        Resource::Wine,
+        Resource::Ivory,
+        Resource::Incense,
+        Resource::Furs,
     ];
     pub const BONUS: [Resource; 4] = [
         Resource::Wheat,
@@ -67,6 +79,16 @@ impl Resource {
         Resource::Coal,
         Resource::Oil,
         Resource::Silicon,
+    ];
+    /// Flavour tiles (user, 2026-10-22: "like natural wonders"): a few per map, always visible, a
+    /// small bonus on the worked tile and nothing else. No improvement, no supply, no empire rule.
+    pub const LUXURY: [Resource; 6] = [
+        Resource::Silk,
+        Resource::Spices,
+        Resource::Wine,
+        Resource::Ivory,
+        Resource::Incense,
+        Resource::Furs,
     ];
 }
 
@@ -106,6 +128,7 @@ pub const SUPPLY_TIERS: [BuildingKind; 5] = [
 pub enum ResourceClass {
     Bonus,
     Strategic,
+    Luxury,
 }
 
 pub struct ResourceStats {
@@ -176,6 +199,42 @@ pub fn stats(resource: Resource) -> ResourceStats {
             Yields::new(0, 1, 0, 1),
             Some(TechId::AutonomousSystems),
         ),
+        Resource::Silk => (
+            ResourceClass::Luxury,
+            &[Grassland],
+            Yields::new(0, 0, 2, 0),
+            None,
+        ),
+        Resource::Spices => (
+            ResourceClass::Luxury,
+            &[Forest],
+            Yields::new(1, 0, 1, 0),
+            None,
+        ),
+        Resource::Wine => (
+            ResourceClass::Luxury,
+            &[Hills],
+            Yields::new(1, 0, 1, 0),
+            None,
+        ),
+        Resource::Ivory => (
+            ResourceClass::Luxury,
+            &[Plains],
+            Yields::new(0, 1, 1, 0),
+            None,
+        ),
+        Resource::Incense => (
+            ResourceClass::Luxury,
+            &[Desert],
+            Yields::new(0, 0, 2, 0),
+            None,
+        ),
+        Resource::Furs => (
+            ResourceClass::Luxury,
+            &[Tundra],
+            Yields::new(0, 1, 1, 0),
+            None,
+        ),
     };
     ResourceStats {
         class,
@@ -196,7 +255,17 @@ pub fn name(resource: Resource) -> &'static str {
         Resource::Niter => "Niter",
         Resource::Oil => "Oil",
         Resource::Silicon => "Silicon",
+        Resource::Silk => "Silk",
+        Resource::Spices => "Spices",
+        Resource::Wine => "Wine",
+        Resource::Ivory => "Ivory",
+        Resource::Incense => "Incense",
+        Resource::Furs => "Furs",
     }
+}
+
+pub fn is_luxury(resource: Resource) -> bool {
+    stats(resource).class == ResourceClass::Luxury
 }
 
 pub fn is_strategic(resource: Resource) -> bool {
@@ -922,7 +991,8 @@ fn shortage_after_with_supply<R: crate::economy::Reason>(
 
 /// The improvement a deposit of `resource` takes, by name ("Mine", "Oil Well").
 pub fn improvement_name(resource: Resource) -> &'static str {
-    crate::improvements::name(crate::improvements::kind_for(resource), false)
+    crate::improvements::kind_for(resource)
+        .map_or("improvement", |kind| crate::improvements::name(kind, false))
 }
 
 /// "an Iron", "a Coal".
@@ -1246,5 +1316,7 @@ pub fn visible_resource(tile: &Tile, explored: bool, techs: &BTreeSet<TechId>) -
     tile.resource.filter(|r| explored && known_to(*r, techs))
 }
 
+#[cfg(test)]
+mod luxury_tests;
 #[cfg(test)]
 mod tests;

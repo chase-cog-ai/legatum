@@ -1,0 +1,16 @@
+Six luxury medallions (Silk, Spices, Wine, Ivory, Incense, Furs), 2026-11-25. One image-generation call each (gpt-image, 1024 px, high quality), with the shipped Copper, Wheat and Stone 256 px medallions as frame, scale and technique references. An antialiased circular matte removed everything outside the frame, then Pillow LANCZOS downscaled to 256, 64 and 32 px.
+
+The first Silk, Spices, Incense and Furs (a red bolt, a spice mound, a bronze burner, a russet pelt bundle) were mid-tone subjects on mid-tone fields and failed tools/art/distinctness.py in greyscale against Copper, Iron, Cattle and each other. They were repainted with a light-dark layout of their own (Silk light to dark top to bottom, Spices and Furs split left and right, Incense dark over light). Ivory's field was darkened and Wine's and the Spices' contrast raised inside the frame with a tone curve (no repaint). The set then passes the check at 14, 24 and 32 px.
+
+Shared prompt:
+ONE painted resource medallion for a historical strategy game, matching the provided reference medallions exactly in frame, scale and technique: an identical thin double antique-brass circular ring with dark ink edge filling the square image edge to edge, realistic painterly old-master oil technique with visible brushwork, muted parchment-compatible earth pigments, subject large and centred filling about 70% of the circle, strong simple silhouette readable at 24 pixels. Plain flat white outside the circle. No text, letters, symbols, glow, or shadow outside the circle. Subject: <subject>
+
+Subjects (final):
+Silk: a neat tall stack of three thick folded bolts of silk cloth filling the whole circle from top to bottom: the TOP bolt is very pale ivory-white silk, the MIDDLE bolt is crimson red silk, the BOTTOM bolt is very dark indigo-black silk; glossy soft folds; behind them a mid-toned warm umber field barely visible at the sides.
+Spices: two open burlap sacks standing side by side filling the whole circle: the LEFT sack is heaped high with very bright pale-yellow turmeric powder, the RIGHT sack is heaped high with black peppercorns, nearly black; the sacks are rolled open at the top; a mid-toned deep teal-green field behind.
+Wine: a tall terracotta Greek amphora wine jar with two handles standing upright, with a cluster of deep purple grapes and one green vine leaf at its foot, on a pale warm cream-ochre field.
+Ivory: a pair of long curved cream-white elephant tusks crossing each other in an X shape, smooth with warm yellowed tips, on a dark chocolate-brown field.
+Incense: lower half of the circle: a wide shallow pale brass dish heaped with a big bright mound of pale golden-white frankincense resin tears, very light in tone; upper half of the circle: a very dark indigo-violet night field, nearly black, with one thin faint wisp of smoke rising. Strong split: dark top half, light bottom half.
+Furs: two fur pelts hanging side by side filling the whole circle: the LEFT half is a very dark black-brown sable pelt, the RIGHT half is a pure snow-white ermine pelt with three small black tail tips; thick soft fur texture; a narrow mid grey-blue field behind.
+
+For the four repaints the shared prompt's subject clause read "subject very large filling almost the whole circle, bold simple shapes with strong light-dark contrast readable at 14 pixels".

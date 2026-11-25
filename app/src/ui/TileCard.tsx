@@ -6,7 +6,7 @@ import { isCalmRouteNote } from '../path';
 import { empireOfPlayer, placeName } from '../empires';
 import { Icon, YIELD_KEYS, YIELD_LABEL, YieldIcon } from './bits';
 import { terrainYields } from '../settlement';
-import { RESOURCE_INFO, bonusYieldName, empireHolds, isStrategic, lackedResources, resourceBenefitLines, tileYields } from '../resources';
+import { LUXURY_STORY, RESOURCE_INFO, bonusYieldName, empireHolds, isLuxury, isStrategic, lackedResources, resourceBenefitLines, resourceKindWord, tileYields } from '../resources';
 import { playerColor, playerInk } from '../theme';
 import { cityOccupiedLine, cityProductionWarning, occupationLockWarning, occupationTileLine } from './forecastWarnings';
 import { productionProgress } from '../cityProgress';
@@ -106,7 +106,9 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
     : null;
   // The next action for the tile's resource: improve it (yours), claim it (nobody's) or who holds it.
   const ownerName = owner ? empireOfPlayer(view, owner.id) : 'another empire';
-  const resourceStatus = !resource || !kind ? null
+  const resourceStatus = !resource ? null
+    : isLuxury(resource) ? (t.owner === null ? 'Unclaimed: bring it inside your borders' : t.owner !== view.me ? `In ${ownerName} territory` : null)
+    : !kind ? null
     : t.improvement ? `${improvementName(t.improvement.kind, !!t.improvement.upgraded)}: the resource is yielding its bonus`
     : t.owner === null ? (isStrategic(resource) ? 'Unclaimed: bring it inside your borders' : 'Unclaimed: bring it inside your borders to improve it')
     : t.owner !== view.me ? (isStrategic(resource) ? `${empireHolds([ownerName.split(' · ')[0]])} this deposit.${lackedResources(view.supply).has(resource) ? ` You have no ${RESOURCE_INFO[resource].name} yet: take it or find another.` : ''}` : `In ${ownerName} territory`)
@@ -118,7 +120,7 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
           <Icon name={`resource-${resource.toLowerCase()}`} size={46} label={RESOURCE_INFO[resource].name} />
           <div>
             <b className="tilecard-lead-name">{RESOURCE_INFO[resource].name}</b>
-            <span className={`tilecard-lead-kind ${isStrategic(resource) ? 'strategic' : 'bonus'}`}>{isStrategic(resource) ? 'Strategic' : 'Bonus'} resource</span>
+            <span className={`tilecard-lead-kind ${resourceKindWord(resource).toLowerCase()}`}>{resourceKindWord(resource)} resource</span>
             {city ? null : <span className="muted tilecard-lead-place">{placeName(view, hex)}</span>}
           </div>
         </div>
@@ -130,10 +132,11 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
         </div>
       )}
       {resource && !t.wonder && !t.landmark && (
-        <div className={`resource-line ${isStrategic(resource) ? 'strategic' : 'bonus'}`}>
+        <div className={`resource-line ${resourceKindWord(resource).toLowerCase()}`}>
           <ul className="tilecard-benefits">
             {resourceBenefitLines(resource, view.research.known, view.players.find((p) => p.id === view.me)?.faction).map((line) => <li key={line}><Amounts text={line} /></li>)}
           </ul>
+          {LUXURY_STORY[resource] && <p className="tilecard-story" data-testid="tile-luxury-story">{LUXURY_STORY[resource]}</p>}
           {resourceStatus && <div className={`tilecard-status ${isDormant(t, view.me, faction) && !isStrategic(resource) ? 'bad' : ''}`} data-testid="tile-improvement"><Amounts text={resourceStatus} /></div>}
         </div>
       )}

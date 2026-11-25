@@ -812,9 +812,15 @@ fn a_market_and_bank_do_not_need_copper() {
 #[test]
 fn later_resources_have_their_own_improvements() {
     use crate::improvements::{kind_for, name};
-    assert_eq!(name(kind_for(Resource::Oil), true), "Oil Well");
-    assert_eq!(name(kind_for(Resource::Niter), true), "Saltpetre Works");
-    assert_eq!(name(kind_for(Resource::Silicon), true), "Quartz Mine");
+    assert_eq!(name(kind_for(Resource::Oil).unwrap(), true), "Oil Well");
+    assert_eq!(
+        name(kind_for(Resource::Niter).unwrap(), true),
+        "Saltpetre Works"
+    );
+    assert_eq!(
+        name(kind_for(Resource::Silicon).unwrap(), true),
+        "Quartz Mine"
+    );
     assert_eq!(
         serde_json::from_str::<Resource>("\"Lithium\"").unwrap(),
         Resource::Silicon
@@ -823,7 +829,7 @@ fn later_resources_have_their_own_improvements() {
         serde_json::from_str::<ImprovementKind>("\"LithiumMine\"").unwrap(),
         ImprovementKind::QuartzMine
     );
-    assert_eq!(name(kind_for(Resource::Iron), false), "Mine");
+    assert_eq!(name(kind_for(Resource::Iron).unwrap(), false), "Mine");
 }
 
 #[test]

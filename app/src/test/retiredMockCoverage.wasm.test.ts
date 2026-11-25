@@ -24,6 +24,10 @@ it('WASM map generation pins resource and wonder placement for a seed', () => {
           "Stone",
         ],
         [
+          82,
+          "Spices",
+        ],
+        [
           84,
           "Coal",
         ],
@@ -114,6 +118,10 @@ it('WASM map generation pins resource and wonder placement for a seed', () => {
         [
           237,
           "Wheat",
+        ],
+        [
+          271,
+          "Incense",
         ],
         [
           276,

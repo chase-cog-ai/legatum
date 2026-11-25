@@ -4,7 +4,7 @@ Facts below are cited to file (and usually function), read 2026-10-02 and audite
 recommendations that assume Civ 6 defaults this game doesn't have. If a fact isn't in the cited
 file, say so rather than guessing.
 
-**Rules version: 58** (`crates/core/src/lib.rs::RULES_VERSION`, checked 2026-11-22). Every save carries `save_version = RULES_VERSION`; saves from any other version are refused (tooling can upgrade a 49 to 57 state with `upgrade_from_49`); tapes still require their matching rules version. The version log and old compatibility notes are in `history.md`.
+**Rules version: 60** (`crates/core/src/lib.rs::RULES_VERSION`, checked 2026-11-25). Every save carries `save_version = RULES_VERSION`; saves from any other version are refused (tooling can upgrade a 49 to 57 state with `upgrade_from_49`); tapes still require their matching rules version. The version log and old compatibility notes are in `history.md`.
 
 The reference was one file, `game-rules.md`, until 2026-11-22. It is now one file per system, each holding its original text verbatim and in its original order. Open only the files your question needs, plus `not-in-game.md` before proposing anything.
 
@@ -19,7 +19,7 @@ The reference was one file, `game-rules.md`, until 2026-11-22. It is now one fil
 | `air.md` | Aircraft, strikes, recon, rebase, hangars, Air Defence, aircraft promotion, aircraft sight |
 | `wonders.md` | The world wonder race, wonder tiles and held wonder VP, natural wonders |
 | `cities-and-production.md` | City and Settler rules (Settler needs population 2), population is territory, borders, city automation, banked production, hidden faction-useless items, tile improvements |
-| `economy-and-purchases.md` | Upkeep, buying items (`BuyItem`) and tiles (`BuyTile`), treasury bounds, resources, strategic supply; the `no_purchase_under_threat` experiment |
+| `economy-and-purchases.md` | Upkeep, buying items (`BuyItem`) and tiles (`BuyTile`), treasury bounds, resources, luxuries, strategic supply; the `no_purchase_under_threat` experiment |
 | `combat.md` | Damage formula, melee, pursuit, split counterattacks, ranged, Walls and Siege, city shield, city strike, capture, the Celtic sack, Greece's captives, original-capital VP (held, rules 50), Raze, the occupation lock, fortify and heal, promotions |
 | `diplomacy.md` | Peace, Alliance or War; Alliance cost, the upkeep waiver (rules 50) and calls to arms; offers; leaving; first contact; surprise wars; coalitions; diplomacy AI |
 | `victory-and-scoring.md` | VP and the VP target, winning by holding the target, winning by capitals, World Ages (the only era scoring since rules 50), the near-victory warning, decadence (off), the game history record |

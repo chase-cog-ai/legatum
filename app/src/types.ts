@@ -231,8 +231,8 @@ export interface WonderPreview { tile: Hex; lost: Yields }
 
 // ---- resources.rs (G11) ----
 
-export type Resource = 'Wheat' | 'Cattle' | 'Stone' | 'Copper' | 'Iron' | 'Niter' | 'Coal' | 'Oil' | 'Silicon';
-export type ResourceClass = 'Bonus' | 'Strategic';
+export type Resource = 'Wheat' | 'Cattle' | 'Stone' | 'Copper' | 'Iron' | 'Niter' | 'Coal' | 'Oil' | 'Silicon' | 'Silk' | 'Spices' | 'Wine' | 'Ivory' | 'Incense' | 'Furs';
+export type ResourceClass = 'Bonus' | 'Strategic' | 'Luxury';
 
 /** One supplying deposit (core `resources::DepositView`). */
 interface DepositView {

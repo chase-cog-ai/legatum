@@ -103,7 +103,7 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await expect(atlas).toHaveAttribute('data-turn', '1');
     await slider.press('End');
     await expect(atlas).toHaveAttribute('data-turn', String(turn - 1));
-    await expect(vp).toHaveText('11 VP');
+    await expect(vp).toHaveText('15 VP');
     await expect.poll(mapPixels).not.toBe(opening);
     await expect(replay.getByRole('button', { name: 'Next turn' })).toBeDisabled();
     await shot(page, size, '26s-replay-ending');

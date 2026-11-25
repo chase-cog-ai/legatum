@@ -58,6 +58,13 @@ export function termLines(view: PlayerView, terms: PeaceTerms | undefined | null
   return lines;
 }
 
+/** Peace with `other` frees the viewer's units locked in cities captured from it (core `rules::occupation::lock`). */
+export function freedUnitsLine(view: PlayerView, other: TeamId): TermLine | null {
+  const n = view.units.filter((u) => u.owner === view.me && u.occupation_lock != null
+    && view.players.find((p) => p.id === u.occupation_lock)?.team === other).length;
+  return n ? { tone: 'gain', text: `Peace frees ${n} ${n === 1 ? 'unit' : 'units'} holding captured cities` } : null;
+}
+
 /** The terms of an offer, for whoever reads it. */
 export const offerTermLines = (view: PlayerView, p: PeaceProposal) => termLines(view, p.terms, p.from, p.to);
 

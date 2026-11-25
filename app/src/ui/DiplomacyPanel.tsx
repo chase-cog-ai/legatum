@@ -24,7 +24,7 @@ import { RivalLevy } from './Levy';
 import { aiLevel } from '../aiLevel';
 import { publicRelationsModel } from '../relations';
 import { peaceScope, peaceScopeForAction } from '../peaceScope';
-import { isPlain, liveTerms, mirrored, offerTermLines, termLines, truceTurns } from '../peaceTerms';
+import { freedUnitsLine, isPlain, liveTerms, mirrored, offerTermLines, termLines, truceTurns } from '../peaceTerms';
 import { PeaceTermsEditor } from './PeaceTerms';
 
 const treatyName = (p: Pick<PeaceProposal, 'kind'>) => p.kind ?? 'Peace';
@@ -416,10 +416,11 @@ function OfferCard({ p, view, forecastView, orders, current, ending }: {
   const firstTerms = kind === 'Alliance' ? [...(accept ? warLines(accept, view) : []), ...allianceCosts(accept, view).filter((line) => line.tone !== 'note')] : offerForecast(p, view, accept);
   const moreTerms = kind === 'Alliance' ? offerForecast(p, view, accept).filter((line) => line.tone === 'gain' && !firstTerms.some((first) => first.text === line.text)) : [];
   const benefits = moreTerms.filter((line) => line.tone === 'gain');
+  const freed = kind === 'Peace' ? freedUnitsLine(view, p.from) : null;
   const carried = kind === 'Peace' ? offerTermLines(view, p) : [];
   const truce = truceTurns(p.terms);
   const queuedCounter = orders.find((o): o is Extract<Order, { type: 'RespondToProposal' }> => o.type === 'RespondToProposal' && o.proposal === p.id && !o.accept && !!o.counter);
-  const termBlock = <div className="offer-for-you"><span className="offer-for-you-label">For you</span><Terms items={firstTerms} /></div>;
+  const termBlock = <div className="offer-for-you"><span className="offer-for-you-label">For you</span><Terms items={freed ? [...firstTerms, freed] : firstTerms} /></div>;
   return <article className="diplomacy-item offer-card" style={{ ['--empire' as string]: color }} aria-labelledby={`offer-${p.id}`}>
     <div className="offer-top">
       {leader

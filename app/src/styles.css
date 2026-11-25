@@ -3202,6 +3202,8 @@ dialog.settings-modal {
   .forecast:has(.forecast-assault) details.forecast-strike { display: none; }
   /* The plain "Walls halve this attack" line also yields: the strength table shows Walls, and the covered (green) line stays. */
   .forecast:has(.forecast-assault) .forecast-walls:not(.good) { display: none; }
+  /* The defender's Walls bar adds two rows to the sides, so a walled city's card yields the same two lines as the whole-fight card. */
+  .forecast:has(.fside-walls-bar) :is(details.forecast-strike, .forecast-walls:not(.good)) { display: none; }
   .forecast-foot { padding-bottom: 8px; }
   /* Standing caveats (visible positions, capture rules, pursuit) are in the Guide; at this height
      they would push the card past the window, so the numbers and risks keep the room. */

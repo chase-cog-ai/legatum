@@ -1,6 +1,6 @@
 // The game lobby (staging room) as plain data: seats, presets and game settings, and the
 // GameSetup they produce. The Lobby screen renders this; the preference boundary is below.
-import { FACTIONS } from './data';
+import { FACTIONS, RULES } from './data';
 import { MAX_PLAYERS, factionChoiceIndex, teamTarget } from './gameSetup';
 import { colorFactions } from './theme';
 import type { AiDifficulty, Faction, GameSetup, PlayerSetup } from './types';
@@ -393,7 +393,7 @@ export function aiAlliancesOn(l: Lobby): boolean {
 export function problems(l: Lobby): string[] {
   const p: string[] = [];
   const active = l.slots.filter(isActive);
-  if (!validTurnLimit(l.turnLimit)) p.push('Turn limit must be a whole number between 1 and 4,294,967,294, or Off.');
+  if (!validTurnLimit(l.turnLimit)) p.push(`Enter a last turn of 1 or more, or pick Turn ${RULES.defaultTurnLimit}.`);
   if (active.length < MIN_SEATS) p.push('A game needs at least two empires.');
   if (teams(l).length < 2) p.push('Everyone is on one team: put at least one empire on another team.');
   if (active.some((s) => humanKind(s.kind) && !s.name.trim())) p.push('Every human seat needs a name.');

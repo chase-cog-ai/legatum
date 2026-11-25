@@ -405,6 +405,15 @@ pub enum Event {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         bounty: Option<i32>,
     },
+    /// Public: a city's Walls bar was broken this turn, so its Walls are destroyed (level 0; it
+    /// stops firing and must build Walls again). `by`: the empire of the first attacker that hit
+    /// it this stage.
+    WallsBreached {
+        city: CityId,
+        owner: PlayerId,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        by: Option<PlayerId>,
+    },
     /// Public: a first capture of a city owned by Athens grants the captor one free technology.
     AthensCityCaptured {
         city: CityId,

@@ -490,6 +490,10 @@ pub struct City {
     /// Completed Walls level, 0 when unwalled. A captured city retains it.
     #[serde(default, skip_serializing_if = "is_zero_u8")]
     pub walls_level: u8,
+    /// Damage the Walls bar has taken (`combat::walls_hp`). It never heals on its own: the next
+    /// completed Walls build restores it, and a bar that reaches 0 destroys the Walls.
+    #[serde(default, skip_serializing_if = "is_zero_i32")]
+    pub walls_damage: i32,
     pub hp: i32,
     /// Tiles gained after founding and still held through population growth.
     pub tiles_claimed: i32,
@@ -517,6 +521,10 @@ pub struct City {
 impl City {
     pub fn wall_tier(&self) -> u8 {
         crate::data::wall_tier(self)
+    }
+    /// What is left of the Walls bar (`combat::walls_hp`); 0 without Walls.
+    pub fn walls_hp(&self) -> i32 {
+        crate::combat::walls_hp(self.wall_tier(), self.walls_damage)
     }
     /// Whether the active build owns `production_stored`. Projects never hold progress, so
     /// with a project (or nothing) active the stored amount is unassigned.
@@ -655,6 +663,9 @@ pub struct CityMemory {
     pub walls: bool,
     #[serde(default)]
     pub walls_level: u8,
+    /// Damage the Walls bar had taken when last seen (`City::walls_damage`).
+    #[serde(default, skip_serializing_if = "is_zero_i32")]
+    pub walls_damage: i32,
     #[serde(default)]
     pub citadel: bool,
     #[serde(default)]
@@ -688,6 +699,7 @@ impl From<&City> for CityMemory {
             hp: city.hp,
             walls: city.wall_tier() > 0,
             walls_level: city.wall_tier(),
+            walls_damage: city.walls_damage,
             citadel: city.wall_tier() >= 2,
             star_fort: city.wall_tier() >= 3,
             has_workshop: city
@@ -715,6 +727,7 @@ impl CityMemory {
                 hp: crate::data::CITY_HP,
                 walls: false,
                 walls_level: 0,
+                walls_damage: 0,
                 citadel: false,
                 star_fort: false,
                 has_workshop: false,

@@ -9,7 +9,7 @@ import type { BuildingKind, CityView, Faction, Order, PlayerView, ProductionItem
 import { comparisonSentence, pieceAgainst, pieceComparison } from '../pieceCompare';
 import { PieceVsLine } from './PieceVs';
 import { razeLossLines, razeLosses, razeWorkText } from '../razeLosses';
-import { BUILDING_NAME, BUILDING_STATS, TERRAIN_NAME, FIRST_GROWTH, GROWTH_BASE, GROWTH_PER_POP, WORK_RADIUS, projectPercent, costInFactionYield, costYield, isGrow, greatWorkRules, greatWorkRequirement, GREAT_WORKS, isGreatWork, isProductionBuilding, TECH_NAME, CAPTURE_RESISTANCE_TURNS, itemCardText, itemDescription, itemSummary, moreText, eraScaled, itemKey, itemName as baseItemName, IMPROVEMENT_INFO, sameItem, buildingFamily, RULES, HORSE_MOUNTED, wallsUpgradeName } from '../data';
+import { BUILDING_NAME, BUILDING_STATS, TERRAIN_NAME, FIRST_GROWTH, GROWTH_BASE, GROWTH_PER_POP, WORK_RADIUS, projectPercent, costInFactionYield, costYield, isGrow, greatWorkRules, greatWorkRequirement, GREAT_WORKS, isGreatWork, isProductionBuilding, TECH_NAME, CAPTURE_RESISTANCE_TURNS, itemCardText, itemDescription, itemSummary, moreText, itemKey, itemName as baseItemName, IMPROVEMENT_INFO, sameItem, buildingFamily, RULES, HORSE_MOUNTED, wallsUpgradeName, wallsRepairing } from '../data';
 import { effectiveProduction, errorsWhere, orderCity, productionQueue, queueAfterBuild, setProductionQueue, toggleBuy } from '../orders';
 import { distance, hexEq, tileIndex } from '../hex';
 import { WONDER_INFO, WONDER_PERCENT, cityWonders, wonderArt, wonderBonusSentence, wonderYieldWord } from '../wonders';
@@ -21,7 +21,8 @@ import { YieldsAfter } from './bits';
 import { CityYieldHover } from './CityYieldHover';
 import { OwnDecadenceNote, decadenceLinePercent, isDecadenceLine } from './DecadenceNote';
 import { TILE_PRIORITY_INFO, YIELD_KEYS, YIELD_LABEL, signed } from './bits';
-import { CITY_HEAL_RULE, CITY_STRIKE_RULE, cityFireStatus, cityHealStatus, cityStrengthRule, upkeepText } from '../format';
+import { CITY_HEAL_RULE, CITY_STRIKE_RULE, wallsBarRule, WALLS_UNDER_ATTACK_NOTE, cityFireStatus, cityHealStatus, cityStrengthRule, upkeepText } from '../format';
+import { WALLS_HP_PER_LEVEL } from '../combat';
 import { Icon, ToneIcon } from './bits';
 import { PlayerBadge } from './PlayerBadge';
 import { cityOccupiedLine, cityProductionWarning, FORECAST_ASSUMPTIONS, waitingTag } from './forecastWarnings';
@@ -95,18 +96,19 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
     : item.kind === 'Wonder'
       ? `${baseItemName(item, faction)} · ${wonderWhere(item.tile)}`
     : baseItemName(item, faction);
-  /** Upgrade Walls states this city's own gain: +5 city strength scaled to the owner's era (core `data::era_scaled`). */
-  const wallsGain = (): number => eraScaled(BUILDING_STATS.UpgradeWalls.cityStrength, (view.players.find((p) => p.id === city.owner)?.era ?? 1) - 1);
+  /** Upgrade Walls states what it does for this city: the next level's +50 Walls (core `combat::WALLS_HP_PER_LEVEL`), or a repair at the cap. */
+  const repairing = wallsRepairing(city, view.players.find((p) => p.id === city.owner)?.era ?? 1);
   const isUpgradeWalls = (item: ProductionItem): boolean => item.kind === 'Building' && item.building === 'UpgradeWalls';
-  const summaryOf = (item: ProductionItem, faction?: Faction): string => isUpgradeWalls(item) ? `+${wallsGain()} city strength for the next level` : itemSummary(item, faction);
-  const descriptionOf = (item: ProductionItem, faction?: Faction): string => isUpgradeWalls(item)
-    ? `The next level adds ${wallsGain()} city strength. You can add one level for each era you have reached.`
-    : itemDescription(item, faction);
+  const summaryOf = (item: ProductionItem, faction?: Faction): string => !isUpgradeWalls(item) ? itemSummary(item, faction)
+    : repairing ? `Repairs the Walls to ${city.walls_max_hp}` : `+${WALLS_HP_PER_LEVEL} Walls for the next level`;
+  const descriptionOf = (item: ProductionItem, faction?: Faction): string => !isUpgradeWalls(item) ? itemDescription(item, faction)
+    : repairing ? `Restores the Walls to ${city.walls_max_hp}. Walls never heal on their own.`
+    : `The next level adds ${WALLS_HP_PER_LEVEL} to the Walls and repairs them. You can add one level for each era you have reached.`;
   /** The production meter's label is one line, so an improvement or a placed site uses the short form ("Quarry, Stone NE", "Yam Relay Station W"). */
   const meterName = (item: ProductionItem): string => item.kind === 'Improvement'
     ? improvementShortTitle(item, city.pos, view.tiles[tileIndex(item.tile, view.width, view.height)]?.resource)
     : item.kind === 'Wonder' ? `${baseItemName(item, owner?.faction)} ${bearing(city.pos, item.tile)}`
-    : item.kind === 'Building' && item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, owner?.faction))
+    : item.kind === 'Building' && item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, owner?.faction), wallsRepairing(city, owner?.era ?? 1))
     : itemName(item, owner?.faction);
   const improve = useGame((s) => s.improve);
   const place = useGame((s) => s.place);
@@ -231,14 +233,20 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
         {capKicker('bottom')}
       </div>
       <div className="cp-name">{city.name}</div>
-      {city.visible && <div className="cp-meta">
-        <span className="cp-population">
+      {city.visible && <div className={(city.walls_max_hp ?? 0) > 0 ? 'cp-meta cp-meta-walls' : 'cp-meta'}>
+        <span className="cp-population" title={`${city.population} population`}>
           <span className="cp-pop">{city.population}</span> population
         </span>
         <Tip content={cityStrengthRule(city, owner?.faction, owner ? owner.era - 1 : 0)}>
           <span className="lbl">Strength</span>
           <b>{city.strength}</b>
         </Tip>
+        {(city.walls_max_hp ?? 0) > 0 && <span className="cp-break" aria-hidden="true" />}
+        {(city.walls_max_hp ?? 0) > 0 && <Tip content={wallsBarRule(`${wallsRepairing(city, owner?.era ?? 1) ? 'Repair' : 'Upgrade'} ${baseItemName({ kind: 'Building', building: 'Walls' }, owner?.faction)}`)}>
+          <span className="lbl">Walls</span>
+          <b data-testid="city-walls-bar">{city.walls_hp ?? 0}</b>
+          <span className="muted">/{city.walls_max_hp}</span>
+        </Tip>}
         <Tip content={`City health. ${CITY_HEAL_RULE}`}>
           <span className="lbl">Health</span>
           <b>{city.hp}</b>
@@ -570,7 +578,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
     owner?.faction === 'Germany' && (item.kind === 'Building' || item.kind === 'Wonder') && isProductionBuilding(item.building);
   const renderOption = (o: ProductionOption, keeps?: string) => {
     // A tile-chosen build not yet placed stands for every eligible tile, so it goes by its plain name.
-    const name = o.item.kind === 'Building' && o.item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, owner?.faction)) : o.item.kind === 'Wonder' && !siteChosen(o) ? baseItemName(o.item, owner?.faction) : itemName(o.item, owner?.faction);
+    const name = o.item.kind === 'Building' && o.item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, owner?.faction), wallsRepairing(city, owner?.era ?? 1)) : o.item.kind === 'Wonder' && !siteChosen(o) ? baseItemName(o.item, owner?.faction) : itemName(o.item, owner?.faction);
     if (o.item.kind === 'Project') {
       return <div className="production-choice project-choice" key={itemKey(o.item)} data-item={itemKey(o.item)}>
         <Tip as="div" placement="right" summary={descriptionOf(o.item, owner?.faction)} content={descriptionOf(o.item, owner?.faction)}>
@@ -680,6 +688,8 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
         </> : null}
       </div>
       {resourceBlocked && <div className="production-blocker prod-blocked"><Icon name="ui-alert" size={11} className="ui-mark" /><Amounts text={o.resource_blocker!} /></div>}
+      {d?.walls_blocked && o.item.kind === 'Building' && (o.item.building === 'UpgradeWalls' || buildingFamily(o.item.building) === 'Walls') &&
+        <div className="production-blocker prod-blocked" data-testid="walls-under-attack"><Icon name="ui-alert" size={11} className="ui-mark" />{WALLS_UNDER_ATTACK_NOTE}</div>}
       <EffectMore effect={cardLine}><Amounts text={moreText(detail, cardLine, summaryOf(o.item, owner?.faction))} />{vs && <PieceVsLine comparison={vs} />}</EffectMore>
       {reason === "Walls must be built with Production; they can't be bought." && o.item.kind === 'Building' && buildingFamily(o.item.building) === 'Walls' &&
         <div className="production-refusal"><Amounts text={reason} /></div>}
@@ -706,7 +716,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
   };
   /** A researched item this city can't choose yet: greyed out in its section, with the reason. */
   const renderUnavailable = (u: UnavailableOption) => {
-    const name = u.item.kind === 'Building' && u.item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, faction)) : itemName(u.item, faction);
+    const name = u.item.kind === 'Building' && u.item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, faction), wallsRepairing(city, owner?.era ?? 1)) : itemName(u.item, faction);
     const why = whyUnavailable(u);
     const wallsOnly = u.item.kind === 'Building' && buildingFamily(u.item.building) === 'Walls';
     const buyReason = wallsOnly ? "Walls must be built with Production; they can't be bought." : `Can't buy ${name} yet: ${lowerFirst(why.short)}.`;

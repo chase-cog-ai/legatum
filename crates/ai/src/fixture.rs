@@ -502,6 +502,8 @@ impl ViewBuilder {
         let is_capital = !self.view.cities.iter().any(|c| c.owner == owner);
         self.view.cities.push(CityView {
             walls_level: 0,
+            walls_hp: 0,
+            walls_max_hp: 0,
             citadel: false,
             star_fort: false,
             has_workshop: false,
@@ -671,6 +673,7 @@ impl ViewBuilder {
             turns_to_heal: None,
             heal_blocked: false,
             attacked_last_turn: false,
+            walls_blocked: false,
             population_unlocks: Vec::new(),
         }
     }
@@ -980,4 +983,18 @@ pub fn assert_valid(view: &PlayerView, orders: &[Order]) {
         }
     }
     assert!(research <= 1, "more than one research order");
+}
+
+/// A state recorded before breakable Walls (rules 62) with the same siege pressure under them: a
+/// walled city's bar is set to half its HP (capped at the bar's size), since half-damage Walls
+/// in front of the full HP take as long to break as the old half-damage HP alone.
+#[cfg(test)]
+pub(crate) fn with_rules61_walls(mut state: legatum_core::GameState) -> legatum_core::GameState {
+    for c in state.cities.values_mut() {
+        let max = legatum_core::combat::walls_max_hp(c.wall_tier());
+        if max > 0 {
+            c.walls_damage = max - (c.hp / 2).min(max);
+        }
+    }
+    state
 }

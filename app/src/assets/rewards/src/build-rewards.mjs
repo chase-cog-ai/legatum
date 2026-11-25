@@ -264,6 +264,46 @@ function tech(S) {
   for (let a = 22.5; a < 360; a += 45) S.stroke(line(polar(C, C, 66, a), polar(C, C, 112, a)), 2, { op: 0.6 });
 }
 
+// ---------- tomb: Egypt's Royal Tomb, the pyramid over the mastaba inside its niched wall ----------
+// Two tones like the painting it stands for: lit faces solid, the shaded faces in half-tone.
+function tomb(S) {
+  // the small pyramid behind: lit left face solid, shaded right face in half-tone, a few courses cut
+  const apex = [300, 112], bl = [206, 258], br = [394, 258], mid = [318, 258];
+  S.solid(poly([apex, bl, mid]), { halo: 3 });
+  S.half(poly([apex, mid, br]), { op: 0.62 });
+  S.stroke(poly([apex, bl, br]), 3, { halo: 0 });
+  for (const t of [0.3, 0.55, 0.8]) {
+    const y = apex[1] + (258 - apex[1]) * t;
+    S.cut(`M${f(apex[0] - 94 * t)} ${f(y)}H${f(apex[0] + 18 * t)}`, 1.2);
+  }
+  // the mastaba: a battered block with its false door
+  const mast = poly([[166, 236], [330, 236], [352, 330], [144, 330]]);
+  S.solid(mast, { halo: 4 });
+  S.half(poly([[330, 236], [352, 330], [336, 330], [318, 236]]), { op: 0.62 });
+  for (const y of [258, 282, 306]) S.cut(`M${f(166 - (y - 236) * 0.234)} ${y}H${f(330 + (y - 236) * 0.234)}`, 1.2);
+  // the false door: a recessed panel (engraved frames and hatching) with a narrow slot, not an opening
+  S.cut(rect(238, 262, 36, 68) + rect(244, 268, 24, 62), 2);
+  S.shade(rect(244, 268, 24, 62), { a: 90, s: 3.4 });
+  S.cutFill(rect(253, 280, 6, 50));
+  S.cut('M228 256H284', 2);
+  // the enclosure wall: a cornice, recessed niches and the gate in the middle
+  S.solid(rect(84, 318, 344, 96) + rect(78, 310, 356, 12), { halo: 4 });
+  S.cut('M78 322H434', 1.4);
+  // recessed panels (the palace facade): pairs of fine cuts over a shaded band, so the wall reads as niched stone, not a colonnade
+  S.half(rect(84, 334, 344, 64), { op: 0.35 });
+  for (let x = 100; x < 420; x += 24) {
+    if (x > 214 && x < 290) continue;
+    S.cut(`M${x} 340V392M${x + 8} 340V392`, 1.5);
+  }
+  for (const y of [354, 374]) S.cut(`M84 ${y}H226M286 ${y}H428`, 0.9);
+  S.cut('M84 398H428', 1.4);
+  S.cutFill(rect(234, 344, 44, 70));
+  S.solid(rect(228, 336, 56, 10));
+  // the ground line, engraved like the ruin's
+  S.solid(rect(64, 414, 384, 12), { halo: 0 });
+  S.hatch(rect(64, 414, 384, 12), { a: 0, s: 3, w: 1.1, op: 0.6 });
+}
+
 const EMBLEMS = {
   camp: ['The raiders’ camp: a broken standard over cold embers', camp, [60, 100, 392]],
   ruin: ['An ancient ruin: a broken arch above buried stones', ruin, [84, 84, 344]],
@@ -273,6 +313,7 @@ const EMBLEMS = {
   milestone: ['A milestone: the relay star in a laurel', milestone, [51, 60, 410]],
   greatwork: ['A great work: a monument in a laurel', greatwork, [38, 34, 436]],
   tech: ['A technology: the relay star within its orbits', tech],
+  tomb: ['The Royal Tomb: a pyramid over a tomb inside a walled court', tomb, [60, 76, 392]],
 };
 
 const only = process.argv[2];

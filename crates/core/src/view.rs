@@ -555,6 +555,10 @@ pub struct CityDetail {
     /// turn (it doesn't heal on a turn it takes damage either).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub heal_blocked: bool,
+    /// Walls work (Walls, Upgrade Walls, Repair) cannot finish or be bought now: the city is
+    /// under attack (`rules::cities::walls_work_blocked`). Its Production waits.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub walls_blocked: bool,
     /// The city took battle damage on the turn that just resolved (`City.last_attacked_turn`).
     /// Owner-only like the rest of the detail; the app's siege alerts read it on a loaded game,
     /// where no turn report exists.
@@ -736,6 +740,12 @@ pub struct CityView {
     /// Last observed completed Walls level (0 when unwalled).
     #[serde(default)]
     pub walls_level: u8,
+    /// Last observed Walls bar and its full size at this level (`combat::walls_hp`,
+    /// `combat::walls_max_hp`): hits land on it before the city's HP and it never heals.
+    #[serde(default)]
+    pub walls_hp: i32,
+    #[serde(default)]
+    pub walls_max_hp: i32,
     #[serde(default)]
     pub citadel: bool,
     #[serde(default)]
@@ -809,6 +819,8 @@ impl CityView {
             greece_captive_at_risk: false,
             walls: city.walls,
             walls_level: city.walls_level,
+            walls_hp: combat::walls_hp(city.walls_level, city.walls_damage),
+            walls_max_hp: combat::walls_max_hp(city.walls_level),
             citadel: city.citadel,
             star_fort: city.star_fort,
             has_workshop: city.has_workshop,
@@ -2687,7 +2699,7 @@ fn city_detail(
                 != (ProductionItem::Building {
                     building: BuildingKind::UpgradeWalls,
                 })
-                || (c.wall_tier() < data::MAX_WALL_TIER
+                || ((c.wall_tier() < data::MAX_WALL_TIER || c.walls_damage > 0)
                     && (c.wall_tier() > 0
                         || data::item_requires_for_rules(
                             state.setup.rule_experiments,
@@ -2810,6 +2822,7 @@ fn city_detail(
         heal_blocked: c.hp < data::CITY_HP
             && crate::rules::cities::heal_blocked_by_adjacent_enemy(state, c),
         attacked_last_turn: c.last_attacked_turn.is_some_and(|t| t + 1 == state.turn),
+        walls_blocked: crate::rules::cities::walls_work_blocked(state, c),
         population_unlocks,
         yields,
     }
@@ -2876,6 +2889,7 @@ pub(crate) mod tests {
                 last_purchase_turn: None,
                 buildings: BTreeSet::new(),
                 walls_level: 0,
+                walls_damage: 0,
                 hp: CITY_HP,
                 grown_tiles: Vec::new(),
                 tiles_claimed: 0,

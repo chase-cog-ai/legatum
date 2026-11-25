@@ -8,7 +8,6 @@ import { pickSaveFile } from '../ui/GameMenu';
 import { Fan, Wordmark } from '../brand/ornaments';
 import { openGuide } from '../ui/guideState';
 import { SettingsDialog } from '../ui/SettingsDialog';
-import { cleanRoomName } from '../net/roomName';
 import { JOIN_CODE_MAX, joinCodeProblem, typedJoinCode } from '../net/joinCode';
 import { retryLine, retryWouldFail } from '../net/browserHost';
 import { DEFAULT_PLAYER_NAME, MAX_PLAYER_NAME, rememberPlayerName, savedPlayerName } from '../platform/online';
@@ -254,13 +253,9 @@ function MultiplayerMenu({ hostSave, onBack }: { hostSave: SaveFile | null; onBa
   const busy = hosting === 'starting' || resuming === 'starting';
   const [hostError, setHostError] = useState<string | null>(null);
   const [name, setName] = useState(() => savedPlayerName() ?? DEFAULT_PLAYER_NAME);
-  // The game list drops symbols and emoji; say so before the name is used.
   // An optional code that locks the game: guests type it once to take a seat. It stays in this tab.
   const [code, setCode] = useState('');
   const codeNote = joinCodeProblem(code);
-  const typed = name.trim();
-  const shown = cleanRoomName(typed);
-  const listedAs = typed && shown !== typed ? (shown ? `Shown in the game list as “${shown}”.` : 'Listed as “Game” and four characters.') : null;
   // After a refusal that pressing Host Game again cannot fix, Host Game is not the next action: Join Game is.
   const hostCannotRetry = hosting === 'failed' && !!refusal && retryWouldFail(refusal.kind);
   const hostPrimary = hosting === 'failed' && !views && !hostCannotRetry;
@@ -310,8 +305,7 @@ function MultiplayerMenu({ hostSave, onBack }: { hostSave: SaveFile | null; onBa
         {online?.relay ? (
           <>
             <label className="host-name mp-name">
-              {/* The note replaces the label while it shows, so it adds no height to a menu that is already tight. */}
-              {listedAs === null ? <span>Your name</span> : <span className="host-name-note">{listedAs}</span>}
+              <span>Your name</span>
               <input
                 className="lobby-input"
                 aria-label="Your name"

@@ -61,7 +61,7 @@ import { HOST_AWAY, HOST_OFFLINE, connectionFirst, roomBase } from './platform/r
 import { checkSaveText } from './platform/saveLimits';
 import { listAutosaves, newCampaignId, readPendingOrders, writeAutosave as keepAutosave, writePendingOrders, type AutosaveRecord } from './platform/autosaveStore';
 import { abandonGameHistory, recordGameHistory } from './platform/archive';
-import { historyToRecord } from './platform/gameUpload';
+import { historyToRecord, isHistoryCheckpoint } from './platform/gameUpload';
 import { currentActivePlaySeconds, currentPlaySessionId, resetActivePlayTurn } from './activePlayTime';
 import { takeTurnFrameTime } from './frameTelemetry';
 import { mapViewport } from './map/camera';
@@ -545,10 +545,10 @@ async function openInOwnBuild(save: SaveFile, campaign: string | null): Promise<
 
 /**
  * Writes the autosave. Returns the engine save it holds (null if it could not be made), so the caller need not ask the
- * engine again. `uploadNow` sends the game record now rather than at the next five-turn checkpoint (after a rewind).
+ * engine again. `uploadNow` sends the game record now rather than at the next checkpoint (after a rewind).
  */
 function writeAutosave(client: GameClient, views: PlayerView[], uploadNow = false): string | null {
-  if (client.archive && (uploadNow || views[0].finished || (views[0].turn - 1) % 5 === 0)) {
+  if (client.archive && (uploadNow || views[0].finished || isHistoryCheckpoint(views[0].turn - 1))) {
     try {
       const { why, rewinds } = useGame.getState();
       void recordGameHistory(historyToRecord(client as { archive(): string }, why.answers, rewinds)).catch((error) => useGame.getState().set({ error: String(error) }));

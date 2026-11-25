@@ -19,7 +19,11 @@ Safety:
   MODERATION_DRY_RUN=1 python3 tools/moderation/moderate.py   # judge and print, change nothing
 
 A manual run of the workflow (workflow_dispatch, input `number`) judges an existing issue or pull request and
-changes nothing: the way to check the model and the rules on a known case.
+changes nothing: the way to check the model and the rules on a known case. Input `hide_comments` (comment ids)
+hides those comments as off-topic: maintainers only, used by the hourly sweep, which cannot hide comments itself.
+
+New comments (issue_comment: created) are judged by the keyword rule alone and hidden ("minimized" as off-topic,
+reversible) when they match; the issue or pull request itself is left alone.
 """
 import datetime
 import json
@@ -54,6 +58,21 @@ MAX_TEXT = 4000
 WAVE_WORDS = ("treasury department", "u.s. treasury", "us treasury", "treasury cio", "fincen", "vibecod", "vibe-cod", "vibe cod", "bessent", "taxpayer", "doge ",
               "government job", "chief information officer", "bsa e-filing", "bsaefiling")
 MAX_DIFF = 6000
+
+# Insults and abuse aimed at people (added 2026-11-25 after a run of "fuck you" / "eat shit" titles): any of these
+# anywhere closes the item or hides the comment, game point or not.
+INSULTS = ("fuck you", "fuck off", "eat shit", "asshole", "do your fucking job", "piece of shit", "go to hell",
+           "kill yourself", "claudeslop", "ai slop")
+# Profanity and milder name-calling: closes only when the author wrote almost nothing besides it (a bare title, the
+# empty template), so a frustrated player's real report ("this fucking bug ate my save", "the Hard AI plays like an
+# idiot") stays open.
+PROFANITY_RE = re.compile(r"(?<![a-z])(fuck[a-z]*|shit(?:s|ty|head)?|bitch(?:es|y)?|cunts?|bastards?|slop|idiots?|"
+                          r"morons?|dumbass|do your job|get back to work)(?![a-z])")
+OWN_TEXT_MIN = 40
+TEMPLATE_LINES = ("**", "- build:", "- how you ran it", "- os and browser", "steps, and the game seed",
+                  "most useful thing you can attach", "screenshots, or errors", "people, difficulty, map size",
+                  "feedback, a save file", "what it did to your choices", "number has no breakdown",
+                  "the project balances by", "people's signature strength")
 
 POLICY = """You moderate the public GitHub repository of Legatum, an open-source historical 4X strategy game on a
 hex map (like Civilization). Real contributors must stay welcome. Decide whether one new issue or pull request is
@@ -126,13 +145,31 @@ def parse_verdict(text):
     return {"verdict": verdict, "confidence": confidence, "reason": str(data.get("reason", ""))[:200]}
 
 
-def wave_verdict(text):
-    """The keyword fallback: off_topic when the text carries a wave word, else unsure."""
+def _hits(words, lowered):
+    return [w.strip() for w in words if re.search(r"(?<![a-z])" + re.escape(w), lowered)]
+
+
+def own_text(body):
+    """The body without the issue template's headings and hint lines: what the author actually wrote."""
+    kept = [line for line in (body or "").splitlines()
+            if line.strip() and not any(line.strip().lower().startswith(t) or t in line.lower() for t in TEMPLATE_LINES)]
+    return "\n".join(kept)
+
+
+def wave_verdict(text, title=None, body=None):
+    """The keyword rule: off_topic on a wave word or an insult anywhere, or on profanity when the author wrote
+    almost nothing else (pass title and body for that check), else unsure."""
     lowered = (text or "").lower()
-    hits = [w.strip() for w in WAVE_WORDS if re.search(r"(?<![a-z])" + re.escape(w), lowered)]
+    hits = _hits(WAVE_WORDS, lowered) + _hits(INSULTS, lowered)
+    if not hits and title is not None:
+        words = re.sub(r"[^a-z ]", " ", (title + " " + own_text(body)).lower())
+        found = PROFANITY_RE.findall(words)
+        rest = PROFANITY_RE.sub("", words)
+        if found and len(rest.replace(" ", "")) < OWN_TEXT_MIN:
+            hits = found
     if hits:
-        return {"verdict": "off_topic", "confidence": 0.95, "reason": "keyword fallback: " + ", ".join(hits[:3])}
-    return {"verdict": "unsure", "confidence": 0.0, "reason": "keyword fallback: no match"}
+        return {"verdict": "off_topic", "confidence": 0.95, "reason": "keyword rule: " + ", ".join(hits[:3])}
+    return {"verdict": "unsure", "confidence": 0.0, "reason": "keyword rule: no match"}
 
 
 def added_lines(diff):
@@ -193,6 +230,41 @@ def judge(prompt, token):
     raise ValueError("; ".join(errors))
 
 
+def hide_comment(node_id, token):
+    """Minimize (hide) a comment as off-topic. Reversible: a maintainer can unhide it on GitHub."""
+    query = ("mutation($id: ID!) { minimizeComment(input: {subjectId: $id, classifier: OFF_TOPIC}) "
+             "{ minimizedComment { isMinimized } } }")
+    answer = request("POST", f"{API}/graphql", token, {"query": query, "variables": {"id": node_id}})
+    if (answer or {}).get("errors"):
+        raise ValueError(f"minimizeComment failed: {answer['errors']}")
+
+
+def moderate_comment(comment, repo, token, dry):
+    """A new comment: hide it when it is clearly off-topic. Keyword rule only (comments are short jabs)."""
+    where = comment.get("html_url", "")
+    if is_trusted(comment.get("user"), comment.get("author_association")):
+        summary(f"comment {where}: trusted author, not judged.")
+        return 0
+    verdict = wave_verdict(comment.get("body"), title="", body=comment.get("body"))
+    summary(f"comment {where}: {verdict}")
+    if should_close(verdict) and not dry:
+        hide_comment(comment["node_id"], token)
+        summary(f"comment {where}: hidden as off-topic.")
+    return 0
+
+
+def hide_listed(ids, repo, token):
+    """Manual run (maintainers only): hide the listed issue comments as off-topic, whatever their text."""
+    for raw in ids.replace(",", " ").split():
+        comment = request("GET", f"{API}/repos/{repo}/issues/comments/{int(raw)}", token)
+        if is_trusted(comment.get("user"), comment.get("author_association")):
+            summary(f"comment {raw}: trusted author, left alone.")
+            continue
+        hide_comment(comment["node_id"], token)
+        summary(f"comment {comment.get('html_url')}: hidden as off-topic (manual).")
+    return 0
+
+
 def summary(line):
     print(line)
     path = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -210,9 +282,17 @@ def main():
     repo = os.environ["GITHUB_REPOSITORY"]
     token = os.environ["GITHUB_TOKEN"]
     dry = os.environ.get("MODERATION_DRY_RUN") == "1"
+    if "comment" in event:  # a new comment on an issue or pull request
+        return moderate_comment(event["comment"], repo, token, dry)
+    inputs = event.get("inputs") or {}
+    if (inputs.get("hide_comments") or "").strip():
+        return hide_listed(inputs["hide_comments"], repo, token)
     if "inputs" in event:  # manual check: judge an existing item, never act
+        if not (inputs.get("number") or "").strip():
+            summary("Manual run with nothing to do: give a number or comment ids.")
+            return 0
         dry = True
-        number = int(event["inputs"]["number"])
+        number = int(inputs["number"])
         issue = request("GET", f"{API}/repos/{repo}/issues/{number}", token)
         if issue.get("pull_request"):
             event = {"pull_request": request("GET", f"{API}/repos/{repo}/pulls/{number}", token)}
@@ -235,7 +315,8 @@ def main():
         verdict = judge(build_prompt(kind, item.get("title"), item.get("body"), diff), token)
     except (urllib.error.URLError, KeyError, IndexError, TypeError, ValueError) as err:
         summary(f"#{number}: model unavailable ({err.__class__.__name__}: {str(err)[:300]}); using the keyword fallback.")
-        verdict = wave_verdict("\n".join([item.get("title") or "", item.get("body") or "", added_lines(diff)]))
+        verdict = wave_verdict("\n".join([item.get("title") or "", item.get("body") or "", added_lines(diff)]),
+                               title=item.get("title") or "", body=item.get("body") or "")
     summary(f"#{number} ({kind}): {verdict}")
     if not should_close(verdict) or dry:
         return 0

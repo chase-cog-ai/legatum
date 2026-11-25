@@ -77,14 +77,14 @@ pub struct AirDefenceForecast {
 }
 
 impl BattleForecast {
-    /// Percent of its normal damage this attack deals to the city's HP: Walls times the
-    /// attacker's own share (`combat::city_damage_percent`).
+    /// Percent of its normal damage this attack deals to the city's Walls bar while it stands:
+    /// Walls times the attacker's own share (`combat::city_damage_percent`).
     pub fn city_percent(&self) -> i32 {
         self.walls.map_or(100, |w| w.percent) * self.city_hp_percent.unwrap_or(100) / 100
     }
 }
 
-/// What Walls do to one attack on a city's HP (`combat::wall_damage_percent`).
+/// What Walls do to one attack on a city (`combat::wall_damage_percent`, `combat::city_hit`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WallsForecast {
     /// The city's Walls level, I through IX.
@@ -95,8 +95,19 @@ pub struct WallsForecast {
     /// it covers levels through its own era tier.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub built_in: bool,
-    /// Percent of its normal damage the attack deals to the city's HP.
+    /// Percent of its normal damage the attack deals to the Walls bar.
     pub percent: i32,
+    /// The Walls bar before the attack, and its full size at this level.
+    #[serde(default)]
+    pub hp: i32,
+    #[serde(default)]
+    pub max_hp: i32,
+    /// Average damage the attack does to the bar (included in `expected_damage_to_defender`).
+    #[serde(default)]
+    pub expected_damage: i32,
+    /// Chance (0-100) this attack breaks the Walls (the bar reaches 0 and they are destroyed).
+    #[serde(default)]
+    pub break_chance: u32,
 }
 
 /// A visible garrison in the attacked city.
@@ -271,6 +282,8 @@ enum Defender {
         walls: bool,
         fort: u8,
         hp: i32,
+        /// What is left of its Walls bar (`CityView::walls_hp`).
+        walls_hp: i32,
         era: u8,
     },
 }
@@ -580,6 +593,7 @@ pub fn forecast_attack_mode(
             walls: c.walls,
             fort: c.fort_tier(),
             hp: c.hp,
+            walls_hp: c.walls_hp,
             era: view.era_of(c.owner),
         },
         (None, None) => return None,
@@ -604,7 +618,11 @@ pub fn forecast_attack_mode(
         Defender::Unit { .. } => 0,
     };
     let covered = siege_cover(view, &att);
-    let walls = (wall_tier > 0).then(|| WallsForecast {
+    let (walls_hp, walls_max_hp) = match (&defender, city) {
+        (Defender::City { walls_hp, .. }, Some(c)) => (*walls_hp, c.walls_max_hp),
+        _ => (0, 0),
+    };
+    let mut walls = (wall_tier > 0).then(|| WallsForecast {
         tier: wall_tier,
         covered,
         built_in: crate::data::built_in_siege(att.kind),
@@ -613,6 +631,10 @@ pub fn forecast_attack_mode(
             covered,
             crate::data::is_aircraft(att.kind),
         ),
+        hp: walls_hp,
+        max_hp: walls_max_hp,
+        expected_damage: 0,
+        break_chance: 0,
     });
     if let Defender::Unit { kind, .. } = defender {
         combat::add_fight_class_bonus_rules(
@@ -668,6 +690,7 @@ pub fn forecast_attack_mode(
             fort,
             hp,
             era,
+            ..
         } => (
             combat::city_defense_vs(
                 view.rule_experiments,
@@ -696,18 +719,32 @@ pub fn forecast_attack_mode(
     let city_hp_percent = (matches!(defender, Defender::City { .. })
         && crate::data::city_hp_damage_percent(att.kind) != 100)
         .then(|| crate::data::city_hp_damage_percent(att.kind));
-    let odds = primitive_odds(
-        attacker_strength.total,
-        defender_strength.total,
-        att.hp,
-        defender_hp,
-        !ranged && !defeated_city,
-        if matches!(defender, Defender::City { .. }) {
-            walls.map_or(100, |w| w.percent) * city_hp_percent.unwrap_or(100) / 100
-        } else {
-            100
-        },
-    );
+    let odds = if matches!(defender, Defender::City { .. }) {
+        let city_odds = primitive_odds_city(
+            attacker_strength.total,
+            defender_strength.total,
+            att.hp,
+            walls_hp,
+            defender_hp,
+            !ranged && !defeated_city,
+            city_hp_percent.unwrap_or(100),
+            walls.map_or(100, |w| w.percent),
+        );
+        if let Some(w) = walls.as_mut() {
+            w.expected_damage = city_odds.exp_to_walls;
+            w.break_chance = city_odds.break_chance;
+        }
+        city_odds.odds
+    } else {
+        primitive_odds(
+            attacker_strength.total,
+            defender_strength.total,
+            att.hp,
+            defender_hp,
+            !ranged && !defeated_city,
+            100,
+        )
+    };
 
     Some(BattleForecast {
         attacker_strength,
@@ -862,6 +899,67 @@ pub fn primitive_odds(
         loss: (losses * 100 / pairs) as u32,
         exp_to_atk: (taken / pairs) as i32,
         exp_to_def: (dealt / pairs) as i32,
+    }
+}
+
+/// [`primitive_odds`] against a city: each roll's hit goes through `combat::city_hit` (its Walls
+/// bar first at `wall_percent`, then its HP at `hp_percent`). `exp_to_def` counts both layers and
+/// `win` is the chance the city's HP reaches 0.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CityOdds {
+    pub odds: PrimitiveOdds,
+    pub exp_to_walls: i32,
+    pub break_chance: u32,
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn primitive_odds_city(
+    a: i32,
+    d: i32,
+    attacker_hp: i32,
+    walls_hp: i32,
+    city_hp: i32,
+    counterattack: bool,
+    hp_percent: i32,
+    wall_percent: i32,
+) -> CityOdds {
+    let rolls = i64::from(combat::ROLL_MAX - combat::ROLL_MIN + 1);
+    let (mut win, mut loss, mut broke) = (0i64, 0i64, 0i64);
+    let (mut dealt, mut taken, mut to_walls) = (0i64, 0i64, 0i64);
+    for roll in combat::ROLL_MIN..=combat::ROLL_MAX {
+        let hit = combat::city_hit(
+            walls_hp,
+            city_hp,
+            combat::damage_to_city_hp(hp_percent, combat::damage(a, d, roll)),
+            wall_percent,
+        );
+        let to_attacker = if counterattack {
+            combat::damage(d, a, roll)
+        } else {
+            0
+        };
+        if hit.hp >= city_hp && walls_hp - hit.walls <= 0 {
+            win += 1;
+        }
+        if walls_hp > 0 && hit.walls >= walls_hp {
+            broke += 1;
+        }
+        if to_attacker >= attacker_hp {
+            loss += 1;
+        }
+        dealt += i64::from(hit.walls + hit.hp);
+        to_walls += i64::from(hit.walls);
+        taken += i64::from(to_attacker.min(attacker_hp));
+    }
+    CityOdds {
+        odds: PrimitiveOdds {
+            win: (win * 100 / rolls) as u32,
+            loss: (loss * 100 / rolls) as u32,
+            exp_to_atk: (taken / rolls) as i32,
+            exp_to_def: (dealt / rolls) as i32,
+        },
+        exp_to_walls: (to_walls / rolls) as i32,
+        break_chance: (broke * 100 / rolls) as u32,
     }
 }
 

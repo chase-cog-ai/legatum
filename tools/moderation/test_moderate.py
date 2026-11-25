@@ -51,10 +51,38 @@ class Moderate(unittest.TestCase):
         self.assertFalse(m.should_close(m.wave_verdict("The treasure chest in the ruins gives no gold")))
         self.assertFalse(m.should_close(m.wave_verdict("My treasury runs dry when I buy a Settler")))
 
+    def test_insults_and_bare_profanity(self):
+        template = "**What happened**\n\n**What you expected**\n\n**Where**\n\n- Build: commit or version shown on the title screen\n"
+        for title in ("eat shit", "fuck off", "fuck you", "do your fucking job",
+                      "Lead developer is a giant asshole was closed, issue hasn't been addressed"):
+            self.assertTrue(m.should_close(m.wave_verdict(title + "\n" + template, title=title, body=template)), title)
+        real = "Walls never finish when I queue them after a siege; the bar stays at 0 and the city can't build. Seed 42, turn 88."
+        self.assertFalse(m.should_close(m.wave_verdict("this fucking bug\n" + real, title="this fucking bug", body=real)))
+        self.assertFalse(m.should_close(m.wave_verdict("Shift-click doesn't queue", title="Shift-click doesn't queue", body="")))
+        self.assertFalse(m.should_close(m.wave_verdict("Shitake mushrooms as a luxury", title="Shitake mushrooms as a luxury", body="")))
+        idiot = "The Hard AI plays like an idiot: it never attacks my open city"
+        self.assertFalse(m.should_close(m.wave_verdict(idiot, title=idiot, body="Seed 4411, turn 80, it parks its army.")))
+        for bare in ("idiot", "do your job", "get back to work, morons"):
+            self.assertTrue(m.should_close(m.wave_verdict(bare, title=bare, body="")), bare)
+
     def test_added_lines_only(self):
         diff = "--- a/README.md\n+++ b/README.md\n-built for people who love Civilization.\n+paid for with taxpayer dollars."
         self.assertEqual(m.added_lines(diff), "paid for with taxpayer dollars.")
         self.assertTrue(m.should_close(m.wave_verdict(m.added_lines(diff))))
+
+    def test_comment_rules(self):
+        calls = []
+        m.hide_comment = lambda node_id, token: calls.append(node_id)
+        stranger = {"login": "x", "type": "User"}
+        m.moderate_comment({"body": "One of the AIs should be the US Treasury Department", "node_id": "A",
+                            "user": stranger, "author_association": "NONE"}, "r", "t", False)
+        m.moderate_comment({"body": "+1, I'd love to watch AIs play", "node_id": "B",
+                            "user": stranger, "author_association": "NONE"}, "r", "t", False)
+        m.moderate_comment({"body": "the treasury department joke again", "node_id": "C",
+                            "user": {"login": "samcorcos", "type": "User"}, "author_association": "OWNER"}, "r", "t", False)
+        m.moderate_comment({"body": "Treasury Department", "node_id": "D",
+                            "user": stranger, "author_association": "NONE"}, "r", "t", True)
+        self.assertEqual(calls, ["A"])
 
     def test_long_text_is_cut(self):
         prompt = m.build_prompt("pull request", "t", "b" * 10000, "d" * 10000)

@@ -1765,30 +1765,28 @@ impl Planner<'_> {
             .copied()
             .filter(|u| committed.contains(&u.id) && u.pos.distance(city.pos) <= 3)
             .collect();
-        // Walls halve what the force does to the city's HP (Siege is not counted).
-        let percent = if city.walls {
-            legatum_core::combat::WALLS_DAMAGE_PERCENT
-        } else {
-            100
-        };
+        // The Walls bar takes half of what the force does before the HP takes it in full
+        // (Siege is not counted).
+        let front = legatum_core::combat::city_front(
+            city.hp,
+            city.walls_hp,
+            legatum_core::combat::WALLS_DAMAGE_PERCENT,
+        );
         let fire: i32 = force
             .iter()
             .filter(|u| u.ranged > 0 && u.range > 0)
             .map(|u| {
-                legatum_core::combat::damage_to_city_hp(
-                    percent,
-                    legatum_core::combat::damage(
-                        u.ranged * u.hp.clamp(1, 100) / 100,
-                        city.strength,
-                        100,
-                    ),
+                legatum_core::combat::damage(
+                    u.ranged * u.hp.clamp(1, 100) / 100,
+                    city.strength,
+                    100,
                 )
             })
             .sum();
         if fire == 0 {
             return None;
         }
-        let turns = ((city.hp + fire - 1) / fire + 1).min(12);
+        let turns = ((front + fire - 1) / fire + 1).min(12);
         // A city strike wounds one unit a turn; the wounded heal behind the line, so about one
         // unit in four strikes is lost behind Walls (one in eight to a garrison's sorties).
         let strike = self.average_unit_cost() / if city.walls { 4 } else { 8 };
@@ -1835,13 +1833,13 @@ impl Planner<'_> {
         let fire: i32 = near
             .iter()
             .filter(|u| u.ranged > 0 && u.range > 0)
-            .map(|u| {
-                legatum_core::combat::damage_to_city_hp(
-                    legatum_core::combat::WALLS_DAMAGE_PERCENT,
-                    legatum_core::combat::damage(u.ranged * u.hp / 100, city.strength, 100),
-                )
-            })
+            .map(|u| legatum_core::combat::damage(u.ranged * u.hp / 100, city.strength, 100))
             .sum();
+        let front = legatum_core::combat::city_front(
+            city.hp,
+            city.walls_hp,
+            legatum_core::combat::WALLS_DAMAGE_PERCENT,
+        );
         if fire <= 0 {
             return None;
         }
@@ -1852,7 +1850,7 @@ impl Planner<'_> {
             .min()
             .unwrap_or(2)
             .max(1);
-        let turns = ((city.hp + fire - 1) / fire + 1).min(12) + march;
+        let turns = ((front + fire - 1) / fire + 1).min(12) + march;
         Some(Forecast {
             turns,
             losses: self.average_unit_cost() * turns / 4,

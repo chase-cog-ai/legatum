@@ -239,8 +239,8 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
           <span className="lbl">Strength</span>
           <b>{city.strength}</b>
         </Tip>
-        <Tip content={`City HP. ${CITY_HEAL_RULE}`}>
-          <span className="lbl">HP</span>
+        <Tip content={`City health. ${CITY_HEAL_RULE}`}>
+          <span className="lbl">Health</span>
           <b>{city.hp}</b>
           <span className="muted"> / {city.max_hp}</span>
         </Tip>
@@ -263,7 +263,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
       {tombStopped && <div className="cp-capital cp-goal-city cp-tomb-work" data-testid="city-tomb-work"><Icon name="goal-royal-tomb" size={16} /><span>{TOMB_CITY_NOTE}</span></div>}
       {(fire || heal || bounty !== null || city.greece_captive_at_risk) && <div className="cp-status">
         {heal && <Tip as="div" className="cp-healing-wrap" content={CITY_HEAL_RULE}>
-          <ProgressBar className="cp-healing" testId="city-heal" name="City HP healing"
+          <ProgressBar className="cp-healing" testId="city-heal" name="City healing"
             label={heal.blocked ? 'Healing' : `Healing · ${heal.text.replace(/^Heals /, '')}`} color="var(--good)" tone={heal.blocked ? 'paused' : 'good'}
             value={city.hp} max={city.max_hp} turns={heal.blocked ? heal.text : undefined} />
         </Tip>}
@@ -879,7 +879,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
       {!idleChoice && automationRow}
       {city.owner === view.me && (view.aircraft ?? []).some((a) => a.city === city.id) && <div className="city-hangar" aria-label="City hangar">
         <b>Hangar {(view.aircraft ?? []).filter((a) => a.city === city.id).length} / {RULES.airBaseCap}</b>
-        {(view.aircraft ?? []).filter((a) => a.city === city.id).map((a) => <button key={a.id} className="btn quiet" onClick={() => useGame.getState().select({ kind: 'air', id: a.id }, true)}>{baseItemName({ kind: 'Unit', unit: a.kind }, owner?.faction)} · {a.hp} HP</button>)}
+        {(view.aircraft ?? []).filter((a) => a.city === city.id).map((a) => <button key={a.id} className="btn quiet" onClick={() => useGame.getState().select({ kind: 'air', id: a.id }, true)}>{baseItemName({ kind: 'Unit', unit: a.kind }, owner?.faction)} · {a.hp} health</button>)}
       </div>}
       {city.owner !== view.me && city.visible && (view.air_sightings ?? []).some((a) => a.city === city.id) && <div className="city-hangar" aria-label="Visible rival hangar">
         <b>Hangar in sight</b>

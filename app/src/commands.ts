@@ -224,7 +224,7 @@ export function healForecast(u: UnitView): string | null {
   // A heal that is all home territory reads as where it happens; any other mix keeps its sources.
   const home = parts.length === 1 && parts[0][0] === 'Home territory';
   const sources = parts.map(([label, n]) => `${label} ${n > 0 ? '+' : ''}${n}`).join(', ');
-  return `Heals ${u.resting_heal.total} HP a turn ${home ? 'in your territory' : `here${sources ? ` (${sources})` : ''}`}: full in ${turns} ${turns === 1 ? 'turn' : 'turns'}.`;
+  return `Heals ${u.resting_heal.total} health a turn ${home ? 'in your territory' : `here${sources ? ` (${sources})` : ''}`}: full in ${turns} ${turns === 1 ? 'turn' : 'turns'}.`;
 }
 
 /** Rest like Fortify or Wait, but wake and ask for orders the turn HP is full (H). */

@@ -4,7 +4,6 @@
 // Run alone with `npx playwright test e2e/tour/train-1031`; shots land in test-results/screen-tour/<size>/train-1031/.
 import type { Page } from '@playwright/test';
 import { test, expect } from '../fixtures';
-import { revealSidebar } from '../sidebarAssertions';
 import { endPlanning } from '../turnActions';
 import { TECHS } from '../../src/data';
 import { fromOffset } from '../../src/hex';
@@ -129,7 +128,6 @@ for (const size of SIZES) test.describe(`train-1031 ${size.name}`, () => {
     try {
       const p = await ctx.newPage();
       await loadFixture(p, allianceCoreSave(), 50);
-      await revealSidebar(p, 'standings');
       await p.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
       const panel = p.getByRole('complementary', { name: 'Diplomacy', exact: true });
       await park(p);

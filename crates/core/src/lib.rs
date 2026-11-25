@@ -56,7 +56,9 @@ pub mod rules;
 /// 57: The Mongols never have Walls (Sam, 2026-11-22: "no walls ever"): no Walls, Castle, Star Fort or later wall level in any era (it opened in the Medieval era before), and a city they capture loses its Walls line. Their Siege still opens in the Medieval era. The save shape is unchanged.
 /// 58: Walls levels replace Castle and Star Fort; upgrades are capped by era and Siege covers levels by tier. A rules-57 save is refused like any other; `wasm::json::upgrade_from_49` converts an older state for analysis tooling.
 /// 59: Egypt's Chariot Archer replaces its Archer (Sam, 2026-11-25): 3 moves, a shot 40% stronger against the melee line, and Forest or Hills without a road take its whole turn to enter. The Medjay is retired, so Egypt's Spearman is plain (no extra sight). The save shape is unchanged.
-pub const RULES_VERSION: u32 = 60;
+/// 60: The tech tree's research goal: `Order::SetResearchGoal` and `Player::research_goal` (fills an empty research queue toward a later technology). No existing order resolves differently.
+/// 61: Forts (`rules::forts`): `Order::BuildFort`, `Tile::fort`, the Fort defence line and the stop next to an enemy-held Fort.
+pub const RULES_VERSION: u32 = 61;
 pub mod scenario;
 pub mod scoring;
 pub mod settlement;

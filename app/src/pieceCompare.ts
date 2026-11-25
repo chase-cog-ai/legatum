@@ -49,7 +49,7 @@ const PIECES: Partial<Record<Faction, Record<string, PieceSpec>>> = {
   },
   Rome: {
     'u:Phalangite': { against: unit('Phalangite'), rules: [{ text: 'A city founded by this Legionary starts at population 2 instead of 1.', tone: 'good' }] },
-    'b:Walls': { against: building('Walls'), rules: [{ text: 'Upgrading a melee unit in this city restores 50 HP, up to full health, once per order.', tone: 'good' }] },
+    'b:Walls': { against: building('Walls'), rules: [{ text: 'Upgrading a melee unit in this city restores 50 health, up to full health, once per order.', tone: 'good' }] },
   },
   Aztecs: { 'u:Spearman': { against: unit('Spearman') } },
   Celts: {

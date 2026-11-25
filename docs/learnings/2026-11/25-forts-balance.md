@@ -1,6 +1,6 @@
 # Forts leave game length and conquest pace unchanged in all-AI games (2026-11-25)
 
-256 paired eight-empire all-Hard games with barbarians (`legatum-sim --players 8 --difficulty hard --barbarians true --games 256 --seed 7100`), before (037d1ee2) and after Forts (rules 60):
+256 paired eight-empire all-Hard games with barbarians (`legatum-sim --players 8 --difficulty hard --barbarians true --games 256 --seed 7100`), before (037d1ee2) and after Forts (rules 61):
 
 | | Before | With Forts |
 | --- | --- | --- |

@@ -117,6 +117,7 @@ impl Tape {
                                     | "BuyTile"
                                     | "SetResearch"
                                     | "SetResearchQueue"
+                                    | "SetResearchGoal"
                                     | "RangedAttack"
                                     | "UpgradeUnit"
                                     | "UpgradeSiege"
@@ -528,6 +529,9 @@ mod tests {
             Order::SetResearchQueue {
                 techs: vec![TechId::Writing, TechId::Currency],
             },
+            Order::SetResearchGoal {
+                tech: Some(TechId::Gunpowder),
+            },
             Order::SetScienceConversion {
                 to: ScienceConversion::Production,
             },
@@ -564,7 +568,7 @@ mod tests {
         ]
     }
 
-    const ORDER_VARIANTS: usize = 33;
+    const ORDER_VARIANTS: usize = 34;
 
     fn variant_index(order: &Order) -> usize {
         match order {
@@ -600,7 +604,8 @@ mod tests {
             Order::AirRecon { .. } => 29,
             Order::BuyTile { .. } => 30,
             Order::GiveGold { .. } => 31,
-            Order::BuildFort { .. } => 32,
+            Order::SetResearchGoal { .. } => 32,
+            Order::BuildFort { .. } => 33,
         }
     }
 

@@ -6,7 +6,6 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FixtureClient } from '../test/fixtureEngine';
 import { useGame } from '../store';
-import { VpTrack } from './VpTrack';
 import { UnitPanel } from './UnitPanel';
 import { hallCardText, hallStands } from './goalText';
 import { peaceBorders } from './DiplomacyPanel';
@@ -40,33 +39,6 @@ const iHold = () => {
 };
 
 describe('the Station in the race panel', () => {
-  const render = () => {
-    useGame.setState({ client, views: [view], humans: [0], orders: [[]], errors: [[]], seat: 0 });
-    act(() => root.render(<div className="game"><div className="seatbar" /><VpTrack /></div>));
-  };
-
-  it('puts the goal token in the holder’s row wearing the Station’s own icon, and says where the Station stands', () => {
-    iHold();
-    render();
-    const tok = host.querySelector<HTMLElement>(`.panel.vp [data-source="goal-${glass().id}"][data-owner="${view.me}"]`)!;
-    expect(tok).not.toBeNull();
-    expect(tok.getAttribute('aria-label')).toMatch(/held: can be captured.*show it on the map/);
-    act(() => tok.focus());
-    const card = document.querySelector('.vhc-pop')!;
-    expect(card.querySelector('h3')!.textContent).toBe('The Yam Network');
-    expect(card.querySelector('.vh-held')!.textContent).toContain(`You hold the Yam Relay Station in ${hallCity().name} · in view`);
-    expect(card.textContent).toContain('whoever holds its tile scores');
-  });
-
-  it('a click on the token shows the Station’s city on the map', () => {
-    iHold();
-    const jumpTo = vi.fn();
-    render();
-    useGame.setState({ jumpTo });
-    act(() => { host.querySelector<HTMLElement>(`.panel.vp [data-source="goal-${glass().id}"][data-owner="${view.me}"]`)!.click(); });
-    expect(jumpTo).toHaveBeenCalledWith(hallCity().pos);
-  });
-
   it('says last seen for a remembered city, and that nobody holds an unbuilt or sacked Station', () => {
     iHold();
     hallCity().visible = false;

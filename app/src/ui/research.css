@@ -474,3 +474,118 @@
   .research-queue-actions:empty { display: none; }
   .research-queue-cta .btn.primary { min-height: 32px; padding-inline: 10px; letter-spacing: .04em; }
 }
+
+/* ---------- The tech tree view (TechTree.tsx) ---------- */
+.tech-modal { --line-melee: #c0612b; --line-ranged: #3d6427; --line-mounted: #2f5f8c; --line-air: #6b4f8a; --line-economy: #a07a2c; --goal: var(--ink); }
+.research-mode { display: inline-flex; flex: none; width: max-content; align-self: center; border: 1px solid var(--ink-2); background: var(--field); }
+.research-mode button { min-height: 30px; padding: 6px 14px; border: 0; background: transparent; color: var(--ink); font: 600 13px/1 var(--sans); cursor: pointer; }
+.research-mode button + button { border-left: 1px solid var(--ink-2); }
+.research-mode button[aria-pressed='true'] { background: var(--ink); color: var(--field); }
+.research-mode button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tech-tree { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.tree-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; min-height: 40px; padding: 5px 18px; border-bottom: 1px solid var(--rule); color: var(--ink-2); font: 600 11.5px/1.2 var(--sans); }
+.tree-keys { display: contents; }
+.tree-key-note { color: var(--ink); }
+.tree-key { display: inline-flex; align-items: center; gap: 6px; }
+.tree-key-tip { display: none; }
+.tree-key-button { display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border: 1px solid var(--ink-2); color: var(--ink); cursor: pointer; }
+.tree-key-list { display: grid; gap: 6px; font: 600 12px/1.2 var(--sans); }
+.tree-key .ln { display: inline-block; width: 22px; height: 0; border-top: 3px solid; }
+.tree-hint { margin-left: auto; color: var(--ink); font: italic 400 14px/1.2 var(--display); }
+.ln.melee { border-color: var(--line-melee); } .tl.melee { stroke: var(--line-melee); }
+.ln.ranged { border-color: var(--line-ranged); } .tl.ranged { stroke: var(--line-ranged); }
+.ln.mounted { border-color: var(--line-mounted); } .tl.mounted { stroke: var(--line-mounted); }
+.ln.air { border-color: var(--line-air); } .tl.air { stroke: var(--line-air); }
+.ln.economy { border-color: var(--line-economy); } .tl.economy { stroke: var(--line-economy); }
+.tree-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; position: relative; outline: none;
+  background: linear-gradient(180deg, rgba(43, 36, 25, .035), transparent 60px), var(--panel); }
+.tree-canvas { position: relative; }
+.tree-era { position: absolute; top: 0; border-inline: 1px solid transparent; pointer-events: none; }
+.tree-era.current { background: rgba(154, 51, 34, .055); border-inline-color: rgba(154, 51, 34, .25); }
+.tree-era.past { background: rgba(61, 100, 39, .04); }
+.tree-era-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; padding: 10px 10px 0; }
+.tree-era-numeral { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 3px; border: 1px solid var(--ink-2); border-radius: 12px; color: var(--ink-2); font: 700 11px/1 var(--display); }
+.tree-era.current .tree-era-numeral { border-color: var(--accent); color: var(--field); background: var(--accent); }
+.tree-era.past .tree-era-numeral { border-color: var(--good); color: var(--good); }
+.tree-era-name { font: var(--display-weight) 19px/1 var(--display); color: var(--ink); }
+.tree-era-state { flex-basis: 100%; padding-left: 32px; color: var(--ink-2); font: 600 11px/1.2 var(--sans); }
+.tree-era.current .tree-era-state { color: var(--accent); }
+.tree-links { position: absolute; inset: 0; pointer-events: none; }
+.tl { fill: none; stroke-width: 2.5; opacity: .32; }
+.tl.lit { opacity: .9; }
+.tree-node { position: absolute; display: flex; flex-direction: column; gap: 4px; padding: 7px 9px 6px; border: 1px solid var(--rule-2); background: var(--field); color: var(--ink); text-align: left; cursor: pointer; box-shadow: 2px 2px 0 var(--rule-2); font: inherit; }
+.tree-node:hover { border-color: var(--ink); }
+.tree-node:not([aria-disabled='true']):hover { background: color-mix(in srgb, var(--field) 80%, var(--panel)); }
+.tree-node:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tree-node[aria-disabled='true'] { cursor: default; }
+.tn-head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.tn-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--display-weight) 16px/1.1 var(--display); }
+.tn-mark { color: var(--good); }
+.tn-q { flex: none; display: inline-grid; place-items: center; min-width: 16px; height: 16px; border: 1px solid var(--ink); color: var(--ink); font: 700 10.5px/1 var(--sans); }
+.tn-goal { flex: none; color: var(--ink); font: 700 11px/1 var(--sans); }
+.tn-art { display: flex; align-items: center; gap: 4px; flex: 1 1 auto; min-height: 0; align-self: flex-start; }
+.tn-thumb { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--rule); background: var(--panel); overflow: hidden; }
+.tn-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.tn-more { color: var(--ink-2); font: 600 11px/1 var(--sans); }
+
+.tn-foot { display: flex; align-items: center; gap: 6px; color: var(--ink-2); font: 600 11px/1.1 var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tn-bar { flex: 1 1 auto; height: 5px; background: var(--rule); }
+.tn-bar i { display: block; height: 100%; background: var(--accent); }
+.tree-node.known { background: color-mix(in srgb, var(--field) 70%, var(--panel)); box-shadow: none; }
+.tree-node.known .tn-name { color: var(--ink-2); }
+.tree-node.known .tn-thumb { filter: saturate(.55); opacity: .8; }
+.tree-node.available { border: 2px solid var(--accent); padding: 6px 8px 5px; }
+.tree-node.available .tn-foot { color: var(--ink); }
+.tree-node.available:hover { border-color: var(--ink); box-shadow: 3px 3px 0 var(--ink-2); }
+.tree-node.researching { border: 2px solid var(--ink); padding: 6px 8px 5px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 16%, transparent), 2px 2px 0 var(--rule-2); }
+.tree-node.queued { border: 2px solid var(--ink); padding: 6px 8px 5px; }
+.tree-node.locked { background: color-mix(in srgb, var(--field) 60%, var(--panel)); box-shadow: none; }
+.tree-node.locked .tn-name { color: var(--ink-2); }
+.tree-node.on-path:not(.researching):not(.queued) { border: 2px dashed var(--goal); padding: 6px 8px 5px; }
+.tree-node.goal { border: 2px solid var(--goal); padding: 6px 8px 5px; background: var(--field); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 22%, transparent), 2px 2px 0 var(--rule-2); }
+.tree-node.goal .tn-name { color: var(--ink); }
+.tech-tree.compact .tree-node { gap: 2px; padding-block: 5px 4px; }
+.tech-tree.compact .tn-thumb { width: 24px; height: 24px; }
+.tech-tree.compact .tn-name { font-size: 14.5px; }
+.tech-tree.compact .tn-foot { font-size: 11px; }
+/* The laptop height: five rows and the queue fit without scrolling. */
+.tech-tree.tight .tree-node { gap: 1px; padding-block: 3px; }
+.tech-tree.tight .tn-thumb { width: 18px; height: 18px; }
+.tech-tree.tight .tn-name { font-size: 14px; }
+.tree-goal { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 3px 3px 3px 9px; border: 1px solid var(--goal); background: var(--field); color: var(--ink); font: 400 13px/1.2 var(--sans); }
+.tree-goal-x { display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--rule-2); background: transparent; color: var(--ink); cursor: pointer; }
+.tech-modal.tree-mode .research-scroll { display: none; }
+/* Sideways scrolling shows itself: a fade and an arrow at an edge with more columns past it. */
+.tree-edge { position: absolute; bottom: 0; z-index: 3; display: grid; place-items: center; width: 30px; height: calc(100% - 42px); padding: 0; border: 0; color: var(--ink); cursor: pointer; visibility: hidden; }
+.tree-edge-box { display: grid; place-items: center; width: 22px; height: 34px; border: 1px solid var(--ink-2); background: var(--field); }
+.tree-edge:hover .tree-edge-box { border-color: var(--ink); background: var(--panel); }
+.tree-edge:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tree-edge.left { left: 0; background: linear-gradient(90deg, var(--panel) 40%, transparent); }
+.tree-edge.left .icon { transform: rotate(90deg); }
+.tree-edge.right { right: 0; background: linear-gradient(270deg, var(--panel) 40%, transparent); }
+.tree-edge.right .icon { transform: rotate(-90deg); }
+.tech-tree:has(.tree-scroll.more-left) .tree-edge.left, .tech-tree:has(.tree-scroll.more-right) .tree-edge.right { visibility: visible; }
+/* Era names stay at the top when a short window scrolls the tree down. */
+.tree-era-head { position: sticky; top: 0; z-index: 2; padding-bottom: 6px; background: var(--panel); box-shadow: 0 1px 0 var(--rule); }
+.tree-era.current .tree-era-head { background: color-mix(in srgb, var(--panel) 92%, var(--accent)); }
+/* Scrolled into view (the advisor), a node never lands under the pinned era names. */
+.tree-node { scroll-margin-top: 64px; scroll-margin-inline: 36px; }
+.tree-peek { position: fixed; z-index: 30; max-height: calc(100dvh - 16px); overflow: hidden; padding: 10px 12px; border: 1px solid var(--ink-2); background: var(--field); box-shadow: 0 8px 24px -8px rgba(43, 36, 25, .45); pointer-events: none; }
+.tree-peek-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.tree-peek-head b { font: var(--display-weight) 18px/1.1 var(--display); }
+.tree-peek-head span { color: var(--ink-2); font: 600 11.5px/1.2 var(--sans); }
+@media (prefers-reduced-motion: no-preference) {
+  /* Only the technology just picked, or the goal and its path just set, glows; reopening replays nothing. */
+  .tech-tree:not(.still) .tree-node.fresh { animation: era-pick .38s ease-out; }
+}
+@media (max-height: 700px) {
+  /* The queue stays (remove, reorder, Queue all); the line key folds behind a Key tip to give it room. */
+  .tech-modal.tree-mode .tree-keys { display: none; }
+  .tech-modal.tree-mode .tree-key-tip { display: inline-flex; }
+  .tech-modal.tree-mode .tree-legend { min-height: 34px; padding-block: 3px; }
+  /* One empty slot is enough to say the queue has room; the rest gives the queue's actions their line. */
+  .tech-modal.tree-mode .rq-ghost ~ .rq-ghost { display: none; }
+  .tech-modal.tree-mode .research-queue-actions .btn { white-space: nowrap; }
+  /* The foot stays only as the advisor card's spacer, so the card never covers the tree's bottom row. */
+  .tech-modal.tree-mode:not(:has(.advisor-card.in-dialog)) .modal-foot { display: none; }
+}

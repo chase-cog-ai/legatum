@@ -1,9 +1,9 @@
-import type { BuildingKind, CityView, Event, Faction, Hex, PlayerId, PlayerView, ProductionItem, Resource, RuinReward, UnitKind } from '../types';
+import type { BuildingKind, CityView, Event, Faction, Hex, PlayerId, PlayerView, ProductionItem, Resource, RuinReward, TeamId, UnitKind } from '../types';
 import { ageName, BUILDING_NAME, BUILDING_STATS, factionGoalVp, RULES, TECH_NAME, isGreatWork, itemName, wallLevelLabel } from '../data';
 import { TECH_QUOTE } from '../techQuotes';
 import { claimedTile, growthUnlocks } from '../milestones';
 import { yieldsText } from '../cityProgress';
-import { empireOfPlayer, placeName } from '../empires';
+import { empireLocation, empireNameOf, empireOfPlayer, placeName, type EmpireLocation } from '../empires';
 import { isBarbarian } from '../barbarians';
 import { blockedQueueHead, wonderLostLine } from '../wonderRace';
 import { distance } from '../hex';
@@ -42,6 +42,8 @@ export interface Moment {
   eraUp?: EraUpCard;
   /** A World Age has begun: the score check every player gets (`ScoreCheck`), held like the era-up. */
   scoreCheck?: ScoreCheckCard;
+  /** First contact with another empire: the full-screen meeting (`MeetingTakeover`), held like the era-up. */
+  meeting?: MeetingCard;
   emblem?: Emblem;
   /** What you won, listed in full under the title (camps and ruins); other cards state `effect` alone. */
   gains?: Gain[];
@@ -64,6 +66,36 @@ export interface Moment {
   place?: string;
   /** The event leaves this city without a build: the card's primary is Choose production there. */
   choose?: number;
+}
+
+/** An empire met for the first time this turn (from the viewer's `diplomacy.met`, which only grows). */
+export interface MeetingCard {
+  team: TeamId;
+  /** The empire's members (one player, or a two-player team), leader first. */
+  members: { id: PlayerId; faction: Faction }[];
+  /** Where the viewer knows them to be now (their nearest city, else a unit in sight); null when only their borders were seen. */
+  where: EmpireLocation | null;
+}
+
+/** Whether a moment waits for the player (its own controls, Return or Esc close it) instead of timing out. */
+export const heldMoment = (m: Moment | null | undefined): boolean => !!(m?.unlock || m?.eraUp || m?.scoreCheck || m?.meeting);
+
+/**
+ * The empires the viewer met this turn, one held meeting card each. Only a turn played with its earlier view known
+ * counts: a loaded game, a replayed card or turn one says nothing, so nobody is met twice.
+ */
+export function meetingsForTurn(before: PlayerView | null, after: PlayerView, base: number): Moment[] {
+  if (!before?.diplomacy?.met || !after.diplomacy?.met) return [];
+  const known = new Set(before.diplomacy.met);
+  return after.diplomacy.met.filter((t) => !known.has(t) && t !== after.team).flatMap((team, i) => {
+    const members = after.players.filter((p) => p.team === team && p.alive).sort((a, b) => a.id - b.id);
+    if (!members.length) return [];
+    const where = empireLocation(after, team);
+    const lead = members[0];
+    return [{ id: `${after.turn}:meet:${team}`, eventIndex: base + i, tier: 'major' as const, owner: lead.id, faction: lead.faction, partner: false,
+      at: where?.at ?? null, title: `You meet ${empireNameOf(members, after.players)}`, effect: '', lore: '', details: [], deltas: [],
+      meeting: { team, members: members.map((p) => ({ id: p.id, faction: p.faction })), where } }];
+  });
 }
 
 /** The painted building a faction goal's generic completion card shows (the faction's own version: Ruhr Foundry, Lyceum). */
@@ -620,10 +652,23 @@ export function momentsForTurn(events: readonly Event[], viewer: PlayerId, befor
       // Victory already owns the Game Over takeover. No second ceremony over its controls.
     }
   });
+  out.push(...meetingsForTurn(before, after, events.length));
   return out.sort((a, b) => TIER_ORDER[b.tier] - TIER_ORDER[a.tier] || a.eventIndex - b.eventIndex);
 }
 
+/**
+ * The cards a turn plays, in order. Your era-up and the score check lead; every first meeting follows them and is
+ * never folded into "+N more" (it happens once per empire); then up to three of the rest.
+ */
 export function planMoments(moments: readonly Moment[]): { shown: Moment[]; collapsed: Moment[] } {
+  const meets = moments.filter((m) => m.meeting);
+  const rest = planOthers(moments.filter((m) => !m.meeting));
+  const at = rest.shown.findIndex((m) => !m.eraUp && !m.scoreCheck);
+  const k = at < 0 ? rest.shown.length : at;
+  return { shown: [...rest.shown.slice(0, k), ...meets, ...rest.shown.slice(k)], collapsed: rest.collapsed };
+}
+
+function planOthers(moments: readonly Moment[]): { shown: Moment[]; collapsed: Moment[] } {
   // The score check is never collapsed: it plays right after your era-up, else first.
   const check = moments.find((m) => m.scoreCheck);
   const ordered = [...moments].filter((m) => m !== check).sort((a, b) => TIER_ORDER[b.tier] - TIER_ORDER[a.tier] || a.eventIndex - b.eventIndex);

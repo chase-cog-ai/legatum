@@ -15,8 +15,8 @@ function upgradeEffect(to: UnitKind): string {
   switch (to) {
     case 'Fighter': return `Guards ${guardRange('Fighter')} tiles; strikes ${strikeRange('Fighter')} tiles away`;
     case 'JetFighter': return `Guards ${guardRange('JetFighter')} tiles; strikes ${strikeRange('JetFighter')} tiles away`;
-    case 'Bomber': return `Strikes ${strikeRange('Bomber')} tiles away, +${siegeBonusOf('Bomber')} against city HP`;
-    case 'JetBomber': return `Strikes ${strikeRange('JetBomber')} tiles away, +${siegeBonusOf('JetBomber')} against city HP`;
+    case 'Bomber': return `Strikes ${strikeRange('Bomber')} tiles away, +${siegeBonusOf('Bomber')} against city health`;
+    case 'JetBomber': return `Strikes ${strikeRange('JetBomber')} tiles away, +${siegeBonusOf('JetBomber')} against city health`;
     case 'StealthFighter': return 'Guards against Stealth Bombers';
     case 'StealthBomber': return 'Only a Stealth Fighter can stop it';
     default: return `Strikes ${strikeRange(to)} tiles away`;
@@ -116,7 +116,7 @@ export function AirWing({ city, view, planeId }: { city: CityView; view: PlayerV
       : state.order.type === 'AirRecon' ? `Scouts the tile ${distance(state.order.target, city.pos)} tiles ${bearing(city.pos, state.order.target)}: you see the ${RULES.reconRadius} tiles around it next turn only, so a strike can be ordered then.${fighter ? ' It still guards this turn.' : ''}`
       : <Amounts text={describeOrder(state.order, view)} />)
     : state.kind === 'ready'
-      ? (fighter ? 'Strike with no retaliation (its own strength, no city bonus), or stay on guard to intercept. A Fighter that strikes does not intercept this turn.' : `Strike with no retaliation, +${siegeBonusOf(plane.kind)} against city HP. ${plane.kind === 'StealthBomber' ? 'Only a Stealth Fighter on guard can stop the strike.' : 'A Fighter on guard can intercept the strike.'}`)
+      ? (fighter ? 'Strike with no retaliation (its own strength, no city bonus), or stay on guard to intercept. A Fighter that strikes does not intercept this turn.' : `Strike with no retaliation, +${siegeBonusOf(plane.kind)} against city health. ${plane.kind === 'StealthBomber' ? 'Only a Stealth Fighter on guard can stop the strike.' : 'A Fighter on guard can intercept the strike.'}`)
       : state.kind === 'guard'
         ? (asleep ? `Waiting on guard: it intercepts enemy air strikes and wakes when an enemy is within ${range} tiles.`
           : heldNow ? `On guard: it intercepts enemy air strikes within ${guardRange(plane.kind)} tiles of this city${plane.kind === 'StealthFighter' ? ', Stealth Bombers included' : ', except a Stealth Bomber’s strike'}.`
@@ -161,7 +161,7 @@ export function AirWing({ city, view, planeId }: { city: CityView; view: PlayerV
     <div className="unit-panel-body" ref={scroll} tabIndex={overflow ? 0 : undefined} role="region" aria-label="Unit details and actions">
       <div className="up-stats">
         <Tip content="Health." className="up-stat">
-          <span className="lbl">HP</span>
+          <span className="lbl">Health</span>
           <Bar value={plane.hp} max={100} color={healthColor(plane.hp / 100)} className="hp-bar" />
           <b>{plane.hp}</b>
         </Tip>
@@ -169,7 +169,7 @@ export function AirWing({ city, view, planeId }: { city: CityView; view: PlayerV
           <span className="lbl"><RingMedallion icon="unit-archer" tone="neutral" size={22} />Range</span>
           <b>{range}</b>
         </Tip>
-        <Tip content={`Air strike strength ${stats.ranged}${fighter ? ', with no city bonus' : `, +${siegeBonusOf(plane.kind)} against city HP`}. Strikes take no retaliation.`} className="up-stat">
+        <Tip content={`Air strike strength ${stats.ranged}${fighter ? ', with no city bonus' : `, +${siegeBonusOf(plane.kind)} against city health`}. Strikes take no retaliation.`} className="up-stat">
           <span className="lbl"><RingMedallion icon="unit-spearman" tone="neutral" size={22} />Strength</span>
           <b>{stats.ranged}</b>
         </Tip>
@@ -232,8 +232,8 @@ export function AirWing({ city, view, planeId }: { city: CityView; view: PlayerV
                 <span className="muted air-where">{distance(t.at, city.pos)} tiles {bearing(city.pos, t.at)}</span>
                 <span className="air-forecast">{t.peace ? 'At Peace: Declare War and strike'
                   : !t.forecast ? 'War declared this turn: it resolves after the declaration'
-                  : t.forecast.air_defence ? <>Air Defence meets it and the strike does not land: <Amounts text={`about −${t.forecast.air_defence.expected_damage_to_attacker} HP`} /> to your {name}{t.forecast.air_defence.loss_chance > 0 ? ` · ${t.forecast.air_defence.loss_chance}% to lose it` : ''} · its strength {t.forecast.air_defence.interceptor_strength} against your {t.forecast.air_defence.striker_strength}</>
-                  : t.forecast.win_chance >= 100 ? 'Destroys it' : <><Amounts text={`about −${t.forecast.expected_damage_to_defender} HP`} />{t.forecast.win_chance > 0 ? ` · ${t.forecast.win_chance}% to destroy it` : ''}{t.forecast.city_hp_percent != null ? ` · ${name}s deal ${t.forecast.city_hp_percent}% damage to city HP` : ''}</>}</span>
+                  : t.forecast.air_defence ? <>Air Defence meets it and the strike does not land: <Amounts text={`about −${t.forecast.air_defence.expected_damage_to_attacker} health`} /> to your {name}{t.forecast.air_defence.loss_chance > 0 ? ` · ${t.forecast.air_defence.loss_chance}% to lose it` : ''} · its strength {t.forecast.air_defence.interceptor_strength} against your {t.forecast.air_defence.striker_strength}</>
+                  : t.forecast.win_chance >= 100 ? 'Destroys it' : <><Amounts text={`about −${t.forecast.expected_damage_to_defender} health`} />{t.forecast.win_chance > 0 ? ` · ${t.forecast.win_chance}% to destroy it` : ''}{t.forecast.city_hp_percent != null ? ` · ${name}s deal ${t.forecast.city_hp_percent}% damage to city health` : ''}</>}</span>
               </button>
             </li>);
         })()}

@@ -1,18 +1,14 @@
 // The shared pieces of the victory UI: the wax VP seal, an empire's control marker and the empty
-// socket, a source's medallion, and the objective card (a TI4 public objective). The race panel's
-// token cards and the objective-cards sheet render the same card, so a source reads the same
-// everywhere. Ownership has three looks from the viewer's side: gilt frame and star stud (yours),
-// the holder's colour and crest (a rival's), a dashed frame and "Nobody yet" (nobody's).
-import type { CSSProperties, ReactNode } from 'react';
+// socket, an Age's card as a list, and the progress meter. The Score ledger and the score check use them.
+import type { CSSProperties } from 'react';
 import { Icon } from './bits';
-import { RingMedallion } from './ringMedallion';
-import { CrestMedallion, Star } from '../brand/ornaments';
-import { ERA_COUNT, FACTION_GOAL } from '../data';
+import { CrestMedallion } from '../brand/ornaments';
+import { ERA_COUNT } from '../data';
 import { eraName } from './eraResearch';
 import { cardMeter, scoredCard } from '../ageCards';
 import { useGame } from '../store';
-import { ownWords, type EraObjective, type Progress, type Source, type VpEmpire, type VpModel } from '../vpModel';
-import type { Faction, ObjectiveFamily } from '../types';
+import { type EraObjective, type Progress, type Source, type VpEmpire, type VpModel } from '../vpModel';
+import type { ObjectiveFamily } from '../types';
 import './vpParts.css';
 
 const css = (v: Record<string, string | number>) => v as CSSProperties;
@@ -37,17 +33,6 @@ export function Socket({ size = 20, e }: { size?: number; e?: VpEmpire }) {
   // With an empire: its crest, faded until earned, so an empty circle is never ownerless.
   return <span className={`vh-socket${e ? ' owned' : ''}`} style={{ ...(e ? empireVars(e) : {}), ['--ms' as string]: `${size}px` }} title={e ? `${e.name}: not yet` : undefined}>
     {e && <CrestMedallion faction={e.faction} color={e.ink} size={Math.round(size * 0.8)} />}
-  </span>;
-}
-
-const ownTone = (s: Source): 'gilt' | 'neutral' | 'hollow' => (s.own === 'mine' ? 'gilt' : s.own === 'theirs' ? 'neutral' : 'hollow');
-
-/** The source's medallion: gilt when yours, ringed in the holder's colour with their crest when a rival's, hollow when open. */
-export function SourceMedal({ model, s, size = 32 }: { model: Pick<VpModel, 'empires'>; s: Source; size?: number }) {
-  const single = s.owners.length === 1 ? model.empires.find((e) => e.id === s.owners[0]) : undefined;
-  return <span className={`vh-medal own-${s.own}`} style={empireVars(single)}>
-    <RingMedallion icon={s.icon} tone={ownTone(s)} size={size}
-      badge={single ? <Marker e={single} size={Math.max(14, Math.round(size * 0.5))} /> : s.own === 'mine' ? <Icon name="ui-check" size={10} className="ms-check" /> : undefined} />
   </span>;
 }
 
@@ -93,101 +78,9 @@ export function EraObjectives({ model, s }: { model: VpModel; s: Source }) {
   </ul>;
 }
 
-/** One marker socket per living empire: filled where it is earned, with the public fact under it. */
-function ControlRow({ model, s, size = 20 }: { model: VpModel; s: Source; size?: number }) {
-  return <div className="vh-ctrl">
-    {model.empires.map((e) => {
-      const has = s.owners.includes(e.id);
-      const f = s.facts.find((x) => x.id === e.id);
-      return <span key={e.id} className={`vh-ctrl-slot${e.isMe ? ' me' : ''}${has ? ' held-first' : ''}`}>
-        {has ? <Marker e={e} size={size} /> : <Socket size={size} e={e} />}
-        <small>{has || s.kind === 'work' ? '' : f?.label ?? ''}</small>
-      </span>;
-    })}
-  </div>;
-}
-
 export function Meter({ p, color }: { p: Progress; color?: string }) {
   return <div className="vh-meter" style={css({ '--oi': color ?? 'var(--ink-2)' })}>
     <span className="vh-meter-bar" role="progressbar" aria-label={p.label} aria-valuemin={0} aria-valuemax={p.target} aria-valuenow={Math.min(p.value, p.target)}><i style={{ width: `${Math.min(100, (p.value / Math.max(1, p.target)) * 100)}%` }} /></span>
     <span className="vh-meter-label">{p.label}</span>
   </div>;
-}
-
-function WorkLines({ model, s }: { model: VpModel; s: Source }) {
-  const building = s.facts.filter((f) => f.label && !s.owners.includes(f.id));
-  if (!building.length) return <p className="vh-private">No world wonder under construction{s.owners.length ? ' elsewhere' : ''}</p>;
-  return <div className="vh-work">{building.map((f) => {
-    const e = model.empires.find((x) => x.id === f.id)!;
-    return <div key={f.id} className="vh-work-row"><CrestMedallion faction={e.faction} color={e.ink} size={13} /><span>{f.label}</span></div>;
-  })}</div>;
-}
-
-/** A live goal's loss rule, in the goal table's words. */
-const liveWords = (faction: NonNullable<Source['faction']>) => {
-  const note = FACTION_GOAL[faction].liveNote ?? '';
-  return note ? `${note[0].toUpperCase()}${note.slice(1)}.` : '';
-};
-
-/** A held goal's public facts: whose item it is, who holds it now, and whether it can be placed on the map. */
-function HeldLines({ model, s, goalOwner }: { model: VpModel; s: Source; goalOwner?: VpEmpire }) {
-  const holder = s.owners.length === 1 ? model.empires.find((e) => e.id === s.owners[0]) : undefined;
-  const words = heldWords(s.faction);
-  // Rome's and Egypt's cards are short: the rule already names whose goal it is and that a capture takes it.
-  const cityGoal = s.faction === 'Rome' || s.faction === 'Egypt';
-  return <div className="vh-held" data-held-by={holder?.id}>
-    {goalOwner && !cityGoal && <div className="vh-held-row"><Marker e={goalOwner} size={16} title={goalOwner.name} /><span>{`${goalOwner.isMe ? 'Your' : `${goalOwner.name}’s`} ${words.item}`}</span></div>}
-    <div className={`vh-held-row now${holder ? '' : ' nobody'}`}>
-      {holder ? <Marker e={holder} size={16} /> : <Socket size={16} />}
-      <b>{s.holdNote}</b>
-    </div>
-    {s.heldAt && !cityGoal && <p className="vh-private" data-testid="heir-locate-hint">{words.locate}</p>}
-  </div>;
-}
-
-/** What a held goal's item is called, how to find it and what a capture does, per faction (the Heir is a unit; the others stand in a city). */
-function heldWords(faction?: Faction): { item: string; locate: string } {
-  const its = 'Click its token in the race panel to show it on the map.';
-  if (faction === 'Mongols') return { item: 'Yam Relay Station', locate: its };
-  if (faction === 'India') return { item: 'Imperial Diwan', locate: its };
-  if (faction === 'Rome' || faction === 'Egypt') return { item: faction === 'Rome' ? 'Colonia Victrix' : 'Royal Tomb', locate: its };
-  return { item: 'Heir', locate: 'Click his token in the race panel to show him on the map.' };
-}
-
-/** The objective card: its band says whose it is, the markers or standings show who has it. */
-export function SourceCard({ model, s, compact, terms = true, as: As = 'article', children }: {
-  model: VpModel; s: Source; compact?: boolean; terms?: boolean; as?: 'article' | 'div'; children?: ReactNode;
-}) {
-  const single = s.owners.length === 1 ? model.empires.find((e) => e.id === s.owners[0]) : undefined;
-  const goalOwner = s.only !== undefined ? model.empires.find((e) => e.id === s.only) : undefined;
-  // A held goal's band is its holder's; any other goal's is its own empire's, once done.
-  const bandOwner = s.kind === 'goal' && !s.held ? (s.owners.length ? goalOwner : undefined) : single;
-  const tint = bandOwner ?? goalOwner;
-  const sockets = model.empires.length > 4 ? (compact ? 14 : 18) : 20;
-  return <As className={`vh-card k-${s.kind} own-${s.own}${s.live ? ' live' : ''}${compact ? ' compact' : ''}${s.owners.length > 1 && s.own === 'theirs' ? ' shared' : ''}`} style={empireVars(tint)} data-source={s.id}>
-    <header className="vh-band">
-      <span className="vh-band-kind">
-        {bandOwner ? <span className="vh-band-crest"><CrestMedallion faction={bandOwner.faction} color={bandOwner.ink} size={15} /></span> : s.own === 'open' ? <span className="vh-band-open" /> : <Star size={8} />}
-        <span className="vh-band-text">{ownWords(model, s)}</span>
-      </span>
-    </header>
-    <VpSeal vp={s.vp} />
-    <div className="vh-card-head">
-      <SourceMedal model={model} s={s} size={compact ? 26 : 30} />
-      <h3>{s.name}</h3>
-    </div>
-    <p className="vh-rule">{s.rule}{(s.faction === 'Rome' || s.faction === 'Egypt') && s.kind === 'goal' && !/[.!?]$/.test(s.rule) ? '.' : ''}</p>
-    {terms && <p className="vh-terms">{s.terms}</p>}
-    {s.kind === 'era' && <EraObjectives model={model} s={s} />}
-    {s.kind === 'era' && s.era && <p className="vh-private">{s.era.myScored ? 'You have scored this Age.' : 'Every empire sees this card the turn the first empire enters the era, and it never expires.'}</p>}
-    {(s.kind === 'work' || s.kind === 'era') && <ControlRow model={model} s={s} size={sockets} />}
-    {s.kind === 'work' && <WorkLines model={model} s={s} />}
-    {s.kind === 'goal' && s.progress && <Meter p={s.progress} color={goalOwner?.ink} />}
-    {s.kind === 'goal' && s.live && !s.held && s.faction && liveWords(s.faction) && <p className="vh-private">{s.own === 'mine' ? 'Held now. ' : ''}{liveWords(s.faction)}</p>}
-    {s.kind === 'goal' && s.live && !s.held && s.faction && !liveWords(s.faction) && s.own === 'mine' && <p className="vh-private">Held now, and lost the turn it falls below {(s.progress?.target ?? 0).toLocaleString('en-US')}</p>}
-    {s.kind === 'goal' && s.held && <HeldLines model={model} s={s} goalOwner={goalOwner} />}
-    {s.kind === 'goal' && s.privacy && s.own === 'open' && <p className="vh-private">{s.facts[0] ? `${s.facts[0].label}. ` : ''}{s.privacy}</p>}
-    {s.own === 'mine' && <span className="vh-corner" aria-hidden="true"><Star size={9} /></span>}
-    {children}
-  </As>;
 }

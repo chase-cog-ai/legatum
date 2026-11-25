@@ -81,7 +81,7 @@ test('Single Player: choose capital production and play six turns with VP visibl
   for (let turn = 3; turn <= 7; turn++) {
     await endTurn(page, turn);
     await expect(vp).toBeVisible();
-    await expect(vp.locator('.race-headline')).toBeVisible();
+    await expect(vp.locator('.rivals .rv-row.mine')).toBeVisible();
     await expect(vp).toContainText('/10');
     if (turn === 3) await expect(page.getByRole('button', { name: `Build ${first}`, exact: true })).toHaveAttribute('aria-pressed', 'true');
   }

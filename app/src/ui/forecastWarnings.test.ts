@@ -183,7 +183,7 @@ describe('G18 combat warnings', () => {
     const unit = (id: number, owner: number, pos: UnitView['pos'], hp: number): UnitView => ({ ...own, id, owner, pos, hp });
     const near = neighbors(own.pos)[0];
     view.units = [unit(1, view.me, own.pos, 42), unit(2, view.me, neighbors(near)[0], 30), unit(3, 255, near, 100)];
-    expect(woundedNearEnemies(view).map((w) => w.text)).toEqual(['Spearman is wounded next to enemies (30 HP)', 'Spearman is wounded next to enemies (42 HP)']);
+    expect(woundedNearEnemies(view).map((w) => w.text)).toEqual(['Spearman is wounded next to enemies (30 health)', 'Spearman is wounded next to enemies (42 health)']);
     view.units = [unit(1, view.me, own.pos, 50), unit(3, 255, near, 100)];
     expect(woundedNearEnemies(view)).toEqual([]);
     view.units = [unit(1, view.me, own.pos, 20)];
@@ -392,7 +392,7 @@ describe('reinforcement note', () => {
     view.units = [unit, enemyNear(neighbors(city.pos)[0])];
     const note = reinforcementNote(view, { ...unit, pos: neighbors(city.pos)[3] }, city.pos);
     expect(note).toContain(`If an enemy attacks ${city.name} this turn, your Spearman gets there first and becomes its garrison`);
-    expect(note).toContain("HP absorbs the first hits");
+    expect(note).toContain("health absorbs the first hits");
     const far = neighbors(neighbors(city.pos)[3])[3];
     expect(reinforcementNote(view, { ...unit, pos: far }, city.pos)).toContain('more than one step');
   });

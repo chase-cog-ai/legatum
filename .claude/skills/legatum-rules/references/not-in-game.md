@@ -20,7 +20,7 @@ Moved verbatim from `game-rules.md` on 2026-11-22, in the original order; the or
 | Loyalty | **Absent** |
 | Pillaging | **Absent** — code: "this game has no pillage" |
 | Road-laying units / tile-by-tile road building | **Absent** — roads come only from the Yam Relay Station (the Courier Hall, §8) and the Roadworks building (`roads::extend_roadworks`) |
-| Military Engineer, Forts | **Removed 2026-10-22** — Siege is a Gold upgrade on an ordinary unit (§4); units laying roads are roadmap only; Forts are built by ordinary military units since rules 60 (`combat.md`) |
+| Military Engineer, Forts | **Removed 2026-10-22** — Siege is a Gold upgrade on an ordinary unit (§4); units laying roads are roadmap only; Forts are built by ordinary military units since rules 61 (`combat.md`) |
 | City-states | **Absent** |
 | Tech trading | **Absent** — only passive diffusion (−10% per other living empire that knows it, max −50%), which a closed Japan (Sakoku, §8) does not get |
 | Tech boosts (Eurekas) | **Removed 2026-10-17** — a technology's price depends only on the table and diffusion |

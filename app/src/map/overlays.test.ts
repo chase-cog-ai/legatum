@@ -94,6 +94,14 @@ describe('overlay tiles', () => {
   it('draw nothing while every overlay is off', () => {
     expect(buildOverlayTiles(fixture(), DEFAULT_OVERLAYS)).toEqual({ yields: [], borders: [] });
   });
+  it("marks a natural wonder's tile so its cluster carries the +25% (the wonder's yield)", () => {
+    const v = fixture();
+    (v.tiles[5] as { wonder?: string }).wonder = 'GiantsCauseway';
+    const tile = buildOverlayTiles(v, { ...DEFAULT_OVERLAYS, yields: true }).yields.find((t) => t.index === 5);
+    expect(tile?.bonus).toBe('production');
+    expect(buildOverlayTiles(v, { ...DEFAULT_OVERLAYS, yields: true }).yields.filter((t) => t.bonus)).toHaveLength(1);
+  });
+
   it('Yields: faction tile yields, one entry per tile that has any, and an improved resource’s bonus', () => {
     const v = fixture(); v.tiles[0].terrain = 'Hills'; v.tiles[1].terrain = 'Ocean'; v.tiles[2].resource = 'Wheat';
     v.tiles[5] = { explored: false, visible: false, terrain: null, ruin: true, owner: null };

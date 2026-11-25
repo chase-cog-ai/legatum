@@ -92,6 +92,8 @@ fn wounded_city_falls_after_a_volley_with_city_fire_enabled() {
         .unwrap()
         .buildings
         .insert(BuildingKind::Walls);
+    // Breakable Walls (rules 62): the wall in front of the wounded city is nearly down too.
+    s.cities.get_mut(&id).unwrap().walls_damage = 95;
     let spearman = s
         .units
         .values()

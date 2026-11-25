@@ -1573,6 +1573,17 @@ pub(crate) fn buy_check_with_supply<R: Reason>(
             R::word(|| "Walls must be built with Production; they can't be bought.".into()),
         ));
     }
+    if item
+        == (ProductionItem::Building {
+            building: BuildingKind::UpgradeWalls,
+        })
+        && crate::rules::cities::walls_work_blocked(state, city)
+    {
+        return Some((
+            BuyBlock::UnderThreat,
+            R::word(|| crate::rules::cities::WALLS_UNDER_ATTACK.into()),
+        ));
+    }
     if city.last_purchase_turn == Some(state.turn) {
         return Some((
             BuyBlock::AlreadyBought,
@@ -1984,6 +1995,9 @@ pub(crate) fn production_check_at_era<R: Reason>(
             let level = city.wall_tier();
             if level == 0 {
                 Some(R::word(|| "Build Walls first.".into()))
+            } else if city.walls_damage > 0 && (level >= data::MAX_WALL_TIER || level > era) {
+                // At the cap, a damaged bar is repaired instead (Repair Walls).
+                None
             } else if level >= data::MAX_WALL_TIER {
                 Some(R::word(|| {
                     format!(
@@ -2159,6 +2173,7 @@ mod tests {
             last_purchase_turn: None,
             buildings: Default::default(),
             walls_level: 0,
+            walls_damage: 0,
             hp: CITY_HP,
             grown_tiles: Vec::new(),
             tiles_claimed: 0,

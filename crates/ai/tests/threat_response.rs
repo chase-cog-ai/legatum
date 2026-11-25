@@ -148,7 +148,7 @@ fn top_threat(brain: &ScriptedBrain) -> Option<PlayerId> {
 
 /// The fixture is the user's state before turn 35. Since cities shield their garrisons
 /// (`combat::city_tile_defender`), the same recorded orders left Athens alive; with the rush's
-/// armies taking the yield of the Athenian tiles they stand on (rules 62), Athens falls again.
+/// armies taking the yield of the Athenian tiles they stand on (rules 63), Athens falls again.
 #[test]
 fn the_fixture_is_the_users_game_and_its_orders_still_resolve() {
     let mut state = original();

@@ -225,6 +225,10 @@ pub const SWISS_TOLL_POPULATION: i32 = 2;
 
 /// Consecutive turn ends a team must hold its VP target to win by VP.
 pub const VP_HOLD_TURNS: u32 = 10;
+/// The turn a game with no configured turn limit ends on (rules 62): the team with the most VP
+/// wins, a tie is a draw (`scoring::check_victory`). A backstop like Civ's score victory, so no
+/// game runs forever when nobody can finish a victory.
+pub const DEFAULT_TURN_LIMIT: u32 = 500;
 pub const MAP_WIDTH: i32 = 48;
 pub const MAP_HEIGHT: i32 = 32;
 /// Every faction goal is worth exactly this (user rule, 2026-10-06): goals are tuned by their
@@ -840,7 +844,8 @@ pub fn building_stats(kind: BuildingKind) -> BuildingStats {
         // answer (rules 50; was Military Engineering, one era later, when Industrial units with
         // built-in Siege followed one era after it and left the Star Fort little time to matter).
         StarFort => (320, Yields::new(0, 0, 0, 0), 5, Some(TechId::Machinery)),
-        UpgradeWalls => (240, Yields::ZERO, 5, None),
+        // Adds +50 to the Walls bar (`combat::WALLS_HP_PER_LEVEL`), not strength.
+        UpgradeWalls => (240, Yields::ZERO, 0, None),
         // World wonders: each is worth the same 2 held VP, so prices follow one era curve (rules 50,
         // a first pass the owner may veto: Pyramids 240 -> 360 and Great Library 600 -> 400 were
         // the two outliers more than 25% off it; the rest are within it).
@@ -1478,6 +1483,7 @@ pub fn available_to_faction_rules(
                 || building == BuildingKind::YamRelayStation
                 || building == BuildingKind::ImperialDiwan
                 || building == BuildingKind::AirDefence
+                || building == BuildingKind::UpgradeWalls
                 || building_stats_for_rules(off, faction, building).city_strength > 0
                 || building_stats_for_rules(off, faction, building).yields != Yields::ZERO
         }

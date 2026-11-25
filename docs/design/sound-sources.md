@@ -119,9 +119,49 @@ Existing sounds and music stay byte-identical. Listening and device review are p
 
 | Source | What we ship | Licence, and where it is stated |
 | --- | --- | --- |
-| FreeCol (Ubuntu package `freecol` 1.1.0-1) | 8 music tracks by Alexander Zhelanov and Stian Grenborgen: 6 for every people from the Renaissance on, and *El Dorado* and *Lost City* as the Aztecs' own | CC BY 4.0: `debian/copyright`, `data/default/resources/music/default/*` |
-| Unknown Horizons (Ubuntu package `unknown-horizons` 2019.1-7) | 4 peace tracks by Tobias Escher and 2 war tracks (*Battle*, *Sea Fight*), from the Renaissance on | CC BY-SA 3.0: `debian/copyright`, `content/*` |
+| FreeCol (Ubuntu package `freecol` 1.1.0-1) | 8 music tracks by Alexander Zhelanov and Stian Grenborgen: 6 for every people from the Renaissance to the Industrial era (the fourth pass below ends them there), and *El Dorado* and *Lost City* as the Aztecs' own | CC BY 4.0: `debian/copyright`, `data/default/resources/music/default/*` |
+| Unknown Horizons (Ubuntu package `unknown-horizons` 2019.1-7) | 4 peace tracks by Tobias Escher and 2 war tracks (*Battle*, *Sea Fight*), from the Renaissance to the Industrial era | CC BY-SA 3.0: `debian/copyright`, `content/*` |
 | Unciv's copies of Freesound recordings | gunshot (Deganoth, CC BY 4.0), cannon (DylanSmithSound, CC BY 4.0), shell fire (qubodup, CC0), explosion (EvanBoyerman, CC BY 3.0, edited by the Unciv team) | Per file in Unciv's `docs/Credits.md`. 24 kHz MP3 copies, not the originals |
 | ESC-50 dataset clips | a propeller aircraft (conleec) and the sea loop (monotraum) | CC0 per clip in the dataset's `LICENSE`. The dataset as a whole is CC BY-NC, so only clips it marks CC0 are used |
 
-Not used: FreeCol's and Wesnoth's sound effects and most of Wesnoth's music (GPL; the designer approved credit-required CC licences only), and Unciv's `bombing`, `jetgun` and `torpedo` (the Unciv team's mixes of several recordings, with no licence stated for the mix). Still missing: music written for the Machine Age and later (the later eras share the age-of-sail pieces), Mesoamerican music for the Aztecs (their two tracks are New World pieces from a colonisation game), a musket, a jet, a drone and the fall of a gunpowder-age unit. The gunshot is a modern firearm's single shot, so it plays for rifle-armed units only; the aircraft is a propeller plane, so it plays for the Biplane and the Bomber only. Nobody has listened to any of it: it was chosen by title, source and measurement.
+Not used: FreeCol's and Wesnoth's sound effects and most of Wesnoth's music (GPL; the designer approved credit-required CC licences only), and Unciv's `bombing`, `jetgun` and `torpedo` (the Unciv team's mixes of several recordings, with no licence stated for the mix). Still missing (as of this pass; the third pass below adds Modern and Future music and a jet, and the fourth pass Machine Age and World War music, a musket and a drone): music written for the Machine Age and later (the later eras share the age-of-sail pieces), Mesoamerican music for the Aztecs (their two tracks are New World pieces from a colonisation game), a musket, a jet, a drone and the fall of a gunpowder-age unit. The gunshot is a modern firearm's single shot, so it plays for rifle-armed units only; the aircraft is a propeller plane, so it played for the Biplane and the Bomber only (the third pass below adds the Fighter). Nobody has listened to any of it: it was chosen by title, source and measurement.
+
+**Status (2026-11-25, third pass): music for the Modern and Future eras, and a jet.** Also built by `tools/audio/build_later.py`.
+
+| Source | What we ship | Licence, and where it is stated |
+| --- | --- | --- |
+| Warzone 2100 community soundtracks (Ubuntu package `warzone2100-music` 4.4.2-1build3; Legacy and Aftermath albums) | 4 peace and 2 war tracks by LupusMechanicus, each cut to its first four minutes, for the Modern and Future eras only. The FreeCol and Unknown Horizons music now stops after the World War era | CC BY-SA 3.0: each album's `license.txt` |
+| ESC-50 dataset clip | a jet passing (mffm, "Airliner Flyby.wav"), for the Jet Fighter, Jet Bomber and the stealth aircraft. It is an airliner, not a warplane: a jet engine passing overhead, which is the kind of sound the rule asks for | CC0 per clip in the dataset's `LICENSE` |
+
+The propeller recording now also plays for the Fighter, which is a propeller aircraft and was left out by mistake.
+
+Looked at and not used: the original Warzone 2100 soundtrack, Bos Wars, Advanced Strategic Command's music and MegaGlest (GPL, or nothing later than the Renaissance). The Warzone music is electronic and dark, written for a game set after a nuclear war, so it is not used before the Modern era. Still missing, with no source a cloud session can reach under a CC licence (the fourth pass below fills the first, third and fourth with GPL audio): music for the Machine Age and the World War era (they still share the age-of-sail pieces), Mesoamerican music for the Aztecs, a musket, a drone and the fall of a gunpowder-age unit. Still nobody has listened to any of it.
+
+**Measured mix (2026-11-25).** Every shipped file was measured again with ffmpeg `ebur128` and combined with its manifest `gain` and the default sliders (master 80%, effects 70%, music 40%; the sliders square, so the effects bus is -10 dB and the music bus -20 dB).
+
+| Group | Files | Loudness in the file, with its gain | At the default sliders |
+| --- | --- | --- | --- |
+| Music | 38 | -21.9 to -18.1 LUFS, median -20.0 | about -40 LUFS |
+| Battle sounds | 28 | about -24 LUFS (short ones cannot be measured) | about -34 LUFS |
+| Stings (celebrations, founding) | 14 | -20.0 to -18.5 LUFS | about -30 LUFS |
+| Land and sea loops | 4 | -30.3 to -29.8 LUFS, played at half level | about -46 LUFS |
+
+So at the defaults a battle sound sits about 6 dB over the music, a sting about 10 dB over it, and the land loop about 6 dB under it. 19 of the 107 files (clicks, order sounds, single hits) are too short for an integrated loudness figure; their peaks are between -1 and -8 dBTP. One fault was found and fixed: six 0 A.D. battle sounds (three bow releases, an arrow hit, the hoofbeats) had a `gain` that lifted their true peak to as much as +2 dBTP, which would clip with both sliders near full. `import_0ad.py` now caps each gain so the peak stays at or under -1 dBTP; those six are 1 to 3 dB quieter. This is measurement only. Whether the mix sounds right is a question for a person's ear.
+
+**Status (2026-11-25, fourth pass): GPL audio allowed, for the gaps CC sources left.** GPL audio from open-source games is allowed for these gaps, with the GPL noted in the credits. Built by `tools/audio/build_gpl.py`; every file is GPL-2.0-or-later and stays so after editing, and `licenses/GPL-2.0-or-later.txt` ships.
+
+| Source | What we ship | Licence, and where it is stated |
+| --- | --- | --- |
+| The Battle for Wesnoth, `data/core/music/` (GitHub, exact paths) | 3 peace tracks (*Journey's End*, *Breaking the Chains*, *Nunc Dimittis*) and 3 war tracks (*Casualties of War*, *The City Falls*, *Weight of Revenge*), orchestral, for the Machine Age and the World War era (eras 6 and 7). The FreeCol and Unknown Horizons music now stops after the Industrial era | GPL v2+: per file in the game's `copyrights.csv`, with author and MD5; each download's MD5 was checked against it |
+| The Battle for Wesnoth, `data/core/sounds/` | the musket: `thunderstick.ogg` and `thunderstick-miss.ogg` by Richard Kettering (Jetrel), the game's black-powder gun. Plays for a musket volley and for a melee of musket-armed units | GPL v2+: `copyrights.csv` |
+| Warzone 2100, `base.wz` (Ubuntu package `warzone2100-data` 4.4.2-1build3) | the drone: `audio/sfx/vehicle/vtol-move.ogg`, the engine of an unmanned-era hover aircraft, for the Future era's Combat Drone as it flies in | GPL v2+: `debian/copyright`, `Files: *` |
+
+Looked at and not used: Advanced Strategic Command's three tracks (22 kHz, 80 kb/s MP3s from 2002: too low a quality), Widelands' music (pastoral, for a medieval economy game; no Mesoamerican piece despite its Amazons tribe), Bos Wars (voice lines and science-fiction weapons), FreeCol's `sound/meet/aztec.ogg` (a 10 s sting, not music). Still missing after this pass (the fifth pass below adds the second): Mesoamerican music for the Aztecs, and the fall of a gunpowder-age unit. The Wesnoth pieces were written for a fantasy game; they were chosen by title, author and measurement, and nobody has listened to them in the game.
+
+**Status (2026-11-25, fifth pass): the fall of a gunpowder-age unit.** Built by `tools/audio/build_gpl.py`.
+
+| Source | What we ship | Licence, and where it is stated |
+| --- | --- | --- |
+| The Battle for Wesnoth, `data/core/sounds/` | a falling soldier: `human-die-1.ogg` to `human-die-3.ogg` by Lari Nieminen (zookeeper), 44.1 kHz. Plays when a soldier of the gunpowder age or later falls (Musketman to Infantry, the gun-age horse, the Field Cannon's crew) | GPL v2+: `copyrights.csv`; each download's MD5 was checked against it |
+
+A destroyed machine (tank, artillery piece, aircraft, drone, Mechanised Infantry, Hunter-Killer) sounds the explosion recording already shipped. A Settler's loss stays silent. Looked at and not used: Warzone 2100's explosions and screams (11 to 16 kHz: too low a quality). Still missing: Mesoamerican music for the Aztecs. Two candidates are known, *Forgotten Music of Aztecs* (CC BY 3.0) and *Ritual Traps* (CC BY 4.0) by Alexandr Zhelanov on OpenGameArt, a host a cloud session cannot reach.

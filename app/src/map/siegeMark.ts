@@ -26,16 +26,22 @@ function breath(time: number, level: SiegeLevel, reduced: boolean): number {
 }
 
 /** The wide HP bar under an alarmed banner: track, red fill, white rim, ink edge and "120/200". */
-export function drawSiegeBar(ctx: CanvasRenderingContext2D, cx: number, y: number, w: number, hp: number, maxHp: number, fontFamily: string, withText = true) {
+/** Stone grey for a city's Walls bar, apart from the red of its health. */
+export const WALLS_STONE = '#a39a8a';
+/** The dark track behind a Walls bar (the siege bar's own track). */
+export const WALLS_TRACK = '#4a3b2a';
+
+
+export function drawSiegeBar(ctx: CanvasRenderingContext2D, cx: number, y: number, w: number, hp: number, maxHp: number, fontFamily: string, withText = true, walls = false) {
   const h = withText ? SIEGE_BAR_H : 6;
   const x = Math.round(cx - w / 2);
   const f = Math.max(0, Math.min(1, hp / maxHp));
   ctx.save();
   ctx.fillStyle = HALO;
   ctx.fillRect(x - 1.5, y - 1.5, w + 3, h + 3);
-  ctx.fillStyle = '#4a3b2a';
+  ctx.fillStyle = WALLS_TRACK;
   ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = SIEGE_RED;
+  ctx.fillStyle = walls ? WALLS_STONE : SIEGE_RED;
   ctx.fillRect(x, y, Math.round(w * f), h);
   // A hard edge at the fill's end, so the remaining HP is a length, not a shade.
   if (f > 0 && f < 1) { ctx.fillStyle = HALO; ctx.fillRect(x + Math.round(w * f) - 1, y, 1.5, h); }
@@ -46,7 +52,7 @@ export function drawSiegeBar(ctx: CanvasRenderingContext2D, cx: number, y: numbe
     ctx.font = `700 10px ${fontFamily}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const label = `${hp}/${maxHp}`;
+    const label = walls ? `Walls ${hp}/${maxHp}` : `${hp}/${maxHp}`;
     ctx.lineJoin = 'round';
     ctx.lineWidth = 3;
     ctx.strokeStyle = INK;

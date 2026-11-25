@@ -66,7 +66,7 @@ export interface FxClash {
   mounted: boolean;
   /** Gunpowder era or later: muskets and rifles fire as the lines close. */
   guns: boolean;
-  /** Cartridge rifles (the Industrial era or later), which the gunshot recording fits; a musket has none. */
+  /** Cartridge rifles (the Industrial era or later), which the gunshot recording fits; a musket has its own. */
   rifles?: boolean;
   atCity: boolean;
   hit: boolean;

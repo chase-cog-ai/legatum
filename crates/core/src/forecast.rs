@@ -175,7 +175,10 @@ pub fn forecast_city_strike(
         if pos == unit.pos { unit.fortify } else { 0 },
         unit.level,
     );
-    combat::add_fort(&mut attacker_defense, view.tile(pos).is_some_and(|t| t.fort));
+    combat::add_fort(
+        &mut attacker_defense,
+        view.tile(pos).is_some_and(|t| t.fort),
+    );
     if pos == unit.pos {
         combat::add_phalanx_rules(
             &mut attacker_defense,

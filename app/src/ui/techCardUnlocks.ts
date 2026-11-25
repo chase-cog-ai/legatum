@@ -16,6 +16,7 @@ function effectIcon(label: string) {
   if (label.startsWith('Stealth aircraft use Silicon')) return 'resource-silicon';
   // Siege lines name Walls levels: the glyph is Siege's own.
   if (/\bSiege\b/.test(label)) return 'ui-siege';
+  if (/\bForts\b/.test(label)) return 'ui-fort';
   const named = NAMED_ICONS.map(([name, icon]) => ({ at: label.search(new RegExp(`\\b${name}`)), name, icon }))
     .filter((m) => m.at >= 0)
     .sort((a, b) => a.at - b.at || b.name.length - a.name.length)[0];

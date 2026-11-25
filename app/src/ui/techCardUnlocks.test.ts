@@ -16,7 +16,7 @@ describe('tech card effect icons', () => {
     expect(icons('CodeOfLaws')).toEqual(['effect-insight']);
     // The Phalangite is an item on the view's unlock list; the upgrade and Siege lines are effects.
     expect(icons('Mathematics')).toEqual(['ui-siege', 'unit-spearman']);
-    expect(icons('Feudalism')).toEqual(['unit-phalangite']);
+    expect(icons('Feudalism')).toEqual(['ui-fort', 'unit-phalangite']);
     expect(icons('MilitaryEngineering')).toEqual(['yield-gold']);
     expect(icons('PrintingPress')).toEqual(['building-library', 'building-market']);
     expect(icons('FusionPower')).toEqual(['yield-production', 'building-researchlab']);

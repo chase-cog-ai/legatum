@@ -442,6 +442,11 @@ fn ui_rules_match_core() {
             "builtInEra": data::BUILT_IN_SIEGE_ERA,
             "builtInNote": data::BUILT_IN_SIEGE_NOTE,
         },
+        "fort": {
+            "gold": data::FORT_GOLD,
+            "defense": data::FORT_DEFENSE,
+            "tech": data::FORT_TECH,
+        },
         "mountedMoves": data::MOUNTED_MOVES,
         "mongolSiegeEra": data::MONGOL_SIEGE_ERA,
         "mongolWallsReason": data::MONGOL_WALLS_REASON,

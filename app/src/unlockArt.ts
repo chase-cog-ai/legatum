@@ -97,6 +97,8 @@ export function effectArtSlugOrUnit(tech: TechId, label: string): { slug: string
   if (/^Mines upgrade/.test(label)) return { slug: improvementArtSlug('Mine', true) };
   if (/^Quarries upgrade/.test(label)) return { slug: improvementArtSlug('Quarry', true) };
   // One painting per rule: a row names its own building or improvement, so two rows of a card never share an image.
+  // Forts dug by units (core `rules::forts`) borrow the Walls painting: Walls sit on another card (Masonry).
+  if (/\bForts\b/.test(label)) return { slug: buildingArtSlug('Walls') };
   if (/\bGranary\b/.test(label)) return { slug: buildingArtSlug('Granary') };
   if (/\bWorkshop\b/.test(label)) return { slug: buildingArtSlug('Workshop') };
   if (/\bLibrary\b/.test(label)) return { slug: buildingArtSlug('Library') };

@@ -159,8 +159,8 @@ const WALLS_HALF_RULE = `attacks on the city's HP do ${RULES.walls.damagePercent
 export const ARTILLERY_HEADLINE = 'Fires over terrain at targets your team can see, with built-in Siege.';
 export const ARTILLERY_RULE = 'From Steel, Howitzers, Artillery, Rocket Artillery and Combat Drones fire over terrain at targets your team can see. They have Siege built in. It covers Walls up to level IV in the Industrial era and one more level in each later era. Cities still fire and defend.';
 /** Siege on a card or tip: the headline (the Guide prints SIEGE_RULE in full). */
-/** Forts (core `rules::forts`, `data::FORT_DEFENSE`): the card's one-line effect and the rule in a sentence. */
-export const FORT_DEFENSE = 5;
+/** Forts (core `rules::forts`, `data::FORT_DEFENSE` through `rules.generated.json`): the card's one-line effect and the rule in a sentence. */
+export const FORT_DEFENSE: number = RULES.fort.defense;
 export const FORT_EFFECT = `+${FORT_DEFENSE} defence here · stops enemies next to it`;
 export const FORT_HEADLINE = `A military unit in a Fort defends with +${FORT_DEFENSE} Strength. An enemy unit that steps next to a Fort you hold stops there for the turn.`;
 export const SIEGE_HEADLINE = 'Siege lets a unit ignore enemy Walls up to a set level when it attacks a city.';

@@ -7,7 +7,7 @@ import { distance, hexAt, tileIndex } from './hex';
 /** The tiles holding a Fort whose garrison is at War with the viewer. */
 export function hostileForts(view: PlayerView): number[] {
   const out: number[] = [];
-  for (const u of view.units) {
+  for (const u of view.units ?? []) {
     if (!u.military || u.owner === view.me) continue;
     const i = tileIndex(u.pos, view.width, view.height);
     if (view.tiles[i]?.fort && !out.includes(i) && atWar(view, u.owner)) out.push(i);

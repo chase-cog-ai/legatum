@@ -9251,6 +9251,11 @@
   "firstCampTurn": 10,
   "firstGrowth": 65,
   "firstSettlerPercent": 100,
+  "fort": {
+    "defense": 5,
+    "gold": 100,
+    "tech": "Feudalism"
+  },
   "germanyProjectGoldPercent": 50,
   "germanyProjectSciencePercent": 25,
   "growthBase": 30,
@@ -10019,7 +10024,7 @@
   "rocketArtilleryRange": 3,
   "rollMax": 120,
   "rollMin": 80,
-  "saveVersion": 59,
+  "saveVersion": 60,
   "settlerCostStep": 50,
   "siege": {
     "baseGold": 160,
@@ -18382,7 +18387,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -18516,7 +18522,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -18650,7 +18657,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -18787,7 +18795,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -18924,7 +18933,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -19054,7 +19064,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -19191,7 +19202,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -19328,7 +19340,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -19465,7 +19478,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -19602,7 +19616,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [
@@ -19739,7 +19754,8 @@
         "Archers can upgrade to Composite Archers"
       ],
       "Feudalism": [
-        "Phalangites can upgrade to Pikemen"
+        "Phalangites can upgrade to Pikemen",
+        "Military units can build Forts"
       ],
       "Flight": [],
       "FusionPower": [

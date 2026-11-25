@@ -1310,10 +1310,7 @@ pub fn resolve_ranged(
                     u.xp,
                 ),
             );
-            combat::add_fort(
-                &mut defense,
-                state.map.get(u.pos).is_some_and(|t| t.fort),
-            );
+            combat::add_fort(&mut defense, state.map.get(u.pos).is_some_and(|t| t.fort));
             combat::add_phalanx_rules(
                 &mut defense,
                 state.setup.rule_experiments.faction_rules_off,

@@ -15,7 +15,7 @@ import { cityFireStatus } from '../format';
 import { usePlacedCard, type CardAnchor } from './usePlacedCard';
 import { BARBARIAN_INK, campAt, CAMP_CLEAR_GOLD, isBarbarian } from '../barbarians';
 import { useGame } from '../store';
-import { buildingIconName, factionGoalVp, sameItem, wonderTileText } from '../data';
+import { FORT_DEFENSE, buildingIconName, factionGoalVp, sameItem, wonderTileText } from '../data';
 import { heirLines } from './HeirNote';
 import { contractLine, isCompany } from '../company';
 import { heirHoverLine, heirTag, isHeir } from '../heir';
@@ -175,6 +175,7 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
       {barbarianHeld && <div className="tilecard-row bad">Barbarians hold the tile: it yields nothing.</div>}
       {(camp || units.some((u) => isBarbarian(u.owner))) && faction === 'Celts' && <div className="tilecard-row good">Barbarians don't attack you.</div>}
       {city && view.players.find((p) => p.id === view.me)?.faction === 'Celts' && owner?.id !== view.me && city.founder !== view.me && <div className="tilecard-row bad">Celts sack this city when they capture it.</div>}
+      {t.fort && <div className="tilecard-row fort" data-testid="tilecard-fort"><Icon name="ui-fort" size={15} color="currentColor" /> Fort: +{FORT_DEFENSE} defence here · enemies stop next to it while it is held</div>}
       {t.ruin && <div className="tilecard-row ruin"><Icon name="ruin" size={15} color="currentColor" /> ancient ruin: unexplored</div>}
       {camp && (
         <div className="tilecard-row barbarian-camp">

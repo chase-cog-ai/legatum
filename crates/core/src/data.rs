@@ -929,7 +929,10 @@ pub fn tech_card_effect_list(tech: TechId) -> &'static [(&'static str, CardEffec
             ),
             ("Horsemen can upgrade to Cataphracts", HorseUpgrade),
         ],
-        Feudalism => &[("Phalangites can upgrade to Pikemen", Other)],
+        Feudalism => &[
+            ("Phalangites can upgrade to Pikemen", Other),
+            ("Military units can build Forts", Other),
+        ],
         Machinery => &[
             ("Composite Archers can upgrade to Crossbowmen", Other),
             ("Siege covers Walls up to level II", Siege),

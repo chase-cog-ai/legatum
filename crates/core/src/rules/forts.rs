@@ -26,10 +26,7 @@ pub fn check(state: &GameState, player: PlayerId, unit: UnitId, gold: i32) -> Re
         return Err(format!("{name} cannot build a Fort"));
     }
     if !state.player(player).techs.contains(&data::FORT_TECH) {
-        return Err(format!(
-            "Forts need {}",
-            data::tech_name(data::FORT_TECH)
-        ));
+        return Err(format!("Forts need {}", data::tech_name(data::FORT_TECH)));
     }
     let tile = state.map.get(u.pos).ok_or("no such tile")?;
     if tile.fort {

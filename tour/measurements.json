@@ -1,0 +1,1595 @@
+{
+  "results": [
+    {
+      "faction": "India",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "War Elephant",
+          "height": 210,
+          "rect": {
+            "x": 419,
+            "y": 496,
+            "width": 258.65625,
+            "height": 210
+          },
+          "text": "War Elephant replaces Knight 204 Production 50 strength (Knight: 42) 3 moves (Knight: 4) No strength penalty charging a city. Needs Chivalry."
+        },
+        {
+          "title": "Revenue Office",
+          "height": 210,
+          "rect": {
+            "x": 685.65625,
+            "y": 496,
+            "width": 258.671875,
+            "height": 210
+          },
+          "text": "Revenue Office replaces Market 60 Production +3 Gold In a non-capital city, this office starts sending half the Gold the city makes to your treasury. Needs Currency."
+        },
+        {
+          "title": "Imperial Diwan",
+          "height": 210,
+          "rect": {
+            "x": 952.328125,
+            "y": 496,
+            "width": 258.65625,
+            "height": 210
+          },
+          "text": "Imperial Diwan only India can build it 300 Production Needs Currency."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "War Elephant",
+          "stat": "50 strength (Knight: 42)",
+          "standard": "(Knight: 42)",
+          "wrapped": true,
+          "labelWithValue": true,
+          "valueX": 530,
+          "diffX": 530,
+          "compareTextX": 530,
+          "iconX": 511,
+          "statX": 511,
+          "valueY": 585.28125,
+          "diffY": 600.28125,
+          "iconY": 585.78125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 511,
+            "y": 578.28125,
+            "width": 155.65625,
+            "height": 28
+          }
+        },
+        {
+          "title": "War Elephant",
+          "stat": "3 moves (Knight: 4)",
+          "standard": "(Knight: 4)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 530,
+          "diffX": 579.828125,
+          "compareTextX": 579.828125,
+          "iconX": 511,
+          "statX": 511,
+          "valueY": 614.28125,
+          "diffY": 614.78125,
+          "iconY": 614.78125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 511,
+            "y": 607.28125,
+            "width": 140.59375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Switzerland",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Reisläufer",
+          "height": 210,
+          "rect": {
+            "x": 419,
+            "y": 516.71875,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Reisläufer replaces Pikeman 152 Production 2 moves 32 strength +50% of its strength against mounted units, on top of the usual bonus. Needs Feudalism."
+        },
+        {
+          "title": "Alpine Redoubt",
+          "height": 210,
+          "rect": {
+            "x": 819,
+            "y": 516.71875,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Alpine Redoubt replaces Walls 120 Production (Walls: 100) +15 city strength (Walls: +10) Needs Masonry."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Alpine Redoubt",
+          "stat": "120 Production (Walls: 100)",
+          "standard": "(Walls: 100)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 979,
+          "diffX": 1067.40625,
+          "compareTextX": 1067.40625,
+          "iconX": 960,
+          "statX": 960,
+          "valueY": 610.953125,
+          "diffY": 611.453125,
+          "iconY": 611.453125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 960,
+            "y": 603.953125,
+            "width": 186.78125,
+            "height": 15
+          }
+        },
+        {
+          "title": "Alpine Redoubt",
+          "stat": "+15 city strength (Walls: +10)",
+          "standard": "(Walls: +10)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 979,
+          "diffX": 1073.78125,
+          "compareTextX": 1073.78125,
+          "iconX": 960,
+          "statX": 960,
+          "valueY": 626.953125,
+          "diffY": 627.453125,
+          "iconY": 627.453125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 960,
+            "y": 619.953125,
+            "width": 191.59375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Byzantium",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Tagmatic Soldier",
+          "height": 260,
+          "rect": {
+            "x": 419,
+            "y": 518.5,
+            "width": 387,
+            "height": 260
+          },
+          "text": "Tagmatic Soldier replaces Pikeman 162 Production (Pikeman: 152) 36 strength (Pikeman: 32) 2 moves Needs Feudalism."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Tagmatic Soldier",
+          "stat": "162 Production (Pikeman: 152)",
+          "standard": "(Pikeman: 152)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 595,
+          "diffX": 684.921875,
+          "compareTextX": 684.921875,
+          "iconX": 576,
+          "statX": 576,
+          "valueY": 633.1875,
+          "diffY": 633.6875,
+          "iconY": 633.6875,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 576,
+            "y": 626.1875,
+            "width": 205.515625,
+            "height": 15
+          }
+        },
+        {
+          "title": "Tagmatic Soldier",
+          "stat": "36 strength (Pikeman: 32)",
+          "standard": "(Pikeman: 32)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 595,
+          "diffX": 665.21875,
+          "compareTextX": 665.21875,
+          "iconX": 576,
+          "statX": 576,
+          "valueY": 649.1875,
+          "diffY": 649.6875,
+          "iconY": 649.6875,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 576,
+            "y": 642.1875,
+            "width": 180.078125,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Germany",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Panzer",
+          "height": 210,
+          "rect": {
+            "x": 419,
+            "y": 523.421875,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Panzer replaces Tank 514 Production 6 moves (Tank: 5) 94 strength Needs Armoured Warfare."
+        },
+        {
+          "title": "Ruhr Foundry",
+          "height": 210,
+          "rect": {
+            "x": 819,
+            "y": 523.421875,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Ruhr Foundry replaces Forge 320 Production +6 Production (Forge: +3) Needs Iron Working."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Panzer",
+          "stat": "6 moves (Tank: 5)",
+          "standard": "(Tank: 5)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 579,
+          "diffX": 629.078125,
+          "compareTextX": 629.078125,
+          "iconX": 560,
+          "statX": 560,
+          "valueY": 633.65625,
+          "diffY": 634.15625,
+          "iconY": 634.15625,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 560,
+            "y": 626.65625,
+            "width": 130.984375,
+            "height": 15
+          }
+        },
+        {
+          "title": "Ruhr Foundry",
+          "stat": "+6 Production (Forge: +3)",
+          "standard": "(Forge: +3)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 979,
+          "diffX": 1059.109375,
+          "compareTextX": 1059.109375,
+          "iconX": 960,
+          "statX": 960,
+          "valueY": 633.65625,
+          "diffY": 634.15625,
+          "iconY": 634.15625,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 960,
+            "y": 626.65625,
+            "width": 172.5,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Celts",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Gaesatae",
+          "height": 260,
+          "rect": {
+            "x": 419,
+            "y": 538.3125,
+            "width": 387,
+            "height": 260
+          },
+          "text": "Gaesatae replaces Phalangite 110 Production 2 moves 25 strength +8 strength when attacking. −5 strength when defending. Needs Mathematics."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": []
+    },
+    {
+      "faction": "Mongols",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Keshig",
+          "height": 210,
+          "rect": {
+            "x": 419,
+            "y": 508.421875,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Keshig replaces Cataphract 164 Production (Cataphract: 150) 17 ranged · range 2 (Cataphract: 0) 5 moves 33 strength Shoots or charges each turn, never both. Needs Iron Working."
+        },
+        {
+          "title": "Yam Relay Station",
+          "height": 210,
+          "rect": {
+            "x": 819,
+            "y": 508.421875,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Yam Relay Station only Mongols can build it 600 Production"
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Keshig",
+          "stat": "164 Production (Cataphract: 150)",
+          "standard": "(Cataphract: 150)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 579,
+          "diffX": 667.71875,
+          "compareTextX": 667.71875,
+          "iconX": 560,
+          "statX": 560,
+          "valueY": 588.203125,
+          "diffY": 588.703125,
+          "iconY": 588.703125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 560,
+            "y": 581.203125,
+            "width": 218.75,
+            "height": 15
+          }
+        },
+        {
+          "title": "Keshig",
+          "stat": "17 ranged · range 2 (Cataphract: 0)",
+          "standard": "(Cataphract: 0)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 579,
+          "diffX": 680.390625,
+          "compareTextX": 680.390625,
+          "iconX": 560,
+          "statX": 560,
+          "valueY": 604.203125,
+          "diffY": 604.703125,
+          "iconY": 604.703125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 560,
+            "y": 597.203125,
+            "width": 218,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Sparta",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Spartan Hoplite",
+          "height": 210,
+          "rect": {
+            "x": 419,
+            "y": 495.125,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Spartan Hoplite replaces Spearman 80 Production 2 moves 20 strength +5 strength next to another Hoplite (the phalanx). It is lost on upgrade."
+        },
+        {
+          "title": "Agoge",
+          "height": 210,
+          "rect": {
+            "x": 819,
+            "y": 495.125,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Agoge only Sparta can build it 160 Production Needs Chivalry. Units trained here start one level higher."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": []
+    },
+    {
+      "faction": "Athens",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Peltast",
+          "height": 210,
+          "rect": {
+            "x": 419,
+            "y": 497.359375,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Peltast replaces Composite Archer 168 Production 3 moves (Composite Archer: 2) 14 strength 22 ranged · range 2 Needs Engineering."
+        },
+        {
+          "title": "Lyceum",
+          "height": 210,
+          "rect": {
+            "x": 819,
+            "y": 497.359375,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Lyceum replaces Library 70 Production (Library: 80) +6 Science (Library: +3) Needs Writing."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Peltast",
+          "stat": "3 moves (Composite Archer: 2)",
+          "standard": "(Composite Archer: 2)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 579,
+          "diffX": 628.828125,
+          "compareTextX": 628.828125,
+          "iconX": 560,
+          "statX": 560,
+          "valueY": 607.59375,
+          "diffY": 608.09375,
+          "iconY": 608.09375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 560,
+            "y": 600.59375,
+            "width": 205.171875,
+            "height": 15
+          }
+        },
+        {
+          "title": "Lyceum",
+          "stat": "70 Production (Library: 80)",
+          "standard": "(Library: 80)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 979,
+          "diffX": 1059.921875,
+          "compareTextX": 1059.921875,
+          "iconX": 960,
+          "statX": 960,
+          "valueY": 591.59375,
+          "diffY": 592.09375,
+          "iconY": 592.09375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 960,
+            "y": 584.59375,
+            "width": 182.5,
+            "height": 15
+          }
+        },
+        {
+          "title": "Lyceum",
+          "stat": "+6 Science (Library: +3)",
+          "standard": "(Library: +3)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 979,
+          "diffX": 1043.65625,
+          "compareTextX": 1043.65625,
+          "iconX": 960,
+          "statX": 960,
+          "valueY": 607.59375,
+          "diffY": 608.09375,
+          "iconY": 608.09375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 960,
+            "y": 600.59375,
+            "width": 164.34375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Aztecs",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Eagle Warrior",
+          "height": 260,
+          "rect": {
+            "x": 419,
+            "y": 505.671875,
+            "width": 387,
+            "height": 260
+          },
+          "text": "Eagle Warrior replaces Spearman 90 Production (Spearman: 80) 24 strength (Spearman: 20) 2 moves"
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Eagle Warrior",
+          "stat": "90 Production (Spearman: 80)",
+          "standard": "(Spearman: 80)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 595,
+          "diffX": 678.234375,
+          "compareTextX": 678.234375,
+          "iconX": 576,
+          "statX": 576,
+          "valueY": 620.359375,
+          "diffY": 620.859375,
+          "iconY": 620.859375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 576,
+            "y": 613.359375,
+            "width": 202.9375,
+            "height": 15
+          }
+        },
+        {
+          "title": "Eagle Warrior",
+          "stat": "24 strength (Spearman: 20)",
+          "standard": "(Spearman: 20)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 595,
+          "diffX": 664.9375,
+          "compareTextX": 664.9375,
+          "iconX": 576,
+          "statX": 576,
+          "valueY": 636.359375,
+          "diffY": 636.859375,
+          "iconY": 636.859375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 576,
+            "y": 629.359375,
+            "width": 188.8125,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Egypt",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Chariot Archer",
+          "height": 210,
+          "rect": {
+            "x": 419,
+            "y": 480.15625,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Chariot Archer replaces Archer 132 Food 3 moves (Archer: 2) 8 strength 15 ranged · range 2 +40% strength when it shoots melee units. Entering Forest or Hills takes its whole turn."
+        },
+        {
+          "title": "Royal Granary",
+          "height": 210,
+          "rect": {
+            "x": 819,
+            "y": 480.15625,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Royal Granary replaces Granary 50 Food +3 Food (Granary: +2)"
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Chariot Archer",
+          "stat": "3 moves (Archer: 2)",
+          "standard": "(Archer: 2)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 661.859375,
+          "diffX": 711.6875,
+          "compareTextX": 711.6875,
+          "iconX": 642.859375,
+          "statX": 642.859375,
+          "valueY": 559.984375,
+          "diffY": 560.484375,
+          "iconY": 560.484375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 642.859375,
+            "y": 552.984375,
+            "width": 141.234375,
+            "height": 15
+          }
+        },
+        {
+          "title": "Royal Granary",
+          "stat": "+3 Food (Granary: +2)",
+          "standard": "(Granary: +2)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 1055.765625,
+          "diffX": 1105.640625,
+          "compareTextX": 1105.640625,
+          "iconX": 1036.765625,
+          "statX": 1036.765625,
+          "valueY": 574.390625,
+          "diffY": 574.890625,
+          "iconY": 574.890625,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 1036.765625,
+            "y": 567.390625,
+            "width": 154.21875,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Rome",
+      "viewport": "1440x900",
+      "dialog": {
+        "x": 200,
+        "y": 75,
+        "width": 1040,
+        "height": 750
+      },
+      "cards": [
+        {
+          "title": "Legionary",
+          "height": 210,
+          "rect": {
+            "x": 419,
+            "y": 470.875,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Legionary replaces Phalangite 110 Production 2 moves 25 strength A city founded by this Legionary starts at population 2 instead of 1. Needs Mathematics."
+        },
+        {
+          "title": "Castrum",
+          "height": 210,
+          "rect": {
+            "x": 819,
+            "y": 470.875,
+            "width": 392,
+            "height": 210
+          },
+          "text": "Castrum replaces Walls 100 Production +10 city strength Upgrading a melee unit in this city restores 50 health, up to full health, once per order. Needs Masonry."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": []
+    },
+    {
+      "faction": "India",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "War Elephant",
+          "height": 204.953125,
+          "rect": {
+            "x": 221,
+            "y": 311.328125,
+            "width": 244,
+            "height": 204.953125
+          },
+          "text": "War Elephant replaces Knight 204 Production 50 strength (Knight: 42) 3 moves (Knight: 4) No strength penalty charging a city. Needs Chivalry."
+        },
+        {
+          "title": "Revenue Office",
+          "height": 204.953125,
+          "rect": {
+            "x": 473,
+            "y": 311.328125,
+            "width": 244,
+            "height": 204.953125
+          },
+          "text": "Revenue Office replaces Market 60 Production +3 Gold In a non-capital city, this office starts sending half the Gold the city makes to your treasury. Needs Currency."
+        },
+        {
+          "title": "Imperial Diwan",
+          "height": 204.953125,
+          "rect": {
+            "x": 725,
+            "y": 311.328125,
+            "width": 244,
+            "height": 204.953125
+          },
+          "text": "Imperial Diwan only India can build it 300 Production Needs Currency."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "War Elephant",
+          "stat": "50 strength (Knight: 42)",
+          "standard": "(Knight: 42)",
+          "wrapped": true,
+          "labelWithValue": true,
+          "valueX": 312,
+          "diffX": 312,
+          "compareTextX": 312,
+          "iconX": 293,
+          "statX": 293,
+          "valueY": 399.28125,
+          "diffY": 414.53125,
+          "iconY": 400.03125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 293,
+            "y": 392.53125,
+            "width": 163,
+            "height": 28
+          }
+        },
+        {
+          "title": "War Elephant",
+          "stat": "3 moves (Knight: 4)",
+          "standard": "(Knight: 4)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 312,
+          "diffX": 360.828125,
+          "compareTextX": 360.828125,
+          "iconX": 293,
+          "statX": 293,
+          "valueY": 428.28125,
+          "diffY": 429.03125,
+          "iconY": 429.03125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 293,
+            "y": 421.53125,
+            "width": 139.59375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Switzerland",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Reisläufer",
+          "height": 188.28125,
+          "rect": {
+            "x": 221,
+            "y": 341.859375,
+            "width": 370,
+            "height": 188.28125
+          },
+          "text": "Reisläufer replaces Pikeman 152 Production 2 moves 32 strength +50% of its strength against mounted units, on top of the usual bonus. Needs Feudalism."
+        },
+        {
+          "title": "Alpine Redoubt",
+          "height": 188.28125,
+          "rect": {
+            "x": 599,
+            "y": 341.859375,
+            "width": 370,
+            "height": 188.28125
+          },
+          "text": "Alpine Redoubt replaces Walls 120 Production (Walls: 100) +15 city strength (Walls: +10) Needs Masonry."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Alpine Redoubt",
+          "stat": "120 Production (Walls: 100)",
+          "standard": "(Walls: 100)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 708,
+          "diffX": 793.609375,
+          "compareTextX": 793.609375,
+          "iconX": 689,
+          "statX": 689,
+          "valueY": 436.5625,
+          "diffY": 437.3125,
+          "iconY": 437.3125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 689,
+            "y": 429.8125,
+            "width": 183.984375,
+            "height": 15
+          }
+        },
+        {
+          "title": "Alpine Redoubt",
+          "stat": "+15 city strength (Walls: +10)",
+          "standard": "(Walls: +10)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 708,
+          "diffX": 800.125,
+          "compareTextX": 800.125,
+          "iconX": 689,
+          "statX": 689,
+          "valueY": 452.5625,
+          "diffY": 453.3125,
+          "iconY": 453.3125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 689,
+            "y": 445.8125,
+            "width": 188.9375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Byzantium",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Tagmatic Soldier",
+          "height": 225,
+          "rect": {
+            "x": 221,
+            "y": 341,
+            "width": 365,
+            "height": 225
+          },
+          "text": "Tagmatic Soldier replaces Pikeman 162 Production (Pikeman: 152) 36 strength (Pikeman: 32) 2 moves Needs Feudalism."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Tagmatic Soldier",
+          "stat": "162 Production (Pikeman: 152)",
+          "standard": "(Pikeman: 152)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 378,
+          "diffX": 463.328125,
+          "compareTextX": 463.328125,
+          "iconX": 359,
+          "statX": 359,
+          "valueY": 436.1875,
+          "diffY": 436.9375,
+          "iconY": 436.9375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 359,
+            "y": 429.4375,
+            "width": 200.921875,
+            "height": 15
+          }
+        },
+        {
+          "title": "Tagmatic Soldier",
+          "stat": "36 strength (Pikeman: 32)",
+          "standard": "(Pikeman: 32)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 378,
+          "diffX": 444.84375,
+          "compareTextX": 444.84375,
+          "iconX": 359,
+          "statX": 359,
+          "valueY": 452.1875,
+          "diffY": 452.9375,
+          "iconY": 452.9375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 359,
+            "y": 445.4375,
+            "width": 176.703125,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Germany",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Panzer",
+          "height": 179.6875,
+          "rect": {
+            "x": 221,
+            "y": 350.453125,
+            "width": 370,
+            "height": 179.6875
+          },
+          "text": "Panzer replaces Tank 514 Production 6 moves (Tank: 5) 94 strength Needs Armoured Warfare."
+        },
+        {
+          "title": "Ruhr Foundry",
+          "height": 179.6875,
+          "rect": {
+            "x": 599,
+            "y": 350.453125,
+            "width": 370,
+            "height": 179.6875
+          },
+          "text": "Ruhr Foundry replaces Forge 320 Production +6 Production (Forge: +3) Needs Iron Working."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Panzer",
+          "stat": "6 moves (Tank: 5)",
+          "standard": "(Tank: 5)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 440.78125,
+          "diffX": 489.84375,
+          "compareTextX": 489.84375,
+          "iconX": 421.78125,
+          "statX": 421.78125,
+          "valueY": 440.859375,
+          "diffY": 441.609375,
+          "iconY": 441.609375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 421.78125,
+            "y": 434.109375,
+            "width": 129.96875,
+            "height": 15
+          }
+        },
+        {
+          "title": "Ruhr Foundry",
+          "stat": "+6 Production (Forge: +3)",
+          "standard": "(Forge: +3)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 708,
+          "diffX": 786.203125,
+          "compareTextX": 786.203125,
+          "iconX": 689,
+          "statX": 689,
+          "valueY": 456.859375,
+          "diffY": 457.609375,
+          "iconY": 457.609375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 689,
+            "y": 450.109375,
+            "width": 170.59375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Celts",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Gaesatae",
+          "height": 225,
+          "rect": {
+            "x": 221,
+            "y": 360,
+            "width": 365,
+            "height": 225
+          },
+          "text": "Gaesatae replaces Phalangite 110 Production 2 moves 25 strength +8 strength when attacking. −5 strength when defending. Needs Mathematics."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": []
+    },
+    {
+      "faction": "Mongols",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Keshig",
+          "height": 196.484375,
+          "rect": {
+            "x": 221,
+            "y": 333.65625,
+            "width": 370,
+            "height": 196.484375
+          },
+          "text": "Keshig replaces Cataphract 164 Production (Cataphract: 150) 17 ranged · range 2 (Cataphract: 0) 5 moves 33 strength Shoots or charges each turn, never both. Needs Iron Working."
+        },
+        {
+          "title": "Yam Relay Station",
+          "height": 196.484375,
+          "rect": {
+            "x": 599,
+            "y": 333.65625,
+            "width": 370,
+            "height": 196.484375
+          },
+          "text": "Yam Relay Station only Mongols can build it 600 Production"
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Keshig",
+          "stat": "164 Production (Cataphract: 150)",
+          "standard": "(Cataphract: 150)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 330,
+          "diffX": 415.890625,
+          "compareTextX": 415.890625,
+          "iconX": 311,
+          "statX": 311,
+          "valueY": 415.671875,
+          "diffY": 416.421875,
+          "iconY": 416.421875,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 311,
+            "y": 408.921875,
+            "width": 215.921875,
+            "height": 15
+          }
+        },
+        {
+          "title": "Keshig",
+          "stat": "17 ranged · range 2 (Cataphract: 0)",
+          "standard": "(Cataphract: 0)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 330,
+          "diffX": 429.703125,
+          "compareTextX": 429.703125,
+          "iconX": 311,
+          "statX": 311,
+          "valueY": 431.671875,
+          "diffY": 432.421875,
+          "iconY": 432.421875,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 311,
+            "y": 424.921875,
+            "width": 216.3125,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Sparta",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Spartan Hoplite",
+          "height": 173.578125,
+          "rect": {
+            "x": 221,
+            "y": 326.84375,
+            "width": 370,
+            "height": 173.578125
+          },
+          "text": "Spartan Hoplite replaces Spearman 80 Production 2 moves 20 strength +5 strength next to another Hoplite (the phalanx). It is lost on upgrade."
+        },
+        {
+          "title": "Agoge",
+          "height": 173.578125,
+          "rect": {
+            "x": 599,
+            "y": 326.84375,
+            "width": 370,
+            "height": 173.578125
+          },
+          "text": "Agoge only Sparta can build it 160 Production Needs Chivalry. Units trained here start one level higher."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": []
+    },
+    {
+      "faction": "Athens",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Peltast",
+          "height": 172.828125,
+          "rect": {
+            "x": 221,
+            "y": 327.59375,
+            "width": 370,
+            "height": 172.828125
+          },
+          "text": "Peltast replaces Composite Archer 168 Production 3 moves (Composite Archer: 2) 14 strength 22 ranged · range 2 Needs Engineering."
+        },
+        {
+          "title": "Lyceum",
+          "height": 172.828125,
+          "rect": {
+            "x": 599,
+            "y": 327.59375,
+            "width": 370,
+            "height": 172.828125
+          },
+          "text": "Lyceum replaces Library 70 Production (Library: 80) +6 Science (Library: +3) Needs Writing."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Peltast",
+          "stat": "3 moves (Composite Archer: 2)",
+          "standard": "(Composite Archer: 2)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 330,
+          "diffX": 378.828125,
+          "compareTextX": 378.828125,
+          "iconX": 311,
+          "statX": 311,
+          "valueY": 422.578125,
+          "diffY": 423.328125,
+          "iconY": 423.328125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 311,
+            "y": 415.828125,
+            "width": 204.171875,
+            "height": 15
+          }
+        },
+        {
+          "title": "Lyceum",
+          "stat": "70 Production (Library: 80)",
+          "standard": "(Library: 80)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 708,
+          "diffX": 786.9375,
+          "compareTextX": 786.9375,
+          "iconX": 689,
+          "statX": 689,
+          "valueY": 414.578125,
+          "diffY": 415.328125,
+          "iconY": 415.328125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 689,
+            "y": 407.828125,
+            "width": 180.515625,
+            "height": 15
+          }
+        },
+        {
+          "title": "Lyceum",
+          "stat": "+6 Science (Library: +3)",
+          "standard": "(Library: +3)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 708,
+          "diffX": 770.75,
+          "compareTextX": 770.75,
+          "iconX": 689,
+          "statX": 689,
+          "valueY": 430.578125,
+          "diffY": 431.328125,
+          "iconY": 431.328125,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 689,
+            "y": 423.828125,
+            "width": 162.4375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Aztecs",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Eagle Warrior",
+          "height": 225,
+          "rect": {
+            "x": 221,
+            "y": 328.921875,
+            "width": 365,
+            "height": 225
+          },
+          "text": "Eagle Warrior replaces Spearman 90 Production (Spearman: 80) 24 strength (Spearman: 20) 2 moves"
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Eagle Warrior",
+          "stat": "90 Production (Spearman: 80)",
+          "standard": "(Spearman: 80)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 378,
+          "diffX": 457.75,
+          "compareTextX": 457.75,
+          "iconX": 359,
+          "statX": 359,
+          "valueY": 424.109375,
+          "diffY": 424.859375,
+          "iconY": 424.859375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 359,
+            "y": 417.359375,
+            "width": 199.453125,
+            "height": 15
+          }
+        },
+        {
+          "title": "Eagle Warrior",
+          "stat": "24 strength (Spearman: 20)",
+          "standard": "(Spearman: 20)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 378,
+          "diffX": 444.609375,
+          "compareTextX": 444.609375,
+          "iconX": 359,
+          "statX": 359,
+          "valueY": 440.109375,
+          "diffY": 440.859375,
+          "iconY": 440.859375,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 359,
+            "y": 433.359375,
+            "width": 185.484375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Egypt",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Chariot Archer",
+          "height": 192.78125,
+          "rect": {
+            "x": 221,
+            "y": 307.640625,
+            "width": 370,
+            "height": 192.78125
+          },
+          "text": "Chariot Archer replaces Archer 132 Food 3 moves (Archer: 2) 8 strength 15 ranged · range 2 +40% strength when it shoots melee units. Entering Forest or Hills takes its whole turn."
+        },
+        {
+          "title": "Royal Granary",
+          "height": 192.78125,
+          "rect": {
+            "x": 599,
+            "y": 307.640625,
+            "width": 370,
+            "height": 192.78125
+          },
+          "text": "Royal Granary replaces Granary 50 Food +3 Food (Granary: +2)"
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": [
+        {
+          "title": "Chariot Archer",
+          "stat": "3 moves (Archer: 2)",
+          "standard": "(Archer: 2)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 410.140625,
+          "diffX": 458.96875,
+          "compareTextX": 458.96875,
+          "iconX": 391.140625,
+          "statX": 391.140625,
+          "valueY": 395.65625,
+          "diffY": 396.40625,
+          "iconY": 396.40625,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 391.140625,
+            "y": 388.90625,
+            "width": 140.234375,
+            "height": 15
+          }
+        },
+        {
+          "title": "Royal Granary",
+          "stat": "+3 Food (Granary: +2)",
+          "standard": "(Granary: +2)",
+          "wrapped": false,
+          "labelWithValue": true,
+          "valueX": 782.6875,
+          "diffX": 830.703125,
+          "compareTextX": 830.703125,
+          "iconX": 763.6875,
+          "statX": 763.6875,
+          "valueY": 410.71875,
+          "diffY": 411.46875,
+          "iconY": 411.46875,
+          "arrowTogether": true,
+          "withinCard": true,
+          "statRect": {
+            "x": 763.6875,
+            "y": 403.96875,
+            "width": 152.359375,
+            "height": 15
+          }
+        }
+      ]
+    },
+    {
+      "faction": "Rome",
+      "viewport": "1000x600",
+      "dialog": {
+        "x": 6,
+        "y": 6,
+        "width": 988,
+        "height": 588
+      },
+      "cards": [
+        {
+          "title": "Legionary",
+          "height": 185.5,
+          "rect": {
+            "x": 221,
+            "y": 301.0625,
+            "width": 370,
+            "height": 185.5
+          },
+          "text": "Legionary replaces Phalangite 110 Production 2 moves 25 strength A city founded by this Legionary starts at population 2 instead of 1. Needs Mathematics."
+        },
+        {
+          "title": "Castrum",
+          "height": 185.5,
+          "rect": {
+            "x": 599,
+            "y": 301.0625,
+            "width": 370,
+            "height": 185.5
+          },
+          "text": "Castrum replaces Walls 100 Production +10 city strength Upgrading a melee unit in this city restores 50 health, up to full health, once per order. Needs Masonry."
+        }
+      ],
+      "sheetScroll": 0,
+      "dialogScroll": 0,
+      "overflow": [],
+      "comparisons": []
+    }
+  ],
+  "errors": []
+}

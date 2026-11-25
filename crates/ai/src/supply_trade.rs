@@ -43,8 +43,7 @@ fn progress(v: &PlayerView, team: TeamId) -> u32 {
 fn allied(v: &PlayerView, other: TeamId) -> bool {
     other == v.team
         || v.diplomacy.relations.iter().any(|r| {
-            r.between(v.team, other)
-                && r.state == legatum_core::diplomacy::RelationState::Alliance
+            r.between(v.team, other) && r.state == legatum_core::diplomacy::RelationState::Alliance
         })
 }
 
@@ -127,7 +126,10 @@ fn answer(v: &PlayerView, target: Option<TeamId>, o: &SupplyOffer) -> (bool, Opt
         (true, None)
     } else {
         if target == Some(v.team_of(o.seller())) {
-            return (false, Some("we will not depend on a rival we mean to stop".into()));
+            return (
+                false,
+                Some("we will not depend on a rival we mean to stop".into()),
+            );
         }
         let need = short(v, o.resource);
         if need == 0 {
@@ -138,7 +140,10 @@ fn answer(v: &PlayerView, target: Option<TeamId>, o: &SupplyOffer) -> (bool, Opt
         }
         let limit = bid_limit(v, o.resource, o.amount);
         if o.gold > limit {
-            return (false, Some(format!("we would pay {limit} Gold a turn for it")));
+            return (
+                false,
+                Some(format!("we would pay {limit} Gold a turn for it")),
+            );
         }
         (true, None)
     }

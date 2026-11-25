@@ -566,6 +566,7 @@ fn stances(view: &PlayerView, orders: &[Order]) -> (Vec<TeamId>, Vec<TeamId>) {
             Order::ProposeTreaty {
                 to,
                 kind: TreatyKind::Peace,
+                ..
             } => peaces.push(*to),
             Order::RespondToProposal {
                 proposal,
@@ -605,7 +606,7 @@ fn war_peace(
             .iter()
             .filter(|o| match o {
                 Order::DeclareWar { against, .. } => war && *against == team,
-                Order::ProposeTreaty { to, kind } => {
+                Order::ProposeTreaty { to, kind, .. } => {
                     !war && *to == team && *kind == TreatyKind::Peace
                 }
                 Order::RespondToProposal {
@@ -628,7 +629,7 @@ fn war_peace(
             (true, true) => format!("you declared war on {who}. Hard would not have declared war.{}", held_back_clause(view, trace, team)),
             (false, true) => format!("you did not declare war on {who}. Hard would have."),
             (true, false) => {
-                if his.iter().any(|o| matches!(o, Order::ProposeTreaty { to, kind: TreatyKind::Peace } if *to == team)) {
+                if his.iter().any(|o| matches!(o, Order::ProposeTreaty { to, kind: TreatyKind::Peace, ..  } if *to == team)) {
                     format!("you offered {who} peace. Hard would not have made that offer.")
                 } else {
                     format!("you accepted peace with {who}. Hard would not have.")
@@ -2164,6 +2165,7 @@ mod tests {
             &[Order::ProposeTreaty {
                 to: other.team,
                 kind: TreatyKind::Peace,
+                gold: 0,
             }],
             &[],
             &trace,
@@ -2511,6 +2513,7 @@ mod tests {
             consents: vec![enemy.team],
             needs: vec![view.team],
             required_teams: vec![enemy.team, view.team],
+            gold: 0,
         });
         let mut trace = crate::OrderTrace::default();
         trace.decisions.push(crate::DecisionOption::new(

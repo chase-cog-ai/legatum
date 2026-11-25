@@ -2666,7 +2666,7 @@ mod tests {
             assert_eq!(
                 next.cities[&c].owner,
                 PlayerId(0),
-                "garrison HP {garrison_hp}, Mongols {mongol_garrison}: {events:?}"
+                "garrison health {garrison_hp}, Mongols {mongol_garrison}: {events:?}"
             );
             assert_eq!(next.units.contains_key(&g), garrison_hp == 100);
             if garrison_hp == 100 {

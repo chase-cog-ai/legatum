@@ -388,6 +388,26 @@ div.seat {
 .join-code-hint {
   font: 400 13px/1.3 var(--sans);
   color: var(--ink-2);
+  /* Two lines held in every state, so a refused code never moves the seats below. */
+  min-height: 2.6em;
+}
+/* The box takes focus on arrival: a calm ink ring, so only a refused code reads red. */
+.join-code .lobby-input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+/* The host refused this code: red, tinted box and a marked hint until the player changes it. */
+.join-code.wrong .lobby-input {
+  border-color: var(--bad);
+  box-shadow: 0 0 0 1px var(--bad);
+  background: color-mix(in srgb, var(--bad) 8%, var(--field));
+}
+.join-code.wrong .lobby-input:focus-visible {
+  outline-color: var(--bad);
+}
+.join-code.wrong .join-code-hint {
+  color: var(--bad);
+  font-weight: 600;
 }
 
 /* The host's Remove button on a remote player's seat, and its inline question. */

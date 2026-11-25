@@ -595,10 +595,6 @@ exports[`thin levies: core behavior > losing a city never disbands units; it onl
     "{"kind":"Unit","unit":"Horseman"}",
     "Levies full: 3 of 2",
   ],
-  [
-    "{"kind":"Building","building":"UpgradeWalls"}",
-    "Build Walls first.",
-  ],
 ]
 `;
 

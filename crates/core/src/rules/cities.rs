@@ -73,6 +73,7 @@ fn is_city_order(order: &Order) -> bool {
             | Order::BuyTile { .. }
             | Order::SetResearch { .. }
             | Order::SetResearchQueue { .. }
+            | Order::SetResearchGoal { .. }
             | Order::SetScienceConversion { .. }
     )
 }
@@ -312,6 +313,9 @@ fn check_order(
                 }
             }
         }
+        Order::SetResearchGoal { tech: Some(tech) } if p.techs.contains(&tech) => {
+            return Err(format!("{} is already researched", data::tech_name(tech)));
+        }
         Order::SetScienceConversion { .. } if !crate::eras::all_researched(&p.techs) => {
             return Err("Finish the technology tree before choosing a Science yield".into());
         }
@@ -509,6 +513,10 @@ fn apply_order(
             let p = state.player_mut(player);
             p.researching = techs.first().copied();
             p.research_queue.clone_from(techs);
+        }
+        Order::SetResearchGoal { tech } => {
+            state.player_mut(player).research_goal = tech;
+            follow_research_goal(state, player);
         }
         Order::SetScienceConversion { to } => {
             state.player_mut(player).science_conversion = to;
@@ -719,7 +727,7 @@ pub(crate) fn check_found_city(state: &GameState, settler: UnitId) -> Result<(),
         }
         if unit.hp < data::UNIT_HP {
             return Err(format!(
-                "Roman founder needs full health ({} of {} HP)",
+                "Roman founder needs full health ({} of {})",
                 unit.hp,
                 data::UNIT_HP
             ));
@@ -1716,6 +1724,38 @@ fn normalize_research(state: &mut GameState, id: PlayerId) {
     if player.researching.is_some_and(|t| !legal(&t)) {
         player.researching = player.research_queue.first().copied();
     }
+    follow_research_goal(state, id);
+}
+
+/// The research goal picks what comes next when the queue has run out: the goal first once its
+/// era is open, then the rest of the current era cheapest first (every one must be finished to
+/// enter the next era). A known goal is cleared. A non-empty queue is never touched.
+pub fn follow_research_goal(state: &mut GameState, id: PlayerId) {
+    let Some(goal) = state.player(id).research_goal else {
+        return;
+    };
+    let techs = state.player(id).techs.clone();
+    if techs.contains(&goal) {
+        state.player_mut(id).research_goal = None;
+        return;
+    }
+    if !state.player(id).research_queue.is_empty() {
+        return;
+    }
+    let era = crate::eras::current_era(&techs);
+    let mut rest: Vec<(i32, TechId)> = crate::eras::era_techs(era)
+        .filter(|t| !techs.contains(t) && *t != goal)
+        .map(|t| (crate::economy::tech_cost(state, id, t).total, t))
+        .collect();
+    rest.sort();
+    let mut queue: Vec<TechId> = Vec::new();
+    if crate::eras::era_of_tech(goal) == era {
+        queue.push(goal);
+    }
+    queue.extend(rest.into_iter().map(|(_, t)| t));
+    let player = state.player_mut(id);
+    player.researching = queue.first().copied();
+    player.research_queue = queue;
 }
 
 /// Gold a bought tile costs before its ring surcharge: `TILE_GOLD_BASE` plus `TILE_GOLD_PER_TILE`

@@ -17,8 +17,13 @@ export async function expectSidebarGlance(page: Page) {
   await expect(sidebar).toBeVisible();
   for (const selector of ['.race-headline', '.sidebar-objective', '.sidebar-goal > summary, .sidebar-goal-action .goal-action-btn', '.cta', '.minimap']) {
     const el = sidebar.locator(selector);
-    if (await el.count() && await el.isVisible()) await whole(el);
+    if (!await el.count() || !await el.isVisible()) continue;
+    // The next-Age objective sits below the always-open rivals table, so a short window scrolls to it.
+    if (selector === '.sidebar-objective') await el.evaluate(x => x.scrollIntoView({ block: 'center' }));
+    await whole(el);
+    await sidebar.locator('.sidebar-scroll').evaluate(el => { el.scrollTop = 0; });
   }
+  await sidebar.locator('.sidebar-scroll').evaluate(el => { el.scrollTop = 0; });
   // No persistent panel on the bottom centre. The selection task owns the left side.
   const mini = await sidebar.locator('.minimap').boundingBox();
   if (mini) {
@@ -29,7 +34,7 @@ export async function expectSidebarGlance(page: Page) {
     expect(await page.evaluate(() => innerWidth <= 1100 && innerHeight <= 700 && !!document.querySelector('.unit-panel')),
       'the minimap is hidden only beside an open unit panel on a short screen').toBe(true);
   }
-  const overflows = await sidebar.evaluate(el => [...el.querySelectorAll<HTMLElement>('p, summary, .eo-text, .cta-label, .cta-sub, .sidebar-section-link, .vp-team-name, .goal-action-note, .goal-action-why, .siege-title, .siege-who, .siege-forecast')].filter(x => x.checkVisibility() && x.clientWidth > 0 && x.scrollWidth > x.clientWidth + 1).map(x => `${x.className}: ${x.scrollWidth}/${x.clientWidth}`));
+  const overflows = await sidebar.evaluate(el => [...el.querySelectorAll<HTMLElement>('p, summary, .eo-text, .cta-label, .cta-sub, .sidebar-section-link, .goal-action-note, .goal-action-why, .siege-title, .siege-who, .siege-forecast')].filter(x => x.checkVisibility() && x.clientWidth > 0 && x.scrollWidth > x.clientWidth + 1).map(x => `${x.className}: ${x.scrollWidth}/${x.clientWidth}`));
   expect(overflows, 'no horizontally clipped sidebar text').toEqual([]);
   await expect(page.locator('.vp .vhc-head button.link')).not.toContainText(/\d|wins? in/);
 }
@@ -37,7 +42,14 @@ export async function expectSidebarGlance(page: Page) {
 export async function expectSidebarReachable(page: Page) {
   const sidebar = page.getByRole('complementary', { name: 'Empire sidebar' });
   const scroll = sidebar.locator('.sidebar-scroll');
-  const groups = ['.sidebar-alerts', '.sidebar-standings', '.sidebar-goal', '.sidebar-turn-more'];
+  // The rivals table is always open: its last row is reachable by scrolling and whole.
+  const rivalRows = sidebar.locator('.rivals .rv-row');
+  if (await rivalRows.count()) {
+    await rivalRows.last().evaluate(el => el.scrollIntoView({ block: 'center' }));
+    await whole(rivalRows.last());
+    await whole(sidebar.locator('.cta'));
+  }
+  const groups = ['.sidebar-alerts', '.sidebar-goal', '.sidebar-turn-more'];
   for (const selector of groups) {
     const detail = sidebar.locator(selector);
     // An empty This Turn (no report, orders or alerts) is hidden beside the race.
@@ -54,7 +66,7 @@ export async function expectSidebarReachable(page: Page) {
       await orders.evaluate(el => el.scrollIntoView({ block: 'center' }));
       if (await orders.getAttribute('aria-expanded') === 'false') await orders.click();
     }
-    const targets = detail.locator('button:visible, .vp-row:visible, p:visible');
+    const targets = detail.locator('button:visible, p:visible');
     if (await targets.count()) {
       const last = targets.last();
       await last.evaluate(el => el.scrollIntoView({ block: 'center' }));
@@ -69,18 +81,19 @@ export async function expectSidebarReachable(page: Page) {
   await page.mouse.wheel(0, 2000);
   await expect.poll(() => scroll.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
   const turnMore = sidebar.locator('.sidebar-turn-more');
-  const last = await turnMore.isVisible() ? turnMore : sidebar.locator('.sidebar-standings');
+  const last = await turnMore.isVisible() ? turnMore : sidebar.locator('.rivals');
   await last.evaluate(el => el.scrollIntoView({ block: 'end' }));
   await whole(sidebar.locator('.cta'));
-  await whole(sidebar.locator('.race-headline'));
+  // The race headline exists only while a team holds its VP target.
+  if (await sidebar.locator('.race-headline').count()) await whole(sidebar.locator('.race-headline'));
   // Keyboard also reaches the expanded content without being captured by the map.
-  await last.locator(':scope > summary').focus();
+  await (await turnMore.isVisible() ? turnMore.locator(':scope > summary') : sidebar.locator('.rivals button.rv-row, .rivals-foot button').last()).focus();
   await page.keyboard.press('Tab');
   expect(await sidebar.evaluate(el => el.contains(document.activeElement))).toBe(true);
 }
 
 /** Navigate through the real disclosure before interacting with its controls. */
-export async function revealSidebar(page: Page, group: 'standings' | 'goal' | 'alerts' | 'turn-more') {
+export async function revealSidebar(page: Page, group: 'goal' | 'alerts' | 'turn-more') {
   const detail = page.locator(`.right-sidebar .sidebar-${group}`);
   if (group === 'goal' && await detail.locator(':scope > .goal-action').count()) return;
   if (!await detail.count() || await detail.evaluate(el => (el as HTMLDetailsElement).open)) return;
@@ -97,13 +110,12 @@ export async function revealSidebar(page: Page, group: 'standings' | 'goal' | 'a
 export async function expectSlimRail(page: Page) {
   const sidebar = page.getByRole('complementary', { name: 'Empire sidebar' });
   await expect(page.locator('.game:has(.unit-panel)')).toBeVisible();
-  await revealSidebar(page, 'standings');
   await revealSidebar(page, 'goal');
   const problems = await sidebar.evaluate((root) => {
     const rail = root.getBoundingClientRect();
     const out: string[] = [];
     const name = (el: Element) => `${el.tagName.toLowerCase()}.${String(el.className).split(' ')[0]}`;
-    const rows = root.querySelectorAll<HTMLElement>('.race-headline, .sidebar-alerts > summary, .sidebar-objective, .sidebar-goal > summary, .sidebar-standings > summary, .sidebar-turn-more > summary, .vp-row, .turn-details > .ph, .cta, .cta-sub, .cta .kbd, .sidebar-more');
+    const rows = root.querySelectorAll<HTMLElement>('.race-headline, .sidebar-alerts > summary, .sidebar-objective, .sidebar-goal > summary, .sidebar-turn-more > summary, .rivals .rv-row, .turn-details > .ph, .cta, .cta-sub, .cta .kbd, .sidebar-more');
     for (const el of rows) {
       if (!el.checkVisibility()) continue;
       const b = el.getBoundingClientRect();

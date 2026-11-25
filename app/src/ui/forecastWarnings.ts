@@ -245,7 +245,7 @@ export function woundedNearEnemies(view: PlayerView): { unit: UnitView; text: st
     .filter((u) => u.owner === view.me && u.military && u.hp < WOUNDED_HP
       && view.units.some((e) => e.military && distance(e.pos, u.pos) === 1 && isThreat(view, e.owner)))
     .sort((a, b) => a.hp - b.hp || a.id - b.id)
-    .map((unit) => ({ unit, text: `${itemName({ kind: 'Unit', unit: unit.kind }, faction)} is wounded next to enemies (${unit.hp} HP)` }));
+    .map((unit) => ({ unit, text: `${itemName({ kind: 'Unit', unit: unit.kind }, faction)} is wounded next to enemies (${unit.hp} health)` }));
 }
 
 export const FORECAST_ASSUMPTIONS = 'Based on current queues, yields and positions. Pending orders, movement, combat and other empires’ production can change this forecast.';
@@ -364,7 +364,7 @@ export function reinforcementNote(view: PlayerView, unit: Pick<UnitView, 'owner'
   const first = `If an enemy attacks ${city.name} this turn, your ${name} gets there first and becomes its garrison, so the attack meets it instead of an empty city.`;
   return distance(unit.pos, target) > 1
     ? `${first} It takes more than one step, so a capture on an earlier step still beats it.`
-    : `${first} The city's HP absorbs the first hits.`;
+    : `${first} The city's health absorbs the first hits.`;
 }
 
 /** `shot`: the forecast is for a shot, which never takes a city even from a unit that can charge (the Keshig). */

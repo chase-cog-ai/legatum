@@ -111,7 +111,6 @@ test('Return first closes what covers the map, then selects the next decision (G
   }
 
   // The diplomacy inbox and the objective sheet close on Return as well.
-  await revealSidebar(page, 'standings');
   await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
   await expect(page.getByRole('complementary', { name: 'Diplomacy', exact: true })).toBeVisible();
   await page.keyboard.press('Enter');

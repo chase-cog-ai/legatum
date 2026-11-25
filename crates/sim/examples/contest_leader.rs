@@ -290,6 +290,7 @@ fn run(seed: u64, index: usize, search: &str, cap: u32) -> serde_json::Value {
                         Order::ProposeTreaty {
                             to,
                             kind: TreatyKind::Alliance,
+                            ..
                         } if st.teams_at_war(*to, l) => offers += 1,
                         Order::RespondToProposal {
                             proposal,

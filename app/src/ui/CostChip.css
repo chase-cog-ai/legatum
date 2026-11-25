@@ -22,7 +22,7 @@
 .cost-lead-chip { display: inline-flex; align-items: center; margin-right: 6px; padding: 2px 7px; border-radius: 3px; background: var(--good); color: var(--panel); box-shadow: 0 0 0 1px var(--good); font: 700 12px/1.25 var(--num-font); letter-spacing: 0; text-transform: none; white-space: nowrap; vertical-align: middle; }
 :disabled .cost-lead-chip { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--rule-2); }
 .cost-chip.debt .cost-after { font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-.cost-chip .sr-only,
+.cost-chip .sr-only, .gain-chip .sr-only,
 .for-you-line .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
   clip-path: inset(50%); white-space: nowrap; border: 0;
@@ -56,3 +56,6 @@
 .for-you-line.note .for-you-mark { background: none; color: var(--ink-2); }
 /* Costs are loud: the words of a cost line are red too, not only its mark. */
 .for-you-line.cost > span:last-child { color: var(--bad); font-weight: 600; }
+/* A gain beside a button's label: the green chip, no right margin of its own (it may be the last chip). */
+.btn.spends .gain-chip { margin-right: -4px; gap: 4px; }
+.gain-chip .cost-when { font-weight: 500; }

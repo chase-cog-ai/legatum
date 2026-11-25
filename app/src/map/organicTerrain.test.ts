@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { centerX, centerY, nearestTile, neighborIndex } from './grid';
-import { MASSIF, SMALL_REGION, computeRegions, organicKind, organicSig, planOrganic, type OrganicKind, type Regions } from './organicTerrain';
+import { MASSIF, ORGANIC_MASS, SMALL_REGION, computeRegions, organicKind, organicSig, planOrganic, type OrganicKind, type Regions } from './organicTerrain';
 import type { Terrain } from '../types';
+import { townOval } from './cityArt';
+import { CITY_DROP, CITY_WORLD } from './terrain';
+import { organicSide } from './terrainVariant';
 
 const W = 20;
 const H = 16;
@@ -159,6 +162,31 @@ describe('planOrganic', () => {
     const p = planOrganic({ regions: R, isCity: (i) => i === city, tundraNear: () => false, far: false });
     expect(p.covered[city]).toBe(0);
     expect(p.elems.some((e) => e.tile === city || nearestTile(e.x, e.y, W, H) === city)).toBe(false);
+  });
+
+  it('keeps the woods, hills and peaks level with or in front of a town clear of it (Zürich, PR 129 review)', () => {
+    const town = townOval(CITY_WORLD, CITY_DROP);
+    const side = organicSide(false);
+    for (const kind of ['Mountains', 'Hills', 'Forest'] as const) {
+      // A city in the middle of a block of the kind, and a small range or grove beside one (classic per-hex clusters).
+      for (const t of [map(block(2, 2, 12, 10, kind)), map(block(6, 7, 7, 7, kind))]) {
+        const city = at(6, 6);
+        const R = regionsOf(t);
+        const p = planOrganic({ regions: R, isCity: (i) => i === city, tundraNear: () => false, far: false, town });
+        const unmoved = planOrganic({ regions: R, isCity: (i) => i === city, tundraNear: () => false, far: false });
+        expect(p.elems.length).toBeGreaterThan(unmoved.elems.length * 0.95);
+        const cx = centerX(city, W), cy = centerY(city, W);
+        const crowding = (elems: typeof p.elems) => elems.filter((e) => {
+          const m = ORGANIC_MASS[e.kind];
+          const dx = e.x - cx, dy = e.y + m.dy * side * e.scale - cy;
+          if (dy < -36 * 0.75) return false;
+          return (dx / (town.a + m.ha * side * e.scale)) ** 2 + ((dy - town.cy) / (town.b + m.hb * side * e.scale)) ** 2 < 1;
+        }).length;
+        const before = crowding(unmoved.elems);
+        if (t.filter((x) => x === kind).length > 10) expect(before, 'the test map puts art against the town').toBeGreaterThan(0);
+        expect(crowding(p.elems)).toBe(0);
+      }
+    }
   });
 
   it('takes the conifer sprite beside tundra', () => {

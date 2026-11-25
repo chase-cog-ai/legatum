@@ -182,6 +182,7 @@ fn a_vow_cannot_ride_with_a_declaration_or_a_signature() {
     let ally = Order::ProposeTreaty {
         to: s.team_of(P1),
         kind: TreatyKind::Alliance,
+        gold: 0,
     };
     assert_eq!(validate_actions(&s, P0, &[ally, close()]).len(), 1);
     // A lone vow is fine, and so is accepting something that is not an Alliance (here, a proposal
@@ -205,6 +206,7 @@ fn a_closed_country_cannot_declare_war_or_ally_but_can_make_peace() {
     let ally = |to| Order::ProposeTreaty {
         to,
         kind: TreatyKind::Alliance,
+        gold: 0,
     };
     // Open: both are legal.
     assert!(crate::diplomacy::check_order(&s, P0, &war).is_ok());
@@ -223,6 +225,7 @@ fn a_closed_country_cannot_declare_war_or_ally_but_can_make_peace() {
     let peace = Order::ProposeTreaty {
         to: s.team_of(P1),
         kind: TreatyKind::Peace,
+        gold: 0,
     };
     assert!(crate::diplomacy::check_order(&s, P0, &peace).is_ok());
     // A rival declaring war on India is legal: wars others declare are fought normally.
@@ -240,6 +243,7 @@ fn a_pending_alliance_is_refused_once_the_country_is_closed() {
     let propose = Order::ProposeTreaty {
         to: s.team_of(P0),
         kind: TreatyKind::Alliance,
+        gold: 0,
     };
     let mut orders = std::collections::BTreeMap::new();
     orders.insert(P1, vec![propose]);
@@ -462,6 +466,7 @@ fn a_teammate_cannot_sign_an_alliance_on_the_turn_india_closes() {
         vec![Order::ProposeTreaty {
             to: s.team_of(P0),
             kind: TreatyKind::Alliance,
+            gold: 0,
         }],
     );
     let (s, _) = crate::rules::resolve_turn(&s, &orders);

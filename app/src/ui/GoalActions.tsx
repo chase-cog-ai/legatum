@@ -356,7 +356,7 @@ export function GoalActionDialog() {
             <ForYouLine tone="cost">The tile a camp stands on, and any tile a barbarian unit holds, gives no yield.</ForYouLine>
             <ForYouLine tone="cost">A rival that clears a camp takes the usual Gold and ends your VP. You get no Gold for clearing the camps you raised, and a city founded later has none until you call again.</ForYouLine>
           </>}
-          {kind === 'RetireVeteran' && retiree && <ForYouLine tone="cost">Your {retireName} (level {entry?.level}, {retiree.hp} HP) leaves the army for good. It cannot be brought back, and the army is weaker by that veteran.</ForYouLine>}
+          {kind === 'RetireVeteran' && retiree && <ForYouLine tone="cost">Your {retireName} (level {entry?.level}, {retiree.hp} health) leaves the army for good. It cannot be brought back, and the army is weaker by that veteran.</ForYouLine>}
           <ForYouLine tone="note">It happens when the turn ends. Until then you can cancel it from {kind === 'RetireVeteran' ? 'the unit panel' : 'the Victory race (G)'}.</ForYouLine>
         </ul></div>
       </div>

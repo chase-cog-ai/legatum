@@ -428,5 +428,7 @@ export function buildSetup(l: Lobby): GameSetup {
     return p;
   });
   const size = mapDimensions(l.mapSize);
-  return { seed: l.seed, width: size.width, height: size.height, players, turn_limit: l.turnLimit, barbarians: l.barbarians !== false, ...(aiAlliancesOn(l) ? { ai_alliances: true } : {}) };
+  return { seed: l.seed, width: size.width, height: size.height, players, turn_limit: l.turnLimit, barbarians: l.barbarians !== false, ...(aiAlliancesOn(l) ? { ai_alliances: true } : {}),
+    // Deals (rules 61): Gold in offers, gifts to met empires, Open Borders. On in every new game; a loaded save keeps its own setup.
+    deals: true };
 }

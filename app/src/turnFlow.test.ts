@@ -192,6 +192,22 @@ it('incoming offers lead the decision cycle; only a valid team response clears t
   expect(pendingDecisions(view, [], [], { ...local, errors: [[], [{ index: 0, message: 'Invalid' }]] })[0].kind).toBe('diplomacy');
 });
 
+it('labels an incoming offer by its kind and Gold: Open Borders is never a Peace (advisor review of PR 184)', () => {
+  const offer = { id: 40, from: 1, to: view.team, proposer: 1, kind: 'OpenBorders' as const, created_turn: view.turn,
+    respond_by: view.turn + 2, relation_version: 0 };
+  view.diplomacy.proposals = [offer];
+  const [d] = pendingDecisions(view, []).filter((x) => x.kind === 'diplomacy');
+  expect(d.label).toMatch(new RegExp(`^Open Borders with [A-Z][^:]+: your units may enter each other’s land · respond by turn ${view.turn + 2}$`));
+  expect(d.label).not.toContain('Peace');
+  view.diplomacy.proposals = [{ ...offer, gold: -40 }];
+  expect(pendingDecisions(view, []).find((x) => x.kind === 'diplomacy')!.label).toContain('land · asks 40 Gold · respond by turn');
+  view.diplomacy.proposals = [{ ...offer, kind: 'Peace', gold: 25 }];
+  const peace = pendingDecisions(view, []).find((x) => x.kind === 'diplomacy')!.label;
+  expect(peace).toMatch(/^Peace with .* · pays 25 Gold · respond by turn \d+$/);
+  view.diplomacy.proposals = [{ ...offer, kind: 'Peace', gold: -30 }];
+  expect(pendingDecisions(view, []).find((x) => x.kind === 'diplomacy')!.label).toContain(' · asks 30 Gold · respond by turn');
+});
+
 // Playtest 8.9.2 T20: Switzerland offered an Alliance, he declined, then declared War on it to
 // attack. The war replaced the decline (one diplomatic order per empire), so the offer came back as
 // "Respond to offer"; answering it replaced the war, and his attacks failed. A war or an Alliance left

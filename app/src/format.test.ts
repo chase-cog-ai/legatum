@@ -204,7 +204,7 @@ describe('split counterattack reports', () => {
   it('shows the remainder going to one attacker and a defender that held', () => {
     const lines = formatEvents(assault([7, 11], [11, 10], 12, spearman), context);
     expect(lines.map((l) => l.text)).toEqual([
-      "Hollow Crown's Spearman held at Tessitura against a combined assault by your Spartan Hoplite and Pikeman; its counterattack was split, −11, −10 (12 HP left)",
+      "Hollow Crown's Spearman held at Tessitura against a combined assault by your Spartan Hoplite and Pikeman; its counterattack was split, −11, −10 (12 health left)",
     ]);
   });
 
@@ -342,8 +342,8 @@ describe('event formatting', () => {
   it('explains battles with the numbers that decided them', () => {
     const l = formatEvent(battle, ctx);
     expect(l.category).toBe('combat');
-    expect(l.text).toBe("Your Spearman attacked Hollow Crown's Scout at this tile: defender −55 HP, attacker −12 HP. The defender was destroyed.");
-    expect(l.hp).toEqual([{ text: '−55 HP', tone: 'good' }, { text: '−12 HP', tone: 'bad' }]);
+    expect(l.text).toBe("Your Spearman attacked Hollow Crown's Scout at this tile: defender −55 health, attacker −12 health. The defender was destroyed.");
+    expect(l.hp).toEqual([{ text: '−55 health', tone: 'good' }, { text: '−12 health', tone: 'bad' }]);
     expect(l.details[0]).toBe('Strength 20 (Spearman 20) vs 8 (Scout 5, Hills terrain +5, Wounded −2)');
     expect(l.details[1]).toContain('Dealt 55 (roll 104%), took 12 (roll 96%)');
     expect(l.tone).toBe('good');
@@ -357,17 +357,17 @@ describe('event formatting', () => {
       attacker_strength: { total: 16, parts: [['City', 10], ['Population', 6]] } } as Event;
     const mine = formatEvent(shot, ctx);
     expect(mine.category).toBe('combat');
-    expect(mine.text).toBe("Tithe Station fired on Hollow Crown's Scout: −14 HP (66 left)");
+    expect(mine.text).toBe("Tithe Station fired on Hollow Crown's Scout: −14 health (66 left)");
     expect(mine.details[0]).toBe('Strength 16 (City 10, Population +6) vs 8 (Scout 5, Hills terrain +5, Wounded −2)');
-    expect(mine.details.join(' ')).toContain('weakest (lowest-HP) visible enemy military unit within 2 tiles');
+    expect(mine.details.join(' ')).toContain('weakest (least health) visible enemy military unit within 2 tiles');
     expect(mine.tone).toBe('good');
     const theirs = formatEvent({ ...shot, attacker_owner: 2, defender: { kind: 'Unit', unit: 7, owner: 0, unit_kind: 'Spearman' } } as Event, ctx);
-    expect(theirs.text).toBe("Hollow Crown's city Tithe Station fired on your Spearman: −14 HP (66 left)");
+    expect(theirs.text).toBe("Hollow Crown's city Tithe Station fired on your Spearman: −14 health (66 left)");
     expect(theirs.tone).toBe('bad');
-    expect(formatEvent({ ...shot, defender_hp_after: 0 } as Event, ctx).text).toBe("Tithe Station fired on Hollow Crown's Scout: −14 HP, destroyed");
+    expect(formatEvent({ ...shot, defender_hp_after: 0 } as Event, ctx).text).toBe("Tithe Station fired on Hollow Crown's Scout: −14 health, destroyed");
     // The arrow starts at the city.
-    expect(mine).toMatchObject({ at: battle.type === 'Battle' ? battle.at : null, from: { q: 2, r: 2 }, hp: [{ text: '−14 HP', tone: 'good' }] });
-    expect(theirs.hp).toEqual([{ text: '−14 HP', tone: 'bad' }]);
+    expect(mine).toMatchObject({ at: battle.type === 'Battle' ? battle.at : null, from: { q: 2, r: 2 }, hp: [{ text: '−14 health', tone: 'good' }] });
+    expect(theirs.hp).toEqual([{ text: '−14 health', tone: 'bad' }]);
   });
 
   it('G18: an attack whose defender survives says what happened and that the attacker needs orders', () => {
@@ -375,7 +375,7 @@ describe('event formatting', () => {
     const barbarian: Event = { ...battle, defender: { kind: 'Unit', unit: 9, owner: 255, unit_kind: 'Spearman' },
       damage_to_defender: 20, damage_to_attacker: 32, attacker_hp_after: 68, defender_hp_after: 80 };
     expect(formatEvent(barbarian, camp)).toMatchObject({ category: 'combat', weight: 2,
-      text: 'Your Spearman attacked the Barbarian Spearman at the camp 2 tiles NE of Levy Reach: defender −20 HP, attacker −32 HP (68 HP left). Needs orders.' });
+      text: 'Your Spearman attacked the Barbarian Spearman at the camp 2 tiles NE of Levy Reach: defender −20 health, attacker −32 health (68 health left). Needs orders.' });
     // The defender's side reads as before; a kill or a loss needs no "Needs orders".
     expect(formatEvent({ ...barbarian, attacker_owner: 3, defender: { kind: 'Unit', unit: 9, owner: 0, unit_kind: 'Spearman' } }, ctx).text)
       .not.toContain('Needs orders');
@@ -387,15 +387,15 @@ describe('event formatting', () => {
       damage_to_defender: 38, defender_hp_after: 20, attacker_hp_after: 80, defender_leaving: true };
     const moved: Event = { type: 'UnitMoved', unit: 7, owner: 0, from: { q: 3, r: 1 }, to: { q: 3, r: 0 } };
     const lines = formatEvents([leaving, moved], { ...ctx, place: () => 'Brasslock' });
-    expect(lines[0]).toMatchObject({ text: "Your Archer was hit by Hollow Crown's Scout from out of sight while pulling back (−38 HP) and reached Brasslock",
-      at: { q: 3, r: 0 }, tone: 'bad', hp: [{ text: '−38 HP', tone: 'bad' }] });
+    expect(lines[0]).toMatchObject({ text: "Your Archer was hit by Hollow Crown's Scout from out of sight while pulling back (−38 health) and reached Brasslock",
+      at: { q: 3, r: 0 }, tone: 'bad', hp: [{ text: '−38 health', tone: 'bad' }] });
     expect(lines[0].details.join(' ')).toContain('no fortification');
     const theirs = formatEvents([{ ...leaving, attacker: 7, attacker_owner: 0, defender: { kind: 'Unit', unit: 9, owner: 2, unit_kind: 'Archer' } },
       { ...moved, unit: 9, owner: 2 }], ctx);
-    expect(theirs[0].text).toBe('Your Spearman hit the retreating Archer (−38 HP); it got away with 20 HP. Needs orders.');
+    expect(theirs[0].text).toBe('Your Spearman hit the retreating Archer (−38 health); it got away with 20 health. Needs orders.');
     expect(theirs[0].tone).toBe('good');
     expect(formatEvents([{ ...leaving, attacker_at: { q: 4, r: 1 } }], ctx)[0].text)
-      .toBe("Your Archer was hit by Hollow Crown's Scout from 1 tile E while pulling back (−38 HP) and was stopped");
+      .toBe("Your Archer was hit by Hollow Crown's Scout from 1 tile E while pulling back (−38 health) and was stopped");
   });
 
   it('G20: a surprise war is reported as starting this turn, and the victim hears what hit it', () => {
@@ -887,4 +887,13 @@ describe('objectiveCloseLines', () => {
 
 it('says a full military-unit cap in words, not a fraction', () => {
   expect(plainOrderError('Astra cannot produce Spearman: Levies full: 3 of 2')).toBe("Astra can't train a Spearman: you have 3 military units and room for 2.");
+});
+
+it('the Royal Tomb standing wears its engraved emblem on the report line, for its owner and for rivals', () => {
+  const faction = (id: number) => (id === 2 ? 'Egypt' : 'India') as Faction;
+  const c: ReportContext = { ...ctx, playerFaction: faction };
+  const own: ReportContext = { ...ctx, playerFaction: (id) => (id === 0 ? 'Egypt' : 'India') };
+  const stands = (player: number): Event => ({ type: 'FactionGoalCompleted', player, faction: 'Egypt', vp: 2 });
+  expect(formatEvents([stands(2)], c).find((l) => l.category === 'victory')).toMatchObject({ icon: 'emblem-tomb' });
+  expect(formatEvents([stands(0)], own).find((l) => l.category === 'victory')).toMatchObject({ icon: 'emblem-tomb' });
 });

@@ -25,6 +25,7 @@ beforeEach(() => {
   container = document.body.appendChild(document.createElement('div'));
   root = createRoot(container);
   useGame.setState(useGame.getInitialState(), true);
+  localStorage.setItem('legatum.research-view.v1', 'era');
 });
 
 it('keeps the piece card text to rule sentences, never leftovers of a stat line', () => {
@@ -193,11 +194,15 @@ it('research is a named native modal, focuses Close, traps both Tab directions, 
   expect(bubble.parentElement).toBe(dialog);
   expect(bubble.hidden).toBe(true);
 
-  key(close, 'Tab', { shiftKey: true });
-  const last = [...dialog.querySelectorAll<HTMLElement>('button:not(:disabled), summary, [tabindex="0"]')].filter((el) => !el.closest('details:not([open])') || el.tagName === 'SUMMARY').at(-1)!;
+  // The first stop is the view switch (Tech tree / This era) in the head; Close has focus on open.
+  const stops = [...dialog.querySelectorAll<HTMLElement>('button:not(:disabled), summary, [tabindex="0"]')].filter((el) => !el.closest('details:not([open])') || el.tagName === 'SUMMARY');
+  const first = stops[0], last = stops.at(-1)!;
+  expect(first.dataset.testid).toBe('research-view-tree');
+  first.focus();
+  key(first, 'Tab', { shiftKey: true });
   expect(document.activeElement).toBe(last);
   key(last, 'Tab');
-  expect(document.activeElement).toBe(close);
+  expect(document.activeElement).toBe(first);
   focus(tip);
   expect(bubble.hidden).toBe(false);
   // Escape dismisses the current tooltip first, without dismissing its dialog.

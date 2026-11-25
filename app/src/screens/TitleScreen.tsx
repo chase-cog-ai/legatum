@@ -15,6 +15,7 @@ import { DEFAULT_PLAYER_NAME, MAX_PLAYER_NAME, rememberPlayerName, savedPlayerNa
 import { TitleArt } from './TitleArt';
 import { buildLabel } from '../buildLabel';
 import { buildTime } from '../buildTime';
+import { browserNote } from '../platform/browser';
 import { PRIVACY_URL, uploadsGames } from '../platform/gameUpload';
 import { isOlderVersionMessage, loadErrorMessage, olderAutosaveMessage, parseSaveFile, saveHasCurrentRules, saveRulesVersion } from '../saveErrors';
 import { buildForSave, isBehind, navigate, newestUrl, pageLaunch, takeHandedOffSave } from '../platform/versions';
@@ -40,6 +41,7 @@ export function TitleScreen() {
   // A save with more than one human player (an old hot-seat game) chosen from the main menu: it opens
   // Multiplayer with that save ready to host, so the player never picks the file twice.
   const [hostSave, setHostSave] = useState<SaveFile | null>(null);
+  const note = browserNote();
   return (
     <div className="title-screen">
       <TitleArt />
@@ -62,6 +64,7 @@ export function TitleScreen() {
       </div>
       <div className="title-foot">
         <span>{buildTime ? `${buildLabel} · Last updated ${buildTime}` : buildLabel}</span>
+        {note && <span className="title-foot-note" data-testid="browser-note">{note}</span>}
       </div>
     </div>
   );

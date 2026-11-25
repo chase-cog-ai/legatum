@@ -589,7 +589,17 @@ describe('goal city moments', () => {
     const after = structuredClone(view);
     after.players[0].faction = 'Egypt';
     const [card] = momentsForTurn([{ type: 'FactionGoalCompleted', player: 0, faction: 'Egypt', vp: 2 }], 0, view, after);
-    expect(card).toMatchObject({ tier: 'legendary', title: 'The Royal Tomb', goalMark: 'goal-royal-tomb', artSlug: 'goal-royaltomb' });
+    expect(card).toMatchObject({ tier: 'legendary', title: 'The Royal Tomb', goalMark: 'emblem-tomb', artSlug: 'goal-royaltomb' });
+  });
+
+  it('a rival’s Royal Tomb standing wears the engraved tomb emblem', () => {
+    const after = structuredClone(view);
+    const me = after.players.find((p) => p.id === 0)!;
+    const rival = after.players.find((p) => p.team !== me.team)!;
+    rival.faction = 'Egypt';
+    after.tomb_sites = [{ of: rival.id, holder: rival.id, city: 99, at: { q: 3, r: 3 }, name: 'Thebes' }];
+    const [card] = momentsForTurn([{ type: 'FactionGoalCompleted', player: rival.id, faction: 'Egypt', vp: 2 }], 0, view, after);
+    expect(card).toMatchObject({ tier: 'major', goalMark: 'emblem-tomb' });
   });
 
   it('the owner’s own Colonia Victrix card wears the laurel', () => {

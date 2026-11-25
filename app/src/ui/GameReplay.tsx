@@ -2,13 +2,12 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { FACTION_INFO } from '../data';
 import { empireOfPlayer, empireTitle } from '../empires';
 import { ReplayMap } from '../map/ReplayMap';
-import { playbackTurn, replayTurnLabel, type ReplayInfo, type ReplayMoment, type ReplayRequest, type ReplayResponse } from '../replay';
+import { nextReplayDeadline, playbackTurn, replayProfilingEnabled, replayTurnLabel, type ReplayInfo, type ReplayMoment, type ReplayRequest, type ReplayResponse } from '../replay';
 import type { PlayerView } from '../types';
 import { Glyph } from './ringMedallion';
 import './gameReplay.css';
 
-const SPEEDS = [1, 4, 16];
-const TURN_MS = 1200;
+const SPEEDS = [1, 2, 4];
 
 function momentLabel(moment: ReplayMoment, view: PlayerView): string {
   if (moment.kind === 'founded' || moment.kind === 'captured') {
@@ -43,7 +42,8 @@ export function GameReplay({ player, recording, titleId, onBack }: {
   const [speed, setSpeed] = useState(1);
   const [failed, setFailed] = useState(false);
   const [chosenMoment, setChosenMoment] = useState<number>();
-  const seek = useRef<(turn: number) => void>(() => {});
+  const seek = useRef<(turn: number, prefetch?: boolean) => void>(() => {});
+  const deadline = useRef<number | null>(null);
   const activeMoment = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -57,33 +57,43 @@ export function GameReplay({ player, recording, titleId, onBack }: {
       return;
     }
     let queued: number | null = null;
+    let ahead: number | null = null;
     let shown: number | null = null;
-    let inFlight = false;
+    let inFlight: number | null = null;
+    let buffered: ReplayFrame | null = null;
     const send = (message: ReplayRequest) => worker.postMessage(message);
     const flush = () => {
-      if (inFlight || queued === null || queued === shown) return;
-      inFlight = true;
-      send({ type: 'seek', turn: queued });
+      if (buffered !== null && queued === buffered.turn && queued !== shown) {
+        shown = buffered.turn;
+        setFrame(buffered);
+        buffered = null;
+      }
+      const next = queued !== shown ? queued : ahead;
+      if (inFlight !== null || next === null || next === shown || next === buffered?.turn) return;
+      inFlight = next;
+      send({ type: 'seek', turn: next });
     };
-    seek.current = (next) => { queued = next; flush(); };
+    seek.current = (next, prefetch = false) => {
+      if (prefetch) ahead = next;
+      else { queued = next; ahead = null; }
+      flush();
+    };
     worker.onmessage = ({ data }: MessageEvent<ReplayResponse>) => {
       if (data.type === 'ready') {
         const first = data.info.first;
-        shown = first;
+        shown = queued = first;
         setInfo(data.info);
         setTurn(first);
         setFrame({ turn: first, view: data.view });
       } else if (data.type === 'frame') {
-        inFlight = false;
-        if (queued === data.turn) {
-          shown = data.turn;
-          setFrame({ turn: data.turn, view: data.view });
-        }
+        if (data.timing) performance.mark('replay-worker', { detail: [data.timing, performance.timeOrigin + performance.now(), data.turn] });
+        inFlight = null;
+        if (queued === data.turn || ahead === data.turn) buffered = { turn: data.turn, view: data.view };
         flush();
       } else fail();
     };
     worker.onerror = fail;
-    send({ type: 'open', recording, player });
+    send({ type: 'open', recording, player, profile: replayProfilingEnabled() });
     return () => {
       worker.terminate();
       seek.current = () => {};
@@ -95,15 +105,22 @@ export function GameReplay({ player, recording, titleId, onBack }: {
     setTurn(next);
     seek.current(next);
   };
-  const jump = (next: number) => { setPlaying(false); move(next); };
+  const jump = (next: number) => { deadline.current = null; setPlaying(false); move(next); };
 
   useEffect(() => {
     if (!playing || !info || turn !== frame?.turn) return;
     if (turn === info.last) {
+      deadline.current = null;
       setPlaying(false);
       return;
     }
-    const id = window.setTimeout(() => move(turn + 1), TURN_MS / speed);
+    seek.current(turn + 1, true);
+    const now = performance.now();
+    const due = nextReplayDeadline(deadline.current, now, speed);
+    const id = window.setTimeout(() => {
+      deadline.current = due;
+      move(turn + 1);
+    }, due - now);
     return () => window.clearTimeout(id);
   }, [playing, info, turn, frame, speed]);
 
@@ -117,7 +134,7 @@ export function GameReplay({ player, recording, titleId, onBack }: {
 
   const togglePlay = () => {
     if (!info) return;
-    if (playing) { setPlaying(false); return; }
+    if (playing) { deadline.current = null; setPlaying(false); return; }
     if (turn === info.last) move(info.first);
     setPlaying(true);
   };
@@ -178,7 +195,7 @@ export function GameReplay({ player, recording, titleId, onBack }: {
                   onChange={(e) => jump(e.currentTarget.valueAsNumber)} />
               </label>
               <label className="replay-speed">Speed
-                <select value={speed} onChange={(e) => setSpeed(Number(e.currentTarget.value))}>
+                <select value={speed} onChange={(e) => { deadline.current = null; setSpeed(Number(e.currentTarget.value)); }}>
                   {SPEEDS.map((rate) => <option key={rate} value={rate}>{rate}×</option>)}
                 </select>
               </label>

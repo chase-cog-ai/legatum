@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, type PointerEvent } from 'react';
 import { onIconLoad } from '../icons';
 import { playerColor } from '../theme';
 import type { PlayerView } from '../types';
+import { replayProfilingEnabled } from '../replay';
 import { onCityArtLoad } from './cityArt';
 import { emptyGesture, gestureStep, zoomCamera, type GestureEvent } from './gestures';
 import { onImprovementArtLoad } from './improvementArt';
@@ -20,6 +21,7 @@ export function ReplayMap({ view }: { view: PlayerView }) {
   const scope = useRef({});
   const repaint = useRef<() => void>(() => {});
   const bounds = useMemo(() => replayBounds(view), [view]);
+  const frame = useRef({ view, bounds });
 
   useLayoutEffect(() => {
     const el = canvas.current;
@@ -27,8 +29,11 @@ export function ReplayMap({ view }: { view: PlayerView }) {
     if (!el || !ctx) return;
     let pending = 0;
     let attempts = 0;
+    const profile = replayProfilingEnabled();
     const paint = () => {
       pending = 0;
+      const { view, bounds } = frame.current;
+      const drawStart = profile ? performance.now() : 0;
       const w = el.clientWidth, h = el.clientHeight;
       if (!w || !h) return;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -48,6 +53,7 @@ export function ReplayMap({ view }: { view: PlayerView }) {
         path: null, pathAttack: false, pathUnreachable: null, pendingLines: [], pendingMarks: new Map(),
         rangedTiles: null, unitPos: new Map(), seatColor: playerColor(view.me), reducedMotion: true,
       });
+      if (profile) performance.measure('replay-draw', { start: drawStart, detail: [view.turn - 1, result.pending] });
       if (result.pending && attempts++ < 90) pending = requestAnimationFrame(paint);
     };
     const schedule = () => {
@@ -76,7 +82,12 @@ export function ReplayMap({ view }: { view: PlayerView }) {
       subscriptions.forEach((unsubscribe) => unsubscribe());
       el.removeEventListener('wheel', wheel);
     };
-  }, [bounds, view]);
+  }, []);
+
+  useLayoutEffect(() => {
+    frame.current = { view, bounds };
+    repaint.current();
+  }, [view, bounds]);
 
   const pointer = (type: 'down' | 'move' | 'up' | 'cancel', e: PointerEvent<HTMLCanvasElement>) => {
     if (!camera.current) return;

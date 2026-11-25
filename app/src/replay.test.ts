@@ -1,5 +1,13 @@
 import { expect, it } from 'vitest';
-import { playbackTurn, replayTurnLabel } from './replay';
+import { nextReplayDeadline, playbackTurn, replayTurnLabel } from './replay';
+
+it('paces playback from its schedule rather than adding render time to each turn', () => {
+  expect(nextReplayDeadline(null, 100, 1)).toBe(1300);
+  expect(nextReplayDeadline(1300, 1380, 1)).toBe(2500);
+  expect(nextReplayDeadline(null, 100, 4)).toBe(400);
+  expect(nextReplayDeadline(400, 440, 4)).toBe(700);
+  expect(nextReplayDeadline(400, 690, 4)).toBe(840);
+});
 
 it('keeps replay shortcuts within the recorded turns', () => {
   expect(playbackTurn('ArrowLeft', 14, 14, 45)).toBe(14);

@@ -15,11 +15,22 @@ export interface ReplayInfo {
   milestones: { turn: number; moment: ReplayMoment }[];
 }
 
-export type ReplayRequest = { type: 'open'; recording: string; player: number } | { type: 'seek'; turn: number };
+export type ReplayRequest = { type: 'open'; recording: string; player: number; profile: boolean } | { type: 'seek'; turn: number };
 export type ReplayResponse =
   | { type: 'ready'; info: ReplayInfo; view: PlayerView }
-  | { type: 'frame'; turn: number; view: PlayerView }
+  | { type: 'frame'; turn: number; view: PlayerView; timing?: [wasmMs: number, parseMs: number, sentAt: number] }
   | { type: 'failed' };
+
+const REPLAY_TURN_MS = 1200;
+
+export function replayProfilingEnabled(): boolean {
+  return new URLSearchParams(window.location.search).has('replayProfile');
+}
+
+export function nextReplayDeadline(previous: number | null, now: number, speed: number): number {
+  const interval = REPLAY_TURN_MS / speed;
+  return Math.max((previous ?? now) + interval, now + interval / 2);
+}
 
 export function playbackTurn(key: string, turn: number, first: number, last: number): number | undefined {
   if (key === 'Home') return first;

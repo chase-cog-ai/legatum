@@ -1,10 +1,12 @@
 //! Co-op Gold gifts (`Order::GiveGold`, rules 50): an empire gives Gold to a living teammate.
+//! With deals on (`GameSetup::deals`, rules 61) it may also give Gold to a living empire of
+//! another team that its team has met and is not at War with.
 //!
 //! A gift is checked against the giver's Gold at the start of the turn (all its gifts together).
 //! It moves after every empire's city orders and actions, so the giver's own purchases this turn
 //! are paid first and the gift is capped at the Gold left then; the teammate can spend it from
-//! next turn. Gifts resolve in player-id order, then in each giver's order list. The AI never
-//! gives Gold (for now).
+//! next turn. Gifts resolve in player-id order, then in each giver's order list. The AI gives Gold
+//! only with deals on (`legatum_ai` `deals.rs`, coalition Gold).
 use crate::events::Event;
 use crate::orders::{Order, OrderError};
 use crate::state::GameState;
@@ -31,10 +33,27 @@ pub fn gift_blocker(
     if !target.alive {
         return Some(format!("{} has been eliminated", target.name));
     }
-    if to.is_barbarian() || state.team_of(to) != state.team_of(player) {
+    if to.is_barbarian() {
         return Some(format!("{} is not on your team", target.name));
     }
-    None
+    let (mine, theirs) = (state.team_of(player), state.team_of(to));
+    if mine == theirs {
+        return None;
+    }
+    // Deals (rules 61): Gold to any empire your team has met and is not at War with.
+    if state.setup.deals {
+        if state.teams_at_war(mine, theirs) {
+            return Some(format!("you are at War with {}", target.name));
+        }
+        if state
+            .diplomacy
+            .as_ref()
+            .is_some_and(|d| d.met(mine, theirs))
+        {
+            return None;
+        }
+    }
+    Some(format!("{} is not on your team", target.name))
 }
 
 pub fn validate_gifts(state: &GameState, player: PlayerId, orders: &[Order]) -> Vec<OrderError> {

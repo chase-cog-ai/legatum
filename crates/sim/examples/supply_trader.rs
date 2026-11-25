@@ -1,4 +1,4 @@
-//! Exploiter seat `supply_trader`: can a player farm the AI through supply trades (rules 61)?
+//! Exploiter seat `supply_trader`: can a player farm the AI through supply trades (rules 62)?
 //!
 //! Eight Hard seats. Each seed is played twice: `plain` (seat 0 is plain Hard) and `trader` (seat 0 is
 //! Hard that also tries every abusive supply offer each turn). The trader keeps Hard's own orders and
@@ -36,6 +36,7 @@ fn arg(args: &[String], key: &str, default: &str) -> String {
 
 fn setup(seed: u64) -> GameSetup {
     let mut setup = GameSetup::all_ai(seed);
+    setup.deals = true;
     let all: Vec<_> = Faction::ALL.into_iter().collect();
     let omitted = (seed % all.len() as u64) as usize;
     let mut roster: Vec<_> = all

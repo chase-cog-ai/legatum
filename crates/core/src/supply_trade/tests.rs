@@ -24,6 +24,7 @@ fn game() -> GameState {
     crate::rules::test_support::city(&mut s, 0, at(5, 5), 3);
     crate::rules::test_support::city(&mut s, 1, at(16, 2), 3);
     crate::rules::test_support::city(&mut s, 2, at(3, 16), 3);
+    s.setup.deals = true;
     s.map.get_mut(at(6, 5)).unwrap().resource = Some(IRON);
     for p in &mut s.players {
         p.techs.extend([TechId::BronzeWorking, TechId::IronWorking]);
@@ -349,4 +350,22 @@ fn a_game_without_supply_trades_serializes_as_before() {
     assert!(!json.contains("supply_trades"));
     let view = serde_json::to_string(&player_view(&trading(1, 5), P0)).unwrap();
     assert!(view.contains("supply_trade"));
+}
+
+#[test]
+fn a_game_without_deals_has_no_supply_trades() {
+    let mut s = game();
+    s.setup.deals = false;
+    let order = Order::OfferSupply {
+        to: P1,
+        selling: true,
+        resource: IRON,
+        amount: 1,
+        gold: 5,
+    };
+    assert_eq!(
+        order_blocker(&s, P0, &order).as_deref(),
+        Some(crate::diplomacy::DEALS_OFF)
+    );
+    assert!(view(&s, P0).is_empty());
 }

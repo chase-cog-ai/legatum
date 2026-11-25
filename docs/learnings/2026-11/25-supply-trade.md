@@ -1,6 +1,6 @@
 # Supply sold by the turn: what kept it from being a way to farm the AI (2026-11-25)
 
-Rules 61 adds per-turn supply trades (`crates/core/src/supply_trade.rs`, AI in `crates/ai/src/supply_trade.rs`).
+Rules 62 adds per-turn supply trades (`crates/core/src/supply_trade.rs`, AI in `crates/ai/src/supply_trade.rs`).
 
 - **A trade is a change to `resources::supplied`, not a transfer.** Supply is not a stockpile, so the trade is a
   standing record that both sides' supply totals read. Everything that already asks "is there spare supply?"
@@ -15,5 +15,8 @@ Rules 61 adds per-turn supply trades (`crates/core/src/supply_trade.rs`, AI in `
   victory at any price, keeps one supply spare, and ends the sale the turn the buyer outgrows it.
 - **The AI buys only for users that are idle now.** A human cannot sell it supply it has no use for as a Gold
   drain: the bid limit is zero without an idle user, capped at twice the fair price and a quarter of income.
+- **Behind the deals switch.** Upstream's deals (rules 61) sit behind `GameSetup::deals` so benchmarks with deals
+  off do not move. Supply trades use the same switch (`pair_blocker` refuses with `DEALS_OFF`, the view lists no
+  partners, so the AI plans nothing), and the exploiter run turns deals on.
 - **Test fixtures need contact.** `rules::cities::tests::test_game` has no diplomacy state (everyone is at War);
   build `DiplomacyState::new` and `meet_all` before testing anything that needs Peace.

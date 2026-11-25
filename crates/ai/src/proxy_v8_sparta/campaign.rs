@@ -222,6 +222,7 @@ impl Plan<'_> {
             let order = Order::ProposeTreaty {
                 to: p.team,
                 kind: TreatyKind::Peace,
+                gold: 0,
             };
             if p.alive
                 && p.team != v.team

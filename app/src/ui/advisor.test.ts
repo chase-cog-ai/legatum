@@ -88,6 +88,17 @@ describe('one decision at a time', () => {
       steps: [{ instruction: 'Click Choose 1 free technology.', target: { kind: 'control', name: 'turn' } }] });
   });
 
+  it('answers an incoming Open Borders offer by its own name, never as a Peace (advisor review of PR 184)', async () => {
+    const { view, ctx } = await opening();
+    const rival = view.players.find((p) => p.team !== view.team)!;
+    view.diplomacy.proposals = [{ id: 50, from: rival.team, to: view.team, proposer: rival.id, kind: 'OpenBorders',
+      created_turn: view.turn, respond_by: view.turn + 2, relation_version: 0, gold: -20 }];
+    const s = advisorSuggestion(ctx(), ['welcome'], []);
+    expect(s).toMatchObject({ title: 'Answer this first', steps: [{ target: { kind: 'control', name: 'turn' } }] });
+    expect(s!.why).toMatch(new RegExp(`^Open Borders with .+: your units may enter each other’s land · asks 20 Gold · respond by turn ${view.turn + 2}$`));
+    expect(s!.why).not.toContain('Peace');
+  });
+
   it('uses plain facts and exact controls on touch', async () => {
     const { view, city, unit, tech, ctx } = await opening();
     const military: Order = { type: 'SetProduction', city: city.id, item: { kind: 'Unit', unit: 'Spearman' } };
@@ -196,6 +207,29 @@ describe('only new things once the basics are known', () => {
     expect(advisorSuggestion(ctx(orders), ['welcome'], [], { endTurn: PRACTICE_TURNS })).toBeNull();
     const research: Order[] = [{ type: 'SetResearch', tech: view.research.available[0].tech }];
     expect(advisorSuggestion({ ...ctx(research), techOpen: true }, ['welcome'], [], { closeResearch: PRACTICE_TURNS })?.id).not.toBe('closeResearch');
+  });
+});
+
+describe('deals in the Hard plan', () => {
+  // Deals are optional (advisor review of PR 184): the advisor teaches no deal, so Gold in an offer, a
+  // gift to another empire or closing borders in the plan changes nothing it suggests.
+  it('makes no suggestion for Gold offers, gifts to a rival or closing borders', async () => {
+    const { view, plan, ctx } = await opening();
+    const rival = view.players.find((p) => p.team !== view.team)!;
+    const deals: Order[] = [
+      { type: 'ProposeTreaty', to: rival.team, kind: 'OpenBorders', gold: -40 },
+      { type: 'GiveGold', to: rival.id, amount: 30 },
+      { type: 'BreakTreaty', with: rival.team, agreement: 'OpenBorders' },
+    ];
+    for (const done of [[], plan.slice(0, 1), plan]) {
+      const without = advisorSuggestion(ctx(done, null, plan), ['welcome'], []);
+      const withDeals = advisorSuggestion(ctx(done, null, [...deals, ...plan]), ['welcome'], []);
+      expect(withDeals).toEqual(without);
+      expect(JSON.stringify(withDeals ?? {})).not.toMatch(/Open Borders|Give Gold|Close borders|ProposeTreaty|GiveGold|BreakTreaty/);
+    }
+    // With only deal orders in the plan, the advisor falls back to the basics, never to a deal.
+    const only = advisorSuggestion(ctx([], null, deals), ['welcome'], []);
+    expect(JSON.stringify(only ?? {})).not.toMatch(/Open Borders|Give Gold|Close borders/);
   });
 });
 

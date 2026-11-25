@@ -1,4 +1,4 @@
-// Supply sold by the turn (rules 61), played against the real Hard AI in the WASM engine. The game is the
+// Supply sold by the turn (rules 62), played against the real Hard AI in the WASM engine. The game is the
 // playtest 8.9.2 save at turn 203 (committed for the race panel): the human Switzerland has 5 Coal to spare, India
 // (an ally) has Coal to spare, and Byzantium and Germany can use Coal. The player haggles: a lowball bid and an
 // overpriced sale are turned down with the AI's price, the sale at that price is taken, the supply and the Gold
@@ -13,7 +13,13 @@ import type { Event } from '../src/types';
 import { test, expect } from './fixtures';
 
 type GameWindow = Window & { legatum: typeof useGame };
-const save = () => gunzipSync(readFileSync(fileURLToPath(new URL('./saves/p892-race-panel-t203.current.legatum.gz', import.meta.url)))).toString('utf8');
+/** The save with deals turned on: supply trades are a deal, and this game was played before deals. */
+function save() {
+  const file = JSON.parse(gunzipSync(readFileSync(fileURLToPath(new URL('./saves/p892-race-panel-t203.current.legatum.gz', import.meta.url)))).toString('utf8'));
+  const game = JSON.parse(file.game);
+  game.setup.deals = true;
+  return JSON.stringify({ ...file, game: JSON.stringify(game) });
+}
 const shots = process.env.LEGATUM_SHOTS;
 
 async function open(page: Page) {

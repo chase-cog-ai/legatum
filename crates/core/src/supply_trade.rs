@@ -147,7 +147,11 @@ pub fn supply_lines(state: &GameState, p: PlayerId, resource: Resource) -> Vec<(
 }
 
 /// Why `a` and `b` cannot trade supply at all, whatever the terms.
+/// Supply trades are a deal: a game without `GameSetup::deals` has none.
 pub fn pair_blocker(state: &GameState, a: PlayerId, b: PlayerId) -> Option<String> {
+    if !state.setup.deals {
+        return Some(crate::diplomacy::DEALS_OFF.into());
+    }
     if a == b {
         return Some("you cannot trade with yourself".into());
     }
@@ -564,7 +568,7 @@ pub fn view(state: &GameState, me: PlayerId) -> SupplyTradeView {
     let partners = state
         .players
         .iter()
-        .filter(|p| p.alive && p.id != me)
+        .filter(|p| state.setup.deals && p.alive && p.id != me)
         .filter(|p| {
             state
                 .diplomacy

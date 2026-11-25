@@ -14,6 +14,13 @@ function momentLabel(moment: ReplayMoment, view: PlayerView): string {
   if (moment.kind === 'founded' || moment.kind === 'captured') {
     return `${empireOfPlayer(view, moment.player)} ${moment.kind} ${moment.city}`;
   }
+  if (moment.kind === 'war') {
+    if (moment.declarer === null) return `${empireTitle(view, moment.a)} and ${empireTitle(view, moment.b)} went to war`;
+    const target = moment.declarer === moment.a ? moment.b : moment.a;
+    return `${empireTitle(view, moment.declarer)} declared war on ${empireTitle(view, target)}`;
+  }
+  if (moment.kind === 'eliminated') return `${empireOfPlayer(view, moment.player)} fell`;
+  if (moment.kind === 'scored') return `You gained ${moment.gained} VP (${moment.total} total)`;
   if (moment.kind === 'hold' || moment.kind === 'won') {
     const name = empireTitle(view, moment.team);
     return `${name} ${moment.kind === 'hold' ? 'reached the VP target' : 'won'}`;
@@ -35,6 +42,7 @@ export function GameReplay({ player, recording, titleId, onBack }: {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [failed, setFailed] = useState(false);
+  const [chosenMoment, setChosenMoment] = useState<number>();
   const seek = useRef<(turn: number) => void>(() => {});
   const activeMoment = useRef<HTMLButtonElement>(null);
 
@@ -83,6 +91,7 @@ export function GameReplay({ player, recording, titleId, onBack }: {
   }, [player, recording]);
 
   const move = (next: number) => {
+    setChosenMoment(undefined);
     setTurn(next);
     seek.current(next);
   };
@@ -104,7 +113,7 @@ export function GameReplay({ player, recording, titleId, onBack }: {
     if (!node || !list) return;
     if (node.offsetTop < list.scrollTop || node.offsetTop + node.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = node.offsetTop;
     if (node.offsetLeft < list.scrollLeft || node.offsetLeft + node.offsetWidth > list.scrollLeft + list.clientWidth) list.scrollLeft = node.offsetLeft;
-  }, [frame?.turn]);
+  }, [frame?.turn, chosenMoment]);
 
   const togglePlay = () => {
     if (!info) return;
@@ -128,7 +137,8 @@ export function GameReplay({ player, recording, titleId, onBack }: {
   const unavailable = failed || !recording;
   const label = info ? replayTurnLabel(turn, info.first, info.partial) : '';
   const empire = frame?.view.players.find((p) => p.id === player);
-  const active = frame && info ? info.milestones.findLastIndex((m) => m.turn <= frame.turn) : -1;
+  const active = frame && info ? (chosenMoment !== undefined && info.milestones[chosenMoment]?.turn === frame.turn
+    ? chosenMoment : info.milestones.findLastIndex((m) => m.turn <= frame.turn)) : -1;
 
   return (
     <section className="match-replay" aria-labelledby={titleId} onKeyDown={keys} data-testid="match-replay">
@@ -151,7 +161,7 @@ export function GameReplay({ player, recording, titleId, onBack }: {
                 <div className="replay-moment-list">
                   {info.milestones.map(({ turn: at, moment }, index) => (
                     <button key={index} type="button" ref={index === active ? activeMoment : undefined}
-                      aria-current={index === active ? 'step' : undefined} onClick={() => jump(at)}>
+                      aria-current={index === active ? 'step' : undefined} onClick={() => { jump(at); setChosenMoment(index); }}>
                       <span>Turn {at}</span>{momentLabel(moment, frame.view)}
                     </button>
                   ))}

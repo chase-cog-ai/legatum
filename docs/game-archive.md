@@ -77,7 +77,9 @@ owner's analysis, including information hidden by fog in the player UI.
 
 **Watching a finished solo game.** The report's **Watch replay** action runs the saved orders in a
 local worker and checks each turn's hash. The worker sends back only the original player's map view
-and the turning points that player could see. A recording started from a legacy save begins at that
+and visible turning points, such as wars, city captures, eliminations, and increases in the viewer's
+VP. The replay opens on the explored part of the map, and refits it if the canvas is resized.
+A recording started from a legacy save begins at that
 save, not at the opening of the game. Watching it does not modify the save or the archive.
 
 Client telemetry rides in the recording but never in a hash: `turn_times` (active play seconds per turn and

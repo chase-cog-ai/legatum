@@ -76,6 +76,7 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
   });
 
   test('watch the finished solo game, then return to the same report', async ({ page }) => {
+    test.setTimeout(90_000);
     const { game, turn } = await replayFixture();
     await loadFixture(page, game, turn);
     await page.getByTestId('game-reveal').click({ position: { x: 6, y: 6 } });
@@ -92,6 +93,8 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     const slider = replay.getByRole('slider', { name: 'Replay turn' });
     await expect(replay.getByRole('heading', { name: 'Game replay' })).toBeFocused();
     await expect(atlas).toHaveAttribute('data-turn', '0');
+    const vp = atlas.locator('.replay-vp');
+    await expect(vp).toHaveText('0 VP');
     await expect(replay.getByRole('button', { name: 'Previous turn' })).toBeDisabled();
     await shot(page, size, '26r-replay-opening');
     const mapPixels = () => atlas.locator('canvas').evaluate((el) => (el as HTMLCanvasElement).toDataURL());
@@ -100,20 +103,38 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await expect(atlas).toHaveAttribute('data-turn', '1');
     await slider.press('End');
     await expect(atlas).toHaveAttribute('data-turn', String(turn - 1));
+    await expect(vp).toHaveText('11 VP');
     await expect.poll(mapPixels).not.toBe(opening);
     await expect(replay.getByRole('button', { name: 'Next turn' })).toBeDisabled();
     await shot(page, size, '26s-replay-ending');
     await slider.press('Home');
     await expect(atlas).toHaveAttribute('data-turn', '0');
-    const milestone = replay.getByRole('complementary', { name: 'Turning points' }).getByRole('button').last();
+    const moments = replay.getByRole('complementary', { name: 'Turning points' });
+    await expect(moments.getByRole('button', { name: /declared war on|went to war/ }).first()).toBeAttached();
+    await expect(moments.getByRole('button', { name: /fell$/ }).first()).toBeAttached();
+    const capture = moments.getByRole('button', { name: /captured/ }).last();
+    await capture.click();
+    await expect(capture).toHaveAttribute('aria-current', 'step');
+    const milestone = moments.getByRole('button', { name: /Sparta won/ });
     await milestone.click();
     await expect(atlas).toHaveAttribute('data-turn', String(turn - 1));
+    await expect(milestone).toHaveAttribute('aria-current', 'step');
     await replay.getByLabel('Speed').selectOption('4');
     await replay.getByRole('button', { name: 'Play again' }).click();
     await expect(replay.getByRole('button', { name: 'Pause' })).toBeVisible();
     await expect(atlas).not.toHaveAttribute('data-turn', String(turn - 1));
     await replay.getByRole('button', { name: 'Pause' }).click();
     await expect(replay.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+    const score = moments.getByRole('button', { name: /You gained .* VP/ }).first();
+    const scoreTurn = Number((await score.locator('span').textContent())?.replace('Turn ', ''));
+    const scoreTotal = (await score.textContent())?.match(/\((\d+) total\)/)?.[1];
+    await slider.fill(String(scoreTurn - 1));
+    await expect(atlas).toHaveAttribute('data-turn', String(scoreTurn - 1));
+    await expect(vp).not.toHaveText(`${scoreTotal} VP`);
+    await replay.getByLabel('Speed').selectOption('1');
+    await replay.getByRole('button', { name: 'Play', exact: true }).click();
+    await expect(vp).toHaveText(`${scoreTotal} VP`);
+    await replay.getByRole('button', { name: 'Pause' }).click();
     await page.keyboard.press('Escape');
     await expect(replay).toHaveCount(0);
     await expect(watch).toBeFocused();

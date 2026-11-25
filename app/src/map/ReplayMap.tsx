@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type PointerEvent } from 'react';
+import { useLayoutEffect, useMemo, useRef, type PointerEvent } from 'react';
 import { onIconLoad } from '../icons';
 import { playerColor } from '../theme';
 import type { PlayerView } from '../types';
@@ -7,15 +7,19 @@ import { emptyGesture, gestureStep, zoomCamera, type GestureEvent } from './gest
 import { onImprovementArtLoad } from './improvementArt';
 import { onLandmarkArtLoad } from './landmarks';
 import { onMapFeatureLoad } from './mapFeatures';
-import { draw, worldBounds, type Camera } from './render';
+import { draw, type Camera } from './render';
+import { fitReplayCamera, replayBounds } from './replayCamera';
 import { onWonderArtLoad } from './wonderArt';
 
 export function ReplayMap({ view }: { view: PlayerView }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const camera = useRef<Camera | null>(null);
+  const manualCamera = useRef(false);
+  const size = useRef({ w: 0, h: 0 });
   const gesture = useRef(emptyGesture());
   const scope = useRef({});
   const repaint = useRef<() => void>(() => {});
+  const bounds = useMemo(() => replayBounds(view), [view]);
 
   useLayoutEffect(() => {
     const el = canvas.current;
@@ -31,11 +35,11 @@ export function ReplayMap({ view }: { view: PlayerView }) {
       const width = Math.round(w * dpr), height = Math.round(h * dpr);
       if (el.width !== width) el.width = width;
       if (el.height !== height) el.height = height;
-      const bounds = worldBounds(view);
-      camera.current ??= {
-        x: (bounds.maxX + bounds.minX) / 2, y: (bounds.maxY + bounds.minY) / 2,
-        zoom: Math.min(1, (w - 20) / (bounds.maxX - bounds.minX), (h - 20) / (bounds.maxY - bounds.minY)),
-      };
+      if (size.current.w !== w || size.current.h !== h) {
+        size.current = { w, h };
+        manualCamera.current = false;
+      }
+      if (!manualCamera.current || !camera.current) camera.current = fitReplayCamera(bounds, w, h);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
       const result = draw(ctx, {
@@ -60,6 +64,7 @@ export function ReplayMap({ view }: { view: PlayerView }) {
       e.preventDefault();
       const rect = el.getBoundingClientRect();
       const point = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      manualCamera.current = true;
       camera.current = zoomCamera(camera.current, { w: rect.width, h: rect.height }, point, point, Math.exp(-e.deltaY * .0015));
       schedule();
     };
@@ -71,7 +76,7 @@ export function ReplayMap({ view }: { view: PlayerView }) {
       subscriptions.forEach((unsubscribe) => unsubscribe());
       el.removeEventListener('wheel', wheel);
     };
-  }, [view]);
+  }, [bounds, view]);
 
   const pointer = (type: 'down' | 'move' | 'up' | 'cancel', e: PointerEvent<HTMLCanvasElement>) => {
     if (!camera.current) return;
@@ -85,6 +90,7 @@ export function ReplayMap({ view }: { view: PlayerView }) {
     const next = gestureStep(gesture.current, event, camera.current, { w: rect.width, h: rect.height });
     gesture.current = next.state;
     if (camera.current !== next.camera) {
+      manualCamera.current = true;
       camera.current = next.camera;
       repaint.current();
     }

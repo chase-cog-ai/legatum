@@ -6,9 +6,9 @@ use crate::{
     to_json,
 };
 use legatum_core::{
-    Event, GameState, PlayerId, PlayerView, ViewDetail,
+    Event, GameState, PlayerId, PlayerView, TeamId, ViewDetail,
     event_visibility::{VisibleEvent, event_visibility_view, visible_events},
-    player_view_detail, public_view,
+    player_view_detail, public_view, scoring,
 };
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
@@ -32,10 +32,32 @@ pub(crate) fn available(session: &Session, player: PlayerId) -> bool {
 #[derive(Serialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 enum Moment {
-    Founded { city: String, player: PlayerId },
-    Captured { city: String, player: PlayerId },
-    Hold { team: legatum_core::TeamId },
-    Won { team: legatum_core::TeamId },
+    Founded {
+        city: String,
+        player: PlayerId,
+    },
+    Captured {
+        city: String,
+        player: PlayerId,
+    },
+    War {
+        a: TeamId,
+        b: TeamId,
+        declarer: Option<TeamId>,
+    },
+    Eliminated {
+        player: PlayerId,
+    },
+    Scored {
+        gained: u32,
+        total: u32,
+    },
+    Hold {
+        team: TeamId,
+    },
+    Won {
+        team: TeamId,
+    },
     Draw,
 }
 
@@ -102,8 +124,20 @@ impl GameReplay {
         let spacing = record.tape.turns.len().div_ceil(MAX_CHECKPOINTS - 1).max(1);
         let mut checkpoints = vec![(0, state.clone())];
         let mut milestones = Vec::new();
+        let mut vp = scoring::vp_total(&state, viewer);
         for (index, tape_turn) in record.tape.turns.iter().enumerate() {
             let (next, events) = replay_turn(&state, tape_turn)?;
+            let total = scoring::vp_total(&next, viewer);
+            if total > vp {
+                milestones.push(Milestone {
+                    turn: tape_turn.turn,
+                    moment: Moment::Scored {
+                        gained: total - vp,
+                        total,
+                    },
+                });
+            }
+            vp = total;
             let notable: Vec<_> = events
                 .into_iter()
                 .filter(|event| {
@@ -111,6 +145,8 @@ impl GameReplay {
                         event,
                         Event::CityFounded { .. }
                             | Event::CityCaptured { .. }
+                            | Event::WarDeclared { .. }
+                            | Event::PlayerEliminated { .. }
                             | Event::VictoryHoldStarted { .. }
                             | Event::GameWon { .. }
                             | Event::GameDrawn { .. }
@@ -143,6 +179,19 @@ impl GameReplay {
                                         .clone(),
                                     player: to,
                                 },
+                                VisibleEvent::Complete(Event::WarDeclared { relation }) => {
+                                    Moment::War {
+                                        a: relation.a,
+                                        b: relation.b,
+                                        declarer: match relation.declarers.as_slice() {
+                                            [team] => Some(*team),
+                                            _ => None,
+                                        },
+                                    }
+                                }
+                                VisibleEvent::Complete(Event::PlayerEliminated { player }) => {
+                                    Moment::Eliminated { player }
+                                }
                                 VisibleEvent::Complete(Event::VictoryHoldStarted {
                                     team, ..
                                 }) => Moment::Hold { team },
@@ -260,6 +309,14 @@ mod tests {
                 assert!(view.units.len() < state.units.len());
             }
             assert!(replay.seek(first + states.len() as u32).is_err());
+            assert!(replay.milestones.iter().any(|m| matches!(
+                m.moment,
+                Moment::War {
+                    a: TeamId(0),
+                    b: TeamId(1),
+                    declarer: Some(TeamId(0))
+                }
+            )));
             assert!(matches!(
                 replay.milestones.last().unwrap().moment,
                 Moment::Won { .. } | Moment::Draw

@@ -9,8 +9,10 @@ const loadEngine = async () => {
 
 export async function replayFixture() {
   const { Game, advisor_orders, explore_step } = await loadEngine();
-  const setup = JSON.parse(Game.standard_setup('42', 'India', 'Sparta', 'Ada', 'Sparta')) as GameSetup;
-  setup.turn_limit = 42;
+  const setup = JSON.parse(Game.standard_setup('42', 'Sparta', 'India', 'Ada', 'India')) as GameSetup;
+  setup.width = 48;
+  setup.height = 32;
+  setup.turn_limit = 175;
   setup.players = setup.players.slice(0, 4);
   setup.players[1] = { ...setup.players[1], is_human: false, team: 3 };
   setup.rule_experiments = { start_settlers: 1 };

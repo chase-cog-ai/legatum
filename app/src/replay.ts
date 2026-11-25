@@ -2,6 +2,9 @@ import type { PlayerView } from './types';
 
 export type ReplayMoment =
   | { kind: 'founded' | 'captured'; city: string; player: number }
+  | { kind: 'war'; a: number; b: number; declarer: number | null }
+  | { kind: 'eliminated'; player: number }
+  | { kind: 'scored'; gained: number; total: number }
   | { kind: 'hold' | 'won'; team: number }
   | { kind: 'draw' };
 

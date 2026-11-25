@@ -111,6 +111,12 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
     : t.owner === null ? (isStrategic(resource) ? 'Unclaimed: bring it inside your borders' : 'Unclaimed: bring it inside your borders to improve it')
     : t.owner !== view.me ? (isStrategic(resource) ? `${empireHolds([ownerName.split(' · ')[0]])} this deposit.${lackedResources(view.supply).has(resource) ? ` You have no ${RESOURCE_INFO[resource].name} yet: take it or find another.` : ''}` : `In ${ownerName} territory`)
     : dormantNote;
+  // An enemy military unit on a strategic deposit cuts its supply (core `resources::cut_by`).
+  const cut = view.supply_cuts?.find((c) => c.hex.q === hex.q && c.hex.r === hex.r);
+  const cutNote = !cut ? null
+    : cut.owner === view.me ? `Supply cut: an enemy unit stands here. Kill it or drive it off to get ${cut.supply} ${RESOURCE_INFO[cut.resource].name} back.`
+    : cut.by === view.me ? `Your unit cuts this deposit: ${ownerName.split(' · ')[0]} is without ${cut.supply} ${RESOURCE_INFO[cut.resource].name} while it stands here.`
+    : `Supply cut: an enemy unit stands here, so ${ownerName.split(' · ')[0]} is without ${cut.supply} ${RESOURCE_INFO[cut.resource].name}.`;
   return (
     <div className="tilecard" ref={placed.ref} style={placed.style}>
       {t.landmark ? <div className="tilecard-lead" data-testid="tile-landmark"><LeadArt url={slugUrl(buildingArtSlug(t.landmark.building, owner?.faction), 128) ?? slugUrl(buildingArtSlug(t.landmark.building), 128)} icon={buildingIconName(t.landmark.building)} /><div><b className="tilecard-lead-name">{BUILDING_NAME[t.landmark.building]}</b><span className="tilecard-lead-kind">Wonder tile · {owner ? empireOfPlayer(view, owner.id) : 'unclaimed'}</span></div></div> : t.wonder ? <WonderLead view={view} hex={hex} t={t} /> : resource ? (
@@ -137,6 +143,7 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
           {resourceStatus && <div className={`tilecard-status ${isDormant(t, view.me, faction) && !isStrategic(resource) ? 'bad' : ''}`} data-testid="tile-improvement"><Amounts text={resourceStatus} /></div>}
         </div>
       )}
+      {cutNote && <div className={`tilecard-row ${cut!.owner === view.me ? 'blocked' : cut!.by === view.me ? 'good' : ''}`} role="status" data-testid="tile-supply-cut">{cut!.owner === view.me && <><Icon name="ui-alert" size={13} className="ui-mark" /> </>}<Amounts text={cutNote} /></div>}
       {routeWarning && <div className={isCalmRouteNote(routeWarning) ? 'tilecard-warn route-note' : 'tilecard-warn'} role={isCalmRouteNote(routeWarning) ? undefined : 'alert'} data-testid="route-warning">{routeWarning}</div>}
       {blockedReason && <div className="tilecard-row blocked" role="status" data-testid="tile-blocked-reason"><Amounts text={blockedReason} /></div>}
       {reinforcement && <div className="tilecard-row good" role="status" data-testid="reinforcement-note"><Amounts text={reinforcement} /></div>}

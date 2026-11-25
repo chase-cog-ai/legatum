@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BARBARIAN } from './barbarians';
 import { FixtureClient } from './test/fixtureEngine';
 import { tileIndex } from './hex';
 import type { Event, Faction, PlayerView, ProductionItem } from './types';
@@ -713,6 +714,13 @@ it('reads the supply events: found, short and restored', () => {
   expect(formatEvent({ type: 'SupplyShortage', player: 0, resource: 'Coal', idle: 1, supplied: 0, used: 1 }, ctx).text).toContain('You have no Coal and need 1. Bring a Coal deposit inside your borders');
   expect(formatEvent({ type: 'SupplyShortage', player: 0, resource: 'Iron', idle: 0, supplied: 8, used: 8 }, ctx)).toMatchObject({ text: 'Iron supply restored: every building and unit works again', tone: 'good' });
   expect(formatEvent({ type: 'SupplyShortage', player: 0, resource: 'Oil', idle: 1, supplied: 1, used: 2 }, { ...ctx, idleSupplyNames: () => ['Bomber'] }).text).toContain('Short of Oil: 1 building or unit is idle. Idle: Bomber.');
+  const cut = formatEvent({ type: 'DepositCut', player: 0, resource: 'Iron', at: here, city: 1, by: 1, supply: 3 }, ctx);
+  expect(cut).toMatchObject({ tone: 'bad', category: 'economy', icon: 'resource-iron', at: here });
+  expect(cut.text).toMatch(/^.+ unit stands on your Iron near .+: −3 Iron supply until it leaves or dies$/);
+  expect(formatEvent({ type: 'DepositCut', player: 0, resource: 'Iron', at: here, city: null, by: BARBARIAN, supply: 2 }, ctx).text).toBe('A barbarian unit stands on your Iron: −2 Iron supply until it leaves or dies');
+  const back = formatEvent({ type: 'DepositRestored', player: 0, resource: 'Iron', at: here, city: 1, supply: 3 }, ctx);
+  expect(back).toMatchObject({ tone: 'good', at: here });
+  expect(back.text).toMatch(/^Your Iron near .+ is clear of enemy units: \+3 Iron supply$/);
 });
 
 it('explains a Settler whose destination can no longer hold a city, from what the player knows', async () => {

@@ -179,6 +179,21 @@ function drawWanted(ctx: CanvasRenderingContext2D, x: number, y: number, radius:
   ctx.beginPath(); ctx.arc(cx, cy + r * 0.5, w * 0.7, 0, Math.PI * 2); ctx.fill();
 }
 
+/** A cut deposit (an enemy military unit stands on it): a red bar struck through the mark, on a paper edge. */
+function drawCut(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, look: LookId) {
+  const reach = radius + 2.5, k = Math.SQRT1_2;
+  ctx.save();
+  ctx.globalAlpha = 1;
+  ctx.lineCap = 'round';
+  for (const [color, width] of [[INK[look].paper, Math.max(4, radius * 0.5)], [INK[look].red, Math.max(2.2, radius * 0.28)]] as const) {
+    ctx.beginPath();
+    ctx.moveTo(x - reach * k, y + reach * k);
+    ctx.lineTo(x + reach * k, y - reach * k);
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawEmphasis(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, strategic: boolean, owner: number | null, me: number, look: LookId) {
   const ring = emphasisRing(owner, me);
   const color = strategic ? CATEGORY_COLOR.Strategic : CATEGORY_COLOR.Bonus;
@@ -205,6 +220,7 @@ export function drawResourceIcons(ctx: CanvasRenderingContext2D, view: PlayerVie
   const lacked = emphasis ? lackedResources(view.supply) : null;
   const wanted = (res: string, owner: number | null) => !!lacked?.has(res as never) && owner !== view.me;
   const myFaction = view.players.find((p) => p.id === view.me)?.faction;
+  const cuts = new Set((view.supply_cuts ?? []).map((c) => tileIndex(c.hex, W, view.height)));
   ctx.save();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   for (let i = 0; i < view.tiles.length; i++) {
@@ -225,6 +241,7 @@ export function drawResourceIcons(ctx: CanvasRenderingContext2D, view: PlayerVie
       drawFarMark(ctx, x, cy - r * 0.62, d, res, look);
       markImprovement(ctx, x, cy - r * 0.62, d + (emphasis ? 5 : 1.5), dormant, ringed, t.visible, look);
       if (wanted(res, t.owner)) drawWanted(ctx, x, cy - r * 0.62, d * 1.6, look);
+      if (cuts.has(i)) drawCut(ctx, x, cy - r * 0.62, d, look);
       continue;
     }
     const slots = cities.has(i) ? town : open;
@@ -240,6 +257,7 @@ export function drawResourceIcons(ctx: CanvasRenderingContext2D, view: PlayerVie
       drawFarMark(ctx, x + p.dx, cy + p.dy, p.radius * 0.85, res, look);
       markImprovement(ctx, x + p.dx, cy + p.dy, p.radius + (emphasis ? 8.2 : 2), dormant, ringed, t.visible, look);
       if (wanted(res, t.owner)) drawWanted(ctx, x + p.dx, cy + p.dy, p.radius * 1.3, look);
+      if (cuts.has(i)) drawCut(ctx, x + p.dx, cy + p.dy, p.radius * 0.85, look);
       continue;
     }
     const size = s.width / dpr;
@@ -261,6 +279,7 @@ export function drawResourceIcons(ctx: CanvasRenderingContext2D, view: PlayerVie
     }
     markImprovement(ctx, x + p.dx, cy + p.dy, p.radius + (emphasis ? 8.2 : 2), dormant, ringed, t.visible, look);
     if (wanted(res, t.owner)) drawWanted(ctx, x + p.dx, cy + p.dy, p.radius * 1.3, look);
+    if (cuts.has(i)) drawCut(ctx, x + p.dx, cy + p.dy, p.radius, look);
   }
   ctx.restore();
 }

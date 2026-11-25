@@ -1167,6 +1167,10 @@ pub struct PlayerView {
     /// Strategic supply, one per strategic resource, revealed or not.
     #[serde(default)]
     pub supply: Vec<crate::resources::SupplyView>,
+    /// Strategic deposits an enemy military unit stands on, so they supply nothing
+    /// (`resources::cut_by`): the viewer's own, and any in sight whose resource it knows.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub supply_cuts: Vec<crate::resources::SupplyCutView>,
     pub research: Shared<ResearchView>,
     /// Own ground army's exact contributions; omitted from the AI's lightweight view.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -2084,6 +2088,7 @@ pub fn player_view_cached(
             players: public.players.clone(),
             economy: Default::default(),
             supply: Vec::new(),
+            supply_cuts: Vec::new(),
             research: Default::default(),
             army_breakdown: Vec::new(),
             eras: Default::default(),
@@ -2236,6 +2241,7 @@ pub fn player_view_cached(
         players,
         economy: economy.into(),
         supply: crate::resources::supply_views(state, me),
+        supply_cuts: crate::resources::supply_cut_views(state, me, is_visible),
         research: research.into(),
         army_breakdown: if full {
             crate::army::breakdown(state, me)

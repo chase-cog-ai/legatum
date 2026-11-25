@@ -1489,6 +1489,21 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
           at: ctx.idleSupplyAt?.(e.resource) ?? null, players: [e.player], weight: mine(e.player) ? 2 : 0, tone: toneFor(e.player, false),
         });
     }
+    case 'DepositCut': {
+      const name = RESOURCE_INFO[e.resource].name;
+      const where = e.city === null ? '' : ` near ${ctx.cityName(e.city)}`;
+      const unit = isBarbarian(e.by) ? 'A barbarian unit' : `${possessiveOf(who(ctx, e.by))} unit`;
+      return line('economy', `${unit} stands on your ${name}${where}: −${e.supply} ${name} supply until it leaves or dies`, {
+        at: e.at, players: [e.player, e.by], weight: mine(e.player) ? 2 : 0, tone: toneFor(e.player, false),
+      });
+    }
+    case 'DepositRestored': {
+      const name = RESOURCE_INFO[e.resource].name;
+      const where = e.city === null ? '' : ` near ${ctx.cityName(e.city)}`;
+      return line('economy', `Your ${name}${where} is clear of enemy units: +${e.supply} ${name} supply`, {
+        at: e.at, players: [e.player], weight: mine(e.player) ? 2 : 0, tone: toneFor(e.player),
+      });
+    }
     case 'SiegeBought':
       return line('economy', `${unitLabel(ctx, e.unit, e.owner)} bought Siege for ${e.gold} Gold: its attacks on a city ignore enemy Walls`, {
         players: [e.owner],

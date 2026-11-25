@@ -233,6 +233,7 @@ impl ViewBuilder {
                 }
                 .into(),
                 supply: Vec::new(),
+                supply_cuts: Vec::new(),
                 research: ResearchView {
                     science_conversion: Default::default(),
                     era: 0,

@@ -292,6 +292,7 @@ pub fn resolve_turn(
 
     visibility::remember_threats(&mut s);
     let resource_sources = crate::resources::source_counts(&s);
+    let cut_deposits = crate::resources::cut_deposits(&s);
     // 0. Surprise wars at plain Peace begin now, before ranged fire and movement (G20).
     let surprise = crate::diplomacy::declare_surprise_wars(&mut s, &orders, &mut events);
     // 1. Orders (barbarians choose their moves from the same start-of-turn state).
@@ -388,6 +389,7 @@ pub fn resolve_turn(
     crate::roads::extend(&mut s, &mut events);
     crate::roads::extend_roadworks(&mut s);
     crate::resources::announce(&resource_sources, &s, &mut events);
+    crate::resources::announce_cuts(&cut_deposits, &s, &mut events);
     crate::resources::update_supply(&mut s, &mut events);
     visibility::update_explored(&mut s);
     crate::wonders::discover(&mut s, &mut events);

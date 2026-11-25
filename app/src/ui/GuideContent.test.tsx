@@ -130,6 +130,7 @@ it('explains map resources, reveals, supply and idle buildings and units (G11)',
   expect(cities).toContain('A unit that upgrades switches to the final unit’s resource');
   expect(cities).toContain('supplies 2 of its resource, whether or not you work it. Improved, it supplies 3 (a Mine, Saltpetre Works, Oil Well or Quartz Mine)');
   expect(cities).toContain('the newest go idle until supply returns');
+  expect(cities).toContain('an enemy military unit standing on a strategic deposit cuts it');
   expect(cities).toContain('an idle unit fights 25% weaker');
   expect(cities).not.toMatch(/stockpile|refunded/i);
   expect(cities).toContain('Every start has a Copper deposit two tiles away and an Iron deposit three to five tiles away');

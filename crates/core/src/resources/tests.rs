@@ -1094,3 +1094,199 @@ fn the_unit_card_offers_siege_with_its_price_and_the_reason_it_cannot_be_bought(
         assert!(u.siege_offer.is_none());
     }
 }
+
+fn set_relations(s: &mut GameState, state: crate::diplomacy::RelationState) {
+    for r in &mut s.diplomacy.as_mut().unwrap().relations {
+        r.state = state;
+    }
+}
+
+fn set_war(s: &mut GameState) {
+    set_relations(s, crate::diplomacy::RelationState::War);
+}
+
+/// `iron_game` with a Mine on the Iron (3 supply), a Forge and two Pikemen using it.
+fn cut_game() -> (GameState, CityId, Hex) {
+    let (mut s, city, iron) = swiss_iron_game();
+    s.map.get_mut(iron).unwrap().improved = true;
+    s.cities.get_mut(&city).unwrap().population = 4;
+    give(&mut s, city, FORGE);
+    spawn_unit(&mut s, P0, UnitKind::Pikeman, at(5, 4));
+    spawn_unit(&mut s, P0, UnitKind::Pikeman, at(4, 5));
+    (s, city, iron)
+}
+
+#[test]
+fn an_enemy_military_unit_on_a_deposit_cuts_its_supply() {
+    let (mut s, city, iron) = cut_game();
+    assert_eq!(supplied(&s, P0, Resource::Iron), 3);
+    assert_eq!(cut_by(&s, P0, iron), None);
+
+    // At peace a foreign army standing there cuts nothing.
+    set_relations(&mut s, crate::diplomacy::RelationState::Peace);
+    let raider = spawn_unit(&mut s, P1, UnitKind::Spearman, iron);
+    assert_eq!(cut_by(&s, P0, iron), None);
+    assert_eq!(supplied(&s, P0, Resource::Iron), 3);
+
+    set_war(&mut s);
+    assert_eq!(cut_by(&s, P0, iron), Some(P1));
+    assert_eq!(supplied(&s, P0, Resource::Iron), 0);
+    let deposit = deposits(&s, P0)[0];
+    assert_eq!((deposit.cut, deposit.supply()), (Some(P1), 0));
+    // The tile is still P0's, and the cutter's own supply is untouched.
+    assert_eq!(s.map.get(iron).unwrap().owner, Some(P0));
+    assert_eq!(supplied(&s, P1, Resource::Iron), 0);
+
+    // The view says so: the deposit line reads 0 and names what returns.
+    let view = iron_view(&s);
+    assert_eq!(view.supplied.total, 0);
+    assert!(view.supplied.parts[0].0.contains("cut by an enemy unit"));
+    assert_eq!(
+        view.deposits,
+        vec![DepositView {
+            hex: iron,
+            city: Some(city),
+            mined: true,
+            supply: 0,
+            cut_by: Some(P1),
+            cut_supply: 3,
+        }]
+    );
+    let cut = SupplyCutView {
+        hex: iron,
+        resource: Resource::Iron,
+        owner: P0,
+        by: P1,
+        supply: 3,
+    };
+    assert_eq!(player_view(&s, P0).supply_cuts, vec![cut]);
+    // The enemy sees it only once it knows what Iron is.
+    assert!(player_view(&s, P1).supply_cuts.is_empty());
+    s.player_mut(P1).techs.insert(TechId::IronWorking);
+    assert_eq!(player_view(&s, P1).supply_cuts, vec![cut]);
+
+    // The unit gone, the supply is back.
+    s.units.remove(&raider);
+    assert_eq!(supplied(&s, P0, Resource::Iron), 3);
+    assert!(player_view(&s, P0).supply_cuts.is_empty());
+}
+
+#[test]
+fn only_armed_ground_units_cut_a_deposit() {
+    let (mut s, _, iron) = cut_game();
+    set_war(&mut s);
+    let settler = spawn_unit(&mut s, P1, UnitKind::Settler, iron);
+    assert_eq!(cut_by(&s, P0, iron), None);
+    assert_eq!(supplied(&s, P0, Resource::Iron), 3);
+    s.units.remove(&settler);
+    // The owner's own garrison is no cut, and a unit next to the deposit is not on it.
+    spawn_unit(&mut s, P0, UnitKind::Spearman, iron);
+    spawn_unit(&mut s, P1, UnitKind::Spearman, at(7, 5));
+    assert_eq!(supplied(&s, P0, Resource::Iron), 3);
+}
+
+#[test]
+fn a_cut_deposit_idles_its_users_and_reports_the_cut_and_the_return() {
+    let (mut s, city, iron) = cut_game();
+    set_war(&mut s);
+    let (mut s, events) = resolve_turn(&s, &BTreeMap::new());
+    assert!(
+        !events
+            .iter()
+            .any(|e| matches!(e, Event::DepositCut { .. } | Event::SupplyShortage { .. }))
+    );
+    assert!(s.player(P0).supply.iter().all(|r| !r.idle));
+
+    // The raider walks onto the deposit this turn.
+    let raider = spawn_unit(&mut s, P1, UnitKind::Spearman, at(7, 5));
+    let (s, events) = resolve_turn(
+        &s,
+        &orders(
+            P1,
+            vec![Order::MoveUnit {
+                unit: raider,
+                to: iron,
+            }],
+        ),
+    );
+    assert_eq!(s.units[&raider].pos, iron);
+    assert!(events.contains(&Event::DepositCut {
+        player: P0,
+        resource: Resource::Iron,
+        at: iron,
+        city: Some(city),
+        by: P1,
+        supply: 3,
+    }));
+    assert!(events.contains(&Event::SupplyShortage {
+        player: P0,
+        resource: Resource::Iron,
+        idle: 3,
+        supplied: 0,
+        used: 3,
+    }));
+    assert!(s.player(P0).supply.iter().all(|r| r.idle));
+    assert_eq!(iron_view(&s).idle.len(), 3);
+    // Only the deposit's owner is told.
+    let rival = crate::event_visibility::event_visibility_view(&s, P1);
+    let cut_only: Vec<Event> = events
+        .iter()
+        .filter(|e| matches!(e, Event::DepositCut { .. }))
+        .cloned()
+        .collect();
+    assert!(crate::event_visibility::visible_events(&cut_only, &rival, &rival).is_empty());
+    let mine = crate::event_visibility::event_visibility_view(&s, P0);
+    assert_eq!(
+        crate::event_visibility::visible_events(&cut_only, &mine, &mine).len(),
+        1
+    );
+
+    // A second turn under the same unit reports nothing new.
+    let (s, events) = resolve_turn(&s, &BTreeMap::new());
+    assert!(
+        !events
+            .iter()
+            .any(|e| matches!(e, Event::DepositCut { .. } | Event::DepositRestored { .. }))
+    );
+
+    let (s, events) = resolve_turn(
+        &s,
+        &orders(
+            P1,
+            vec![Order::MoveUnit {
+                unit: raider,
+                to: at(7, 5),
+            }],
+        ),
+    );
+    assert!(events.contains(&Event::DepositRestored {
+        player: P0,
+        resource: Resource::Iron,
+        at: iron,
+        city: Some(city),
+        supply: 3,
+    }));
+    assert!(s.player(P0).supply.iter().all(|r| !r.idle));
+}
+
+#[test]
+fn germany_loses_its_doubled_supply_to_a_cut_and_a_second_deposit_still_supplies() {
+    let (mut s, _, iron) = cut_game();
+    s.player_mut(P0).faction = Faction::Germany;
+    let second = at(4, 4);
+    s.map.get_mut(second).unwrap().resource = Some(Resource::Iron);
+    s.map.get_mut(second).unwrap().owner = Some(P0);
+    assert_eq!(supplied(&s, P0, Resource::Iron), 10);
+    set_war(&mut s);
+    spawn_unit(&mut s, P1, UnitKind::Spearman, iron);
+    assert_eq!(supplied(&s, P0, Resource::Iron), 4);
+    let view = iron_view(&s);
+    assert_eq!(view.supplied.total, 4);
+    assert_eq!(
+        view.deposits
+            .iter()
+            .map(|d| (d.supply, d.cut_supply))
+            .collect::<Vec<_>>(),
+        vec![(4, 0), (0, 6)]
+    );
+}

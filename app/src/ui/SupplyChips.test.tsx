@@ -274,3 +274,23 @@ it('the build card reads aircraft Oil from the generated core rules', () => {
   expect(unitNeed('Bomber')).toBe('Oil');
   expect(needText(unitNeed('Bomber')!)).toBe('Uses 1 Oil');
 });
+
+it('a cut deposit keeps its row at 0, names whose unit cuts it and what comes back, with Show on map', () => {
+  const cut = iron({
+    supplied: { total: 3, parts: [['Iron near Lugano, with a Mine: cut by an enemy unit', 0], ['Iron near Bern', 3]] },
+    deposits: [
+      { hex: { q: 4, r: 5 }, city: 1, mined: true, supply: 0, cut_by: 1, cut_supply: 3 },
+      { hex: { q: 9, r: 2 }, city: 2, mined: true, supply: 3 },
+    ],
+    used: { total: 5, parts: [['Pikeman ×5', 5]] }, idle: ['Pikeman', 'Pikeman'], spare: -2,
+  });
+  expect(supplySummary(cut)).toBe('Iron supply cut: an enemy unit stands on one of your Iron deposits. Kill it or drive it off to get 3 Iron back. 2 buildings or units are idle.');
+  const view = { cities: [], players: [{ id: 0, name: 'Ada', faction: 'Switzerland', team: 0 }, { id: 1, name: 'Bo', faction: 'Rome', team: 1 }], me: 0 } as never;
+  const tip = document.createElement('div');
+  tip.innerHTML = renderToStaticMarkup(<SupplyTip s={cut} view={view} />);
+  const note = tip.querySelector('[data-testid="supply-cut-Iron"]')!;
+  expect(note.textContent).toContain('Supply cut: an enemy unit stands on one of your Iron deposits. Kill it or drive it off to get 3 Iron back.');
+  expect(note.querySelector('button')!.textContent).toBe('Show on map');
+  expect(tip.textContent).toMatch(/Iron with a Mine, in your land: cut by .+ unit0/);
+  expect(supplySummary(iron())).not.toContain('cut');
+});

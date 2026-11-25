@@ -16,6 +16,9 @@
 //! newest users go idle until supply returns. An idle building yields nothing; an idle unit
 //! fights with `UNSUPPLIED_STRENGTH_PERCENT` less strength.
 //!
+//! **A deposit can be cut.** A military unit hostile to a deposit's owner standing on the tile
+//! cuts it (`cut_by`): the deposit supplies nothing until the unit leaves or dies.
+//!
 //! Placement (`placement`) is a separate, seeded mapgen layer run after starts are chosen.
 
 use crate::data;
@@ -291,12 +294,41 @@ pub struct Deposit {
     pub city: Option<CityId>,
     /// A Mine on the deposit (or a city built on it) adds `SUPPLY_PER_MINE`.
     pub mined: bool,
+    /// The enemy whose military unit stands on the deposit: it supplies nothing (`cut_by`).
+    pub cut: Option<PlayerId>,
 }
 
 impl Deposit {
     pub fn supply(&self) -> i32 {
-        SUPPLY_PER_DEPOSIT + if self.mined { SUPPLY_PER_MINE } else { 0 }
+        if self.cut.is_some() {
+            0
+        } else {
+            SUPPLY_PER_DEPOSIT + if self.mined { SUPPLY_PER_MINE } else { 0 }
+        }
     }
+}
+
+/// Who cuts the supply of `owner`'s deposit at `at`: the owner of a military unit standing on
+/// the tile that threatens `owner` (at War with it, or barbarians, who spare the Celts). A cut
+/// deposit supplies nothing; its tile keeps its owner, its Mine and its yield rules.
+pub fn cut_by(state: &GameState, owner: PlayerId, at: Hex) -> Option<PlayerId> {
+    state
+        .units_at(at)
+        .find(|u| {
+            crate::rules::is_military(u.kind) && crate::rules::is_threat(state, owner, u.owner)
+        })
+        .map(|u| u.owner)
+}
+
+/// Every military unit's tile that could cut a deposit of `p`, so a pass over the map asks the
+/// units once instead of once per deposit.
+fn cutters(state: &GameState, p: PlayerId) -> BTreeMap<Hex, PlayerId> {
+    state
+        .units
+        .values()
+        .filter(|u| crate::rules::is_military(u.kind) && crate::rules::is_threat(state, p, u.owner))
+        .map(|u| (u.pos, u.owner))
+        .collect()
 }
 
 /// Supply from one deposit after the owner's faction rules are applied.
@@ -321,6 +353,7 @@ pub fn mine_supply_gain(faction: Faction, off: crate::experiments::FactionRuleSe
 
 pub fn deposits(state: &GameState, p: PlayerId) -> Vec<Deposit> {
     let player = state.player(p);
+    let cutters = cutters(state, p);
     state
         .map
         .tiles
@@ -339,19 +372,24 @@ pub fn deposits(state: &GameState, p: PlayerId) -> Vec<Deposit> {
                     at,
                     city: t.city,
                     mined: t.improved || centre,
+                    cut: cutters.get(&at).copied(),
                 }
             })
         })
         .collect()
 }
 
-/// Total supply of `resource` this empire's deposits give.
+/// Total supply of `resource` this empire's deposits give. A cut deposit gives none (`cut_by`).
 pub fn supplied(state: &GameState, p: PlayerId, resource: Resource) -> i32 {
     if !is_strategic(resource) || !known_to(resource, &state.player(p).techs) {
         return 0;
     }
+    let cutters = cutters(state, p);
     state.map.tiles.iter().enumerate().fold(0, |total, (i, t)| {
-        if t.resource != Some(resource) || t.owner != Some(p) {
+        if t.resource != Some(resource)
+            || t.owner != Some(p)
+            || cutters.contains_key(&state.map.hex_at(i))
+        {
             return total;
         }
         let centre = t
@@ -1026,6 +1064,73 @@ pub fn source_counts(state: &GameState) -> SourceCounts {
     counts
 }
 
+/// Cut deposits by tile: (owner, resource, who cuts it). Compared across a turn by `announce_cuts`.
+pub type CutDeposits = BTreeMap<Hex, (PlayerId, Resource, PlayerId)>;
+
+pub fn cut_deposits(state: &GameState) -> CutDeposits {
+    state
+        .players
+        .iter()
+        .filter(|p| p.alive)
+        .flat_map(|p| {
+            deposits(state, p.id)
+                .into_iter()
+                .filter_map(move |d| Some((d.at, (p.id, d.resource, d.cut?))))
+        })
+        .collect()
+}
+
+/// Report lines for the deposit's owner: a `DepositCut` (−3 Iron supply) when a
+/// deposit is newly cut, and its return when the same owner holds it and nobody stands on it.
+pub fn announce_cuts(before: &CutDeposits, state: &GameState, events: &mut Vec<Event>) {
+    let after = cut_deposits(state);
+    let supply_at = |p: PlayerId, at: Hex| {
+        deposits(state, p)
+            .into_iter()
+            .find(|d| d.at == at)
+            .map(|d| (d.city, full_supply(state, p, d.mined)))
+    };
+    for (&at, &(player, resource, by)) in &after {
+        if before.get(&at).is_some_and(|b| b.0 == player) {
+            continue;
+        }
+        if let Some((city, supply)) = supply_at(player, at) {
+            events.push(Event::DepositCut {
+                player,
+                resource,
+                at,
+                city,
+                by,
+                supply,
+            });
+        }
+    }
+    for (&at, &(player, resource, _)) in before {
+        if after.contains_key(&at) || !state.player(player).alive {
+            continue;
+        }
+        // Lost with its tile (a captured city), it is not restored: its supply is gone.
+        if let Some((city, supply)) = supply_at(player, at) {
+            events.push(Event::DepositRestored {
+                player,
+                resource,
+                at,
+                city,
+                supply,
+            });
+        }
+    }
+}
+
+/// What a deposit of `p` supplies when nobody cuts it.
+fn full_supply(state: &GameState, p: PlayerId, mined: bool) -> i32 {
+    deposit_supply(
+        state.player(p).faction,
+        state.setup.rule_experiments.faction_rules_off,
+        mined,
+    )
+}
+
 /// Team-private report lines: "Iron found near Brasslock: +2 Iron supply", and a reveal
 /// with no deposit inside your borders yet.
 pub fn announce(before: &SourceCounts, state: &GameState, events: &mut Vec<Event>) {
@@ -1143,7 +1248,59 @@ pub struct DepositView {
     /// The city whose land it is on (None: land no city works).
     pub city: Option<CityId>,
     pub mined: bool,
+    /// What it supplies now: 0 while it is cut.
     pub supply: i32,
+    /// The enemy whose military unit stands on it and cuts its supply (`cut_by`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cut_by: Option<PlayerId>,
+    /// What it supplies again once the unit leaves or dies. 0 unless it is cut.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub cut_supply: i32,
+}
+
+fn is_zero(v: &i32) -> bool {
+    *v == 0
+}
+
+/// A cut deposit the viewer can see: its own, or one in sight whose resource it knows.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SupplyCutView {
+    pub hex: Hex,
+    pub resource: Resource,
+    pub owner: PlayerId,
+    pub by: PlayerId,
+    /// The supply the owner is without while the unit stands there.
+    pub supply: i32,
+}
+
+/// Cut deposits for `viewer`: every one of its own, and others on tiles `visible` says are in
+/// sight when the viewer knows the resource.
+pub fn supply_cut_views(
+    state: &GameState,
+    viewer: PlayerId,
+    visible: impl Fn(Hex) -> bool,
+) -> Vec<SupplyCutView> {
+    let techs = &state.player(viewer).techs;
+    let mut out: Vec<SupplyCutView> = state
+        .players
+        .iter()
+        .filter(|p| p.alive)
+        .flat_map(|p| deposits(state, p.id).into_iter().map(move |d| (p.id, d)))
+        .filter_map(|(owner, d)| {
+            let by = d.cut?;
+            (owner == viewer || (visible(d.at) && known_to(d.resource, techs))).then(|| {
+                SupplyCutView {
+                    hex: d.at,
+                    resource: d.resource,
+                    owner,
+                    by,
+                    supply: full_supply(state, owner, d.mined),
+                }
+            })
+        })
+        .collect();
+    out.sort_by_key(|c| (c.hex.q, c.hex.r));
+    out
 }
 
 pub fn supply_views(state: &GameState, p: PlayerId) -> Vec<SupplyView> {
@@ -1156,22 +1313,23 @@ pub fn supply_views(state: &GameState, p: PlayerId) -> Vec<SupplyView> {
             let r = name(resource);
             let mut supplied = Breakdown::default();
             for d in deposits.iter().filter(|d| d.resource == resource) {
-                supplied.add(
-                    format!(
-                        "{r} near {}{}",
-                        city_name(state, d.city),
-                        if d.mined {
-                            format!(", with {}", with_article_name(improvement_name(resource)))
-                        } else {
-                            String::new()
-                        }
-                    ),
-                    deposit_supply(
-                        player.faction,
-                        state.setup.rule_experiments.faction_rules_off,
-                        d.mined,
-                    ),
+                let label = format!(
+                    "{r} near {}{}",
+                    city_name(state, d.city),
+                    if d.mined {
+                        format!(", with {}", with_article_name(improvement_name(resource)))
+                    } else {
+                        String::new()
+                    }
                 );
+                if d.cut.is_some() {
+                    // A cut deposit keeps its line, at 0, so the sum shows where the supply went.
+                    supplied
+                        .parts
+                        .push((format!("{label}: cut by an enemy unit"), 0));
+                } else {
+                    supplied.add(label, full_supply(state, p, d.mined));
+                }
             }
             let mut used = Breakdown::default();
             let mut units: BTreeMap<String, i32> = BTreeMap::new();
@@ -1217,11 +1375,17 @@ pub fn supply_views(state: &GameState, p: PlayerId) -> Vec<SupplyView> {
                         hex: d.at,
                         city: d.city,
                         mined: d.mined,
-                        supply: deposit_supply(
-                            player.faction,
-                            state.setup.rule_experiments.faction_rules_off,
-                            d.mined,
-                        ),
+                        supply: if d.cut.is_some() {
+                            0
+                        } else {
+                            full_supply(state, p, d.mined)
+                        },
+                        cut_by: d.cut,
+                        cut_supply: if d.cut.is_some() {
+                            full_supply(state, p, d.mined)
+                        } else {
+                            0
+                        },
                     })
                     .collect(),
                 resource,

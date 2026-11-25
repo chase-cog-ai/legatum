@@ -4,7 +4,8 @@
 // never colour alone. The numbers and every line come from the core's `SupplyView`.
 import { RESOURCE_INFO, STRATEGIC_RESOURCES, UNSUPPLIED_STRENGTH_PERCENT, aWorks, depositHolders, empireHolds, eraResource, fixClause, idleCountText, idleEntries, resourceUsersThisEra, resourceUsers, revealHint, supplyAtWork, supplyRuleText, type IdleEntry } from '../resources';
 import type { Breakdown, Hex, PlayerView, Resource, SupplyView } from '../types';
-import { placeName } from '../empires';
+import { empireOfPlayer, placeName } from '../empires';
+import { isBarbarian } from '../barbarians';
 import { BreakdownTable, Tip } from './index';
 import { Icon, MaskIcon } from './bits';
 import { iconUrl, resourceArtUrl } from '../icons';
@@ -29,7 +30,7 @@ function blockedUpgrade(view: Pick<PlayerView, 'units' | 'me' | 'research'>, res
 }
 
 export function isMissing(view: Pick<PlayerView, 'units' | 'me' | 'research'>, s: SupplyView): boolean {
-  if (!s.revealed || s.supplied.total > 0) return false;
+  if (!s.revealed || s.supplied.total > 0 || (s.deposits?.length ?? 0) > 0) return false;
   return s.used.total > 0 || (s.held?.length ?? 0) > 0 || blockedUpgrade(view, s.resource);
 }
 
@@ -61,6 +62,8 @@ export function supplySummary(s: SupplyView): string {
   const name = RESOURCE_INFO[s.resource].name;
   if (!s.revealed) return revealHint(s.resource);
   const idle = s.idle?.length ?? 0;
+  const cut = cutText(s);
+  if (cut) return `${name} ${cut.replace(/^Supply cut/, 'supply cut')}${idle > 0 ? ` ${idleCountText(idle).replace(/^./, (c) => c.toUpperCase())}.` : ''}`;
   if (idle > 0) return `${name}: needs ${s.used.total}, supplies ${s.supplied.total}, so ${idleCountText(idle)}`;
   if (s.supplied.total === 0) return `${name}: no deposit inside your borders yet`;
   const spare = Math.max(0, s.spare);
@@ -68,18 +71,37 @@ export function supplySummary(s: SupplyView): string {
 }
 
 /** Each deposit by its tile, so two near one city read apart: "Coal with a Mine, 3 tiles N of Aarau" ("Oil with an Oil Well"). Germany's deposits supply double: the usual number, then the doubling as its own signed row. */
-function depositRows(s: SupplyView, view?: Pick<PlayerView, 'cities'>, faction?: string): Breakdown {
+function depositRows(s: SupplyView, view?: Pick<PlayerView, 'cities' | 'players'>, faction?: string): Breakdown {
   const name = RESOURCE_INFO[s.resource].name;
   if (!view || !s.deposits?.length) return s.supplied;
   const parts: [string, number][] = [];
   for (const d of s.deposits) {
     const label = `${name}${d.mined ? ` with ${aWorks(s.resource)}` : ''}, ${placeName(view, d.hex) ?? 'in your land'}`;
-    if (faction === 'Germany' && d.supply % 2 === 0) parts.push([label, d.supply / 2], [GERMANY_DOUBLE_ROW, d.supply / 2]);
+    if (d.cut_by !== undefined) parts.push([`${label}: cut by ${cutterName(view, d.cut_by)} unit`, 0]);
+    else if (faction === 'Germany' && d.supply % 2 === 0) parts.push([label, d.supply / 2], [GERMANY_DOUBLE_ROW, d.supply / 2]);
     else parts.push([label, d.supply]);
   }
   return { total: s.supplied.total, parts };
 }
 const GERMANY_DOUBLE_ROW = 'Germany: deposits supply double';
+
+/** "a barbarian" or "Rome's": whose unit stands on the deposit. */
+const cutterName = (view: Pick<PlayerView, 'players'>, by: number): string => isBarbarian(by) ? 'a barbarian' : possessiveName(empireOfPlayer(view, by).split(' · ')[0]);
+const possessiveName = (name: string): string => (name.endsWith('s') ? `${name}'` : `${name}'s`);
+
+/** The deposits an enemy unit stands on, and the supply each gives back. */
+export const cutDeposits = (s: SupplyView) => (s.deposits ?? []).filter((d) => d.cut_by !== undefined);
+
+/** "Supply cut: an enemy unit stands on one of your Iron deposits. Kill it or drive it off to get 3 Iron back." */
+export function cutText(s: SupplyView): string | null {
+  const cut = cutDeposits(s);
+  if (!cut.length) return null;
+  const name = RESOURCE_INFO[s.resource].name;
+  const back = cut.reduce((n, d) => n + (d.cut_supply ?? 0), 0);
+  return cut.length === 1
+    ? `Supply cut: an enemy unit stands on one of your ${name} deposits. Kill it or drive it off to get ${back} ${name} back.`
+    : `Supply cut: enemy units stand on ${cut.length} of your ${name} deposits. Kill them or drive them off to get ${back} ${name} back.`;
+}
 
 /** The missing-resource alert: what needs it, who holds the deposits you have seen, and the nearest one to look at. */
 export interface MissingNote { users: string; holders: string; target: Hex | null }
@@ -103,6 +125,10 @@ export function SupplyTip({ s, idleEntries: entries, view, missing, era }: { s: 
     <div className="bd-note supply-users">Used for{era !== undefined ? ' this era' : ''}: {era === undefined ? resourceUsers(s.resource, faction) ?? 'buildings and units' : resourceUsersThisEra(s.resource, era, faction)}.</div>
     {idle.length > 0 && <div className="bd-note supply-short-note">
       <Icon name="ui-alert" size={12} className="ui-mark" /> Short of {name}: {idleCountText(idle.length)}. An idle building yields nothing and an idle unit fights {UNSUPPLIED_STRENGTH_PERCENT}% weaker until supply returns. The newest go idle first.
+    </div>}
+    {cutText(s) && <div className="bd-note supply-short-note supply-cut-note" data-testid={`supply-cut-${s.resource}`}>
+      <Icon name="ui-alert" size={12} className="ui-mark" /> {cutText(s)}
+      {cutDeposits(s).map((d, i) => <span key={`${d.hex.q},${d.hex.r}`}> <button type="button" className="link supply-show-map" onClick={() => useGame.getState().jumpTo(d.hex, true)}>{cutDeposits(s).length > 1 ? `Show deposit ${i + 1}` : 'Show on map'}</button></span>)}
     </div>}
     {s.supplied.parts.length > 0
       ? <BreakdownTable b={depositRows(s, view, faction)} title={`${name} supplied`} plain signedLabels={[GERMANY_DOUBLE_ROW]} />
@@ -175,15 +201,17 @@ export function SupplyChips({ view }: { view: PlayerView }) {
       </Tip>;
       const blockedBuild = view.cities.some((c) => c.owner === view.me && c.detail?.options.some((o) => o.supply_need === s.resource && !!o.resource_blocker));
       const upgradeShort = blockedUpgrade(view, s.resource);
-      const short = s.used.total > s.supplied.total || isShort(s) || (s.spare <= 0 && (blockedBuild || upgradeShort));
+      const cut = cutDeposits(s).length > 0;
+      const short = cut || s.used.total > s.supplied.total || isShort(s) || (s.spare <= 0 && (blockedBuild || upgradeShort));
       const missing = isMissing(view, s);
       return <Tip key={s.resource} rich content={<SupplyTip s={s} idleEntries={idleEntries(view, s)} view={view} era={view.research.era} missing={missing ? missingNote(view, s.resource) : undefined} />}
         summary={`${name}: ${supplyFraction(s)} spare/total. ${missing ? missingLine(view, s.resource) : supplySummary(s)}`}
         className={`stat supply-stat supply-${s.resource.toLowerCase()}${s.resource === mine ? ' supply-era' : ''}${short || missing ? ' supply-short' : ''}${missing ? ' supply-missing' : ''}`}>
         <SupplyIcon resource={s.resource} size={24} />
         <span className="supply-name">{name}</span>
-        {(short || missing) && <Icon name="ui-alert" size={13} className="ui-mark supply-alert" label={missing ? `Missing ${name}` : `No ${name} to spare`} />}
+        {(short || missing) && <Icon name="ui-alert" size={13} className="ui-mark supply-alert" label={cut ? `${name} supply cut` : missing ? `Missing ${name}` : `No ${name} to spare`} />}
         <b data-testid={`supply-${s.resource}`} data-spare={Math.max(0, s.spare)} aria-label={`${name}: ${supplyFraction(s)} spare and total`}>{supplyFraction(s)}</b>
+        {cut && <span className="supply-idle supply-cut neg">cut</span>}
         {isShort(s) && <span className="supply-idle neg">{s.idle!.length} idle</span>}
       </Tip>;
     })}

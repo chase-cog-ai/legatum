@@ -51,7 +51,7 @@ export function eventIcon(e: Event, faction?: (player: number) => Faction | unde
     case 'RuinExplored': return 'emblem-ruin';
     case 'WonderDiscovered': return `wonder:${e.wonder}`;
     case 'BarbarianCampCleared': return 'emblem-camp';
-    case 'ResourcesRevealed': case 'SupplyShortage': return `resource-${e.resource.toLowerCase()}`;
+    case 'ResourcesRevealed': case 'SupplyShortage': case 'DepositCut': case 'DepositRestored': return `resource-${e.resource.toLowerCase()}`;
     case 'HeirBorn': return 'unit-heirtothethrone';
     case 'CompanyHired': return 'yield-gold';
     case 'CompanyDeparted': case 'CompanyTurned': return unitIconName(e.unit, faction?.(e.owner));

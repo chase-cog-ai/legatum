@@ -13,7 +13,9 @@
 //!   units of an older era that could upgrade into it) against what it supplies;
 //! - `transfers`: deposits of each resource that passed from one empire to another, and how many
 //!   went with a captured city; captures of cities holding a deposit;
-//! - `shortages`: games and empires that ever had a user idle for lack of supply.
+//! - `shortages`: games and empires that ever had a user idle for lack of supply;
+//! - `cuts`: deposits cut by an enemy unit standing on them: how often, by whom, for how long, and
+//!   how often a cut left a user idle.
 use legatum_ai::{AiParams, Brain, ScriptedBrain};
 use legatum_core::resources::{self, Resource, SupplyUser};
 use legatum_core::rng::{Rng, purpose};
@@ -58,6 +60,16 @@ struct Out {
     captures: u32,
     deposit_city_captures: u32,
     shortage_empires: BTreeSet<u8>,
+    /// Deposits cut by an enemy unit standing on them (`Event::DepositCut`).
+    cuts: u32,
+    barbarian_cuts: u32,
+    /// Supply those cuts took, summed over cuts.
+    cut_supply: u32,
+    /// Turns a deposit stayed cut, summed over deposits.
+    cut_turns: u32,
+    cut_empires: BTreeSet<u8>,
+    /// Shortages with an idle user in a resource whose deposit was cut that turn.
+    cut_shortages: u32,
     turns: u32,
 }
 
@@ -218,8 +230,26 @@ fn play(seed: u64, params: &'static AiParams) -> Out {
                         out.deposit_city_captures += u32::from(deposit);
                     }
                 }
-                Event::SupplyShortage { player, idle, .. } if *idle > 0 => {
+                Event::SupplyShortage {
+                    player,
+                    resource,
+                    idle,
+                    ..
+                } if *idle > 0 => {
                     out.shortage_empires.insert(player.0);
+                    out.cut_shortages += u32::from(
+                        resources::cut_deposits(&state)
+                            .values()
+                            .any(|(owner, r, _)| owner == player && r == resource),
+                    );
+                }
+                Event::DepositCut {
+                    player, by, supply, ..
+                } => {
+                    out.cuts += 1;
+                    out.barbarian_cuts += u32::from(by.is_barbarian());
+                    out.cut_supply += *supply as u32;
+                    out.cut_empires.insert(player.0);
                 }
                 _ => {}
             }
@@ -237,6 +267,7 @@ fn play(seed: u64, params: &'static AiParams) -> Out {
                 }
             }
         }
+        out.cut_turns += resources::cut_deposits(&state).len() as u32;
         owners = now;
         if SNAPSHOTS.contains(&turn) {
             let snaps = state
@@ -377,6 +408,15 @@ fn main() {
             "shortages": {
                 "games_with_any": outs.iter().filter(|o| !o.shortage_empires.is_empty()).count(),
                 "empires_ever_short": total(|o| o.shortage_empires.len() as u32),
+            },
+            "cuts": {
+                "games_with_any": outs.iter().filter(|o| o.cuts > 0).count(),
+                "cuts_per_game": round2(total(|o| o.cuts) as f64 / games as f64),
+                "by_barbarians_per_game": round2(total(|o| o.barbarian_cuts) as f64 / games as f64),
+                "supply_cut_per_cut": round2(total(|o| o.cut_supply) as f64 / total(|o| o.cuts).max(1) as f64),
+                "turns_per_cut": round2(total(|o| o.cut_turns) as f64 / total(|o| o.cuts).max(1) as f64),
+                "empires_ever_cut_per_game": round2(total(|o| o.cut_empires.len() as u32) as f64 / games as f64),
+                "cuts_that_idled_a_user_per_game": round2(total(|o| o.cut_shortages) as f64 / games as f64),
             },
         }))
         .unwrap()

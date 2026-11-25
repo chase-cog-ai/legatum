@@ -286,6 +286,8 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
     ['restored, yours', ev({ type: 'SupplyShortage', player: 0, resource: 'Iron', idle: 0, supplied: 8, used: 8 }), 'good'],
     ['a rival’s', ev({ type: 'SupplyShortage', player: 2, resource: 'Iron', idle: 2, supplied: 6, used: 8 }), 'neutral'],
   ],
+  DepositCut: [['yours', ev({ type: 'DepositCut', player: 0, resource: 'Iron', at, city: 1, by: 2, supply: 3 }), 'bad']],
+  DepositRestored: [['yours', ev({ type: 'DepositRestored', player: 0, resource: 'Iron', at, city: 1, supply: 3 }), 'good']],
   UnitPromoted: [['yours', ev({ type: 'UnitPromoted', unit: 7, owner: 0, unit_kind: 'Archer', level: 2, at }), 'good']],
   OrderFailed: [['yours', ev({ type: 'OrderFailed', player: 0, reason: 'no' }), 'bad']],
   PlayerEliminated: [

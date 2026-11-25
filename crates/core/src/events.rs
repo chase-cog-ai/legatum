@@ -754,6 +754,26 @@ pub enum Event {
         #[serde(alias = "per_turn")]
         supply: i32,
     },
+    /// An enemy military unit of `by` now stands on `player`'s strategic deposit at `at` and cuts
+    /// its `supply` (`resources::cut_by`). Team-private: the enemy sees the cut on the map
+    /// (`PlayerView::supply_cuts`) only if it knows the resource.
+    DepositCut {
+        player: PlayerId,
+        resource: crate::resources::Resource,
+        at: Hex,
+        city: Option<CityId>,
+        by: PlayerId,
+        supply: i32,
+    },
+    /// The unit that cut `player`'s deposit at `at` left or died: its `supply` is back.
+    /// Team-private.
+    DepositRestored {
+        player: PlayerId,
+        resource: crate::resources::Resource,
+        at: Hex,
+        city: Option<CityId>,
+        supply: i32,
+    },
     /// The number of this empire's buildings and units idle for lack of `resource` changed
     /// (0: supply covers every user again). Team-private.
     SupplyShortage {

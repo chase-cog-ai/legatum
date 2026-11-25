@@ -274,6 +274,8 @@ pub fn visible_events(
                 | Event::VeteranRetired { player, .. }
                 | Event::ResourcesRevealed { player, .. }
                 | Event::SupplyShortage { player, .. }
+                | Event::DepositCut { player, .. }
+                | Event::DepositRestored { player, .. }
                 | Event::ResearchQueueAdvanced { player, .. }
                 | Event::OrderFailed { player, .. } => teammates.contains(player),
             };

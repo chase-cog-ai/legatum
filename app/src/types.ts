@@ -239,6 +239,21 @@ interface DepositView {
   hex: Hex;
   city: CityId | null;
   mined: boolean;
+  /** What it supplies now: 0 while it is cut. */
+  supply: number;
+  /** The enemy whose military unit stands on it and cuts its supply. Omitted when not cut. */
+  cut_by?: PlayerId;
+  /** What it supplies again once that unit leaves or dies. Omitted when not cut. */
+  cut_supply?: number;
+}
+
+/** A strategic deposit an enemy military unit stands on, so it supplies nothing (core `resources::SupplyCutView`). */
+export interface SupplyCutView {
+  hex: Hex;
+  resource: Resource;
+  owner: PlayerId;
+  by: PlayerId;
+  /** The supply the owner is without while the unit stands there. */
   supply: number;
 }
 
@@ -969,6 +984,8 @@ export interface PlayerView {
   economy: EconomyView;
   /** Strategic supply, one per strategic resource, revealed or not. */
   supply?: SupplyView[];
+  /** Cut deposits: your own, and any in sight whose resource you know. Omitted when empty. */
+  supply_cuts?: SupplyCutView[];
   research: ResearchView;
   /** Every era after the first, with its public objectives. */
   eras: EraView[];
@@ -1273,6 +1290,10 @@ export type Event =
   | { type: 'ResourcesRevealed'; player: PlayerId; resource: Resource; city: CityId | null; sources: number; supply: number }
   /** The number of your buildings and units idle for lack of `resource` changed (0: supply covers every user again). */
   | { type: 'SupplyShortage'; player: PlayerId; resource: Resource; idle: number; supplied: number; used: number }
+  /** An enemy military unit of `by` stands on your deposit at `at`: it supplies nothing while the unit is there. */
+  | { type: 'DepositCut'; player: PlayerId; resource: Resource; at: Hex; city: CityId | null; by: PlayerId; supply: number }
+  /** The unit that cut your deposit at `at` left or died: its `supply` is back. */
+  | { type: 'DepositRestored'; player: PlayerId; resource: Resource; at: Hex; city: CityId | null; supply: number }
   | { type: 'UnitPromoted'; unit: UnitId; owner: PlayerId; unit_kind: UnitKind; level: number; at: Hex }
   | { type: 'SpartaKillHeal'; player: PlayerId; unit: UnitId; victim_owner: PlayerId; unit_kind: UnitKind; hp_healed: number }
   | { type: 'SpartaConquest'; city: CityId; player: PlayerId; units_healed: number }

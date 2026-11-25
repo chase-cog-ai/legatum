@@ -4698,7 +4698,7 @@ mod siege_sortie_tests {
     use crate::fixture::{ENEMY, ME, ViewBuilder, brain, off};
     use legatum_core::{AiDifficulty, Order, UnitKind};
 
-    /// Rules 60: an army at War on a city's tile takes that tile's yield until it is driven off.
+    /// Rules 61: an army at War on a city's tile takes that tile's yield until it is driven off.
     /// Home units already strike an enemy within two tiles of their city, so the AI clears it.
     #[test]
     fn home_units_sortie_against_an_army_holding_a_city_tile() {

@@ -172,6 +172,7 @@ impl ViewBuilder {
                 economy: 0,
                 army: 0,
                 advancement: 0,
+                science: 0,
                 power: 0,
                 lead_percent: 0,
                 decadence_percent: 0,
@@ -248,6 +249,7 @@ impl ViewBuilder {
                     turns_left: None,
                     known: Vec::new(),
                     skipped: Vec::new(),
+                    goal: None,
                     available: Vec::new(),
                     catalog: Vec::new(),
                     unlocks: Vec::new(),
@@ -964,6 +966,7 @@ pub fn assert_valid(view: &PlayerView, orders: &[Order]) {
             Order::SetScienceConversion { .. } => {
                 assert_eq!(view.research.known.len(), legatum_core::TechId::ALL.len());
             }
+            Order::SetResearchGoal { .. } => panic!("the AI never sets a research goal"),
         }
     }
     assert!(research <= 1, "more than one research order");

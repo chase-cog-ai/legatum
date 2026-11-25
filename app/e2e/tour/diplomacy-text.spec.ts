@@ -6,7 +6,6 @@ import { test, expect } from '../fixtures';
 import { coreFixture } from '../../src/test/coreFixture';
 import { diplomacyState } from '../../src/test/diplomacyFixture';
 import { createState, makeStandardSetup, meetAll } from '../../src/test/fixtureEngine';
-import { revealSidebar } from '../sidebarAssertions';
 import { SIZES, loadFixture, shot } from './helpers';
 
 test.describe.configure({ mode: 'parallel' });
@@ -38,7 +37,6 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     const rel = state.diplomacy!.relations.find((r) => (r.a === 0 && r.b === 1) || (r.a === 1 && r.b === 0))!;
     Object.assign(rel, { state: 'Alliance', effective_turn: 12, guarantee_until: 15, version: 1, security: { id: 1, started_turn: 12, protected_until: 22 } });
     await loadFixture(page, coreFixture(state), 20);
-    await revealSidebar(page, 'standings');
     await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
     const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
     await expect(inbox).toBeVisible();

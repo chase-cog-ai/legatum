@@ -1,4 +1,3 @@
-import { revealSidebar } from './sidebarAssertions';
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 import { endPlanning } from './turnActions';
@@ -36,9 +35,8 @@ test('Diplomacy: an incoming Peace offer opens the inbox and resolves next turn'
   state.diplomacy!.proposals = [{ id: 1, from: 1, to: 0, proposer: 1, kind: 'Peace',
     created_turn: 3, respond_by: 5, relation_version: 1, consents: [1] }];
   await loadSave(page, coreFixture(state), 3);
-  await revealSidebar(page, 'standings');
   const inbox = page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ });
-  await expect(page.locator('.vp-row .vhc-rel.war')).toBeVisible();
+  await expect(page.locator('.rv-row .rv-rel.war')).toBeVisible();
   await expect(inbox).toHaveText('Diplomacy (1)');
   await expect(page.getByRole('button', { name: /^Respond to offer/ })).toBeVisible();
   await inbox.click();
@@ -54,14 +52,13 @@ test('Diplomacy: an incoming Peace offer opens the inbox and resolves next turn'
   await endPlanning(page);
   await expect(page.getByTestId('turn-number')).toHaveText('4');
   await expect(inbox).toHaveText('Diplomacy');
-  await expect(page.locator('.vp-row .vhc-rel.peace')).toBeVisible();
+  await expect(page.locator('.rv-row .rv-rel.peace')).toBeVisible();
 });
 
 for (const [width, height] of [[1000, 600], [1440, 900]] as const) {
   test(`Diplomacy: an empire you haven't met can't be offered an Alliance; the row says why once (${width}×${height})`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await loadSave(page, diplomacyCoreSave(1, { strangers: true }), 1);
-    await revealSidebar(page, 'standings');
     await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
     const panel = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
     const offer = panel.getByRole('button', { name: 'Offer Alliance', exact: true });
@@ -81,7 +78,6 @@ for (const [width, height] of [[1000, 600], [1440, 900]] as const) {
 
 test('Diplomacy: an outgoing offer never counts in the inbox badge', async ({ page }) => {
   await loadSave(page, diplomacyCoreSave(), 1);
-  await revealSidebar(page, 'standings');
   const inbox = page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ });
   await inbox.click();
   await page.getByRole('button', { name: 'Offer Alliance', exact: true }).click();
@@ -108,7 +104,6 @@ test('Diplomacy: the inbox and the advisor share the story area, one at a time (
   await expect(page.getByTestId('turn-number')).toHaveText('1');
   const hint = page.getByTestId('advisor');
   await expect(hint).toBeVisible();
-  await revealSidebar(page, 'standings');
   await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
   const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
   await expect(inbox).toBeVisible();
@@ -119,7 +114,6 @@ test('Diplomacy: the inbox and the advisor share the story area, one at a time (
 
 test('Diplomacy: a human offers an alliance and sees the AI decision and its reasons', async ({ page }) => {
   await loadSave(page, diplomacyCoreSave(16), 16);
-  await revealSidebar(page, 'standings');
   const inbox = page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ });
   await inbox.click();
   const offer = page.getByRole('button', { name: 'Offer Alliance', exact: true });

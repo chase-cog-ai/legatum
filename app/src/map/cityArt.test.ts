@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { CITY_ERAS, CITY_TIERS, cityArtArrivals, cityArtEpoch, cityImage, cityStem, cityTier, cityUrl, markStem, missingCityArt, spriteSize, traceCityArt, wallStem, wallTierOf } from './cityArt';
+import { CITY_ERAS, CITY_TIERS, cityArtArrivals, cityArtEpoch, cityImage, cityStem, cityTier, cityUrl, markStem, missingCityArt, ringEraOf, spriteSize, traceCityArt, wallStem, wallTierOf } from './cityArt';
 
 const only = (...stems: string[]) => (stem: string, size: 64 | 128 | 512) => size === 512 && stems.includes(stem);
 
@@ -39,6 +39,9 @@ describe('city art', () => {
 
   it('wall overlays: each era owns its art, with a star fort for the Alpine Redoubt', () => {
     expect(wallStem(2, false)).toBe('medieval-walls');
+    // The ring follows the Walls level, not the owner's era: I Ancient .. IX Future.
+    expect([1, 2, 4, 9].map((level) => wallStem(ringEraOf(level), false))).toEqual(['ancient-walls', 'classical-walls', 'renaissance-walls', 'future-walls']);
+    expect(ringEraOf(0)).toBe(0);
     for (const era of [5, 6, 7, 8]) expect(wallStem(era, false)).toBe(`${CITY_ERAS[era]}-walls`);
     expect(wallStem(0, true)).toBe('renaissance-walls');
     expect(wallStem(3, false, only('ancient-walls'))).toBe('ancient-walls');

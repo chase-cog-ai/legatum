@@ -19,7 +19,7 @@ it('the detector flags every artifact the user described and passes clean prose'
   for (const bad of ['152 Production,.', 'a , b', 'x ;.', 'x :.', 'wait..', 'a ,b', 'a .b', 'a,, b', 'Cost ( )', 'Cost ()', ', and more', 'one  two', 'undefined Gold', 'NaN turns', 'null', 'A · · B', 'Walls,', 'Walls ·', 'Walls -']) {
     expect(artifactsIn(bad), bad).not.toEqual([]);
   }
-  for (const good of ['Requires Masonry. The city fires like any walled city.', 'Wait… what', 'Wait...', '+3 Production, −1 Gold', '152 Production', 'Sees 3 hexes.', 'Cost (Gold)', 'Peace · 7 turns', 'Level 1.5', '—', 'Buy—', '· 7 of 10 VP', 'Hit −18 HP (82 left)+']) {
+  for (const good of ['Requires Masonry. The city fires like any walled city.', 'Wait… what', 'Wait...', '+3 Production, −1 Gold', '152 Production', 'Sees 3 hexes.', 'Cost (Gold)', 'Peace · 7 turns', 'Level 1.5', '—', 'Buy—', '· 7 of 10 VP', 'Hit −18 health (82 left)+']) {
     expect(artifactsIn(good), good).toEqual([]);
   }
   // The exact markup of the bug: a card's cost amount followed by what a regex left behind.

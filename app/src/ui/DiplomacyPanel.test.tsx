@@ -39,9 +39,7 @@ const labelled = (label: string) => [...container.querySelectorAll<HTMLButtonEle
 it('shows the recorded AI level in diplomacy and the victory race', () => {
   act(() => root.render(<><VpTrack /><DiplomacyPanel /></>));
   expect([...container.querySelectorAll('.empire-pick-level')].map((e) => e.textContent)).toContain('AI · Normal');
-  const standings = container.querySelector<HTMLDetailsElement>('.sidebar-standings')!;
-  act(() => { standings.open = true; });
-  expect([...container.querySelectorAll('.vp-ai-level')].map((e) => e.textContent)).toContain('AI · Normal');
+  expect([...container.querySelectorAll('.rivals button.rv-row')].map((e) => e.getAttribute('title'))).toContain('AI · Normal. Open Diplomacy');
 });
 
 /** Our view with 120 Gold and +7 net Gold per turn, and the Alliance upkeep. */

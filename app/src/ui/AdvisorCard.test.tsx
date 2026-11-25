@@ -10,6 +10,7 @@ import { Advisor, targetElement } from './Advisor';
 import { useAdvisor } from './advisorModel';
 import { CityPanel } from './CityPanel';
 import { UnitPanel } from './UnitPanel';
+import { TechTree } from './TechTree';
 
 let view: PlayerView;
 let client: FixtureClient;
@@ -56,6 +57,19 @@ it('points at the "Also" list when the build it recommends is folded inside it',
   expect(control('build', 'u:Spearman')?.tagName).toBe('SUMMARY');
   document.querySelector('details')!.open = true;
   expect(control('build', 'u:Spearman')?.className).toBe('prod');
+  document.body.innerHTML = '';
+});
+
+it('points at the recommended technology: its tree node first, else its era card Research now', () => {
+  const tech = view.research.available[0].tech;
+  const pick = () => targetElement({ kind: 'control', name: 'tech', value: tech });
+  const tree = render(<dialog className="tech-modal" open><TechTree view={view} faction={view.players.find((p) => p.id === view.me)!.faction} queue={[]} schedule={[]} goal={null} locked={false}
+    onResearchNow={() => {}} onQueue={() => {}} onGoal={() => {}} /></dialog>);
+  expect(pick()?.classList.contains('tree-node')).toBe(true);
+  expect(pick()?.dataset.tech).toBe(tech);
+  tree.unmount();
+  document.body.innerHTML = `<dialog class="tech-modal" open><div class="era-card" data-tech="${tech}"><button data-testid="research-now">Research now</button></div></dialog>`;
+  expect(pick()?.getAttribute('data-testid')).toBe('research-now');
   document.body.innerHTML = '';
 });
 

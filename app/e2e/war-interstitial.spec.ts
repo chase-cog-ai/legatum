@@ -74,7 +74,7 @@ test('War declared on you: a full-screen declaration before the report; Return c
   const line = report(page).locator('.rline', { hasText: /Sparta declared war/ });
   await expect(line).toHaveAttribute('data-tone', 'bad');
   await expect(line.locator('.rline-tone .rm.bad .rm-sign .mask-icon')).toHaveCount(1);
-  await expect(page.locator('.vp-row .vhc-rel.war.new')).toHaveAttribute('data-relation', /War/);
+  await expect(page.locator('.rv-row .rv-rel.war.new')).toHaveAttribute('data-relation', /War/);
   // Once seen, it does not come back this turn.
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('alarm-screen')).toHaveCount(0);

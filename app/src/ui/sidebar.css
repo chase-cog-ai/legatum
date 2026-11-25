@@ -26,10 +26,6 @@
 .right-sidebar .vhc-head h3 { font-size: 17px; white-space: normal; }
 .right-sidebar .vhc-head .link { font-size: 12px; }
 .race-headline { padding: 0 12px 6px; }
-.race-score { display: flex; align-items: center; gap: 10px; }
-.race-score > svg { border: 1px solid var(--gilt); border-radius: 50%; padding: 5px; box-sizing: content-box; }
-.race-score > span { font: 12px var(--sans); color: var(--ink-2); }
-.race-score b { display: block; color: var(--ink); font: 600 25px/1.2 var(--display); }
 .right-sidebar .vhc-holds-list { margin: 0; padding: 0; }
 .right-sidebar .vhc-hold { margin: 0; padding: 5px 0; border: 0; border-bottom: 1px solid var(--gilt); box-shadow: none; background: none; display: grid; grid-template-columns: 14px 1fr; gap: 4px; }
 .right-sidebar .vhc-hold-text b { font: 600 23px/1.1 var(--display); white-space: normal; }
@@ -39,7 +35,7 @@
 .right-sidebar summary { cursor: pointer; font: 500 12px/1.4 var(--sans); padding: 6px 0; overflow-wrap: break-word; }
 .right-sidebar summary::marker { color: var(--ink-2); }
 .right-sidebar summary:hover, .right-sidebar summary:focus-visible { color: var(--accent); }
-.sidebar-alerts, .sidebar-objective, .sidebar-standings, .sidebar-goal, .sidebar-turn-more { margin: 0 12px; border-bottom: 1px solid var(--rule-2); }
+.sidebar-alerts, .sidebar-objective, .sidebar-goal, .sidebar-turn-more { margin: 0 12px; border-bottom: 1px solid var(--rule-2); }
 .sidebar-alerts summary { color: var(--bad); }
 .sidebar-alerts summary > svg { vertical-align: middle; margin-right: 4px; }
 .sidebar-alerts .rival-win { padding: 6px 0; font-size: 12px; }
@@ -52,13 +48,8 @@ h3.sidebar-section-link { margin: 0 0 5px; }
 .sidebar-next .eo-lines.compact .eo-line { background: none; padding: 2px 0 6px; }
 .sidebar-next .eo-lines.compact .eo-bar { top: auto; bottom: 0; height: 2px; background: var(--rule-2); }
 .sidebar-next .eo-lines.compact .eo-bar i { background: var(--gilt); }
-.sidebar-standings summary > span { float: right; color: var(--ink-2); font-size: 11px; }
-:root .game .right-sidebar .vp-rows { max-height: none; overflow: visible; padding: 0; }
 :root .game .right-sidebar .vp-row.mine { position: static; }
 .right-sidebar .vp-row { min-width: 0; grid-template-columns: auto minmax(0, 1fr) auto; }
-.right-sidebar .vp-row .vhc-holds { grid-row: 2; grid-column: 1 / -1; justify-content: flex-start; padding-bottom: 4px; }
-.right-sidebar .vp-team-name { white-space: normal; max-width: none; overflow: visible; }
-.right-sidebar .vp-label { min-width: 0; }
 .right-sidebar .vp-foot { padding: 5px 12px; display: flex; justify-content: space-between; }
 .right-sidebar .vp-foot .link { font-size: 12px; }
 .right-sidebar .turn-details { display: contents; }
@@ -101,10 +92,6 @@ h3.sidebar-section-link { margin: 0 0 5px; }
    as little as they can and visibly pass under an edge instead of being sliced mid-row. */
 @media (max-height: 700px) {
   .right-sidebar .race-headline { padding-bottom: 4px; border-bottom: 1px solid var(--rule-2); }
-  .right-sidebar .race-score { gap: 8px; }
-  .right-sidebar .race-score > svg { width: 20px; height: 20px; padding: 3px; }
-  .right-sidebar .race-score > span { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; }
-  .right-sidebar .race-score b { display: inline; font-size: 21px; }
   .right-sidebar .sidebar-scroll { scroll-padding-top: 44px; }
   .right-sidebar .sidebar-scroll summary { scroll-margin-top: 44px; }
 }
@@ -117,8 +104,7 @@ h3.sidebar-section-link { margin: 0 0 5px; }
   /* The slim rail is about 175 px wide inside the button: a long action name ("Kindle the New Fire") must not touch its edges. */
   .game:has(.unit-panel) .right-sidebar .cta-label { font-size: 19px; }
   /* Counts stack under the name (a float wrapped across the divider and the next row). */
-  .game:has(.unit-panel) .right-sidebar .sidebar-goal summary > span:last-child,
-  .game:has(.unit-panel) .right-sidebar .sidebar-standings summary > span:last-child { float: none; display: block; padding-bottom: 2px; }
+  .game:has(.unit-panel) .right-sidebar .sidebar-goal summary > span:last-child { float: none; display: block; padding-bottom: 2px; }
 }
 .right-sidebar .turn-details > .ph .ph-sub:has(> :only-child) { display: block; }
 @media (min-height: 701px) {
@@ -142,14 +128,13 @@ h3.sidebar-section-link { margin: 0 0 5px; }
 
 .right-sidebar .turn-details .last-turn { font-size: 10px; padding: 0; min-height: 20px; gap: 4px; }
 .right-sidebar .turn-details .last-turn .kbd { display: none; }
-.right-sidebar .sidebar-standings > summary { position: relative; }
 /* Expanded alarms use the column's scroll budget, so their facts never need a squeezed strip. */
 .right-sidebar .siege-alerts { padding: 5px 0; }
 .right-sidebar .siege-card { border: 0; border-left: 2px solid var(--siege); background: none; padding: 6px 8px; gap: 5px; }
 .right-sidebar .siege-head { flex-wrap: wrap; }
 .right-sidebar .siege-title { flex: 1; font-size: 16px; }
 .right-sidebar .siege-empire, .right-sidebar .siege-compact-facts, .right-sidebar .siege-go-short { display: none; }
-.right-sidebar .siege-hp { display: grid; }
+.right-sidebar .siege-hp { display: flex; }
 .right-sidebar .siege-forecast { display: flex; font-size: 12px; }
 .right-sidebar .siege-who, .right-sidebar .siege-go-full { display: inline; }
 .right-sidebar .siege-card .siege-foot { position: static; flex-wrap: wrap; }

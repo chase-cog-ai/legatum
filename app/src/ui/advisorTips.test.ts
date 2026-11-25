@@ -31,13 +31,21 @@ describe('situational tips', () => {
   it('warns that a much stronger neighbour may attack, with the numbers', async () => {
     const v = await game();
     const r = rival(v);
-    v.players = v.players.map((p) => p.id === v.me ? { ...p, army: 12 } : p.id === r.id ? { ...p, army: 40 } : p);
+    // Team totals: your ally has no army here.
+    v.players = v.players.map((p) => p.id === v.me ? { ...p, army: 12 } : p.team === v.team ? { ...p, army: 0 } : p.id === r.id ? { ...p, army: 40 } : p);
     const city = mine(v);
     v.cities.push({ ...city, id: 7001, owner: r.id, name: 'Rival town', pos: neighbors(neighbors(city.pos)[0])[0] });
     const tip = strategyTip(v, {});
     expect(tip).toMatchObject({ id: 'tip:army', title: 'Build up your army', acknowledge: true, tip: true });
     expect(tip!.why).toMatch(/^Army points: .+ 40, you 12\./);
     expect(tip!.why).not.toContain('AI ');
+    // An ally's army counts as yours, so a strong team gets no warning.
+    const ally = v.players.find((p) => p.id !== v.me && p.team === v.team);
+    expect(ally).toBeTruthy();
+    if (ally) {
+      v.players = v.players.map((p) => (p.id === ally.id ? { ...p, army: 30 } : p));
+      expect(strategyTip(v, {})?.id).not.toBe('tip:army');
+    }
   });
 
   it('offers to buy a tile with the resource you lack, else to found a city by it', async () => {

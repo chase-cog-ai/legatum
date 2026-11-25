@@ -6,7 +6,6 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FixtureClient } from '../test/fixtureEngine';
 import { useGame } from '../store';
-import { VpTrack } from './VpTrack';
 import { UnitPanel } from './UnitPanel';
 import { TileCard } from './TileCard';
 import { heirLines } from './HeirNote';
@@ -96,40 +95,6 @@ describe('the capture line on a tile', () => {
 });
 
 describe('the race panel', () => {
-  const render = () => {
-    useGame.setState({ client, views: [view], humans: [0], orders: [[]], errors: [[]], seat: 0 });
-    act(() => root.render(<div className="game"><div className="seatbar" /><VpTrack /></div>));
-  };
-
-  it('puts Byzantium’s goal token in the holder’s row, wearing Byzantium’s crest, outlined (it can be captured)', () => {
-    rival().vp_sources.push([{ kind: 'FactionGoal', of: byzantium().id }, 2]);
-    render();
-    const tok = host.querySelector<HTMLElement>(`.panel.vp [data-source="goal-${byzantium().id}"][data-owner="${rival().id}"]`)!;
-    expect(tok).not.toBeNull();
-    expect(tok.classList.contains('live')).toBe(true);
-    expect(tok.getAttribute('aria-label')).toMatch(/held: can be captured/);
-    // Not in Byzantium's own row, and not a pending crest there either.
-    expect(host.querySelector(`.panel.vp [data-source="goal-${byzantium().id}"][data-owner="${byzantium().id}"]`)).toBeNull();
-    act(() => tok.focus());
-    const card = document.querySelector('.vhc-pop')!;
-    expect(card.querySelector('h3')!.textContent).toBe('The Heir to the Throne');
-    expect(card.textContent).toContain('Held goal');
-    expect(card.querySelector('.vh-held')!.textContent).toContain('holds the Heir');
-  });
-
-  it('a click on the held token of a visible Heir to the Throne pans the map to him, and the card says so', () => {
-    rival().vp_sources.push([{ kind: 'FactionGoal', of: byzantium().id }, 2]);
-    view.units.push(heir(rival().id));
-    const jumpTo = vi.fn();
-    render();
-    useGame.setState({ jumpTo });
-    const tok = host.querySelector<HTMLElement>(`.panel.vp [data-source="goal-${byzantium().id}"][data-owner="${rival().id}"]`)!;
-    expect(tok.getAttribute('aria-label')).toMatch(/show him on the map/);
-    act(() => { tok.click(); });
-    expect(jumpTo).toHaveBeenCalledWith(heir(rival().id).pos);
-    expect(document.querySelector('[data-testid="heir-locate-hint"]')).not.toBeNull();
-  });
-
   it('Byzantium’s own goal line says who holds him, or that nobody does', () => {
     const asByzantium = structuredClone(client.view(1));
     const mine = asByzantium.players.find((p) => p.id === asByzantium.me)!;

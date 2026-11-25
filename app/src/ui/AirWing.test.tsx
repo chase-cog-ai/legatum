@@ -76,7 +76,7 @@ describe.skipIf(!available)('the air wing of a city, on the Rust engine', () => 
     expect(useGame.getState().air).toMatchObject({ plane: 900, what: 'strike' });
     const rows = [...container.querySelectorAll<HTMLButtonElement>('.air-target')];
     expect(rows.length).toBeGreaterThan(0);
-    expect(rows[0].textContent).toMatch(/Destroys it|about −\d+ HP/);
+    expect(rows[0].textContent).toMatch(/Destroys it|about −\d+ health/);
     const spearman = rows.find((r) => /^Spearman · Byzantium\d+ tiles/.test(r.textContent ?? ''));
     expect(spearman).toBeDefined();
     act(() => spearman!.click());

@@ -86,9 +86,9 @@ it('names every unit owner in the tile card and shows the matching faction emble
   await act(async () => root.render(createElement(TileCard, { view: v, hex: { q: 1, r: 1 } })));
   const rows = [...host.querySelectorAll('.tilecard-unit')];
   expect(rows.map((row) => row.textContent)).toEqual([
-    expect.stringContaining('Your Scout · Ancient era · 100 HP · strength 5'),
-    expect.stringContaining('Byzantine Scout · Ancient era · 100 HP · strength 5'),
-    expect.stringContaining('Barbarian Scout · Ancient era · 100 HP · strength 5'),
+    expect.stringContaining('Your Scout · Ancient\u00a0era · 100 health · strength 5'),
+    expect.stringContaining('Byzantine Scout · Ancient\u00a0era · 100 health · strength 5'),
+    expect.stringContaining('Barbarian Scout · Ancient\u00a0era · 100 health · strength 5'),
   ]);
   expect(rows[0].querySelector('.faction-mark')?.getAttribute('aria-label')).toBe('Mongols');
   expect(rows[1].querySelector('.faction-mark')?.getAttribute('aria-label')).toBe('Byzantium');

@@ -442,6 +442,7 @@ impl ViewBuilder {
             ranged: s.ranged,
             range: s.range,
             military: s.military,
+            holds_tile: false,
             level: 0,
             xp: None,
             xp_next: None,

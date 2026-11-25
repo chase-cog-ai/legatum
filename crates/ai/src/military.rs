@@ -4693,6 +4693,38 @@ mod defense_tests;
 mod escort_tests;
 
 #[cfg(test)]
+mod siege_sortie_tests {
+    use crate::Brain;
+    use crate::fixture::{ENEMY, ME, ViewBuilder, brain, off};
+    use legatum_core::{AiDifficulty, Order, UnitKind};
+
+    /// Rules 60: an army at War on a city's tile takes that tile's yield until it is driven off.
+    /// Home units already strike an enemy within two tiles of their city, so the AI clears it.
+    #[test]
+    fn home_units_sortie_against_an_army_holding_a_city_tile() {
+        let (home, held) = (off(5, 5), off(7, 5));
+        for difficulty in [AiDifficulty::Normal, AiDifficulty::Hard] {
+            let view = ViewBuilder::new(14, 12)
+                .city(1, ME, home, 4)
+                .city(2, ENEMY, off(12, 9), 3)
+                .owner(held, ME)
+                .unit(1, ME, UnitKind::Spearman, home)
+                .unit(2, ME, UnitKind::Spearman, off(6, 5))
+                .unit(3, ME, UnitKind::Spearman, off(6, 4))
+                .unit_hp(9, ENEMY, UnitKind::Spearman, held, 60)
+                .build();
+            let orders = brain(&view, 7, difficulty).orders(&view);
+            assert!(
+                orders
+                    .iter()
+                    .any(|o| matches!(o, Order::MoveUnit { to, .. } if *to == held)),
+                "{difficulty:?}: {orders:?}"
+            );
+        }
+    }
+}
+
+#[cfg(test)]
 mod military_scout_tests {
     use super::*;
     use crate::fixture::{ME, ViewBuilder, off, planner};

@@ -1192,7 +1192,7 @@ pub const BUILT_IN_SIEGE_NOTE: &str =
     "covers Walls through level IV in the Industrial era, one more level in each later era";
 
 /// Land military units: not Scouts, not aircraft.
-fn land_military(kind: UnitKind) -> bool {
+pub(crate) fn land_military(kind: UnitKind) -> bool {
     unit_stats(kind).military && kind != UnitKind::Scout && !is_aircraft(kind)
 }
 

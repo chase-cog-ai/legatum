@@ -363,6 +363,7 @@ pub fn forecast_air_strike(
         ranged: stats.ranged,
         range: stats.range,
         military: true,
+        holds_tile: false,
         level: a.level,
         xp: None,
         xp_next: None,

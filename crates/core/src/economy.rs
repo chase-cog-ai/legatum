@@ -112,7 +112,7 @@ pub(crate) fn owner_tile_potential(
     crate::resources::tile_potential_yields(player.faction, tile, |t| player.techs.contains(&t))
 }
 
-/// Owned tiles within the work radius, in hex order, except tiles barbarians hold. (A city
+/// Owned tiles within the work radius, in hex order, except tiles barbarians or an enemy army hold. (A city
 /// centre always belongs to its own city, so no other centre qualifies.)
 fn worked_tiles_for(state: &GameState, city: &City) -> Vec<Hex> {
     worked_tiles_squatted(state, city, &denied_near(state, city))
@@ -133,13 +133,17 @@ fn worked_tiles_squatted(state: &GameState, city: &City, squatted: &[Hex]) -> Ve
 }
 
 /// Hexes in this city's work radius that yield nothing to it: a barbarian camp or a barbarian
-/// unit (Civ 6; user, 2026-10-06). One pass over the units instead of one per tile (yield
-/// previews call this thousands of times a turn).
+/// unit (Civ 6; user, 2026-10-06), or a land military unit of an empire at War with the city's
+/// owner (`besieges`). One pass over the units instead of one per tile (yield previews call
+/// this thousands of times a turn).
 pub(crate) fn denied_near(state: &GameState, city: &City) -> Vec<Hex> {
     let mut out: Vec<Hex> = state
         .units
         .values()
-        .filter(|u| u.pos.distance(city.pos) <= CITY_WORK_RADIUS && u.owner.is_barbarian())
+        .filter(|u| {
+            u.pos.distance(city.pos) <= CITY_WORK_RADIUS
+                && (u.owner.is_barbarian() || besieges(state, u, city.owner))
+        })
         .map(|u| u.pos)
         .collect();
     if let Some(barbarians) = &state.barbarians {
@@ -152,6 +156,25 @@ pub(crate) fn denied_near(state: &GameState, city: &City) -> Vec<Hex> {
         );
     }
     out
+}
+
+/// Siege starves the land: a land military unit (not a Scout, not aircraft) at War with `owner`
+/// denies the yield of the tile of `owner`'s it stands on. No order and no damage to the tile:
+/// the yield is back the turn the unit leaves, dies or its empire makes Peace.
+pub fn besieges(state: &GameState, unit: &crate::state::Unit, owner: PlayerId) -> bool {
+    data::land_military(unit.kind) && state.at_war(unit.owner, owner)
+}
+
+/// Whether barbarians (a camp or a unit) are what denies this tile, for the breakdown wording.
+fn barbarians_hold(state: &GameState, h: Hex) -> bool {
+    state
+        .units
+        .values()
+        .any(|u| u.pos == h && u.owner.is_barbarian())
+        || state
+            .barbarians
+            .as_ref()
+            .is_some_and(|b| b.camps.iter().any(|c| c.pos == h))
 }
 
 pub fn city_yields(state: &GameState, city: &City) -> CityYields {
@@ -594,10 +617,12 @@ fn yields_base<const FULL: bool>(
     for h in city.pos.within_iter(CITY_WORK_RADIUS) {
         if state.map.get(h).is_some_and(|t| t.city == Some(city.id)) && squatted.contains(&h) {
             y.note(|| {
-                format!(
-                    "Barbarians hold the tile: it yields nothing at {},{}",
-                    h.q, h.r
-                )
+                let who = if barbarians_hold(state, h) {
+                    "Barbarians hold"
+                } else {
+                    "An enemy army holds"
+                };
+                format!("{who} the tile: it yields nothing at {},{}", h.q, h.r)
             });
         }
     }

@@ -369,6 +369,8 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
   const productionWarning = cityProductionWarning(city, orders, owner?.faction, view);
   // Occupation lock: a frozen city's build list is replaced by this note.
   const occupiedLine = cityOccupiedLine(view, city);
+  // Tiles of this city that yield nothing while a unit at War with its owner stands on them (the engine's `holds_tile`).
+  const heldTiles = view.units.filter((u) => u.holds_tile && distance(u.pos, city.pos) <= WORK_RADIUS && d.territory.some((h) => hexEq(h, u.pos))).length;
   const growth = growthProgress(city, buildChanged ? { turnsToGrow, surplus } : undefined);
   const unlockItems = growth?.unlocks ?? [];
   const unlockNames = unlockItems.map((item) => itemName(item, owner?.faction)).join(', ');
@@ -411,7 +413,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
       {egyptBuilding && <div className="bd-row bd-total"><span>Left to grow</span><span>{surplus}</span></div>}
       <div className="bd-row"><span>Stored</span><span><Amount n={`${d.food_stored}/${d.growth_threshold}`} unit="Food" /></span></div>
       <div className="bd-note"><Amounts text={
-        growth?.state === 'starving' ? `Stored Food runs out and ${city.name} loses 1 population in ${growth.turns} turn${growth.turns === 1 ? '' : 's'}. Build a Farm or a Granary to add Food.`
+        growth?.state === 'starving' ? `Stored Food runs out and ${city.name} loses 1 population in ${growth.turns} turn${growth.turns === 1 ? '' : 's'}. ${heldTiles ? `An enemy army holds ${heldTiles} of its tiles: drive it off to get their Food back.` : 'Build a Farm or a Granary to add Food.'}`
           : growth?.state === 'resisting' ? `No growth during resistance (${d.resistance} turns).`
           : tombStopped ? TOMB_CITY_NOTE
           : egyptBuilding ? `While ${city.name} is building, its surplus Food goes into the build and the city doesn't grow. Choose Grow to grow it instead.`

@@ -80,6 +80,8 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
   const camp = campAt(view, hex);
   // A barbarian camp or unit on an owned tile: it yields nothing to its owner (Civ 6).
   const barbarianHeld = !!owner && !city && (!!camp || units.some((u) => isBarbarian(u.owner)));
+  // A unit at War with the tile's owner stands on it: it yields nothing until the unit leaves (the engine's `holds_tile`).
+  const enemyHeld = !barbarianHeld && !!owner && !city && units.some((u) => u.holds_tile);
   // A rival-held Heir under your selected military unit: moving onto his tile captures him.
   const heir = units.find((u) => u.kind === 'HeirToTheThrone');
   const mover = selection?.kind === 'unit' ? view.units.find((u) => u.id === selection.id && u.owner === view.me && u.military) : undefined;
@@ -173,6 +175,7 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
           : `Striped: ${owningCity.name} owns this tile beyond its ${WORK_RADIUS}-tile work radius. It gives no yield. It blocks rivals.`}
       </div>}
       {barbarianHeld && <div className="tilecard-row bad">Barbarians hold the tile: it yields nothing.</div>}
+      {enemyHeld && <div className="tilecard-row bad" data-testid="tile-enemy-held">{owner?.id === view.me ? 'An enemy army holds the tile: it yields nothing.' : 'An army at War with its owner holds the tile: it yields nothing.'}</div>}
       {(camp || units.some((u) => isBarbarian(u.owner))) && faction === 'Celts' && <div className="tilecard-row good">Barbarians don't attack you.</div>}
       {city && view.players.find((p) => p.id === view.me)?.faction === 'Celts' && owner?.id !== view.me && city.founder !== view.me && <div className="tilecard-row bad">Celts sack this city when they capture it.</div>}
       {t.ruin && <div className="tilecard-row ruin"><Icon name="ruin" size={15} color="currentColor" /> ancient ruin: unexplored</div>}

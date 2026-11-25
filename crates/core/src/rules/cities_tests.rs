@@ -456,10 +456,11 @@ fn city_turn(state: &mut GameState) -> Vec<Event> {
 }
 
 #[test]
-fn a_foreign_unit_does_not_block_a_worked_tile() {
+fn a_foreign_unit_at_peace_does_not_block_a_worked_tile() {
+    // At War it does since rules 60 (`siege_denial_tests`).
     let mut s = test_game(&[(Faction::Mongols, 0), (Faction::Byzantium, 1)]);
     for relation in &mut s.diplomacy.as_mut().unwrap().relations {
-        relation.state = crate::diplomacy::RelationState::War;
+        relation.state = crate::diplomacy::RelationState::Peace;
     }
     let city = found(&mut s, P0, at(5, 5));
     city_mut(&mut s, city).population = 2;

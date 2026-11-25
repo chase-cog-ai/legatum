@@ -458,6 +458,7 @@ pub(crate) fn purchased_defender(view: &PlayerView, city: &CityView, kind: UnitK
         ranged: stats.ranged,
         range: stats.range,
         military: stats.military,
+        holds_tile: false,
         level: 0,
         xp: None,
         xp_next: None,

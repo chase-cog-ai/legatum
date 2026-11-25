@@ -319,6 +319,10 @@ pub struct UnitView {
     pub ranged: i32,
     pub range: i32,
     pub military: bool,
+    /// The unit stands on a tile owned by an empire it is at War with and denies its yield
+    /// (`economy::besieges`). Public, like the unit.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub holds_tile: bool,
     /// Promotion level (0..=5, or 6 for Sparta), public like Civ 6's promotion pips: every forecast against
     /// this unit includes it.
     #[serde(default)]
@@ -2301,6 +2305,11 @@ fn unit_view(state: &GameState, me: PlayerId, u: &Unit) -> UnitView {
         ranged: stats.ranged,
         range: stats.range,
         military: stats.military,
+        holds_tile: state
+            .map
+            .get(u.pos)
+            .and_then(|t| t.owner)
+            .is_some_and(|o| !u.owner.is_barbarian() && economy::besieges(state, u, o)),
         level: crate::rules::promotion::level_for_rules(
             state.setup.rule_experiments.faction_rules_off,
             state.player(u.owner).faction,

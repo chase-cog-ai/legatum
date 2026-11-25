@@ -96,6 +96,25 @@ it('names every unit owner in the tile card and shows the matching faction emble
   await act(async () => root.unmount());
 });
 
+it('says an army at War holds a tile and takes its yield, from the engine flag', async () => {
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const text = async (owner: number, holds: boolean) => {
+    const v = view('Mongols');
+    v.players.push({ id: 1, team: 1, faction: 'Byzantium', name: 'Rival' } as never);
+    v.tiles[tileIndex({ q: 1, r: 1 }, 4, 4)].owner = owner;
+    v.units = [{ id: 1, owner: owner === 0 ? 1 : 0, kind: 'Spearman', pos: { q: 1, r: 1 }, military: true, hp: 100, strength: 10, fortify: 0, ...(holds ? { holds_tile: true } : {}) } as never];
+    const host = document.createElement('div'); document.body.append(host);
+    const root = createRoot(host);
+    await act(async () => root.render(createElement(TileCard, { view: v, hex: { q: 1, r: 1 } })));
+    const line = host.querySelector('[data-testid="tile-enemy-held"]')?.textContent ?? null;
+    await act(async () => root.unmount());
+    return line;
+  };
+  expect(await text(0, true)).toBe('An enemy army holds the tile: it yields nothing.');
+  expect(await text(1, true)).toBe('An army at War with its owner holds the tile: it yields nothing.');
+  expect(await text(0, false)).toBeNull();
+});
+
 async function wonderCard(patch: (v: PlayerView) => void, hex = { q: 1, r: 1 }) {
   const v = view('India');
   v.tiles[tileIndex({ q: 1, r: 1 }, v.width, v.height)].wonder = 'GrandCanyon';

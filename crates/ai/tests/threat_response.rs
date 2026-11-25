@@ -147,7 +147,8 @@ fn top_threat(brain: &ScriptedBrain) -> Option<PlayerId> {
 }
 
 /// The fixture is the user's state before turn 35. Since cities shield their garrisons
-/// (`combat::city_tile_defender`), the same recorded orders now leave Athens alive.
+/// (`combat::city_tile_defender`), the same recorded orders left Athens alive; with the rush's
+/// armies taking the yield of the Athenian tiles they stand on (rules 60), Athens falls again.
 #[test]
 fn the_fixture_is_the_users_game_and_its_orders_still_resolve() {
     let mut state = original();
@@ -157,11 +158,11 @@ fn the_fixture_is_the_users_game_and_its_orders_still_resolve() {
         state = resolve_archived(&state, &units.orders(&state, orders));
         assert_eq!(state.turn, turn + 1);
     }
-    assert!(state.player(ATHENS).alive);
+    assert!(!state.player(ATHENS).alive);
     assert!(!state.player(BYZANTIUM).alive);
     assert_eq!(
         state.cities.values().filter(|c| c.owner == HUMAN).count(),
-        4
+        5
     );
 }
 
@@ -196,6 +197,7 @@ fn watching_ais_mark_the_conqueror_within_a_few_turns() {
     assert_eq!(
         first,
         BTreeMap::from([
+            (PlayerId(1), 51),
             (PlayerId(2), 41),
             (SPARTA, 38),
             (ATHENS, 35),
@@ -204,7 +206,7 @@ fn watching_ais_mark_the_conqueror_within_a_few_turns() {
             (BYZANTIUM, 35)
         ])
     );
-    assert!(state.player(ATHENS).alive);
+    assert!(!state.player(ATHENS).alive);
     assert!(!state.player(BYZANTIUM).alive);
 }
 

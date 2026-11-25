@@ -298,6 +298,8 @@ export interface UnitView {
   ranged: number;
   range: number;
   military: boolean;
+  /** The unit stands on a tile of an empire it is at War with: the tile yields nothing while it stays (core `economy::besieges`). */
+  holds_tile?: boolean;
   /** Promotion level (0..5, or 6 for Sparta), public and shown as enlisted insignia. */
   level?: number;
   /** Own military units only: cumulative combat experience. */

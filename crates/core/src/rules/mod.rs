@@ -591,6 +591,7 @@ pub(crate) mod test_support {
             ai_alliances: false,
             barbarians: false,
             rule_experiments: Default::default(),
+            deals: false,
         };
         {
             let mut state = crate::game::blank_game(&setup, Map::new(12, 10, Terrain::Grassland));

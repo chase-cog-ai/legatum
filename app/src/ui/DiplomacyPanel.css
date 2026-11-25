@@ -122,9 +122,7 @@
 .gift-row { border-left: 4px solid var(--empire, var(--rule-2)); padding-left: 10px; }
 .gift-who { display: flex; align-items: center; gap: 8px; }
 .gift-control { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
-.gift-control label { display: inline-flex; align-items: center; gap: 8px; }
 /* Measured with the largest legal amount: four digits plus the spinner fit. */
-.gift-control input[type=number] { width: 7ch; box-sizing: content-box; padding: 2px 4px; }
 .gift-control .gift-forecast { flex-basis: 100%; margin: 0; }
 .empire-row.open { border-left: 4px solid var(--empire, var(--rule-2)); padding-left: 10px; background: color-mix(in srgb, var(--empire, transparent) 6%, transparent); }
 .empire-pick { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 4px 0; border: 0; background: none; color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
@@ -198,3 +196,36 @@
 }
 .offer-card .offer-actions .btn { white-space: nowrap; text-align: center; max-width: 100%; }
 .diplomacy-action .btn { white-space: normal; max-width: 100%; }
+/* Deals (rules 61): the Gold an empire's offers carry, Give Gold, and the Open Borders mark. */
+.deal-gold { margin: 8px 0 4px; padding: 7px 9px; border: 1px solid var(--rule-2); border-radius: 3px; }
+.deal-gold-label { display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 5px; }
+.deal-gold-modes { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.deal-mode {
+  font: inherit; font-size: 13px; padding: 3px 9px; border: 1px solid var(--ink); border-radius: 3px;
+  background: var(--panel); color: var(--ink); cursor: pointer;
+}
+.deal-mode.on { background: var(--primary-bg); border-color: var(--primary-bg); color: var(--primary-ink); }
+.deal-mode:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.deal-gold-modes .gold-stepper { margin-left: 4px; }
+.deal-forecast { margin: 6px 0 0; font-size: 13px; }
+.deal-forecast.cost { color: var(--ink); }
+.deal-forecast.gain { color: var(--ink); }
+.deal-gift { margin-top: 10px; border-top: 1px solid var(--rule); padding-top: 6px; }
+.deal-gift-title { margin: 0; font-size: 13px; }
+.deal-gift .muted { margin: 4px 0 0; font-size: 12px; }
+/* A queued action: the button stays pressed (an ink fill), the sentence-plus-Undo line under it says what is queued. */
+.diplomacy-action > .btn[aria-pressed='true'] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.diplomacy-queued { flex-basis: 100%; margin: 0; font-size: 13px; }
+/* The hostile action comes last, below a rule. */
+.diplomacy-hostile { margin-top: 10px; border-top: 1px solid var(--rule); padding-top: 2px; }
+/* Open Borders: emblem plus word, like the relation beside it, but no box (dashed means "not yet standing"). */
+.empire-relation.open-borders { color: var(--ink); border: 0; padding: 0; margin-top: 3px; width: max-content; font-size: 11px; }
+.empire-pick-identity .empire-relation.open-borders { display: flex; }
+.relation-emblems { display: inline-flex; gap: 4px; }
+/* One diplomatic order per empire per turn: the note under a button that would replace a queued one. */
+.diplomacy-replaces { flex-basis: 100%; margin: 2px 0 0; font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 4px; }
+/* Our recent offer it turned down or let lapse, on the empire's row for a few turns. */
+.diplomacy-panel .offer-outcome { margin: 2px 0 0; padding-left: 40px; font-size: 12px; line-height: 1.35; color: var(--ink-2); }
+/* Empires not met yet: one quiet line, as the rivals table's "Unknown" rows (nothing to pick). */
+.empire-row.unmet-summary { display: flex; align-items: center; gap: 10px; padding: 8px 0 8px 4px; font-size: 13px; }
+.empire-row.unmet-summary .relations-unknown { width: 24px; height: 24px; flex: none; }

@@ -39,7 +39,10 @@ purchases this turn are paid first; with nothing left it fails with an `OrderFai
 after this turn's purchases"). A gift to someone no longer a living teammate at resolution fails the same way. Order:
 player id, then the giver's order list. `Event::GoldGiven{from,to,amount}` is visible to the team only. The teammate
 spends it from next turn. The AI never issues it (`ai/src/fixture.rs` panics on one). UI: "Your team" section of the
-diplomacy panel (`app/src/ui/GiveGold.tsx`), with a forecast of both treasuries.
+diplomacy panel (`app/src/ui/GiveGold.tsx`), with a forecast of both treasuries. **Deals (rules 61, `GameSetup::deals`):**
+the receiver may also be a living empire of another team that the giver's team has met and is not at War with ("you are
+at War with X"); otherwise "X is not on your team" as before. `GoldGiven` is then seen by both empires' teams
+(`event_visibility.rs`). The AI gives Gold only with deals on (Hard's coalition Gold, `diplomacy.md` "Deals").
 
 **One order per unit per turn.** A unit is marked `acted` after its order; a second order for it is
 rejected. The UI never offers a multi-step per-unit queue. A unit that attacked stays where it fought (a melee winner that kills advances into the

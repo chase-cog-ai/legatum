@@ -74,6 +74,17 @@ it('an empire you have not met shows only its VP: no name, crest, treaty or numb
   expect(row.textContent).not.toContain(String(rival.gold ?? 'x'));
 });
 
+it('Open Borders (deals) with a rival is a chip on its row; no chip without them', () => {
+  expect(host.querySelector('[data-testid="rivals-open-borders"]')).toBeNull();
+  const rival = view.players.find((p) => p.team !== view.team && p.alive)!;
+  const pair: [number, number] = view.team < rival.team ? [view.team, rival.team] : [rival.team, view.team];
+  act(() => useGame.setState({ views: [{ ...view, diplomacy: { ...view.diplomacy, deals: true, open_borders: [pair] } }] }));
+  const chips = [...host.querySelectorAll<HTMLElement>('[data-testid="rivals-open-borders"]')];
+  expect(chips).toHaveLength(1);
+  expect(chips[0].textContent).toBe('Open Borders');
+  expect(chips[0].closest('.rv-row')!.classList.contains('mine')).toBe(false);
+});
+
 it('a War, or your own declaration, names an empire you have not met yet', () => {
   const rival = view.players.find((p) => p.team !== view.team && p.alive)!;
   const unmet = { ...view, diplomacy: { ...view.diplomacy, met: view.diplomacy.met!.filter((t) => t !== rival.team) } };

@@ -61,6 +61,7 @@ fn replay(path: &std::path::Path, dead: u32) -> Result<Game, String> {
                 if let Order::ProposeTreaty {
                     to,
                     kind: TreatyKind::Peace,
+                    ..
                 } = o
                     && let Some(me) = team(&state, *p)
                     && let Some(w) = open.get_mut(&key(me, *to))

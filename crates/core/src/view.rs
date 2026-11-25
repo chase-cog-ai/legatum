@@ -1329,7 +1329,7 @@ impl PlayerView {
                     .any(|r| (r.a, r.b) == key && r.state == crate::diplomacy::RelationState::War))
     }
 
-    /// Mirrors `GameState::passage_allowed`: own team, War, an Alliance, land the mover's
+    /// Mirrors `GameState::passage_allowed`: own team, War, an Alliance, Open Borders, land the mover's
     /// land of a
     /// Yam Relay Station's holder (open to every empire).
     pub fn passage_allowed(
@@ -1345,6 +1345,10 @@ impl PlayerView {
                 || (!player.is_barbarian()
                     && !self.is_closed(o)
                     && (self.teams_allied(a, b)
+                        || self
+                            .diplomacy
+                            .open_borders
+                            .contains(&crate::diplomacy::pair(a, b))
                         || self.courier_halls.iter().any(|h| h.holder == o)))
         })
     }

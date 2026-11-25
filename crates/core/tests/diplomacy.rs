@@ -40,6 +40,7 @@ fn offer(to: u8) -> Order {
     Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Peace,
+        gold: 0,
     }
 }
 fn response(id: u32, accept: bool) -> Order {
@@ -840,6 +841,7 @@ fn ally_offer(to: u8) -> Order {
     Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Alliance,
+        gold: 0,
     }
 }
 fn alliance(s: &GameState, from: u8, to: u8) -> GameState {
@@ -955,7 +957,8 @@ fn alliance_upkeep_is_a_gold_cost_in_income_and_bankruptcy_forecasts() {
                 a.order,
                 Order::ProposeTreaty {
                     to: TeamId(2),
-                    kind: TreatyKind::Alliance
+                    kind: TreatyKind::Alliance,
+                    ..
                 }
             )
         })

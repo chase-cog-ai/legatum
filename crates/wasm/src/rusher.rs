@@ -53,7 +53,7 @@ pub fn apply(orders: &mut OrderMap, state: &GameState, rusher: &Rusher) {
         .iter()
         .map(|w| state.team_of(w.against))
         .collect();
-    mine.retain(|o| !matches!(o, Order::ProposeTreaty { to, kind: TreatyKind::Peace } if enemies.contains(to)));
+    mine.retain(|o| !matches!(o, Order::ProposeTreaty { to, kind: TreatyKind::Peace, ..  } if enemies.contains(to)));
     if let Some(d) = state.diplomacy.as_ref() {
         for o in mine.iter_mut() {
             if let Order::RespondToProposal {

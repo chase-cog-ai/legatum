@@ -176,7 +176,7 @@ export function TechTree({ view, faction, queue, schedule, goal, locked, open = 
       <span className="tree-keys">{keys}</span>
       <Tip className="tree-key-tip" content={<div className="tree-key-list">{keys}</div>}><span className="tree-key-button">Key</span></Tip>
       {goal && forecast ? <span className="tree-goal" data-testid="tree-goal">
-        <span className="tree-goal-text">Goal: <b>{TECH_NAME[goal]}</b>{forecast.before ? `, after ${forecast.before} more technolog${forecast.before === 1 ? 'y' : 'ies'}` : ''}. {forecast.arrival === null ? 'Needs Science.' : <b>About turn {forecast.arrival}</b>}</span>
+        <span className="tree-goal-text">Goal: <b>{TECH_NAME[goal]}</b>{forecast.before ? `, after ${forecast.before} more technolog${forecast.before === 1 ? 'y' : 'ies'}` : ''}. {forecast.arrival === null ? 'Needs Science.' : view.turn_limit !== null && forecast.arrival > view.turn_limit ? 'The game ends before you get there at your current Science.' : <b>About turn {forecast.arrival}</b>}</span>
         <button type="button" className="tree-goal-x" disabled={locked} onClick={() => onGoal(null)} aria-label={`Clear the goal ${TECH_NAME[goal]}`} title="Clear the goal"><Icon name="ui-cross" size={11} /></button>
       </span>
         : <span className="tree-hint">{touch ? 'Tap a technology in your era to research it. Tap one in a later era to make it your goal.'

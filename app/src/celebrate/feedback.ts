@@ -15,7 +15,9 @@ export function soundHooksForMoments(moments: readonly Moment[], events: readonl
     const name: FeelName | null = e?.type === 'RuinExplored' || e?.type === 'WonderDiscovered' ? 'discovery' : e?.type === 'TechResearched' || e?.type === 'EraEntered' ? 'techComplete'
       : e?.type === 'CityFounded' ? 'cityFounded' : e?.type === 'CityCaptured' ? 'cityCaptured'
       : e?.type === 'ProductionCompleted' ? m.tier === 'legendary' ? 'greatWork' : 'buildingComplete'
-      : e?.type === 'EraObjectiveScored' || e?.type === 'FactionGoalCompleted' ? 'greatWork' : null;
+      : e?.type === 'EraObjectiveScored' || e?.type === 'FactionGoalCompleted' ? 'greatWork'
+      // A treaty taking effect for your team: the small lift, voiced by its card's tier sting.
+      : e?.type === 'ProposalAccepted' && m.treaty ? 'vpGained' : null;
     // Your own era-up is the biggest tech moment of the game: it takes the organic india sting, not the tech pluck.
     const tier: Tier = m.eraUp ? 'legendary' : m.tier;
     if (name && (!tiers.has(name) || TIER_ORDER[tier] > TIER_ORDER[tiers.get(name)!])) tiers.set(name, tier);

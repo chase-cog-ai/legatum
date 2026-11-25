@@ -18,8 +18,8 @@ fn at(col: i32, row: i32) -> Hex {
 fn game() -> GameState {
     let mut s = test_game(&[
         (Faction::Byzantium, 0),
-        (Faction::Byzantium, 1),
-        (Faction::Byzantium, 2),
+        (Faction::Sparta, 1),
+        (Faction::India, 2),
     ]);
     crate::rules::test_support::city(&mut s, 0, at(5, 5), 3);
     crate::rules::test_support::city(&mut s, 1, at(16, 2), 3);
@@ -104,8 +104,8 @@ fn an_accepted_offer_moves_supply_and_gold_every_turn() {
             .into_iter()
             .find(|(l, _)| l.contains("Iron"))
     };
-    assert_eq!(line(P0), Some(("2 Iron sold to P1".into(), 7)));
-    assert_eq!(line(P1), Some(("2 Iron bought from P0".into(), -7)));
+    assert_eq!(line(P0), Some(("2 Iron sold to Sparta".into(), 7)));
+    assert_eq!(line(P1), Some(("2 Iron bought from Byzantium".into(), -7)));
     let mut without = s.clone();
     without.supply_trades.trades.clear();
     let (after, _) = resolve_turn(&s, &BTreeMap::new());
@@ -121,8 +121,8 @@ fn an_accepted_offer_moves_supply_and_gold_every_turn() {
             .unwrap()
             .supplied
     };
-    assert!(supplied(P0).parts.contains(&("Sold to P1".into(), -2)));
-    assert_eq!(supplied(P1).parts, vec![("Bought from P0".into(), 2)]);
+    assert!(supplied(P0).parts.contains(&("Sold to Sparta".into(), -2)));
+    assert_eq!(supplied(P1).parts, vec![("Bought from Byzantium".into(), 2)]);
     // Only the two empires see the trade.
     assert_eq!(player_view(&s, P1).supply_trade.trades.len(), 1);
     assert!(player_view(&s, PlayerId(2)).supply_trade.trades.is_empty());
@@ -136,7 +136,7 @@ fn bought_supply_keeps_a_unit_in_supply_and_ending_the_trade_idles_it() {
     assert_eq!(resources::unit_unsupplied(&s, &s.units[&pike]), None);
     let trade = s.supply_trades.trades[0].id;
     let (s, events) = step(&s, &[(P0, Order::EndSupplyTrade { trade })]);
-    assert_eq!(ended(&events), vec!["P0 ended it"]);
+    assert_eq!(ended(&events), vec!["Byzantium ended it"]);
     assert_eq!(resources::unit_unsupplied(&s, &s.units[&pike]), Some(IRON));
     assert_eq!(resources::spare(&s, P0, IRON, None), 2);
 }
@@ -221,7 +221,7 @@ fn a_seller_cannot_sell_supply_it_uses_or_sell_the_same_supply_twice() {
     assert_eq!(after.supply_trades.trades[0].buyer, P1);
     assert!(events.iter().any(|e| matches!(
         e,
-        Event::SupplyOfferDeclined { reason: Some(r), .. } if r == "P0 has 0 Iron to spare"
+        Event::SupplyOfferDeclined { reason: Some(r), .. } if r == "Byzantium has 0 Iron to spare"
     )));
     assert_eq!(resources::supplied(&after, P0, IRON), 0);
 }
@@ -232,7 +232,7 @@ fn a_buyer_needs_the_technology_and_the_gold() {
     s.player_mut(P1).techs.remove(&TechId::IronWorking);
     assert_eq!(
         validate_orders(&s, P0, &[sell(P1, 1, 5)])[0].message,
-        "P1 cannot use Iron yet"
+        "Sparta cannot use Iron yet"
     );
     let mut s = game();
     s.player_mut(P1).gold = 3;

@@ -95,6 +95,10 @@ pub fn net(state: &GameState, p: PlayerId, resource: Resource) -> i32 {
         .sum()
 }
 
+fn name_of(state: &GameState, p: PlayerId) -> String {
+    crate::scenario::empire_name(state, p)
+}
+
 /// Gold lines for `p`'s income: one per running trade, signed.
 pub fn gold_lines(state: &GameState, p: PlayerId) -> Vec<(String, i32)> {
     state
@@ -105,7 +109,7 @@ pub fn gold_lines(state: &GameState, p: PlayerId) -> Vec<(String, i32)> {
             let r = resources::name(t.resource);
             if t.seller == p {
                 Some((
-                    format!("{} {r} sold to {}", t.amount, state.player(t.buyer).name),
+                    format!("{} {r} sold to {}", t.amount, name_of(state, t.buyer)),
                     t.gold,
                 ))
             } else if t.buyer == p {
@@ -113,7 +117,7 @@ pub fn gold_lines(state: &GameState, p: PlayerId) -> Vec<(String, i32)> {
                     format!(
                         "{} {r} bought from {}",
                         t.amount,
-                        state.player(t.seller).name
+                        name_of(state, t.seller)
                     ),
                     -t.gold,
                 ))
@@ -133,10 +137,10 @@ pub fn supply_lines(state: &GameState, p: PlayerId, resource: Resource) -> Vec<(
         .filter(|t| t.resource == resource)
         .filter_map(|t| {
             if t.seller == p {
-                Some((format!("Sold to {}", state.player(t.buyer).name), -t.amount))
+                Some((format!("Sold to {}", name_of(state, t.buyer)), -t.amount))
             } else if t.buyer == p {
                 Some((
-                    format!("Bought from {}", state.player(t.seller).name),
+                    format!("Bought from {}", name_of(state, t.seller)),
                     t.amount,
                 ))
             } else {
@@ -154,16 +158,15 @@ pub fn pair_blocker(state: &GameState, a: PlayerId, b: PlayerId) -> Option<Strin
     if b.is_barbarian() || (b.0 as usize) >= state.players.len() {
         return Some("no such empire".into());
     }
-    let other = state.player(b);
-    if !other.alive {
-        return Some(format!("{} has been eliminated", other.name));
+    if !state.player(b).alive {
+        return Some(format!("{} has been eliminated", name_of(state, b)));
     }
     let (ta, tb) = (state.team_of(a), state.team_of(b));
     if state.diplomacy.as_ref().is_some_and(|d| !d.met(ta, tb)) {
         return Some(crate::diplomacy::NOT_MET.into());
     }
     if state.teams_at_war(ta, tb) {
-        return Some(format!("you are at War with {}", other.name));
+        return Some(format!("you are at War with {}", name_of(state, b)));
     }
     None
 }
@@ -195,7 +198,7 @@ fn terms_blocker(
         } else {
             format!(
                 "{} has {} {r} to spare",
-                state.player(seller).name,
+                name_of(state, seller),
                 spare.max(0)
             )
         });
@@ -207,14 +210,14 @@ fn terms_blocker(
         return Some(if buyer == me {
             format!("you need {tech} to use {r}")
         } else {
-            format!("{} cannot use {r} yet", state.player(buyer).name)
+            format!("{} cannot use {r} yet", name_of(state, buyer))
         });
     }
     if state.player(buyer).gold < gold {
         return Some(if buyer == me {
             format!("you have {} Gold", state.player(buyer).gold.max(0))
         } else {
-            format!("{} cannot pay {gold} Gold", state.player(buyer).name)
+            format!("{} cannot pay {gold} Gold", name_of(state, buyer))
         });
     }
     None
@@ -409,7 +412,7 @@ pub fn resolve(
                     .iter()
                     .find(|t| t.id == *trade)
                     .filter(|t| t.seller == *player || t.buyer == *player)
-                    .map(|_| format!("{} ended it", state.player(*player).name));
+                    .map(|_| format!("{} ended it", name_of(state, *player)));
                 if let Some(reason) = other {
                     changed |= end_where(state, events, &reason, |_, t| t.id == *trade);
                 }

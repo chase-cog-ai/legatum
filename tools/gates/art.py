@@ -22,7 +22,7 @@ from common import git  # noqa: E402
 
 PATHS = ["tools/art", "app/src/assets", "app/public/wonders", "app/package.json"]
 TRIGGER = re.compile(r"^app/src/assets/.*\.(png|svg|jpe?g|webp)$|^app/public/wonders/"
-                     r"|^tools/art/(distinctness\.(py|json)|render-sets\.mjs)$")
+                     r"|^tools/art/(distinctness\.(py|json)|render-sets\.mjs|launch-chromium\.mjs)$")
 
 
 def main_checkout(repo):

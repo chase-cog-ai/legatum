@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import { readFileSync, readdirSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { launchChromium } from './launch-chromium.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const app = join(root, 'app');
@@ -61,7 +62,7 @@ const SETS = [
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
-const browser = await chromium.launch();
+const browser = await launchChromium(chromium);
 const page = await browser.newPage();
 await page.setContent('<canvas id=c></canvas>');
 

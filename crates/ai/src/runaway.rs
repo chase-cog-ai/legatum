@@ -1283,6 +1283,7 @@ mod tests {
         let order = Order::ProposeTreaty {
             to: third,
             kind: TreatyKind::Alliance,
+            gold: 0,
         };
         let budget = crate::diplomacy::TreatyBudget::of(&v);
         let value = planner(&v, 1).runaway_alliance_value(third);

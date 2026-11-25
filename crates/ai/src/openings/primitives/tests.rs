@@ -104,6 +104,7 @@ fn siege_persistence_rejects_both_incoming_peace_and_our_own_offer() {
     let offer = Order::ProposeTreaty {
         to: v.team_of(ENEMY),
         kind: TreatyKind::Peace,
+        gold: 0,
     };
     let accept = Order::RespondToProposal {
         proposal: ProposalId(1),
@@ -144,6 +145,7 @@ fn siege_persistence_rejects_both_incoming_peace_and_our_own_offer() {
         consents: Vec::new(),
         needs: vec![to],
         required_teams: Vec::new(),
+        gold: 0,
     });
     assert!(diplomacy(&v, &g).contains(&accept));
     g.siege_persistence_weight = 100;

@@ -4,6 +4,7 @@ import { empireOfPlayer } from '../empires';
 import { CounterDelta } from '../celebrate/MomentLane';
 import { PortraitRoundel } from './premium';
 import { TreatyEmblem } from './ringMedallion';
+import { bordersOpen } from '../deals';
 import { empireVars } from './vpParts';
 import { Icon } from './bits';
 import { CapitalChip, ClosedChip, DecadenceChip, LeadChip, TombChip, type RowRelation } from './VpHoldings';
@@ -91,6 +92,8 @@ export function RivalsTable({ view, model, relationOf, onOpen }: {
         </span>;
         // Public chips get their own line across the row, so a long one never runs into the numbers.
         const chips = !unmet && <span className="rv-status">
+          {!row.isMine && bordersOpen(view, row.team) && <span className="rv-borders" data-testid="rivals-open-borders"
+            title="Open Borders: your units may enter each other’s land."><TreatyEmblem kind="OpenBorders" size={12} />Open Borders</span>}
           <ClosedChip members={row.members} />
           <TombChip members={row.members} />
           <LeadChip members={row.members} rules={model.raceRules.rules} />

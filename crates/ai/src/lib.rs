@@ -47,6 +47,7 @@ pub use diplomacy::{
 pub use exploration::{EXPLORE_MIN_HP, explore_step};
 mod conquest;
 mod contest;
+mod deals;
 mod decision_trace;
 pub mod designer;
 mod development;

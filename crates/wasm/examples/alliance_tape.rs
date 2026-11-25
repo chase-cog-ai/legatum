@@ -29,6 +29,7 @@ fn main() {
     let offer = |to| Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Alliance,
+        gold: 0,
     };
     let accept = |id| Order::RespondToProposal {
         proposal: ProposalId(id),

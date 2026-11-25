@@ -7,6 +7,7 @@ import { empireLocation, empireNameOf, empireOfPlayer, placeName, type EmpireLoc
 import { isBarbarian } from '../barbarians';
 import { blockedQueueHead, wonderLostLine } from '../wonderRace';
 import { distance } from '../hex';
+import { allianceTerms } from '../treaties';
 import { unlockCardFor, type UnlockCard } from './unlockCard';
 import { eraUpCardFor, type EraUpCard } from './eraUp';
 import { scoreCheckFor, type ScoreCheckCard } from './scoreCheckCards';
@@ -76,12 +77,11 @@ export interface TreatyCard {
   /** The two empires' leaders, the viewer's team first. */
   ours: { id: PlayerId; faction: Faction };
   theirs: { id: PlayerId; faction: Faction };
-  /** Deals: the Gold that changed hands, from the viewer's side ("+40 Gold from Athens", "You paid Athens 40 Gold"). */
+  /** Deals: the Gold that changed hands, from the viewer's side ("+40 Gold from Athens", "−40 Gold to Athens"). */
   gold?: { amount: number; received: boolean; text: string };
+  /** An Alliance: the Gold a turn the viewer starts paying now (one per city, minimum one). */
+  upkeep?: number;
 }
-
-/** The kicker and the one-line rule a treaty card states (board-game style: the short rule). */
-const TREATY_KICKER: Record<TreatyKind, string> = { Peace: 'Peace made', Alliance: 'Alliance signed', OpenBorders: 'Borders opened' };
 
 /**
  * An offer between the viewer's team and another that was accepted at `index` (core `ProposalAccepted`,
@@ -104,10 +104,10 @@ export function treatyMoment(events: readonly Event[], index: number, viewer: Pl
   let gold: TreatyCard['gold'];
   if (paid && (mine.has(paid.to) || mine.has(paid.from))) {
     const received = mine.has(paid.to);
-    const who = (id: PlayerId) => id === viewer ? 'You' : after.players.find((x) => x.id === id)?.name ?? 'Your partner';
+    const teammate = (id: PlayerId) => id === viewer ? '' : 'Your teammate: ';
     gold = { amount: paid.amount, received, text: received
-      ? `${paid.to === viewer ? '' : `${who(paid.to)}: `}+${paid.amount} Gold from ${name}`
-      : `${who(paid.from)} paid ${name} ${paid.amount} Gold` };
+      ? `${teammate(paid.to)}+${paid.amount} Gold from ${name}`
+      : `${teammate(paid.from)}−${paid.amount} Gold to ${name}` };
   }
   const peace = kind === 'Peace' ? events.slice(index + 1).flatMap((x) => x.type === 'PeaceEstablished' ? [x.relation] : [])
     .find((r) => [r.a, r.b].includes(other) && [r.a, r.b].includes(after.team)) : undefined;
@@ -115,9 +115,12 @@ export function treatyMoment(events: readonly Event[], index: number, viewer: Pl
     : kind === 'Alliance' ? 'You defend each other, share sight and cross each other’s borders.'
     : 'Your units may enter each other’s land.';
   const title = `${kind === 'OpenBorders' ? 'Open Borders' : kind} with ${name}`;
-  return { tier: 'notable', at: null, kicker: TREATY_KICKER[kind], title, effect, lore: '', details: [],
+  // The Alliance upkeep that starts now, priced as Diplomacy prices it (one Gold a turn per city, minimum one).
+  const upkeep = kind === 'Alliance' ? allianceTerms(after.cities.filter((c) => c.owner === viewer).length).upkeep : 0;
+  // An Alliance is a big moment (the framed card); Peace and Open Borders stay small. No kicker: the title names the event.
+  return { tier: kind === 'Alliance' ? 'major' : 'notable', at: null, title, effect, lore: '', details: [],
     deltas: gold && (paid!.to === viewer || paid!.from === viewer) ? [{ counter: 'gold', amount: gold.received ? gold.amount : -gold.amount }] : [],
-    treaty: { kind, ours: { id: us.id, faction: us.faction }, theirs: { id: them.id, faction: them.faction }, ...(gold ? { gold } : {}) } };
+    treaty: { kind, ours: { id: us.id, faction: us.faction }, theirs: { id: them.id, faction: them.faction }, ...(gold ? { gold } : {}), ...(upkeep ? { upkeep } : {}) } };
 }
 
 /** An empire met for the first time this turn (from the viewer's `diplomacy.met`, which only grows). */

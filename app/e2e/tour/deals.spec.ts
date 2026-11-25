@@ -193,7 +193,7 @@ for (const size of SIZES) test.describe(`deals ${size.name}`, () => {
       await showMoment(page, title);
       const card = page.locator('.moment-card', { hasText: title });
       await expect(card.getByTestId('moment-treaty').locator('.medallion')).toHaveCount(2);
-      if (gold) await expect(card.getByTestId('moment-treaty-gold')).toHaveText(gold > 0 ? '+40 Gold from Switzerland' : 'You paid Switzerland 60 Gold');
+      if (gold) await expect(card.getByTestId('moment-treaty-gold')).toHaveText(gold > 0 ? '+40 Gold from Switzerland' : '−60 Gold to Switzerland');
       await page.mouse.move(4, size.height / 2);
       await page.waitForTimeout(700); // let the emblem's seal settle
       await shot(page, size, name);

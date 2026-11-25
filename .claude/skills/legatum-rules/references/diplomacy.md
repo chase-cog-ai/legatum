@@ -201,10 +201,12 @@ says whether it is on.
   "Your Peace offer ended: War was declared · …"; `recentOfferOutcomes` over `reportHistory`, so only this session's
   last 20 turns) until the same offer is open again; with a diplomatic order toward an empire queued, each other
   action button says "Replaces your Open Borders offer" under it (`replacesText`). A treaty taking effect for the
-  viewer's team (`ProposalAccepted` naming it, then any `GoldGiven`) plays a small notable moment card
-  (`moments.ts::treatyMoment`: kicker "Peace made" / "Alliance signed" / "Borders opened", our crest, the treaty
-  emblem and their crest, the one-line rule, the deal Gold "+40 Gold from Athens" or "You paid Athens 40 Gold" with
-  the treasury counter tick); its sound is the `vpGained` feel call voiced by the `sting.notable` hook. Tour:
+  viewer's team (`ProposalAccepted` naming it, then any `GoldGiven`) plays a moment card (`moments.ts::treatyMoment`;
+  no kicker, the title "Open Borders with Athens" names the event): our crest, the treaty emblem and their crest, the
+  one-line rule, the deal Gold in green "+40 Gold from Athens" or red "−40 Gold to Athens" ("Your teammate: " first
+  when it was the teammate's) with the treasury counter tick. Peace and Open Borders are the small notable card; an
+  Alliance is the framed major card and adds its upkeep in red, "Upkeep −3 Gold a turn" (`allianceTerms`: one per viewer city,
+  minimum one, as Diplomacy prices it); its sound is the `vpGained` feel call voiced by the card's tier (`sting.notable`, `sting.major` for an Alliance). Tour:
   `app/e2e/tour/deals.spec.ts`.
 - **AI** (`crates/ai/src/deals.rs`, wired into `diplomacy.rs::plan_diplomacy`; every scripted difficulty unless noted,
   only when `DiplomacyView::deals` is on, so games without deals plan exactly as before). "Losing" a war: an enemy army

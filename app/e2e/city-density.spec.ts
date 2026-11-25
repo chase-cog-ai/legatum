@@ -101,6 +101,16 @@ for (const size of SIZES) test.describe(`city panel density ${size.width}x${size
     });
     expect(sameRow).toBe(true);
     expect((await completeChoices(panel)).complete).toBeGreaterThanOrEqual(MIN_COMPLETE_CHOICES[size.width as 1000 | 1280 | 1440]);
+
+    const buy = panel.getByRole('button', { name: /^Buy Scout for / });
+    await buy.click();
+    await expect(buy).toHaveAttribute('aria-pressed', 'true');
+    const fits = await buy.evaluate((button) => {
+      const chip = button.querySelector('.cost-chip')!.getBoundingClientRect();
+      const bounds = button.getBoundingClientRect();
+      return button.scrollWidth === button.clientWidth && chip.left >= bounds.left && chip.right <= bounds.right;
+    });
+    expect(fits).toBe(true);
   });
 });
 

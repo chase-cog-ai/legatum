@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 import { pendingAlarms, useGame, type TurnReport } from '../store';
 import type { Event as GameEvent } from '../types';
 import { CrestMedallion } from '../brand/ornaments';
-import { RingMedallion } from '../ui/ringMedallion';
+import { RingMedallion, TreatyEmblem } from '../ui/ringMedallion';
 import { playerColor } from '../theme';
 import { useReducedMotion } from '../ui/useReducedMotion';
 import { motionStill } from '../ui/motion';
@@ -241,7 +241,12 @@ export function MomentLane() {
         <div className="moment-body">
         <div className="moment-heading">
           {vignette && <img className="moment-vignette" src={vignette} alt="" />}
-          {card.frame ? <span className="moment-frame"><PortraitFrame faction={card.frame} fallen crestSize={30} style={{ ['--pw' as string]: '84px', ['--ph' as string]: '104px' }} />{card.seal ? <VpSeal vp={card.seal} /> : null}</span>
+          {card.treaty ? <span className="moment-treaty" data-testid="moment-treaty">
+              <CrestMedallion faction={card.treaty.ours.faction} color={playerColor(card.treaty.ours.id)} size={40} />
+              <span className="moment-treaty-emblem"><TreatyEmblem kind={card.treaty.kind} size={44} /></span>
+              <CrestMedallion faction={card.treaty.theirs.faction} color={playerColor(card.treaty.theirs.id)} size={40} />
+            </span>
+            : card.frame ? <span className="moment-frame"><PortraitFrame faction={card.frame} fallen crestSize={30} style={{ ['--pw' as string]: '84px', ['--ph' as string]: '104px' }} />{card.seal ? <VpSeal vp={card.seal} /> : null}</span>
             : picture ? <img className="moment-wonder-art" src={picture} alt="" /> :
             <span className="moment-crest"><span className="moment-rays" aria-hidden="true" />
               {card.goalMark ? <RingMedallion icon={card.goalMark} tone={card.loss ? 'hollow' : 'gilt'} size={card.tier === 'legendary' ? 72 : 56}
@@ -254,6 +259,7 @@ export function MomentLane() {
         {card.gains?.length ? <ul className="moment-effect moment-gains" aria-label="You gained">
           {card.gains.map((g) => <li key={g.text}>{!g.icon.startsWith('yield-') && <Icon name={g.icon} size={24} />}<b><Amounts text={g.text} /></b></li>)}
         </ul> : <p className="moment-effect plain"><span><Amounts text={card.effect} /></span></p>}
+        {card.treaty?.gold && <p className={`moment-treaty-gold ${card.treaty.gold.received ? 'gain' : 'cost'}`} data-testid="moment-treaty-gold"><b><Amounts text={card.treaty.gold.text} /></b></p>}
         {card.lore && <p className="moment-lore">“{card.lore}”</p>}
         {card.details.length > 0 && <div className="moment-details">{card.details.map((text) => <p key={text}><Amounts text={text} /></p>)}</div>}
         </div>

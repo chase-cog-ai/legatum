@@ -83,7 +83,7 @@ checked in `crates/core/src/diplomacy.rs::check_order` (ProposeTreaty and accept
 RespondToProposal, error `diplomacy::NOT_MET`) via `DiplomacyState::met`; views list met teams in
 `DiplomacyView::met`. Saves from before the rule have no record (`contacts: None`) and treat every
 pair as met; tapes before version 5 replay without it (`wasm/src/tape.rs::initial_state`).
- the UI states "You haven't met the X yet" once on that empire's row. The turn a team first meets another, each of its human seats gets the first-contact plate (`celebrate/MeetingTakeover.tsx`, from the growth of `DiplomacyView.met` between two views in `moments.ts::meetingsForTurn`; no core event, so loaded games and replays never show it).
+ The Diplomacy panel hides an empire not met yet, as the rivals table does (`offerStatus.ts::hiddenEmpire`: unless the two are at War or a declaration on it is queued): no row, name or actions, one line "N empires not met yet. Explore to meet them: offers need contact first." (2026-11-25). The "You haven't met X yet" line remains only for an unmet empire shown because of a War. The turn a team first meets another, each of its human seats gets the first-contact plate (`celebrate/MeetingTakeover.tsx`, from the growth of `DiplomacyView.met` between two views in `moments.ts::meetingsForTurn`; no core event, so loaded games and replays never show it).
 
 **War**: declaring against a team at plain Peace is a **surprise war** — effective immediately,
 same turn, before ranged fire/movement; a unit can be ordered into enemy territory with the
@@ -192,7 +192,20 @@ says whether it is on.
   `open_borders`; cities stay closed. Closing borders ends no pending offer (`endsOffers`), and the same treaty with
   other Gold counts as the same offer (`sameDiplomaticAction`). New local games and online rooms set `deals: true`
   (`lobby.ts`, `staging.ts::configFromLobby`, `StagingConfig::deals` in `crates/wasm/src/host/staging.rs`); a loaded save
-  keeps its own setup. Tour: `app/e2e/tour/deals.spec.ts`.
+  keeps its own setup. Polish from live play (2026-11-25, all from the view and the session's turn reports, no core
+  state; `app/src/offerStatus.ts`): while an offer between the pair is open, the empire's other offers read, where
+  they would stand (above Give Gold), "Not now: Offer Alliance, Offer Open Borders. Waiting for Athens’ answer to your
+  Open Borders offer, due turn 6." (or "Athens’ Peace offer waits for your answer in the Inbox, due turn N.") in place
+  of core's "This pair already has an outstanding proposal"; our offer they rejected, let lapse or that was
+  invalidated shows on their row for 5 turns ("Rejected your Open Borders offer · turn 5", "Didn’t answer your …",
+  "Your Peace offer ended: War was declared · …"; `recentOfferOutcomes` over `reportHistory`, so only this session's
+  last 20 turns) until the same offer is open again; with a diplomatic order toward an empire queued, each other
+  action button says "Replaces your Open Borders offer" under it (`replacesText`). A treaty taking effect for the
+  viewer's team (`ProposalAccepted` naming it, then any `GoldGiven`) plays a small notable moment card
+  (`moments.ts::treatyMoment`: kicker "Peace made" / "Alliance signed" / "Borders opened", our crest, the treaty
+  emblem and their crest, the one-line rule, the deal Gold "+40 Gold from Athens" or "You paid Athens 40 Gold" with
+  the treasury counter tick); its sound is the `vpGained` feel call voiced by the `sting.notable` hook. Tour:
+  `app/e2e/tour/deals.spec.ts`.
 - **AI** (`crates/ai/src/deals.rs`, wired into `diplomacy.rs::plan_diplomacy`; every scripted difficulty unless noted,
   only when `DiplomacyView::deals` is on, so games without deals plan exactly as before). "Losing" a war: an enemy army
   presses one of our cities (`endangered_by`), a city is collapsing, or our side's public army is at most 70% of theirs;

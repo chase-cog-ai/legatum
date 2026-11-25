@@ -87,6 +87,10 @@ export function feedbackForTurn(events: readonly Event[], viewer: PlayerView, pr
         calls.add(e.team === viewer.team || allied ? 'vpLost' : 'vpGained');
         break;
       }
+      case 'ProposalAccepted':
+        // A treaty took effect for the viewer's team (Peace, an Alliance, Open Borders): its card's small lift.
+        if (e.proposal.from === viewer.team || e.proposal.to === viewer.team) calls.add('vpGained');
+        break;
       case 'PlayerEliminated': if (e.player === viewer.me) calls.add('eliminated'); break;
       case 'GameWon': calls.add(e.team === viewer.team ? 'victory' : 'defeat'); break;
     }

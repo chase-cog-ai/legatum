@@ -27,6 +27,7 @@ import { RivalLevy } from './Levy';
 import { aiLevel } from '../aiLevel';
 import { publicRelationsModel } from '../relations';
 import { peaceScope, peaceScopeForAction } from '../peaceScope';
+import { hiddenEmpire, OUTSTANDING, pendingOfferReason, recentOfferOutcomes, replacesText } from '../offerStatus';
 
 const treatyName = (p: Pick<PeaceProposal, 'kind'>) => treatyLabel(p.kind);
 /** A Peace offer (a missing kind is Peace): the only kind with a pairwise war scope. */
@@ -195,12 +196,15 @@ function Action({ action, view, orders, compact = false, gold = 0 }: { action: D
     <Amounts text={`Queued: ${label}.${queuedGold > 0 ? ` You pay ${queuedGold} Gold if they accept.` : queuedGold < 0 ? ` You ask ${-queuedGold} Gold.` : ''}`} />{' '}
     <button className="link" onClick={undo}>Undo</button></p>;
   const lines = action.blocked_reason ? [] : actionLines(action, view);
+  // One diplomatic order per empire per turn: say in place which queued order this one replaces.
+  const replaces = !queued && !action.blocked_reason && !view.finished ? replacesText(view, orders, action.order) : null;
   const join = !action.blocked_reason && action.order.type === 'ProposeTreaty' && action.order.kind === 'Alliance' ? joinWarLine(action, view) : null;
   const definition = action.order.type === 'ProposeTreaty' ? treatyDefinition(action.order.kind) : null;
   return <div className="diplomacy-action">
     {definition && <p className="treaty-definition"><strong>{action.order.type === 'ProposeTreaty' && treatyLabel(action.order.kind)}:</strong> {definition}</p>}
     {button}
     {queuedLine}
+    {replaces && <p className="diplomacy-replaces" data-testid="diplomacy-replaces"><Icon name="ui-alert" size={12} className="ui-mark" /> {replaces}</p>}
     {join && <p className="diplomacy-join-war" data-testid="join-war"><Icon name="unit-spearman" size={13} className="ui-mark" /> {join}</p>}
     {/* A blocked action's reason is stated once for its empire row, not under each button. */}
     {!action.blocked_reason && !queued && <span>{spends.length || deal !== 0 || short || (allianceOffer && (action.cost > 0 || (action.upkeep ?? 0) > 0)) ? '' : 'Free · '}{action.effective_turn === view.turn ? 'Takes effect this turn'
@@ -274,10 +278,12 @@ function RivalGift({ view, team, orders }: { view: PlayerView; team: TeamId; ord
 }
 
 /** Unavailable actions keep their reason beside the control. */
-function Unavailable({ actions, view }: { actions: DiplomaticAction[]; view: PlayerView }) {
+function Unavailable({ actions, view, team }: { actions: DiplomaticAction[]; view: PlayerView; team: TeamId }) {
   const war = actions.find((a) => a.order.type === 'DeclareWar' && a.blocked_reason?.includes('guaranteed through turn'));
   const byReason = new Map<string, string[]>();
-  for (const a of actions.filter((a) => !war || a.order.type !== 'DeclareWar')) byReason.set(a.blocked_reason!, [...(byReason.get(a.blocked_reason!) ?? []), actionLabel(a, view)]);
+  // An offer that waits on another open offer says whose answer it waits for, and by when.
+  const reasonOf = (a: DiplomaticAction) => a.blocked_reason === OUTSTANDING ? pendingOfferReason(view, team) ?? a.blocked_reason : a.blocked_reason!;
+  for (const a of actions.filter((a) => !war || a.order.type !== 'DeclareWar')) byReason.set(reasonOf(a), [...(byReason.get(reasonOf(a)) ?? []), actionLabel(a, view)]);
   return <>
     {war && <div className="diplomacy-action diplomacy-unavailable"><button className="btn" disabled aria-label={actionLabel(war, view)}>{actionLabel(war, view)}</button><p className="muted"><Amounts text={war.blocked_reason!} /></p></div>}
     {[...byReason].map(([reason, labels]) => <p className="muted diplomacy-unavailable" key={reason}>Not now: {labels.join(', ')}. <Amounts text={reason} /></p>)}
@@ -692,6 +698,8 @@ export function DiplomacyPanel() {
   const localOrders = useGame((s) => s.orders);
   const localErrors = useGame((s) => s.errors);
   const humans = useGame((s) => s.humans);
+  const reportHistory = useGame((s) => s.reportHistory);
+  const seat = useGame((s) => s.seat);
   const closeButton = useRef<HTMLButtonElement>(null);
   const relationRef = useRef<HTMLHeadingElement>(null);
   const openRowRef = useRef<HTMLLIElement>(null);
@@ -717,7 +725,10 @@ export function DiplomacyPanel() {
   }, [open, selected, awaitingReply]);
   if (!view || !open) return null;
   const d = view.diplomacy;
-  const teams = view.standings.filter((s) => s.team !== view.team && isTeamAlive(view, s.team));
+  // An empire not met yet is hidden, as in the rivals table: one line counts them.
+  const living = view.standings.filter((s) => s.team !== view.team && isTeamAlive(view, s.team));
+  const teams = living.filter((s) => !hiddenEmpire(view, s.team, orders));
+  const unmetCount = living.length - teams.length;
   const team = selected !== null && teams.some((s) => s.team === selected) ? selected : teams[0]?.team;
   const relation = team === undefined ? undefined : relationWith(view, team);
   const name = (p: number) => empireOfPlayer(view, p);
@@ -781,6 +792,8 @@ export function DiplomacyPanel() {
                 <span className="empire-vp"><b>{s.vp}</b>/<Amount n={s.target} unit="VP" /></span>
               </button>
               <EmpireWhere view={view} team={s.team} />
+              {/* Our recent offers it turned down or let lapse, for a few turns after. */}
+              {recentOfferOutcomes(view, reportHistory, seat, s.team).map((o) => <p className={`offer-outcome ${o.kind}`} data-testid="offer-outcome" key={`${o.turn}-${o.text}`}>{o.text}</p>)}
               {/* Public record: an empire that broke an alliance, and how long its victim refuses it. */}
               {betrayalsBy(view, s.team).filter((b) => isTeamAlive(view, b.against)).map((b) => <p className="betrayal-line" key={`${b.against}-${b.turn}`}>
                 Broke an alliance on turn {b.turn}: {b.against === view.team ? 'your team' : empireTitle(view, b.against)} won't ally until turn {b.until}
@@ -797,12 +810,18 @@ export function DiplomacyPanel() {
                 <RivalLevy view={view} team={s.team} />
                 {/* An empire you haven't met: say so once; its Alliance offer shows disabled. */}
                 {unmet && <p className="diplomacy-blocked-reason">{notMetText(unmet.blocked_reason!, empireTitle(view, team))}</p>}
+                {/* Offers that can't be made now say why where they would stand: first, before Give Gold and War. */}
+                <Unavailable actions={teamActions.filter((a) => a.blocked_reason && !blockedByContact(a) && a.order.type === 'ProposeTreaty')} view={view} team={s.team} />
                 <EmpireActions key={s.team} team={s.team} actions={teamActions.filter((a) => !a.blocked_reason || blockedByContact(a))} view={view} forecastView={forecastView} orders={orders} />
-                <Unavailable actions={teamActions.filter((a) => a.blocked_reason && !blockedByContact(a))} view={view} />
+                <Unavailable actions={teamActions.filter((a) => a.blocked_reason && !blockedByContact(a) && a.order.type !== 'ProposeTreaty')} view={view} team={s.team} />
                 {empireMembers(view, s.team).filter((p) => p.alive).map((p) => <TradeSupply key={p.id} view={view} to={p.id} />)}
               </div>}
             </li>;
           })}
+          {unmetCount > 0 && <li className="empire-row unmet-summary" data-testid="unmet-empires">
+            <span className="relations-unknown" aria-hidden="true">?</span>
+            <span><strong>{unmetCount === 1 ? '1 empire' : `${unmetCount} empires`} not met yet.</strong> <span className="muted">Explore to meet them: offers need contact first.</span></span>
+          </li>}
         </ul>
         {errs.map((e, i) => <p className="order-error" key={i}>{e}</p>)}
         <details className="diplomacy-rules"><summary>How diplomacy works</summary>

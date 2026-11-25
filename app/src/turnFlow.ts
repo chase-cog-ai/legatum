@@ -1,4 +1,5 @@
-import type { CityView, Event, Faction, Order, OrderError, PlayerView, ProductionItem } from './types';
+import type { CityView, Event, Faction, Order, OrderError, PeaceProposal, PlayerView, ProductionItem } from './types';
+import { goldForViewer } from './deals';
 import { effectiveResearchQueue, pendingUnitOrder, productionQueue, unitsNeedingOrders } from './orders';
 import type { ReleasedUnit } from './releasedGarrison';
 import { idleCitiesNeedingProduction } from './ui/forecastWarnings';
@@ -90,6 +91,18 @@ function siegeDecisions(view: PlayerView, seen: { turn: number; cities: number[]
     .map((a): PendingDecision => ({ kind: 'siege', id: a.cityId, label: `${a.name} is under attack: ${a.forecast.text.charAt(0).toLowerCase()}${a.forecast.text.slice(1)}` }));
 }
 
+/**
+ * An incoming offer as a pending decision (the turn button and the advisor's "Answer this first"):
+ * named by its kind, with any Gold it carries from the viewer's side.
+ */
+export function offerDecisionLabel(view: PlayerView, p: PeaceProposal): string {
+  const g = goldForViewer(view, p);
+  const gold = g > 0 ? ` · pays ${g} Gold` : g < 0 ? ` · asks ${-g} Gold` : '';
+  if (p.kind === 'Alliance') return `Alliance offer${gold}: respond by turn ${p.respond_by}`;
+  if (p.kind === 'OpenBorders') return `Open Borders with ${teamName(view, proposalCounterparty(view, p, view.team))}: your units may enter each other’s land${gold} · respond by turn ${p.respond_by}`;
+  return `${peaceScope(view, p).title}${gold} · respond by turn ${p.respond_by}`;
+}
+
 export function pendingDecisions(view: PlayerView, orders: Order[], errors: OrderError[] = [], local?: { humans: number[]; orders: Order[][]; errors: OrderError[][]; siegeSeen?: Record<number, { turn: number; cities: number[] }>; airHeld?: Record<number, Hold>; seat?: number; report?: LocalReport; goalDecisionSeen?: Record<number, boolean>; selection?: { kind: string; id?: number } | null }): PendingDecision[] {
   const healed = healedUnits(view, local);
   if (view.finished || view.players.find((p) => p.id === view.me)?.alive === false) return [];
@@ -104,8 +117,7 @@ export function pendingDecisions(view: PlayerView, orders: Order[], errors: Orde
     // Answered, or ended by a queued war or exit toward its sender: no longer a decision.
     ...incomingOffers(view).filter((p) => !offerSettledBy(view, plans, p))
       .sort((a, b) => a.id - b.id).map((p): PendingDecision => ({ kind: 'diplomacy', id: p.id, team: proposalCounterparty(view, p, view.team),
-        label: p.kind === 'Alliance' ? `Alliance offer: respond by turn ${p.respond_by}`
-          : `${peaceScope(view, p).title} · respond by turn ${p.respond_by}` })),
+        label: offerDecisionLabel(view, p) })),
     // A call to arms is answered with Join or Decline; a queued reply settles it. Letting it lapse declines.
     ...incomingCalls(view).filter((c) => !plans.some((q) => q.order.type === 'RespondToProposal' && q.order.proposal === c.id))
       .sort((a, b) => a.id - b.id).map((c): PendingDecision => ({ kind: 'diplomacy', id: c.id, team: c.ally,

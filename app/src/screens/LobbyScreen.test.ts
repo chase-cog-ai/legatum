@@ -307,7 +307,8 @@ it.each([
   expect(start.disabled).toBe(true);
   expect(posted).toEqual([]);
   await act(async () => vi.advanceTimersByTimeAsync(250));
-  expect(posted).toEqual([{ ...saved, turn_limit: null }]);
+  // A room is a game not yet started: the edit also turns deals on (rules 61), like every new game.
+  expect(posted).toEqual([{ ...saved, turn_limit: null, deals: true }]);
   expect(start.disabled).toBe(true);
   await act(async () => settingsResponse.resolve());
   expect(start.disabled).toBe(true); // A response alone is not the current server snapshot.
@@ -324,7 +325,7 @@ it.each([
       { kind: 'ai', name: 'AI 5', faction: 'Random', team: 0, difficulty: 'Hard' },
       { kind: 'ai', name: 'AI 6', faction: 'Random', team: 1, difficulty: 'Hard' },
       { kind: 'ai', name: 'AI 7', faction: 'Random', team: 3, difficulty: 'Hard' }];
-    expect(posted.at(-1)).toEqual({ ...saved, turn_limit: null, width: 48, height: 32, seats });
+    expect(posted.at(-1)).toEqual({ ...saved, turn_limit: null, deals: true, width: 48, height: 32, seats });
     await act(async () => sockets[0].push({ type: 'staging', state: {
       ...privateRoom, config: { ...config, turn_limit: null, width: 48, height: 32, seats },
     } }));

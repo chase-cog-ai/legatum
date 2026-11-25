@@ -1825,7 +1825,7 @@ pub(crate) fn log_decisions(
                     rival: top.rival,
                 });
             }
-            Order::ProposeTreaty { to, kind }
+            Order::ProposeTreaty { to, kind, .. }
                 if *kind == TreatyKind::Alliance && *to != threat_team =>
             {
                 log.push(ThreatEvent::Treaty {

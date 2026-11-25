@@ -188,14 +188,15 @@ test(`${look}: game screen controls keep AA label contrast in every state`, asyn
   await expect(page.locator('.research-queue li[data-tech="Irrigation"]')).toHaveCount(1);
   readings.push(...await auditContrast(page, 'research chosen'));
   await page.getByRole('button', { name: 'Close research', exact: true }).click();
-  // The diplomacy inbox (no AI offers alliances this early; its actions still show).
+  // The diplomacy inbox (no AI offers alliances this early). On turn 2 nobody has been met, so the
+  // empires list is the one "not met yet" line (unmet empires are hidden, as in the rivals table).
   await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
   const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
   await expect(inbox).toBeVisible();
   // Audit only what the player sees once it settles: no story card over the inbox and no
   // layout still moving.
   await expect(page.locator('.moment-card')).toHaveCount(0);
-  const firstAction = inbox.locator('.diplomacy-action button').first();
+  const firstAction = inbox.locator('.diplomacy-action button, [data-testid=unmet-empires]').first();
   await expect.poll(async () => {
     const before = JSON.stringify(await firstAction.boundingBox());
     await page.waitForTimeout(250);

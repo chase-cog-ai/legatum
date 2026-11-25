@@ -45,21 +45,29 @@ export function RingMedallion({ icon, tone, size = 26, sign, iconColor, badge, c
   );
 }
 
-export type TreatyKind = 'Peace' | 'Alliance' | 'War';
+export type TreatyKind = 'Peace' | 'Alliance' | 'War' | 'OpenBorders';
 
 /**
  * A treaty's emblem, built from the house star: a ring around the star, two interlocked rings for
- * an Alliance, and a red ring with a cross for War. No new art.
+ * an Alliance, a red ring with a cross for War. Open Borders (deals) wear Peace's ring with a
+ * two-way arrow in place of the star and no sign: passage both ways, drawn with strokes so it can't
+ * read as a "+" at 12 px (UI review of PR 184). No new art.
  */
 export function TreatyEmblem({ kind, size = 40 }: { kind: TreatyKind; size?: number }) {
   const bad = kind === 'War';
-  const label = kind;
+  const open = kind === 'OpenBorders';
+  const label = open ? 'Open Borders' : kind;
+  const arrow = Math.max(8, Math.round(size * 0.56));
   return (
     <span className={`te ${kind.toLowerCase()}${bad ? ' bad' : ''}${size < 22 ? ' sm' : ''}`} style={{ '--te': `${size}px` } as CSSProperties} role="img" aria-label={`${label} emblem`}>
       <span className="te-ring a" />
       {kind === 'Alliance' && <span className="te-ring b" />}
-      <Star size={Math.round(size * 0.38)} className="te-star" />
-      <span className="te-sign"><Icon name={bad ? 'ui-cross' : 'ui-check'} size={Math.max(8, Math.round(size * 0.26))} /></span>
+      {open
+        ? <svg className="te-passage" width={arrow} height={arrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={size < 22 ? 3.4 : 2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 9h17M16 5l4 4-4 4M21 15H4M8 11l-4 4 4 4" />
+          </svg>
+        : <Star size={Math.round(size * 0.38)} className="te-star" />}
+      {!open && <span className="te-sign"><Icon name={bad ? 'ui-cross' : 'ui-check'} size={Math.max(8, Math.round(size * 0.26))} /></span>}
     </span>
   );
 }

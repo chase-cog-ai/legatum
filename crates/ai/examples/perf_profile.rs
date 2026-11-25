@@ -58,7 +58,7 @@ fn encode(order: &Order) -> Vec<i32> {
         }
         Order::DeclareWar { against, breach } => [9, i32::from(against.0), i32::from(breach), 0],
         Order::BreakTreaty { with, .. } => [14, i32::from(with.0), 0, 0],
-        Order::ProposeTreaty { to, kind } => [10, i32::from(to.0), kind as i32, 0],
+        Order::ProposeTreaty { to, kind, .. } => [10, i32::from(to.0), kind as i32, 0],
         Order::RespondToProposal {
             proposal, accept, ..
         } => [11, proposal.0 as i32, i32::from(accept), 0],
@@ -162,6 +162,7 @@ fn decode(encoded: impl AsRef<[i32]>) -> Order {
                 1 => legatum_core::diplomacy::TreatyKind::Alliance,
                 _ => panic!("invalid treaty kind"),
             },
+            gold: 0,
         },
         11 => Order::RespondToProposal {
             proposal: legatum_core::diplomacy::ProposalId(a as u32),
@@ -514,6 +515,7 @@ mod codec_tests {
             let order = Order::ProposeTreaty {
                 to: TeamId(3),
                 kind,
+                gold: 0,
             };
             assert_round_trip(order);
         }

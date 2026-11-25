@@ -2322,6 +2322,7 @@ mod tests {
             consents: Vec::new(),
             needs: vec![to],
             required_teams: Vec::new(),
+            gold: 0,
         });
         let mut ordinary = Planner::new(&v, base().knobs, Faction::Switzerland, 7);
         ordinary.plan_diplomacy();

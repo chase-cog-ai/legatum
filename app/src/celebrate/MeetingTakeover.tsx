@@ -71,10 +71,17 @@ export function MeetingTakeover({ moment, dismiss }: { moment: Moment; dismiss()
   const name = empireNameOf(card.members.map((m) => view.players.find((p) => p.id === m.id)!).filter(Boolean), view.players);
   const me = view.players.find((p) => p.id === view.me);
   const art = eraArt((me?.era ?? 1) - 1);
-  // A row the sheet shows on a piece's card leans on that card's header ("Iron Working unlocks it"): left out here.
-  const strengths = sheet.pairs.filter((p) => p.strength && p.strengthIcon && !p.onCard).slice(0, 3);
-  // With two peoples on one team the columns describe the leader's people, and say so.
-  const prices = sheet.pairs.filter((p) => p.price && p.priceIcon).slice(0, 2);
+  // A team of two describes both peoples (UI review of PR 184): each column gives each people its own labelled rows,
+  // fewer of them, so the plate still fits at 1000x600.
+  const peoples = [...new Set(card.members.map((m) => m.faction))];
+  const two = peoples.length > 1;
+  const about = peoples.map((f) => {
+    const sh = FACTION_SHEETS[f];
+    // A row written for the piece's own card stays out only when it leans on that card's header ("Iron Working unlocks it").
+    const strengths = sh.pairs.filter((p) => p.strength && p.strengthIcon && !(p.onCard && /\bunlocks it\b/.test(p.strength))).slice(0, two ? 2 : 3);
+    const prices = sh.pairs.filter((p) => p.price && p.priceIcon).slice(0, two ? 1 : 2);
+    return { faction: f, name: FACTION_INFO[f].name, strengths, prices };
+  });
   const relation = relationWith(view, card.team)?.state ?? 'Peace';
   const them = view.players.filter((p) => p.team === card.team);
   const cities = them.reduce((n, p) => n + p.cities, 0);
@@ -108,13 +115,19 @@ export function MeetingTakeover({ moment, dismiss }: { moment: Moment; dismiss()
       </header>
       <section className="et-changes mt-cols" aria-label={`About ${name}`}>
         <div className="et-col" data-testid="meeting-strengths">
-          <h3>{card.members.length > 1 ? `What ${info.name} does well` : 'What they do well'}</h3>
-          {strengths.map((p, i) => <MedallionRow key={i} icon={p.strengthIcon!} tone="good" sign="Strength">{asTheirs(p.strength!)}</MedallionRow>)}
+          <h3>What they do well</h3>
+          {about.map((a) => <div key={a.faction} className="mt-people" data-people={a.faction}>
+            {two && <h4 className="mt-people-name">{a.name}</h4>}
+            {a.strengths.map((p, i) => <MedallionRow key={i} icon={p.strengthIcon!} tone="good" sign="Strength">{asTheirs(p.strength!)}</MedallionRow>)}
+          </div>)}
         </div>
         <div className="et-col" data-testid="meeting-prices">
-          <h3>{card.members.length > 1 ? `Where ${info.name} is weak` : 'Where they are weak'}</h3>
-          {prices.map((p, i) => <MedallionRow key={i} icon={p.priceIcon!} tone="bad" sign="Weakness">{asTheirs(p.price!)}</MedallionRow>)}
-          {sheet.counteredBy && <p className="mt-counter"><b>To face them:</b> {sheet.counteredBy}</p>}
+          <h3>Where they are weak</h3>
+          {about.map((a) => <div key={a.faction} className="mt-people" data-people={a.faction}>
+            {two && <h4 className="mt-people-name">{a.name}</h4>}
+            {a.prices.map((p, i) => <MedallionRow key={i} icon={p.priceIcon!} tone="bad" sign="Weakness">{asTheirs(p.price!)}</MedallionRow>)}
+          </div>)}
+          {!two && sheet.counteredBy && <p className="mt-counter"><b>To face them:</b> {sheet.counteredBy}</p>}
         </div>
         <div className="et-col mt-between" data-testid="meeting-between">
           <h3>Between you</h3>

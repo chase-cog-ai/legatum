@@ -133,3 +133,38 @@ export async function rewardFixture(kind: RewardKind): Promise<void> {
   });
   window.__feelLog = [];
 }
+
+/**
+ * A treaty taking effect for the viewer's team: the other empire accepted our `kind` offer, and its deal moved
+ * `gold` (positive: they paid us; negative: we paid them; 0: no Gold).
+ */
+export async function treatyCelebrationFixture(kind: 'Peace' | 'Alliance' | 'OpenBorders' = 'OpenBorders', gold = 40): Promise<Event[]> {
+  const client = new FixtureClient();
+  const setup = await client.standardSetup('42', 'India', 'Byzantium', 'Your Dominion', 'Byzantium');
+  setup.players[1].is_human = false;
+  setup.deals = true;
+  await client.newGame(setup);
+  client.endTurn({});
+  const before = client.view(0), after = structuredClone(before);
+  const turn = after.turn;
+  const them = after.players.find((p) => p.team === 1)!.id;
+  const proposal = { id: 3, from: 0, to: 1, proposer: 0, kind, created_turn: turn - 2, respond_by: turn - 1, relation_version: 0, ...(gold ? { gold: -gold } : {}) };
+  const relation = { ...after.diplomacy.relations.find((r) => (r.a === 0 && r.b === 1) || (r.a === 1 && r.b === 0))!, state: kind === 'Alliance' ? 'Alliance' as const : 'Peace' as const, effective_turn: turn, guarantee_until: turn + 10 };
+  const events: Event[] = [
+    { type: 'ProposalAccepted', proposal, effective_turn: turn },
+    ...(gold ? [gold > 0 ? { type: 'GoldGiven' as const, from: them, to: 0, amount: gold } : { type: 'GoldGiven' as const, from: 0, to: them, amount: -gold }] : []),
+    kind === 'OpenBorders' ? { type: 'BordersOpened', a: 0, b: 1, effective_turn: turn }
+      : kind === 'Alliance' ? { type: 'TreatyActivated', relation } : { type: 'PeaceEstablished', relation },
+  ];
+  after.economy.gold += gold;
+  const moments = momentsForTurn(events, 0, before, after);
+  useGame.setState({ client, humans: [0], views: [after], screen: 'game', booted: true, seat: 0,
+    orders: [[]], errors: [[]], ready: [false], selection: null, mode: 'normal',
+    reportOpen: false, reportFocus: undefined, techOpen: false, vpExpanded: false, busy: null, error: null,
+    anim: null, focus: null, net: null, lastHash: `fixture-treaty-${kind}`,
+    report: { turn: turn - 1, hash: `fixture-treaty-${kind}`, events: [events], moments: [moments], lines: [formatEvents(events, contextFromViews(before, after))] },
+  });
+  window.__feelLog = [];
+  playTurnFeedback(feedbackForTurn(events, after, before), () => true, soundHooksForMoments(moments, events));
+  return events;
+}

@@ -69,6 +69,7 @@ fn offer(s: &GameState, from: u8, to: u8, kind: TreatyKind) -> GameState {
             vec![Order::ProposeTreaty {
                 to: TeamId(to),
                 kind,
+                gold: 0,
             }],
         )]),
     )

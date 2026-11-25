@@ -60,6 +60,13 @@ pub struct CityAssaultForecast {
     pub city_hp: i32,
     /// Expected city HP left, averaged over the attacker's rolls (the other attacks at a 100% roll).
     pub city_hp_after: i32,
+    /// The Walls bar before and (expected) after, and the chance (0-100) the attacks break it.
+    #[serde(default)]
+    pub walls_hp: i32,
+    #[serde(default)]
+    pub walls_hp_after: i32,
+    #[serde(default)]
+    pub walls_break_chance: u32,
     pub garrison: Option<AssaultGarrison>,
     /// The supporters assumed (empty unless the caller names them).
     #[serde(default)]
@@ -88,7 +95,7 @@ struct Hit {
     garrison_defense_bonus: i32,
     /// The city's defence against this attacker (the attacker's Siege changes it).
     city_defense: i32,
-    /// Percent of the damage that reaches the city's HP (Walls).
+    /// Percent of the damage the city's Walls bar takes (`combat::wall_damage_percent`).
     percent: i32,
     /// Per supporter (in `Defenders::supporters` order): this attack's strength against it and
     /// its defence against this attack, class bonuses included.
@@ -290,6 +297,7 @@ fn alongside_hit(
 /// One simulated turn: what is left of each defender and what the primary attacker suffers.
 struct Outcome {
     city: i32,
+    walls: i32,
     garrison: Option<i32>,
     supporters: Vec<i32>,
     /// Defending rolls (of 41) that permit capture.
@@ -301,8 +309,16 @@ struct Outcome {
 }
 
 /// Simulate the stages once with the primary attacker's roll `roll` (every other attack at 100%).
-fn run(hits: &[Hit], primary: usize, roll: i32, city_hp: i32, defenders: &Defenders) -> Outcome {
+fn run(
+    hits: &[Hit],
+    primary: usize,
+    roll: i32,
+    city_hp: i32,
+    walls_hp: i32,
+    defenders: &Defenders,
+) -> Outcome {
     let mut city = city_hp;
+    let mut walls = walls_hp;
     let mut g = defenders.garrison.map(|(hp, _)| hp);
     let mut sup: Vec<i32> = defenders.supporters.iter().map(|(_, hp)| *hp).collect();
     let (mut capture_rolls, mut carried_total, mut reply) = (0, 0, 0i64);
@@ -327,14 +343,14 @@ fn run(hits: &[Hit], primary: usize, roll: i32, city_hp: i32, defenders: &Defend
             let direct_g = defenders.garrison.map(|(_, defense)| {
                 combat::damage(h.to_garrison, defense + h.garrison_defense_bonus, r)
             });
-            let to_city = || {
-                combat::damage_to_city_hp(h.percent, combat::damage(h.to_city, h.city_defense, r))
-            };
-            let (base, past, empties) = if city > 0 {
+            let to_city = || combat::damage(h.to_city, h.city_defense, r);
+            let (base, past, empties) = if city > 0 || walls > 0 {
                 let d = to_city();
-                let past = d - city;
-                city = (city - d).max(0);
-                (d, past, true)
+                // The Walls bar first, then the city's HP (`combat::city_hit`).
+                let hit = combat::city_hit(walls, city, d, h.percent);
+                walls -= hit.walls;
+                city -= hit.hp;
+                (d, if hit.past > 0 { hit.past } else { -1 }, true)
             } else if let Some(d) = direct_g {
                 (d, d, false)
             } else {
@@ -429,6 +445,7 @@ fn run(hits: &[Hit], primary: usize, roll: i32, city_hp: i32, defenders: &Defend
     }
     Outcome {
         city,
+        walls,
         garrison: g.map(|hp| hp.max(0)),
         supporters: sup.into_iter().map(|hp| hp.max(0)).collect(),
         capture_rolls,
@@ -522,6 +539,7 @@ pub fn forecast_city_assault_supported(
         supporters: backers.iter().map(|u| (u.id, u.hp)).collect(),
     };
     let mut runs = 0i64;
+    let (mut walls_sum, mut walls_broken) = (0i64, 0i64);
     let (mut city_sum, mut garrison_sum, mut captured, mut destroyed, mut carried_sum) =
         (0i64, 0i64, 0i64, 0i64, 0i64);
     let mut reply_sum = 0i64;
@@ -558,8 +576,10 @@ pub fn forecast_city_assault_supported(
                     hits.push(h.clone());
                 }
             }
-            let out = run(&hits, primary, roll, city.hp, &defenders);
+            let out = run(&hits, primary, roll, city.hp, city.walls_hp, &defenders);
             let defender_rolls = i64::from(combat::ROLL_MAX - combat::ROLL_MIN + 1);
+            walls_sum += i64::from(out.walls) * defender_rolls;
+            walls_broken += i64::from(city.walls_hp > 0 && out.walls <= 0) * defender_rolls;
             runs += defender_rolls;
             city_sum += i64::from(out.city) * defender_rolls;
             garrison_sum += i64::from(out.garrison.unwrap_or(0)) * defender_rolls;
@@ -580,6 +600,9 @@ pub fn forecast_city_assault_supported(
         attacks,
         city_hp: city.hp,
         city_hp_after: (city_sum / rolls) as i32,
+        walls_hp: city.walls_hp,
+        walls_hp_after: (walls_sum / rolls) as i32,
+        walls_break_chance: (walls_broken * 100 / rolls) as u32,
         garrison: garrison
             .zip(defenders.garrison)
             .map(|(u, (hp, _))| AssaultGarrison {

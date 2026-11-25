@@ -17,8 +17,9 @@
 .rivals .rv-who { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .rivals .rv-crests { display: flex; flex: none; }
 .rivals .rv-crests > * + * { margin-left: -6px; }
+.rivals .rv-more { position: relative; width: 22px; height: 22px; border-radius: 50%; background: var(--panel-3); box-shadow: 0 0 0 1.5px var(--panel); display: grid; place-items: center; font: 700 10px var(--sans); color: var(--ink); font-variant-numeric: lining-nums; }
 .rivals .rv-unknown { width: 20px; height: 20px; border-radius: 50%; border: 1.5px dashed var(--rule-2); display: grid; place-items: center; font: 700 14px var(--display); color: var(--muted); }
-.rivals .rv-name-col { display: flex; flex-direction: column; min-width: 0; line-height: 1.1; }
+.rivals .rv-name-col { display: flex; flex-direction: column; min-width: 2.6em; /* a word may wrap, but never one letter a line */ line-height: 1.1; }
 .rivals .rv-name { font: 600 15px var(--display); overflow-wrap: break-word; min-width: 0; font-variant-numeric: lining-nums; } /* never ellipsized: " · AI 2" tells twin rows apart */
 .rivals .unmet .rv-name { color: var(--muted); font-style: italic; }
 .rivals .rv-status { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 5px; padding: 2px 0 0 28px; }

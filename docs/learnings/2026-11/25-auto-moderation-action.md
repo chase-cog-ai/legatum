@@ -23,3 +23,12 @@ Comments (same day): vandals moved to comments on real issues (#198). GitHub has
 GitHub MCP tools, but the workflow token can `minimizeComment` (GraphQL, classifier OFF_TOPIC) with
 `issues: write`, so the workflow also runs on `issue_comment: created`, and a manual run with `hide_comments` lets
 the hourly sweep hide comments by dispatching it.
+
+Insults (same day): a run of bare-profanity titles ("eat shit", "fuck off") sailed past the wave keyword list. The
+rule now also closes on insults aimed at people anywhere, and on profanity when the author wrote almost nothing
+else (fewer than 40 letters outside the issue template), so a frustrated player's real report with a swear stays
+open. Profanity matches whole words with known endings ("shitty" yes, "shitake" no).
+
+Name-calling words ("idiot", "moron", "do your job") were first on the anywhere list, which would close a real
+report like "the Hard AI plays like an idiot". They moved to the short-text rule with profanity; the anywhere list
+keeps only phrases that can't describe the game ("fuck you", "eat shit", "asshole", "do your fucking job").

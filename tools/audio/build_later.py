@@ -38,8 +38,9 @@ FREECOL_CREDIT = f'by {FREECOL_BY}, from FreeCol (https://www.freecol.org/), CC 
 UH_CREDIT = f'from Unknown Horizons (https://unknown-horizons.org/), CC BY-SA 3.0 ({BYSA3}), edited for Legatum'
 
 # Eras are 1-based (1 Ancient .. 9 Future). The ancient-world music holds the first three; from the
-# Renaissance the age-of-sail pieces take over (a people's opening track stays in rotation all game).
-LATER = [4, 7]
+# Renaissance the age-of-sail pieces take over, for two eras (a people's opening track stays in rotation all
+# game). The Machine Age and the World War era have their own music (tools/audio/build_gpl.py).
+LATER = [4, 5]
 # The Modern and Future eras have electronic scores of their own (Warzone 2100's community soundtracks).
 MODERN = [8, 9]
 MODERN_CUT_S = 240  # the pieces run 5 to 7 minutes; the first four are kept
@@ -110,7 +111,7 @@ def music(slug, root, name, title, author, lic, credit, mood, peoples, eras):
            + f'static gain {gain:+.1f} dB toward -20 LUFS with the true peak under -2 dBTP (now {i1} LUFS, {pk1} dBTP); '
            'transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped')
     why = ('Plays during an empire war' if mood == 'war' else f"Peace music for {', '.join(peoples)}" if peoples else 'Peace music every people hears')
-    why += ', in the Modern and Future eras.' if eras == MODERN else ', from the Renaissance to the World War era.' if eras else '.'
+    why += ', in the Modern and Future eras.' if eras == MODERN else ', in the Renaissance and Industrial eras.' if eras else '.'
     e = {'file': f'music/{slug}.m4a', 'events': [f'music:{slug}'], 'title': title, 'author': author,
          'source': {FREECOL: FREECOL_SRC, UH: UH_SRC, WZ: WZ_SRC}[root] % name, 'license': lic, 'attribution': f'"{title}" {credit}',
          'modified': mod, 'rationale': why, 'mood': mood, 'peoples': peoples}
@@ -160,7 +161,7 @@ def sea():
 
 manifest = json.loads((AUDIO / 'manifest.json').read_text())
 mine = {f'music/{m[0]}.m4a' for m in MUSIC} | {f'fx/{f[1]}.m4a' for f in FX} | {'fx/aircraft.m4a', 'fx/jet.m4a', 'ambience/sea.m4a'}
-manifest = [e for e in manifest if e['file'] not in mine]
+manifest = [e for e in manifest if e['file'] not in mine]  # build_gpl.py's entries are kept
 for e in manifest:
     if '0ad/0ad' in e['source'] and e.get('mood'):
         e['eras'] = ANCIENT_ONLY

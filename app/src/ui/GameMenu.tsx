@@ -5,6 +5,8 @@ import { openGuide } from './guideState';
 import { SettingsDialog } from './SettingsDialog';
 import { loadFromFile, saveToFile } from '../platform/files';
 import { checkSaveText } from '../platform/saveLimits';
+import { hostedRoomId } from '../net/hosting';
+import { listedRoomName } from '../net/roomName';
 import { loadErrorMessage, parseSaveFile } from '../saveErrors';
 import { exportRetainedHistories } from '../platform/archive';
 import { currentActivePlaySeconds, startActivePlayClock } from '../activePlayTime';
@@ -154,6 +156,9 @@ export function GameMenu() {
           <div className="menu-foot">
             {kind !== 'remote' ? 'Autosaved each turn' : hostHere ? 'Online game · you host it: keep this tab open, or save to a file' : 'Online game · the host keeps the game'}
           </div>
+          {kind === 'remote' && hostHere && hostedRoomId() && (
+            <div className="menu-foot menu-listed">In the game list, this game is “{listedRoomName(hostedRoomId()!)}”.</div>
+          )}
           {/* Troubleshooting only: reachable, but out of the player's way. */}
           <details className="menu-advanced">
             <summary>Advanced</summary>

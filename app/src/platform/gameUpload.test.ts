@@ -139,3 +139,9 @@ it('exporting a retained history strips coach_answers and rewinds (the engine re
   expect(exported).not.toHaveProperty('coach_answers');
   expect(exported).not.toHaveProperty('rewinds');
 });
+
+it('captures the record after each of the first five turns, then every fifth', async () => {
+  const { isHistoryCheckpoint } = await import('./gameUpload');
+  const turns = Array.from({ length: 22 }, (_, i) => i).filter(isHistoryCheckpoint);
+  expect(turns).toEqual([0, 1, 2, 3, 4, 5, 10, 15, 20]);
+});

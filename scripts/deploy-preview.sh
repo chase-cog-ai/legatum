@@ -10,6 +10,10 @@ cd "$(dirname "$0")/.."
 label="${1:?usage: scripts/deploy-preview.sh <label> [--skip-wasm]}"; shift
 [[ "$label" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "label must be lower-case letters, digits and hyphens: $label" >&2; exit 2; }
 [ "$label" != master ] || { echo "master is the production site; deploy it from GitHub" >&2; exit 2; }
+# The relay lists online games only for build labels the game makes (infra/relay/src/shared.ts `buildOk`), so a
+# preview other than playtest-N, preview-N, test-N or beta-N cannot host online games unless LEGATUM_BUILD_LABEL is set.
+[[ -n "${LEGATUM_BUILD_LABEL:-}" || "$label" =~ ^(playtest|preview|test|beta)-[0-9]{1,4}[a-z]?$ ]] ||
+  echo "note: online hosting needs a label like playtest-9 (or set LEGATUM_BUILD_LABEL); solo play is unaffected" >&2
 project="${CLOUDFLARE_PAGES_PROJECT:-legatum-game}"
 
 # Keep the preview's earlier files, so a game open on it keeps its art after this deploy.

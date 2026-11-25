@@ -118,7 +118,7 @@ for (const [width, height] of [[1000, 600], [1440, 900]] as const) {
         const x = Math.max(0, Math.min(width - half.w * 2, c.x - half.w)), y = Math.max(0, Math.min(height - half.h * 2, c.y - half.h + 20));
         await page.screenshot({ path: `${shots}/${prefix}-${name}-${tag}.png`, clip: { x, y, width: half.w * 2, height: half.h * 2 }, animations: 'disabled' });
       };
-      for (const zoom of crowded ? [0.5, 0.66, 0.9, 1.1, 1.4, 2] : [0.66, 0.9, 1.4]) { await frame(page, s.home, zoom, width); await take(`capital-z${zoom}`, s.home, zoom === 0.9); }
+      for (const zoom of crowded ? [0.5, 0.66, 0.9, 1.1, 1.4, 2] : [0.66, 0.9, 1.4, 2]) { await frame(page, s.home, zoom, width); await take(`capital-z${zoom}`, s.home, zoom === 0.9); }
       if (s.second) { await frame(page, s.second, 0.9, width); await take('building-walls-z0.9', s.second); await frame(page, s.second, 1.4, width); await take('building-walls-z1.4', s.second); }
       if (!yields || crowded) return;
       for (const [k, c] of s.cities.filter((c) => c.owner !== 0).entries()) { await frame(page, c.pos, 1.1, width); await take(`seat${c.owner}-${k}-z1.1`, c.pos); }

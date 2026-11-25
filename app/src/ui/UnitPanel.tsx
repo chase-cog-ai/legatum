@@ -51,7 +51,7 @@ import { clearRetire, pendingRetire, retireEntry } from '../goalActions';
 import { isTopRank } from '../rankInsignia';
 import { RankMark } from './RankMark';
 
-export const siegeCityHint = (bonus: number) => `+${bonus} ranged strength against city HP. Hits land one at a time. The hit that empties the city's HP carries on to the garrison with the part of its damage the city did not absorb. Later hits strike the garrison in full. Ranged fire cannot capture.`;
+export const siegeCityHint = (bonus: number) => `+${bonus} ranged strength against city health. Hits land one at a time. The hit that empties the city's health carries on to the garrison with the part of its damage the city did not absorb. Later hits strike the garrison in full. Ranged fire cannot capture.`;
 
 /** Whether this Roman veteran founds the Colonia Victrix where he stands (core `goals::known_colonia_site`, through the settle site), cached per view. */
 const coloniaCache = new WeakMap<PlayerView, Map<number, boolean>>();
@@ -158,7 +158,7 @@ export function UnitPanel({ unit, view, peek = false }: { unit: UnitView; view: 
   const exploreAction = canAutoExplore(unit.kind) && !locked && (
     <Action label={exploring ? 'Stop auto-explore' : 'Auto-explore'} hotkey="E" primary={leads && unit.kind === 'Scout'} active={exploring}
       onClick={toggleAutoExploreSelected}
-      tip="Explore reachable land and ruins using known terrain. Avoid known armies, retreat when hurt, and stop below 60 HP or when threatened or blocked. Any manual order takes control; the map marks exploring units with A." />
+      tip="Explore reachable land and ruins using known terrain. Avoid known armies, retreat when hurt, and stop below 60 health or when threatened or blocked. Any manual order takes control; the map marks exploring units with A." />
   );
 
   // The phone sheet reserves this row outside its scrolling details. Keep the same
@@ -208,8 +208,8 @@ export function UnitPanel({ unit, view, peek = false }: { unit: UnitView; view: 
       </div>
       <div className="unit-panel-body" ref={scroll} tabIndex={overflow ? 0 : undefined} role="region" aria-label="Unit details and actions">
       <div className="up-stats">
-        <Tip content={ignoresWounds(owner?.faction, unit.kind) ? 'Health. Sparta infantry ignore wound strength penalties.' : 'Health. Strength drops by 1 per 10 HP lost.'} className="up-stat">
-          <span className="lbl">HP</span>
+        <Tip content={ignoresWounds(owner?.faction, unit.kind) ? 'Health. Sparta infantry ignore wound strength penalties.' : 'Health. Strength drops by 1 per 10 health lost.'} className="up-stat">
+          <span className="lbl">Health</span>
           <Bar value={unit.hp} max={100} color={healthColor(unit.hp / 100)} className="hp-bar" />
           <b>{unit.hp}</b>
         </Tip>
@@ -298,7 +298,7 @@ export function UnitPanel({ unit, view, peek = false }: { unit: UnitView; view: 
         {(unit.siege || builtInSiege(unit.kind as UnitKind)) && <div className="hint" data-testid="siege-note">{siegeNote(view, unit)}</div>}
         {firesIndirect(unit.kind) && <div className="hint">{ARTILLERY_HEADLINE}</div>}
         {closed && <p className="hint warn">Closed foreign territory: no attacks, healing or fortification. Every move must bring this unit closer to an exit.</p>}
-        {mine && !closed && unit.resting_heal && unit.hp < 100 && <Tip as="div" className="hint" content={<BreakdownTable b={unit.resting_heal} title="Resting healing" unit="HP" />}>Rest here: heal up to {Math.min(unit.resting_heal.total, 100 - unit.hp)} HP this turn if you neither move nor fight.</Tip>}
+        {mine && !closed && unit.resting_heal && unit.hp < 100 && <Tip as="div" className="hint" content={<BreakdownTable b={unit.resting_heal} title="Resting healing" unit="health" />}>Rest here: heal up to {Math.min(unit.resting_heal.total, 100 - unit.hp)} health this turn if you neither move nor fight.</Tip>}
         {siegeCityBonus(unit.kind) > 0 && <div className="hint">{siegeCityHint(siegeCityBonus(unit.kind))}</div>}
         {mode === 'ranged' && <div className="hint warn">Choose a target within range <span className="mouse-only">· Esc to cancel</span><button className="link touch-only" onClick={toggleRangedMode}>Cancel targeting</button></div>}
         {teammate && (

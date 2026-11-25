@@ -16,6 +16,8 @@ beforeEach(() => {
   container = document.body.appendChild(document.createElement('div'));
   root = createRoot(container);
   useGame.setState(useGame.getInitialState(), true);
+  // These tests cover the This era cards; the tech tree has its own tests (TechTree.test.tsx).
+  localStorage.setItem('legatum.research-view.v1', 'era');
 });
 afterEach(() => {
   act(() => root.unmount());

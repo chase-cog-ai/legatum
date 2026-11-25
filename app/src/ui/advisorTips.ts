@@ -31,17 +31,19 @@ const tile = (hex: Hex) => ({ kind: 'tile' as const, hex });
 
 function armyTip(v: PlayerView): Tip | null {
   if (v.turn < 10) return null;
-  const mine = v.players.find((p) => p.id === v.me)?.army ?? 0;
+  // Team totals: an ally's army counts as yours, and a rival's team counts as one.
+  const teamArmy = (team: number) => v.players.filter((p) => p.alive && p.team === team).reduce((n, p) => n + (p.army ?? 0), 0);
+  const mine = teamArmy(v.team);
   const cities = ownCities(v);
   const close = (owner: number) => v.cities.some((c) => c.owner === owner && cities.some((own) => distance(own.pos, c.pos) <= 10))
     || v.units.some((u) => u.owner === owner && u.military && cities.some((own) => distance(own.pos, u.pos) <= 6));
-  const rival = v.players.filter((p) => p.alive && rivalTeam(v, p.id) && (p.army ?? 0) >= Math.max(mine * 1.5, mine + 10) && close(p.id))
-    .sort((a, b) => (b.army ?? 0) - (a.army ?? 0))[0];
+  const rival = v.players.filter((p) => p.alive && rivalTeam(v, p.id) && teamArmy(p.team) >= Math.max(mine * 1.5, mine + 10) && close(p.id))
+    .sort((a, b) => teamArmy(b.team) - teamArmy(a.team))[0];
   if (!rival) return null;
   const name = empireOfPlayer(v, rival.id);
   // One key for every rival: the warning is about your army, not about who is ahead this time.
   return { key: 'army', kind: 'army', title: 'Build up your army',
-    why: `Army points: ${name} ${rival.army}, you ${mine}. They are close to you, and a weak army invites an attack.`,
+    why: `Army points: ${name} ${teamArmy(rival.team)}, you ${mine}. They are close to you, and a weak army invites an attack.`,
     steps: [{ instruction: 'Build military units, or Walls in your border cities.', target: null }] };
 }
 

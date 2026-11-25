@@ -266,6 +266,8 @@ export interface State {
   outcomeDismissed: boolean;
   /** The local seats still owed the people's introduction (celebrate/PeopleIntro.tsx): every human seat of a game that has just begun; a loaded game has none. */
   introSeats: Seat[];
+  /** While a first-contact plate is up (celebrate/MeetingTakeover.tsx), the people whose music plays: theirs, as in Civ's first meeting. */
+  meetingPeople: Faction | null;
   /** Which part of the end of a finished game is showing: the staged reveal, then the post-game report. */
   outcomeStage: 'reveal' | 'report';
   /** Player ids whose elimination dialog has been dismissed in this session. */
@@ -1271,6 +1273,7 @@ export const useGame = create<State>((set, get) => {
     autosaveNotice: false,
     rewinds: [],
     introSeats: [],
+    meetingPeople: null,
 
     goto: (screen) => {
       if (screen !== 'game') stopResolving();

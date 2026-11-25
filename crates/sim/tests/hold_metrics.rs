@@ -45,7 +45,7 @@ fn run(args: &[&str]) -> (Value, String, TempDir) {
 fn standard_hard_duel_holds_are_consistent_and_never_stall() {
     // 16 games: on the rules-50 tree a Hard duel ends by capitals in about 11 of 12 games
     // (22 of 24 in a 2026-11-22 run), so 8 games held no VP hold win. Seeds 17 to 32: under
-    // rules 60 (a cut deposit) seed 14 is the one Hard duel in 96 that stalls (seed 96 was, before
+    // rules 61 (a cut deposit) seed 14 is the one Hard duel in 96 that stalls (seed 96 was, before
     // it), and this range holds five VP hold wins and no stall.
     let (report, md, _temp) = run(&[
         "--games",

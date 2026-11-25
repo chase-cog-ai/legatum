@@ -153,7 +153,7 @@ export const CLASS_NOTE: Record<UnitClass, string> = {
 };
 
 /** The Walls rule for city HP (core `combat::WALLS_DAMAGE_PERCENT`), and Siege, the answer to it. */
-const WALLS_HALF_RULE = `attacks on the city's HP do ${RULES.walls.damagePercent === 50 ? 'half damage' : `${RULES.walls.damagePercent}% damage`}`;
+const WALLS_HALF_RULE = `attacks on the city's health do ${RULES.walls.damagePercent === 50 ? 'half damage' : `${RULES.walls.damagePercent}% damage`}`;
 /** Siege's rule, in one wording for the unit card, tech card and Guide. */
 /** Indirect fire on a card or tip: the headline (the Guide prints ARTILLERY_RULE in full). */
 export const ARTILLERY_HEADLINE = 'Fires over terrain at targets your team can see, with built-in Siege.';
@@ -214,13 +214,13 @@ const UNIT_COPY: Record<UnitKind, { summary: string; blurb: string }> = {
   Tank: { summary: `Heavy armour with ${TANK_MOVES} moves`, blurb: `Armour of the World War era. ${TANK_MOVES} moves. No class bonuses from the World War era on.` },
   MainBattleTank: { summary: `Modern armour with ${TANK_MOVES} moves`, blurb: `Armour of the Modern era, stronger than the Tank. ${TANK_MOVES} moves. No class bonuses.` },
   AutonomousArmour: { summary: `Unmanned armour with ${AUTONOMOUS_ARMOUR_MOVES} moves`, blurb: `Unmanned armour of the Future era. ${AUTONOMOUS_ARMOUR_MOVES} moves. No class bonuses.` },
-  Biplane: { summary: `Sees ${RULES.aircraftSight} tiles around its city, strikes ${RULES.biplaneStrikeRange} tiles away and guards ${RULES.biplaneGuardRange}`, blurb: `Its strikes take no retaliation and do ${RULES.biplaneCityDamagePercent}% damage to city HP. Lives in a city's hangar, never on the map.` },
+  Biplane: { summary: `Sees ${RULES.aircraftSight} tiles around its city, strikes ${RULES.biplaneStrikeRange} tiles away and guards ${RULES.biplaneGuardRange}`, blurb: `Its strikes take no retaliation and do ${RULES.biplaneCityDamagePercent}% damage to city health. Lives in a city's hangar, never on the map.` },
   Fighter: { summary: `Guards ${RULES.fighterRange} tiles against air strikes, or strikes up to ${RULES.fighterStrikeRange} tiles away`, blurb: `Its strikes take no retaliation. Lives in a city's hangar, never on the map.` },
   JetFighter: { summary: `Guards ${RULES.fighterRange} tiles against air strikes, or strikes up to ${RULES.jetFighterStrikeRange} tiles away`, blurb: `Its strikes take no retaliation. Lives in a city's hangar, never on the map.` },
-  Bomber: { summary: `Strikes units or cities within ${RULES.bomberRange} tiles, +${siegeBonusOf('Bomber')} vs city HP`, blurb: `Strikes with no retaliation and +${siegeBonusOf('Bomber')} against city HP. Lives in a city's hangar, never on the map.` },
-  JetBomber: { summary: `Strikes units or cities within ${RULES.jetBomberRange} tiles, +${siegeBonusOf('JetBomber')} vs city HP`, blurb: `Strikes with no retaliation and +${siegeBonusOf('JetBomber')} against city HP. Lives in a city's hangar, never on the map.` },
+  Bomber: { summary: `Strikes units or cities within ${RULES.bomberRange} tiles, +${siegeBonusOf('Bomber')} vs city health`, blurb: `Strikes with no retaliation and +${siegeBonusOf('Bomber')} against city health. Lives in a city's hangar, never on the map.` },
+  JetBomber: { summary: `Strikes units or cities within ${RULES.jetBomberRange} tiles, +${siegeBonusOf('JetBomber')} vs city health`, blurb: `Strikes with no retaliation and +${siegeBonusOf('JetBomber')} against city health. Lives in a city's hangar, never on the map.` },
   StealthFighter: { summary: 'Strikes up to 7 tiles away; guards 5 tiles around its city', blurb: `The only aircraft that stops a Stealth Bomber. Lives in a city's hangar, never on the map.` },
-  StealthBomber: { summary: 'Strikes up to 10 tiles away; only Stealth Fighters intercept', blurb: `Strikes with no retaliation and +${siegeBonusOf('StealthBomber')} against city HP. Lives in a city's hangar, never on the map.` },
+  StealthBomber: { summary: 'Strikes up to 10 tiles away; only Stealth Fighters intercept', blurb: `Strikes with no retaliation and +${siegeBonusOf('StealthBomber')} against city health. Lives in a city's hangar, never on the map.` },
 };
 
 export const UNIT_STATS = Object.fromEntries(
@@ -257,7 +257,7 @@ export const BUILDING_STATS: Record<
   Market: { cost: 60, yields: { gold: 3 }, cityStrength: 0, requires: 'Currency', summary: '+3 Gold', blurb: '+3 Gold' },
   ImperialDiwan: { cost: 300, yields: {}, cityStrength: 0, requires: 'Currency', summary: 'Build after every city has a Revenue Office; whoever holds its city scores 2 VP', blurb: 'India only: build after every owned city has a Revenue Office. Whoever holds its city scores 2 VP.' },
   Library: { cost: 80, yields: { science: 3 }, cityStrength: 0, requires: 'Writing', summary: '+3 Science', blurb: '+3 Science' },
-  Walls: { cost: 100, yields: {}, cityStrength: 10, requires: 'Masonry', warBuilding: true, summary: '+10 city strength; halves HP damage and fires at nearby enemies', blurb: `+10 city strength; ${WALLS_HALF_RULE}, and ${WALLS_FIRE_RULE}` },
+  Walls: { cost: 100, yields: {}, cityStrength: 10, requires: 'Masonry', warBuilding: true, summary: '+10 city strength; halves damage to city health and fires at nearby enemies', blurb: `+10 city strength; ${WALLS_HALF_RULE}, and ${WALLS_FIRE_RULE}` },
   Supermarket: { cost: 360, yields: { food: 4 }, cityStrength: 0, requires: 'GreenRevolution', predecessor: 'Mill', summary: '+4 Food; upgrades your Mill', blurb: '+4 Food, on top of the Granary and Mill' },
   AirDefence: { cost: 320, yields: {}, cityStrength: 0, requires: 'GuidedMissiles', summary: 'Meets enemy air strikes on this city', blurb: 'Stops one enemy air strike on this city each turn. Stealth Bombers pass it.' },
   Mill: { cost: 200, yields: { food: 3 }, cityStrength: 0, requires: 'Feudalism', predecessor: 'Granary', summary: '+3 Food; upgrades your Granary', blurb: '+3 Food' },
@@ -284,7 +284,7 @@ export const BUILDING_STATS: Record<
 const TECH_BLURB: Record<TechId, string> = {
   Irrigation: "+1 Food in every city",
   BronzeWorking: "Unlocks Workshop",
-  Masonry: "Unlocks Walls and the Pyramids; Quarries +1 Production (walled cities take half damage to their HP and fire back)",
+  Masonry: "Unlocks Walls and the Pyramids; Quarries +1 Production (walled cities take half damage to city health and fire back)",
   Currency: "Unlocks Market",
   Writing: "Unlocks Library",
   Mathematics: `Unlocks Phalangite; Spearmen can upgrade. Units can buy Siege, which covers Walls up to level I.`,
@@ -501,7 +501,7 @@ const UNIQUE_PIECE: Record<Exclude<Faction, 'Aztecs' | 'Celts'>, UniquePiece> & 
   Sparta: { name: 'Spartan Hoplite', replaces: 'Spearman', cost: 80, effect: '20 strength, 2 moves', rules: [], other: ['Military units trained at the Agoge start one level higher.'] },
   Athens: { name: 'Lyceum', replaces: 'Library', cost: 70, effect: '+6 Science', requires: 'Writing', rules: [] },
   Egypt: { name: 'Royal Granary', replaces: 'Granary', cost: 50, effect: '+3 Food total', rules: [] },
-  Rome: { name: 'Castrum', replaces: 'Walls', cost: 100, effect: '+10 city strength', requires: 'Masonry', rules: ['Upgrading a melee unit here heals it 50 HP.'] },
+  Rome: { name: 'Castrum', replaces: 'Walls', cost: 100, effect: '+10 city strength', requires: 'Masonry', rules: ['Upgrading a melee unit here restores 50 health.'] },
 };
 /** Egypt's Grow project (the Nile): the city grows with its surplus Food instead of building. */
 export const isGrow = (item: ProductionItem | null | undefined): boolean => item?.kind === 'Project' && item.project === 'Grow';
@@ -565,7 +565,7 @@ const CARD_TEXT: Partial<Record<Faction, Partial<Record<string, string>>>> = {
 
 /** Faction variants change the item's effect; the build list reads this instead of the base summary. */
 const CARD_SUMMARY: Partial<Record<Faction, Partial<Record<string, string>>>> = {
-  Switzerland: { 'b:Walls': '+15 city strength; halves HP damage and fires at enemies' },
+  Switzerland: { 'b:Walls': '+15 city strength; halves damage to city health and fires at enemies' },
   Byzantium: { 'u:Pikeman': 'Stronger Pikeman; holds ground and takes cities' },
   Germany: { 'b:Forge': '+6 Production', 'b:Factory': '+5 Production; upgrades your Ruhr Foundry' },
   Mongols: { 'u:Cataphract': 'Rides or shoots at range 2; a shot cannot take a city' },
@@ -719,7 +719,7 @@ export const FACTION_INFO: Record<Faction, FactionInfo> = {
   Germany: factionInfo("germany", "Germany", "Coal, steel, and skilled hands.", `Your strategic deposits supply twice as much. Your Gold and Science projects pay more: ${RULES.germanyProjectGoldPercent}% and ${RULES.germanyProjectSciencePercent}% of a city’s Production. Other empires get ${RULES.projectGoldPercent}% and ${RULES.projectSciencePercent}%.`, uniquePieceText(UNIQUE_PIECE.Germany), goalLine('Germany'), 'Each Production building in a German city costs 1 Food.'),
   Celts: factionInfo("celts", "Celts", "Raid, burn and move on.", `A sack takes ${RULES.celtsSackGoldPerPopulation} Gold per population and raises a warband camp. A sacked rival capital scores 1 VP for good. Barbarians don't attack the Celts.`, '', goalLine('Celts'), "Celts can't keep cities they capture: they sack and burn them. A city you founded comes home intact when you retake it."),
   Mongols: factionInfo("mongols", "Mongols", "Across the steppe, news travels.", "Military units, Scouts too, get +1 move. Settlers keep 2 moves. A city with a Market at least 8 tiles from your capital earns +2 Gold.", uniquePieceText(UNIQUE_PIECE.Mongols), goalLine('Mongols'), "Mongol military units get no defence bonus from terrain, though fortifying still works. The Mongols never build or upgrade Walls, and a city they capture loses its Walls. They buy no Siege before the Medieval era."),
-  Sparta: factionInfo("sparta", "Sparta", "Train in the agoge. Hold the line.", `Spartan military units start at level 1, gain XP 50% faster, and alone can reach level 6, Spartan Veteran. Each level adds ${RULES.promotion.strengthPercent}% to a unit's strength. Hoplites gain +${HOPLITE_PHALANX_STRENGTH} strength next to another Hoplite. The melee line fights at full strength when wounded. Destroying an enemy military unit restores up to 100 HP, shared among the Spartan units that hit it that turn and survived. Capturing a city fully heals Spartan military units within 2 tiles.`, uniquePieceText(UNIQUE_PIECE.Sparta), goalLine('Sparta'), `Settlers and non-military buildings cost 50% more Production, except Walls and its upgrades and the Agoge.`),
+  Sparta: factionInfo("sparta", "Sparta", "Train in the agoge. Hold the line.", `Spartan military units start at level 1, gain XP 50% faster, and alone can reach level 6, Spartan Veteran. Each level adds ${RULES.promotion.strengthPercent}% to a unit's strength. Hoplites gain +${HOPLITE_PHALANX_STRENGTH} strength next to another Hoplite. The melee line fights at full strength when wounded. Destroying an enemy military unit restores up to 100 health, shared among the Spartan units that hit it that turn and survived. Capturing a city fully heals Spartan military units within 2 tiles.`, uniquePieceText(UNIQUE_PIECE.Sparta), goalLine('Sparta'), `Settlers and non-military buildings cost 50% more Production, except Walls and its upgrades and the Agoge.`),
   Athens: factionInfo("athens", "Athens", "Debate in the agora. Study at the Lyceum.", "Every ruin also gives you 20 Science.", uniquePieceText(UNIQUE_PIECE.Athens), goalLine('Athens'), `Markets yield only +1 Gold instead of +3, at the normal ${RULES.buildingStats.Market.cost} Production cost. A rival that captures one of your cities gets one free technology (once per city for each rival).`),
   Rome: factionInfo('rome', 'Rome', 'Serve the legion. Earn the land.', 'A full-health melee veteran (level 1 or higher) can found a city; the unit is consumed.', 'Legionary replaces the Phalangite: a city it founds starts at population 2. ' + uniquePieceText(UNIQUE_PIECE.Rome), goalLine('Rome'), 'Rome cannot train or buy Settlers.'),
 

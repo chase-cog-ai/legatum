@@ -37,8 +37,10 @@ export function targetElement(target: Exclude<NonNullable<AdvisorTarget>, { kind
     }
     case 'buyTile': return [...document.querySelectorAll<HTMLElement>('.city-panel button')].find((e) => /^Buy a tile/.test(e.textContent?.trim() ?? '') && e.getClientRects().length) ?? null;
     case 'closeResearch': return first('dialog.tech-modal[open] button[aria-label="Close research"]');
-    case 'tech': return [...document.querySelectorAll<HTMLElement>('dialog.tech-modal .era-card')]
-      .find((e) => e.dataset.tech === target.value)?.querySelector<HTMLElement>('button[data-testid="research-now"]') ?? null;
+    // The tech tree's node for it, or on the This era view its card's Research now.
+    case 'tech': return [...document.querySelectorAll<HTMLElement>('dialog.tech-modal .tree-node')].find((e) => e.dataset.tech === target.value)
+      ?? [...document.querySelectorAll<HTMLElement>('dialog.tech-modal .era-card')]
+        .find((e) => e.dataset.tech === target.value)?.querySelector<HTMLElement>('button[data-testid="research-now"]') ?? null;
   }
 }
 function targetRect(target: AdvisorTarget): { x: number; y: number; width: number; height: number; tile: boolean } | null {
@@ -76,7 +78,10 @@ function AdvisorRing({ target, still }: { target: AdvisorTarget; still: boolean 
     const scroll = window.setTimeout(() => {
       if (target.kind !== 'control') return;
       const el = targetElement(target), r = el?.getBoundingClientRect();
-      if (el && r && (r.top < 0 || r.bottom > innerHeight || !targetRect(target))) el.scrollIntoView({ block: 'center', inline: 'nearest' });
+      // A tree node can sit cut off at the edge of the tree's own scroll area while still inside the window.
+      const box = el?.closest('.tree-scroll')?.getBoundingClientRect();
+      const clipped = !!box && !!r && (r.top < box.top || r.bottom > box.bottom || r.left < box.left || r.right > box.right);
+      if (el && r && (r.top < 0 || r.bottom > innerHeight || clipped || !targetRect(target))) el.scrollIntoView({ block: clipped ? 'nearest' : 'center', inline: 'nearest' });
     }, 150);
     return () => { cancelAnimationFrame(frame); window.clearTimeout(scroll); };
   }, [target?.kind, target?.kind === 'tile' ? `${target.hex.q},${target.hex.r}` : target?.kind === 'control' ? `${target.name}:${target.value}` : '']);

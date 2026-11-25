@@ -1,4 +1,3 @@
-import { revealSidebar } from './sidebarAssertions';
 // Shared by the victory-holdings specs: give the empires something to hold, in the store only.
 import { expect, type Page } from '@playwright/test';
 import type { useGame } from '../src/store';
@@ -28,8 +27,8 @@ export async function stageHoldings(page: Page, { oneCardPerAge = false }: { one
     const store = (window as unknown as GameWindow).legatum, s = store.getState();
     store.setState({ views: s.views!.map((x, i) => (i === s.seat ? view : x)), seat: s.seat });
   }, v);
-  await revealSidebar(page, 'standings');
-  await expect(page.locator('.vp-row.mine [data-source]').first()).toBeVisible();
+  // Your row in the rivals table shows the staged points.
+  await expect(page.locator('.rivals .rv-row.mine .rv-vp b')).toHaveText(String(v.standings.find((row) => row.members.includes(v.me))!.vp));
 }
 
 /** Stage the hold-to-win countdown (render only): the first rival has held its target 7 of 10 turns; with `mine`, so have you, 9 of 10. */
@@ -61,8 +60,7 @@ export async function stageHeirHolder(page: Page, { holder, of }: { holder: numb
     v.standings = v.standings.map((t) => (t.members.includes(holder) ? { ...t, vp: t.vp + 2 } : t));
     store.setState({ views: s.views!.map((x, i) => (i === s.seat ? v : x)), seat: s.seat });
   }, { holder, of });
-  await revealSidebar(page, 'standings');
-  await expect(page.locator(`.panel.vp .vhc-tok[data-held]`).first()).toBeVisible();
+  await expect(page.locator('.rivals .rv-row').first()).toBeVisible();
 }
 
 /**

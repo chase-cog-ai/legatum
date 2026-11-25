@@ -135,7 +135,7 @@ export function SeatBar({ phoneDetails = false, onOpenDetails, race }: { phoneDe
   const [showOrders, setShowOrders] = useState(false);
   const { scroll: body, overflow: bodyScrolls } = useScrollHint();
   const sidebarScroll = useRef<HTMLDivElement>(null);
-  const empiresBelow = useRowsBelow(sidebarScroll, '.vp-row');
+  const empiresBelow = useRowsBelow(sidebarScroll, '.rv-row');
   const phone = usePhoneLayout();
   const touch = useCoarsePointer();
   const net = useGame((s) => s.net);

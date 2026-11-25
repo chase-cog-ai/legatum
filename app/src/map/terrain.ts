@@ -8,7 +8,7 @@
 // grid, glyphs, towns, fog, territory, fog hatch, unexplored veil, known edge.
 import type { CityView, PlayerView, Terrain } from '../types';
 import { PLAYER_BORDER_DASH, rgba } from '../theme';
-import { CITY_CANVAS, CITY_GROUND, WALLED_TOWN_SCALE, cityArtArrivals, drawCityCanvas, cityArtEpoch, cityImage, cityStem, cityTier, footingsStem, walledTown, markStem, spriteSize, traceCityArt, wallStem } from './cityArt';
+import { CITY_CANVAS, CITY_GROUND, WALLED_TOWN_SCALE, cityArtArrivals, drawCityCanvas, cityArtEpoch, cityImage, cityStem, cityTier, footingsStem, walledTown, markStem, ringEraOf, spriteSize, traceCityArt, wallStem } from './cityArt';
 import { sitesOf } from './constructionSites';
 import { mapBorderColor, mapPlayerColor, type BorderSpec, type MapStyle } from './style';
 import { getBorderVariant, type BorderVariant } from './borderVariant';
@@ -204,6 +204,8 @@ const NO_HOLD: TerrainHold = { towns: new Set(), walls: new Set(), pop: new Map(
 
 interface Wall {
   bastion: boolean;
+  /** Which era's ring art to paint (0 Ancient .. 8 Future): one ring per Walls level, level I the Ancient ring. */
+  ring: number;
   /** Walls under construction: the painted footings, not the finished ring. */
   building: boolean;
 }
@@ -313,13 +315,14 @@ export class TerrainCache {
       cityAt.set(i, c);
       if (c.visible && c.walls) {
         const bastion = view.players.find((p) => p.id === c.owner)?.faction === 'Switzerland';
-        wallAt.set(i, { bastion, building: false });
+        wallAt.set(i, { bastion, building: false, ring: ringEraOf(c.walls_level ?? 1) });
       }
     }
     for (const site of sitesOf(view)) {
       if (!site.walls || wallAt.has(site.tile)) continue;
       const bastion = view.players.find((p) => p.id === site.owner)?.faction === 'Switzerland';
-      wallAt.set(site.tile, { bastion, building: true });
+      // Walls being built become level I: their footings are the Ancient ring's.
+      wallAt.set(site.tile, { bastion, building: true, ring: ringEraOf(1) });
     }
     let regions: Regions | null = null;
     if (this.organic) regions = computeRegions(this.w, this.h, (i) => (view.tiles[i].explored ? organicKind(view.tiles[i].terrain) : null));
@@ -346,7 +349,9 @@ export class TerrainCache {
         (wallAt.get(i)?.building ? 1 << 20 : 0) |
         (c ? (Math.min(7, ownerEra.get(c.owner) ?? 0) + 1) << 21 : 0) |
         (regions ? organicSig(regions, i) << 25 : 0);
-      if (s === this.sig[i]) continue;
+      // The ring's level has no room in the packed signature, so it is compared on its own.
+      const ring = wallAt.get(i)?.ring ?? -1;
+      if (s === this.sig[i] && ring === (this.wallAt.get(i)?.ring ?? -1)) continue;
       if (landChanged(this.sig[i], s)) land = true;
       this.sig[i] = s;
       dirty = true;
@@ -1631,7 +1636,7 @@ export class TerrainCache {
     const stem = far ? markStem(tier) : cityStem(era, tier);
     const size = spriteSize(CITY_WORLD * s);
     const img = stem ? cityImage(stem, size) : null;
-    const rstem = this.ringStem(i, era);
+    const rstem = this.ringStem(i);
     const ring = rstem ? cityImage(rstem, size) : null;
     if (far || !rstem) {
       if (img) this.drawSprite(g, img);
@@ -1648,13 +1653,13 @@ export class TerrainCache {
   }
 
   /**
-   * The wall ring a town shows: finished Walls in its owner's era, else the footings of Walls being built (also while a
+   * The wall ring a town shows: finished Walls drawn by their level (`ringEraOf`), else the footings of Walls being built (also while a
    * finishing moment holds the finished ring back), else none.
    */
-  private ringStem(i: number, era: number): string | null {
+  private ringStem(i: number): string | null {
     const wall = this.wallAt.get(i);
     if (!wall) return null;
-    return wall.building || this.hold.walls.has(i) ? footingsStem(era, wall.bastion) : wallStem(era, wall.bastion);
+    return wall.building || this.hold.walls.has(i) ? footingsStem(wall.ring, wall.bastion) : wallStem(wall.ring, wall.bastion);
   }
 
   /**

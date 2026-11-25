@@ -3509,3 +3509,64 @@ fn a_same_turn_world_wonder_race_goes_to_more_overflow_then_to_a_seeded_draw() {
     assert_eq!(firsts, BTreeSet::from([a, b]));
     // `resolve_wonder_race` then hands the losers their refund, as before.
 }
+
+#[test]
+fn research_goal_fills_an_empty_queue_across_eras_and_clears_once_known() {
+    use TechId::*;
+    let mut s = two_players();
+    // A known technology cannot be a goal.
+    s.player_mut(P0).techs.insert(Irrigation);
+    let known_goal = Order::SetResearchGoal {
+        tech: Some(Irrigation),
+    };
+    assert!(validate_city_order(&s, P0, &known_goal).is_err());
+    // A later-era goal with an empty queue fills it with the rest of this era, cheapest first.
+    let goal = Order::SetResearchGoal {
+        tech: Some(Mathematics),
+    };
+    assert!(validate_city_order(&s, P0, &goal).is_ok());
+    apply_city_orders(&mut s, P0, &[goal], &mut Vec::new());
+    assert_eq!(s.player(P0).research_goal, Some(Mathematics));
+    let mut ancient: Vec<TechId> = crate::eras::era_techs(0)
+        .filter(|t| *t != Irrigation)
+        .collect();
+    ancient.sort_by_key(|t| (economy::tech_cost(&s, P0, *t).total, *t));
+    assert_eq!(s.player(P0).research_queue, ancient);
+    assert_eq!(s.player(P0).researching, ancient.first().copied());
+    // A queue the player set is never touched.
+    apply_city_orders(
+        &mut s,
+        P0,
+        &[Order::SetResearchQueue {
+            techs: vec![Writing],
+        }],
+        &mut Vec::new(),
+    );
+    s.player_mut(P0).science_stored = 100_000;
+    process_research(&mut s, &mut Vec::new());
+    assert!(s.player(P0).techs.contains(&Writing));
+    // The queue ran out, so the goal refilled it with the Ancient techs still unknown.
+    assert!(!s.player(P0).research_queue.is_empty());
+    assert!(
+        s.player(P0)
+            .research_queue
+            .iter()
+            .all(|t| crate::eras::era_of_tech(*t) == 0)
+    );
+    // Finish the era: on entering the Classical era the goal goes first.
+    for _ in 0..3 {
+        process_research(&mut s, &mut Vec::new());
+    }
+    assert_eq!(crate::eras::current_era(&s.player(P0).techs), 1);
+    assert_eq!(s.player(P0).research_queue.first(), Some(&Mathematics));
+    assert_eq!(s.player(P0).research_queue.len(), 5);
+    let saved = serde_json::to_string(&s).unwrap();
+    let loaded: GameState = serde_json::from_str(&saved).unwrap();
+    assert_eq!(loaded, s);
+    process_research(&mut s, &mut Vec::new());
+    assert!(s.player(P0).techs.contains(&Mathematics));
+    assert_eq!(s.player(P0).research_goal, None, "a known goal is cleared");
+    // Clearing a goal is always allowed.
+    let clear = Order::SetResearchGoal { tech: None };
+    assert!(validate_city_order(&s, P0, &clear).is_ok());
+}

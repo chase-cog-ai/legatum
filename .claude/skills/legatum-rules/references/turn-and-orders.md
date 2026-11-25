@@ -14,7 +14,7 @@ diplomacy (`DeclareWar{against,breach}`, `BreakTreaty` = leave an Alliance,
 `MoveUnitPath{to,path,stop_on_block}`, `SleepUnit{until_healed}`, `SkipUnit`,
 `FoundCity`, `DisbandUnit`, `RangedAttack`, `UpgradeUnit`, `UpgradeSiege`); aircraft (`AirStrike`, `AirRecon`, `Rebase`,
 `UpgradeAircraft`: Eras and technologies, "The air layer"); city (`SetProduction`, `SetProductionQueue`, `BuyItem`, `BuyTile{tile}`, `HireCompany`
-(Byzantium only), `Raze`, `SetCityAutomation`); research (`SetResearch`, `SetResearchQueue`,
+(Byzantium only), `Raze`, `SetCityAutomation`); research (`SetResearch`, `SetResearchQueue`, `SetResearchGoal`,
 `SetScienceConversion` after the last technology);
 and **one-time empire actions** through a single variant, `Action { action }` (`orders.rs::Action`,
 serde tag `"action"`: `{"type":"Action","action":{"action":"Sakoku","close":true}}`): `Swarm` (the Aztecs' New Fire),

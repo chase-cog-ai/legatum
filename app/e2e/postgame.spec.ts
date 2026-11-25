@@ -1,4 +1,3 @@
-import { revealSidebar } from './sidebarAssertions';
 // The end of a game (legatum-ui "The end of a game is an event"): the staged reveal and the post-game report,
 // shot at the user's laptop (1000x600) and 1440x900, with fit assertions: the dialog sits inside the window,
 // nothing under it scrolls (the report's own lists scroll inside their panels), and the primary is on screen.
@@ -105,8 +104,7 @@ for (const size of SIZES) {
         await expect(page.locator('dialog.gameover')).toHaveCount(0);
         {
           const race = page.locator('.panel.vp');
-          await revealSidebar(page, 'standings');
-          await expect(race.locator('.vp-row').first()).toBeVisible();
+          await expect(race.locator('.rv-row').first()).toBeVisible();
           await expect(race).not.toContainText(/wins this turn|Next: .* era/i);
         }
         // The game is decided: no unit awaits orders and none can be given, and no goal reads past its target (8.9.4 review).

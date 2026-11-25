@@ -39,11 +39,11 @@ it('the fixture view reports the empire as eliminated and still lists its standi
 
 it('the race lists only living empires, with no War badge for the eliminated one', () => {
   act(() => root.render(<VpTrack />));
-  const rows = [...container.querySelectorAll('.vp-row')];
+  const rows = [...container.querySelectorAll('.rv-row')];
   expect(rows).toHaveLength(5);
   expect(container.textContent).not.toContain(dead);
-  expect(container.querySelectorAll('.vhc-rel')).toHaveLength(4);
-  expect(container.querySelector('.vp-row.dead')).toBeNull();
+  expect(container.querySelectorAll('.rv-rel')).toHaveLength(4);
+  expect(container.querySelector('.rv-row.dead')).toBeNull();
   // Final standings (history) still carry every empire.
   expect(buildTracks(useGame.getState().views![0])).toHaveLength(6);
 });

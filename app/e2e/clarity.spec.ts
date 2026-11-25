@@ -1,4 +1,3 @@
-import { revealSidebar } from './sidebarAssertions';
 import { expectRaceWhole } from './tour/helpers';
 import { coreFixture } from '../src/test/coreFixture';
 import { explorationFixture } from '../src/test/explorationFixture';
@@ -183,11 +182,10 @@ for (const viewport of VIEWPORTS) {
       // alongside) can stall this wait past that, which then reads as a tooltip that did not wait.
       await page.waitForTimeout(40);
       await expect(page.locator('[role="tooltip"]:not([hidden])')).toHaveCount(0);
-      // A race token opens its source's card the same way (the card is a tooltip: it waits, is pointer-transparent, covers neither the token nor the turn dock).
-      for (const selector of ['.unit-panel button.act', '.vp-row.mine [data-source]', '.topbar .stat']) {
+      // Each tooltip waits, is pointer-transparent, and covers neither its control nor the turn dock.
+      for (const selector of ['.unit-panel button.act', '.topbar .stat']) {
         await page.mouse.move(2, viewport.height / 2);
         await page.waitForTimeout(500);
-        if (selector.includes('.vp-row')) await revealSidebar(page, 'standings');
         const tip = await hoverTip(page, selector);
         expect(await tip.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
         const bubble = await rectOf(page, '[role="tooltip"]:not([hidden])');
@@ -210,11 +208,9 @@ for (const viewport of VIEWPORTS) {
 
 test.describe('the race panel with eight empires at 1280×800', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
-  test('shows its whole footer and its notes never cover the This Turn panel (A10)', async ({ page }) => {
+  test('shows every rival row whole (A10)', async ({ page }) => {
     await startSolo(page, { empires: 8 });
     await expectRaceWhole(page);
-    await revealSidebar(page, 'standings');
-    await hoverTip(page, '.vp-row.mine [data-source]');
-    expect(intersects(await rectOf(page, '[role="tooltip"]:not([hidden])'), await rectOf(page, '.seatbar'))).toBe(false);
+    await expect(page.locator('.rivals .rv-row.mine')).toBeVisible();
   });
 });

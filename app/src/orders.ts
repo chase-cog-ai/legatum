@@ -326,6 +326,7 @@ export function describeOrder(o: Order, view: PlayerView): string {
       return `Research ${TECH_NAME[o.tech]}`;
     case 'SetResearchQueue':
       return o.techs.length ? `Research ${o.techs.map((t) => TECH_NAME[t]).join(' → ')}` : 'Clear research queue';
+    case 'SetResearchGoal': return o.tech ? `Research goal: ${TECH_NAME[o.tech]}` : 'Clear the research goal';
     case 'SetScienceConversion': return `Convert Science to ${o.to}`;
     case 'GiveGold': return `Give ${o.amount} Gold to ${withThe(empireOfPlayer(view, o.to))}`;
     case 'Action':

@@ -28,10 +28,10 @@ let frames: Map<number, FrameRequestCallback>;
 let scene: MapScene;
 let canvas: HTMLCanvasElement;
 const placeBanners = vi.fn();
-const frame = () => {
+const frame = (now = performance.now()) => {
   const callbacks = [...frames.values()];
   frames.clear();
-  callbacks.forEach((callback) => callback(performance.now()));
+  callbacks.forEach((callback) => callback(now));
 };
 
 beforeEach(() => {
@@ -91,6 +91,27 @@ it('keeps frames running for explored water in view, without reprojecting banner
   expect(scene.renderer.render).toHaveBeenCalledTimes(4);
   expect(placeBanners).toHaveBeenCalledTimes(2);
   expect(frames.size).toBe(0);
+});
+
+it('resumes the water at its last phase after it leaves the view', () => {
+  scene.target.x = 36;
+  scene.placeCamera();
+  frame(0);
+  frame(16);
+  const phase = scene['uniforms'].uTime;
+  expect(phase.value).toBeCloseTo(0.016);
+
+  scene.target.x = 5;
+  scene.placeCamera();
+  frame(32);
+  expect(frames.size).toBe(0);
+
+  scene.target.x = 36;
+  scene.placeCamera();
+  frame(5_000);
+  expect(phase.value).toBeCloseTo(0.016);
+  frame(5_016);
+  expect(phase.value).toBeCloseTo(0.032);
 });
 
 it('redraws after a unit texture loads or WebGL is restored', () => {

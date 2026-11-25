@@ -61,10 +61,10 @@ export class MapScene {
   private models = new Map<string, Promise<GLTF | null>>();
   private textures = new Map<string, THREE.Texture>();
   private view: PlayerView | null = null;
-  private clock = new THREE.Clock();
   private ray = new THREE.Raycaster();
   private disposed = false;
   private raf: number | null = null;
+  private lastAnimationFrame: number | null = null;
   private projectionChanged = true;
   private waterInView = false;
   private waterBounds: THREE.Box3[] = [];
@@ -696,8 +696,9 @@ export class MapScene {
     if (!this.disposed && this.raf === null) this.raf = requestAnimationFrame(this.frame);
   }
 
-  private frame = () => {
+  private frame = (now: number) => {
     this.raf = null;
+    const wasWaterInView = this.waterInView;
     if (this.projectionChanged) {
       this.projectionChanged = false;
       this.viewProjection.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
@@ -705,11 +706,13 @@ export class MapScene {
       this.waterInView = this.waterBounds.some((bounds) => this.frustum.intersectsBox(bounds));
       this.placeBanners();
     }
-    const dt = Math.min(0.05, this.clock.getDelta());
-    if (this.waterInView) this.uniforms.uTime.value += dt;
+    const dt = this.lastAnimationFrame === null ? 0 : Math.min(0.05, (now - this.lastAnimationFrame) / 1000);
+    if (wasWaterInView && this.waterInView) this.uniforms.uTime.value += dt;
     for (const m of this.mixers) m.update(dt);
     this.renderer.render(this.scene, this.camera);
-    if (this.waterInView || this.mixers.length) this.invalidate();
+    const animating = this.waterInView || this.mixers.length > 0;
+    this.lastAnimationFrame = animating ? now : null;
+    if (animating) this.invalidate();
   };
 }
 

@@ -90,6 +90,8 @@
 .research-queue-hint { flex: 0 1 auto; min-width: 0; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .research-queue-actions { display: inline-flex; gap: 6px; margin-left: auto; }
 .research-queue-actions .btn { padding: 3px 10px; font-size: 12px; }
+/* Queue the rest and Clear queue look like buttons before they are hovered (pillar 9). */
+.research-queue-actions .btn.quiet { border: 1px solid var(--ink-2); }
 .research-queue-cta { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; }
 .research-queue-cta .muted { font-size: 13px; }
 .research-queue-cta .btn.primary { min-height: 38px; padding: 6px 18px; font-size: 12px; font-weight: 700; letter-spacing: .08em; }
@@ -556,17 +558,22 @@
 .tree-goal-x { display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--rule-2); background: transparent; color: var(--ink); cursor: pointer; }
 .tech-modal.tree-mode .research-scroll { display: none; }
 /* Sideways scrolling shows itself: a fade and an arrow at an edge with more columns past it. */
-.tree-edge { position: absolute; bottom: 0; z-index: 3; display: grid; place-items: center; width: 30px; height: calc(100% - 42px); padding: 0; border: 0; color: var(--ink); cursor: pointer; visibility: hidden; }
-.tree-edge-box { display: grid; place-items: center; width: 22px; height: 34px; border: 1px solid var(--ink-2); background: var(--field); }
-.tree-edge:hover .tree-edge-box { border-color: var(--ink); background: var(--panel); }
+/* The fade marks the edge and takes no clicks; only the boxed chevron is a button, so edge nodes stay clickable. */
+.tech-tree::before, .tech-tree::after { content: ''; position: absolute; bottom: 0; z-index: 3; width: 28px; height: calc(100% - 42px); pointer-events: none; visibility: hidden; }
+.tech-tree::before { left: 0; background: linear-gradient(90deg, var(--panel) 30%, transparent); }
+.tech-tree::after { right: 0; background: linear-gradient(270deg, var(--panel) 30%, transparent); }
+.tech-tree:has(.tree-scroll.more-left)::before, .tech-tree:has(.tree-scroll.more-right)::after { visibility: visible; }
+.tree-edge { position: absolute; top: calc(50% + 21px); z-index: 4; display: grid; place-items: center; width: 24px; height: 40px; margin-top: -20px; padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer; visibility: hidden; }
+.tree-edge-box { display: grid; place-items: center; width: 22px; height: 38px; border: 1px solid var(--ink); background: var(--field); box-shadow: 2px 2px 0 var(--rule-2); }
+.tree-edge:hover .tree-edge-box { background: var(--ink); color: var(--field); }
 .tree-edge:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.tree-edge.left { left: 0; background: linear-gradient(90deg, var(--panel) 40%, transparent); }
+.tree-edge.left { left: 2px; }
 .tree-edge.left .icon { transform: rotate(90deg); }
-.tree-edge.right { right: 0; background: linear-gradient(270deg, var(--panel) 40%, transparent); }
+.tree-edge.right { right: 2px; }
 .tree-edge.right .icon { transform: rotate(-90deg); }
 .tech-tree:has(.tree-scroll.more-left) .tree-edge.left, .tech-tree:has(.tree-scroll.more-right) .tree-edge.right { visibility: visible; }
 /* Era names stay at the top when a short window scrolls the tree down. */
-.tree-era-head { position: sticky; top: 0; z-index: 2; padding-bottom: 6px; background: var(--panel); box-shadow: 0 1px 0 var(--rule); }
+.tree-era-head { position: sticky; top: 0; z-index: 2; margin-inline: -7px; padding-inline: 17px; padding-bottom: 6px; background: var(--panel); box-shadow: 0 1px 0 var(--rule); }
 .tree-era.current .tree-era-head { background: color-mix(in srgb, var(--panel) 92%, var(--accent)); }
 /* Scrolled into view (the advisor), a node never lands under the pinned era names. */
 .tree-node { scroll-margin-top: 64px; scroll-margin-inline: 36px; }

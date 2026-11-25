@@ -9,7 +9,8 @@ Moved verbatim from `game-rules.md` on 2026-11-22, in the original order; the or
 together (`crates/core/src/rules/mod.rs::resolve_turn`). No "active player."
 
 **Order enum**, one per unit/city/research slot per turn (`crates/core/src/orders.rs`):
-diplomacy (`DeclareWar{against,breach}`, `BreakTreaty` = leave an Alliance,
+diplomacy (`DeclareWar{against,breach}`, `StateWarReason{against,reason}` = the reason given with a
+declaration, a receipt no rule reads (Diplomacy, "Stated war reasons"), `BreakTreaty` = leave an Alliance,
 `ProposeTreaty`, `RespondToProposal`, `WithdrawProposal`); units (`SetAutomation`, `SetAutoFire`, `MoveUnit{to}`,
 `MoveUnitPath{to,path,stop_on_block}`, `SleepUnit{until_healed}`, `SkipUnit`,
 `FoundCity`, `DisbandUnit`, `RangedAttack`, `UpgradeUnit`, `UpgradeSiege`); aircraft (`AirStrike`, `AirRecon`, `Rebase`,

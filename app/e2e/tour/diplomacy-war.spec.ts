@@ -156,6 +156,9 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await expect(page.getByTestId('turn-number')).toHaveText('2');
     const alarm = page.getByTestId('alarm-screen');
     await expect(alarm).toHaveAttribute('data-armed', '');
+    // The AI's own stated reason, in words: the declaration never arrives unexplained.
+    await expect(alarm.getByTestId('alarm-reason')).toContainText(/^Their reason\S/);
+    await expect(alarm.locator('.alarm-fact', { hasText: 'Their reason' })).toHaveCount(0);
     await shot(page, size, '30-war-declared');
     const primary = alarm.locator('.alarm-primary');
     await expect(primary).toHaveAccessibleName(/^Show on map/);
@@ -163,6 +166,7 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await expect(alarm).toHaveCount(0);
     await dismissCelebrations(page);
     await openReport(page);
+    await expect(page.getByRole('complementary', { name: 'Turn report' })).toContainText('Their reason: ');
     await shot(page, size, '31-war-declared-after');
   });
 

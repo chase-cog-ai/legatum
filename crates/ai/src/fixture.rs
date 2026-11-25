@@ -759,6 +759,12 @@ pub fn assert_valid(view: &PlayerView, orders: &[Order]) {
                             && a.blocked_reason.is_none())
                 );
             }
+            Order::StateWarReason { against, .. } => assert!(
+                orders.iter().any(
+                    |other| matches!(other, Order::DeclareWar { against: t, .. } if t == against)
+                ),
+                "a war reason without its declaration"
+            ),
             Order::SetAutomation { unit, .. } => {
                 own_unit(*unit);
                 assert!(acted.insert(*unit));

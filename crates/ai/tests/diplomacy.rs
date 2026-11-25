@@ -1081,3 +1081,46 @@ fn joined_coalition_wars_offer_peace_after_the_old_target_falls_behind() {
     }
     assert!(!peace(&v), "Only a war an ally brought us into is let go");
 }
+
+fn stated_reasons(orders: &[Order]) -> Vec<(TeamId, diplomacy::WarReason)> {
+    orders
+        .iter()
+        .filter_map(|o| match *o {
+            Order::StateWarReason { against, reason } => Some((against, reason)),
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn a_declaration_states_the_reason_the_ai_acted_on() {
+    // A small rival with no countdown, lead or army at our door: a plain war of conquest.
+    let s = situation();
+    let view = player_view(&s, PlayerId(0));
+    let orders = ScriptedBrain::new(Faction::Sparta, 99, PlayerId(0)).orders(&view);
+    assert_eq!(
+        stated_reasons(&orders),
+        [(TeamId(1), diplomacy::WarReason::Conquest)],
+        "{orders:?}"
+    );
+    assert!(rules::validate_orders(&s, PlayerId(0), &orders).is_empty());
+}
+
+#[test]
+fn an_ai_at_peace_states_no_reason() {
+    let mut s = situation();
+    beyond_strike_reach(&mut s);
+    s.turn = 204;
+    let r = s
+        .diplomacy
+        .as_mut()
+        .unwrap()
+        .relations
+        .iter_mut()
+        .find(|r| r.between(TeamId(0), TeamId(1)))
+        .unwrap();
+    r.guarantee_until = 204 + legatum_core::diplomacy::PEACE_TRUCE_TURNS;
+    let view = player_view(&s, PlayerId(0));
+    let orders = ScriptedBrain::new(Faction::Sparta, 99, PlayerId(0)).orders(&view);
+    assert!(stated_reasons(&orders).is_empty(), "{orders:?}");
+}

@@ -661,3 +661,67 @@ fn g18_a_target_out_of_reach_this_turn_is_approached_then_the_order_ends() {
     let (_, e2) = resolve_units(&s1, &no_orders());
     assert!(battles_on(&e2, guard).is_empty());
 }
+
+fn war_with_reason(breach: bool) -> Vec<Order> {
+    vec![
+        Order::DeclareWar {
+            against: TeamId(1),
+            breach,
+        },
+        Order::StateWarReason {
+            against: TeamId(1),
+            reason: crate::diplomacy::WarReason::NearVictory,
+        },
+    ]
+}
+
+fn stated_after_declaration(events: &[Event]) -> bool {
+    events.windows(2).any(|pair| {
+        matches!(pair[0], Event::WarDeclared { .. })
+            && pair[1]
+                == Event::WarReasonStated {
+                    by: TeamId(0),
+                    against: TeamId(1),
+                    reason: crate::diplomacy::WarReason::NearVictory,
+                }
+    })
+}
+
+#[test]
+fn a_stated_war_reason_follows_its_declaration() {
+    // A surprise war (plain Peace) and a war with notice (on an ally) both carry the reason.
+    let s = peace_game();
+    let orders = two(war_with_reason(false), vec![]);
+    assert!(crate::validate_orders(&s, PlayerId(0), &orders[&PlayerId(0)]).is_empty());
+    let (_, events) = resolve_turn(&s, &orders);
+    assert!(stated_after_declaration(&events), "{events:?}");
+    let mut allied = peace_game();
+    sign_alliance(&mut allied);
+    let (_, events) = resolve_turn(&allied, &two(war_with_reason(true), vec![]));
+    assert!(stated_after_declaration(&events), "{events:?}");
+}
+
+#[test]
+fn a_war_reason_changes_nothing_but_its_event() {
+    let s = peace_game();
+    let (with, mut said) = resolve_turn(&s, &two(war_with_reason(false), vec![]));
+    let plain = war_with_reason(false)[..1].to_vec();
+    let (without, silent) = resolve_turn(&s, &two(plain, vec![]));
+    assert_eq!(with.hash(), without.hash());
+    said.retain(|e| !matches!(e, Event::WarReasonStated { .. }));
+    assert_eq!(said, silent);
+}
+
+#[test]
+fn a_war_reason_without_a_declaration_is_dropped() {
+    let s = peace_game();
+    let reason = war_with_reason(false)[1..].to_vec();
+    let (after, events) = resolve_turn(&s, &two(reason, vec![]));
+    assert!(!after.at_war(PlayerId(0), PlayerId(1)));
+    assert!(
+        !events
+            .iter()
+            .any(|e| matches!(e, Event::WarReasonStated { .. } | Event::OrderFailed { .. })),
+        "{events:?}"
+    );
+}

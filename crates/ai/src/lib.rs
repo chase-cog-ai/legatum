@@ -106,6 +106,7 @@ pub mod tuned_openings;
 pub mod value_net;
 mod victory;
 mod war_diagnosis;
+mod war_reason;
 pub mod why;
 pub mod winchance;
 

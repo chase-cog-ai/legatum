@@ -7,6 +7,7 @@
 //! The core integration test additionally records/checks canonical JSON states and views.
 
 use legatum_ai::{Brain, ScriptedBrain};
+use legatum_core::diplomacy::WarReason;
 use legatum_core::{
     BuildingKind, CityId, GameSetup, GameState, Hex, Order, PlayerId, PlayerView, ProductionItem,
     TechId, UnitId, UnitKind, new_game, player_view, resolve_turn, visibility,
@@ -57,6 +58,10 @@ fn encode(order: &Order) -> Vec<i32> {
             [91, city.0 as i32, unit as i32, i32::from(seller.0)]
         }
         Order::DeclareWar { against, breach } => [9, i32::from(against.0), i32::from(breach), 0],
+        Order::StateWarReason { against, reason } => {
+            let reason = WAR_REASONS.iter().position(|r| *r == reason).unwrap();
+            [93, i32::from(against.0), reason as i32, 0]
+        }
         Order::BreakTreaty { with, .. } => [14, i32::from(with.0), 0, 0],
         Order::ProposeTreaty { to, kind } => [10, i32::from(to.0), kind as i32, 0],
         Order::RespondToProposal {
@@ -136,6 +141,15 @@ fn encode(order: &Order) -> Vec<i32> {
     encoded
 }
 
+const WAR_REASONS: [WarReason; 6] = [
+    WarReason::VictoryHold,
+    WarReason::NearVictory,
+    WarReason::Threat,
+    WarReason::FactionGoal,
+    WarReason::Opportunity,
+    WarReason::Conquest,
+];
+
 fn decode(encoded: impl AsRef<[i32]>) -> Order {
     let encoded = encoded.as_ref();
     let [kind, a, b, c]: [i32; 4] = encoded[..4].try_into().unwrap();
@@ -143,6 +157,10 @@ fn decode(encoded: impl AsRef<[i32]>) -> Order {
     let unit = UnitId(a as u32);
     let city = CityId(a as u32);
     match kind {
+        93 => Order::StateWarReason {
+            against: legatum_core::TeamId(a as u8),
+            reason: WAR_REASONS[b as usize],
+        },
         92 => Order::Raze { city },
         91 => Order::HireCompany {
             city,

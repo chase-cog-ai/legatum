@@ -2,7 +2,7 @@ import type { Order } from './types';
 
 // Keep this list in step with core::orders::Order. JSON and WebSocket payloads are untyped.
 const ORDER_KINDS = new Set<Order['type']>([
-  'DeclareWar', 'BreakTreaty', 'ProposeTreaty', 'RespondToProposal', 'WithdrawProposal',
+  'DeclareWar', 'StateWarReason', 'BreakTreaty', 'ProposeTreaty', 'RespondToProposal', 'WithdrawProposal',
   'SetAutomation', 'SetAutoFire', 'MoveUnit', 'MoveUnitPath', 'SleepUnit', 'SkipUnit', 'FoundCity',
   'DisbandUnit', 'SetProduction', 'SetProductionQueue', 'SetCityAutomation', 'BuyItem', 'HireCompany', 'BuyTile',
   'SetResearch', 'SetResearchQueue', 'SetScienceConversion', 'RangedAttack', 'AirStrike', 'AirRecon', 'Rebase', 'UpgradeAircraft',

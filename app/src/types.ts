@@ -1055,6 +1055,8 @@ export type AirPick = 'strike' | 'rebase' | 'recon';
 
 export type Order =
   | { type: 'DeclareWar'; against: TeamId; breach?: boolean }
+  /** AI empires only: the reason given with a DeclareWar on the same team (no rule reads it). */
+  | { type: 'StateWarReason'; against: TeamId; reason: WarReason }
   /** Byzantium only, at War with `to`: pay the quoted price and begin an enforced Peace this turn. */
   | { type: 'BreakTreaty'; with: TeamId; agreement: 'Security' }
   | { type: 'ProposeTreaty'; to: TeamId; kind: TreatyKind }
@@ -1145,9 +1147,14 @@ export type RuinReward =
   | { kind: 'Population'; city: CityId; amount: number; population: number; yields: Yields }
   | { kind: 'FreeScout'; unit: UnitId };
 
+/** Why an empire says it went to war (core `diplomacy::WarReason`). */
+export type WarReason = 'VictoryHold' | 'NearVictory' | 'Threat' | 'FactionGoal' | 'Opportunity' | 'Conquest';
+
 export type Event =
   | { type: 'WonderDiscovered'; owner: PlayerId; at: Hex; wonder: Wonder; gold: number; science: number }
   | { type: 'WarDeclared' | 'PeaceEstablished'; relation: Relation }
+  /** Follows the WarDeclared it explains: why `by` says it declared war on `against`. */
+  | { type: 'WarReasonStated'; by: TeamId; against: TeamId; reason: WarReason }
   /** An Alliance carried `team` into `ally`'s war: `relation` is `team`'s war with the enemy. */
   | { type: 'WarJoined'; relation: Relation; team: TeamId; ally: TeamId }
   | { type: 'CallToArms'; call: WarCall }

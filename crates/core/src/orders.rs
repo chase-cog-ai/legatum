@@ -198,6 +198,13 @@ pub enum Order {
         to: PlayerId,
         amount: i32,
     },
+    /// Say why this team declares war on `against` this turn (`diplomacy::WarReason`). A
+    /// receipt carried by the declaration's `WarReasonStated` event: it changes no rule, and is
+    /// dropped unless the same order list makes that declaration.
+    StateWarReason {
+        against: TeamId,
+        reason: crate::diplomacy::WarReason,
+    },
 }
 
 /// The one-time actions an empire can order (`Order::Action`). One order variant carries them

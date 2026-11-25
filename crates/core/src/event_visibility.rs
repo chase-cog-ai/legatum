@@ -124,6 +124,7 @@ pub fn visible_events(
             }
             let visible = match event {
                 Event::WarDeclared { .. }
+                | Event::WarReasonStated { .. }
                 | Event::HeirBorn { .. }
                 | Event::WarJoined { .. }
                 | Event::PeaceEstablished { .. }

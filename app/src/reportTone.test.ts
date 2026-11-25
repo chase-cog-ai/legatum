@@ -40,6 +40,10 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
     ['your declaration', ev({ type: 'WarDeclared', relation: relation({ declarers: [0] }) }), 'neutral'],
     ['others at war', ev({ type: 'WarDeclared', relation: relation({ a: 2, b: 3 }) }), 'neutral'],
   ],
+  WarReasonStated: [
+    ['their reason for war on you', ev({ type: 'WarReasonStated', by: 2, against: 0, reason: 'NearVictory' }), 'bad'],
+    ['their reason for war on another', ev({ type: 'WarReasonStated', by: 2, against: 3, reason: 'Conquest' }), 'neutral'],
+  ],
   PeaceEstablished: [['peace', ev({ type: 'PeaceEstablished', relation: relation({ state: 'Peace' }) }), 'neutral']],
   WarJoined: [
     ['you joined an ally\'s war', ev({ type: 'WarJoined', team: 0, ally: 2, relation: relation({ a: 0, b: 3 }) }), 'neutral'],

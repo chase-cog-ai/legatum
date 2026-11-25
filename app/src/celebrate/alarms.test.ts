@@ -35,6 +35,13 @@ describe('alarmsForTurn', () => {
     expect(alarmsForTurn([war(1, 2, [1])], prev, view)).toEqual([]); // Between others.
   });
 
+  it('a war moment carries the reason its declarer stated, and only that declarer\'s', () => {
+    const stated = (by: number, against: number): Event => ({ type: 'WarReasonStated', by, against, reason: 'Opportunity' });
+    expect(alarmsForTurn([war(0, 1, [1]), stated(1, 0)], prev, view)[0]).toMatchObject({ kind: 'war', team: 1, reason: 'Opportunity' });
+    expect(alarmsForTurn([war(0, 1, [1])], prev, view)[0].reason).toBeUndefined();
+    expect(alarmsForTurn([war(0, 1, [1]), stated(2, 0), stated(1, 3)], prev, view)[0].reason).toBeUndefined();
+  });
+
   it('a broken Alliance and new War each have a moment; the war starts the turn being planned', () => {
     const events: Event[] = [
       { type: 'TreatyBreached', treaty_id: 4, by: 1, with: 0, player: 2, cost: 120, effective_turn: view.turn - 1 },

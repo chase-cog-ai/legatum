@@ -8,7 +8,8 @@ import { bearing, empireHeadName, empireMembers, isTeamAlive } from '../empires'
 import { NEAR_VP } from '../rivalWin';
 import { contextFromViews, formatEvent, victoryNearLine, type HoldCard, type ReportLine } from '../format';
 import { distance } from '../hex';
-import type { Event, Hex, PlayerId, PlayerView, TeamId } from '../types';
+import type { Event, Hex, PlayerId, PlayerView, TeamId, WarReason } from '../types';
+import { statedWarReason } from '../warReason';
 import { holdOf, turnsWord } from '../victoryHold';
 
 type AlarmKind = 'war' | 'warByYou' | 'peace' | 'alliance' | 'allianceEnded' | 'callJoined' | 'callDeclined' | 'victoryHold' | 'victoryNear' | 'breach' | 'cityLost' | 'allyWar';
@@ -40,6 +41,8 @@ export interface Alarm {
   broke?: ReportLine;
   /** war: true when this empire entered an ally's war on you rather than declaring its own. */
   joined?: boolean;
+  /** war: the reason the declarer stated for it (AI empires state one; a human gives none). */
+  reason?: WarReason;
   /** allyWar: whom your ally is now fighting. */
   enemy?: TeamId;
   /** The viewer's team answered this call; otherwise the pictured team did. */
@@ -105,7 +108,7 @@ export function alarmsForTurn(events: readonly Event[], before: PlayerView | nul
       } else if (sides.includes(me)) {
         for (const team of r.declarers) {
           if (war(team)) continue;
-          out.push({ kind: 'war', team, events: [i], line: line(e), surprise: r.effective_turn === ctx.turn, effectiveTurn: r.effective_turn });
+          out.push({ kind: 'war', team, events: [i], line: line(e), surprise: r.effective_turn === ctx.turn, effectiveTurn: r.effective_turn, reason: statedWarReason(events, team, me) });
         }
       }
     } else if (e.type === 'WarJoined') {

@@ -934,7 +934,8 @@ impl ScriptedBrain {
             trace.production_defense = p.production_defense_trace();
         }
         trace.proposed = trace.before(&p.orders);
-        let orders = self.finish_logged(view, &mut p, &mut log);
+        let mut orders = self.finish_logged(view, &mut p, &mut log);
+        p.state_war_reasons(&mut orders);
         let proposed = trace.proposed.clone();
         trace.stage(
             "finish",

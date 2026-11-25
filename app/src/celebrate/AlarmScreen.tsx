@@ -1,3 +1,4 @@
+import { warReasonText } from '../warReason';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Crest } from '../brand/ornaments';
 import { FACTION_INFO, factionName } from '../data';
@@ -193,6 +194,7 @@ export function AlarmScreen() {
           <p className="alarm-empire">{leadTeams.map((t) => empireTitle(view, t)).join(' · ')}</p>}
         {isHold && lead.length === 1 && <p className="alarm-hold-sub">{holdSubline(top)}</p>}
         {single && !isRace && <p className="alarm-motto">“{FACTION_INFO[single.faction].motto}”</p>}
+        {top.kind === 'war' && top.reason && <p className="alarm-reason" data-testid="alarm-reason"><span>Their reason</span>{warReasonText(top.reason, null)}</p>}
       </div>
       <div className="alarm-actions">
         {/* Ink for a routine step; red only when the button itself is hostile (Declare war). */}
@@ -242,7 +244,8 @@ function AlarmDetail({ alarm: a, view, named, onShow }: { alarm: Alarm; view: Pl
     facts.push({ tone: 'bad', strong: true, text: a.surprise ? 'War is in effect now.' : `War is in effect from turn ${a.effectiveTurn}, the turn you are planning.` });
     // The report's line when it says more than that (who they attacked, where).
     if (!a.line.text.endsWith('War started this turn')) facts.push({ tone: 'bad', text: a.line.text });
-    for (const d of a.line.details.filter((d) => !d.startsWith('Declared by'))) facts.push({ tone: 'neutral', text: d });
+    // The declarer's reason stands under the headline, so the facts don't repeat it.
+    for (const d of a.line.details.filter((d) => !d.startsWith('Declared by') && !d.startsWith('Their reason'))) facts.push({ tone: 'neutral', text: d });
     facts.push({ tone: 'neutral', text: 'At War, both sides can attack and enter each other’s territory.' });
     if (a.broke) facts.push({ tone: 'bad', text: a.broke.text });
     if (theirAllies.length) facts.push({ tone: 'neutral', text: `Allied with ${theirAllies.map(name).join(' and ')}, who may be called to join their war.` });

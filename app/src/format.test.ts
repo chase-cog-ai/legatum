@@ -410,6 +410,23 @@ describe('event formatting', () => {
     expect(formatEvents([{ type: 'WarDeclared', relation: { ...relation, effective_turn: 13 } }], declarer)[0].text).toContain('begins turn 13');
   });
 
+  it('a stated war reason is a detail of its declaration, told to the target as "you"', () => {
+    const relation = { a: 0, b: 2, state: 'War' as const, effective_turn: 12, guarantee_until: 0, version: 2, security: null, war_id: 1, declarers: [2] };
+    const names = { teamPlayers: (t: number) => (t === 0 ? [0, 1] : [t]), teamName: (t: number) => (t === 0 ? 'Rome' : t === 2 ? 'Switzerland' : `Team ${t}`) };
+    const events: Event[] = [{ type: 'WarDeclared', relation }, { type: 'WarReasonStated', by: 2, against: 0, reason: 'NearVictory' }];
+    const victim = formatEvents(events, { ...ctx, ...names, turn: 12, teamId: 0 });
+    expect(victim).toHaveLength(1);
+    expect(victim[0].details[0]).toBe('Their reason: You are close to victory, and they mean to stop you.');
+    const onlooker = formatEvents(events, { ...ctx, ...names, turn: 12, teamId: 5 });
+    expect(onlooker).toHaveLength(1);
+    expect(onlooker[0].details).toContain('Their reason: Rome is close to victory, and they mean to stop it.');
+    // With notice (a war that begins next turn) the reason is told the same way.
+    const later = formatEvents([{ type: 'WarDeclared', relation: { ...relation, effective_turn: 13 } }, events[1]], { ...ctx, ...names, turn: 12, teamId: 0 });
+    expect(later[0].details).toContain('Their reason: You are close to victory, and they mean to stop you.');
+    // A human declarer states none, and the line is as before.
+    expect(formatEvents([events[0]], { ...ctx, ...names, turn: 12, teamId: 0 })[0].details.join(' ')).not.toContain('reason');
+  });
+
   it('names a war joined through a newly signed Alliance', () => {
     const war = { a: 0, b: 2, state: 'War' as const, effective_turn: 12, guarantee_until: 0, version: 2, security: null, war_id: 1, declarers: [0] };
     const alliance = { ...war, a: 1, b: 2, state: 'Alliance' as const, declarers: [] };

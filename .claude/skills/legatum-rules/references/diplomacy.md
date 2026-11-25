@@ -54,6 +54,21 @@ toward its sender (`offerSettledBy`), so it is no longer "Respond to offer" and 
 
 **A closed country (Japan's Sakoku vow, §8):** a closed empire cannot declare war, and no Alliance can be proposed or signed by a team with a closed member or with such a team (`diplomacy::closed_refusal` in `check_order`; the reason reads "X has closed the country (Sakoku): ..."), Peace is unaffected, and `passage_allowed` lets nobody but the closed empire's own team into its land at Peace (no Alliance passage or open road).
 
+**Stated war reasons** (`Order::StateWarReason{against, reason}`, `diplomacy::WarReason`): a team may
+say why it declares war. The order is a receipt, like a treaty answer's `explanation`: no rule reads
+it, it is not a diplomatic order (it does not use the one diplomatic order per other team), and
+state and results are the same with or without it. When the same turn's orders make that team a
+declarer of a war on `against`, the `WarDeclared` event is followed by a public
+`WarReasonStated{by, against, reason}` (a surprise war and a war with notice alike; the lowest
+PlayerId's reason, then submission order); a reason with no such declaration is dropped silently.
+Reasons: `VictoryHold` (the target is counting down to victory), `NearVictory` (the target is close
+to winning or is the coalition's target), `Threat` (the declarer's top threat), `FactionGoal` (the
+declarer's goal needs the war: Sparta's Iron Guard), `Opportunity` (an army in place to take a
+city), `Conquest` (the default). Every Scripted AI declaration states one, read from the signals
+its own decision used (`crates/ai/src/war_reason.rs`, the first that holds in the order above);
+humans state none. App: the war alarm screen shows "Their reason" and the turn report's war line
+carries it as a detail (`app/src/warReason.ts`).
+
 **Leaving** (`BreakTreaty`) takes effect next turn. Inside the protected window it costs the breach
 Gold and is a **betrayal**; after it, leaving is free. **War on an ally** needs `DeclareWar{breach:
 true}`, takes effect next turn, and is always a betrayal (plus the Gold inside the window).

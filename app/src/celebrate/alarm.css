@@ -79,6 +79,8 @@
 }
 .alarm-empire { margin: 0; font: 600 13px/1.4 var(--sans); color: var(--ink-2); }
 .alarm-motto { margin: 6px 0 0; font: italic 500 21px/1.25 var(--display); color: var(--ink-2); }
+.alarm-reason { margin: 8px 0 0; font: 600 14px/1.4 var(--sans); color: var(--ink); text-wrap: balance; }
+.alarm-reason span { display: block; font: 700 11px/1.4 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--bad); }
 
 .alarm-actions { grid-area: actions; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 14px 0 4px; }
 .alarm-primary { min-height: 46px; padding: 4px 26px 2px; font-size: 14px; letter-spacing: .14em; }

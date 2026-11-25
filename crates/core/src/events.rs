@@ -184,6 +184,13 @@ pub enum Event {
     WarDeclared {
         relation: crate::diplomacy::Relation,
     },
+    /// Follows the `WarDeclared` it explains: the reason `by` gave for declaring war on
+    /// `against` (`Order::StateWarReason`). Public, like the declaration.
+    WarReasonStated {
+        by: TeamId,
+        against: TeamId,
+        reason: crate::diplomacy::WarReason,
+    },
     /// An Alliance carried `team` into `ally`'s war (declared, or already under way when the
     /// Alliance was signed): `relation` is `team`'s war with the enemy, whose `declarers` are
     /// the war's.

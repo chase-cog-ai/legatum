@@ -1,3 +1,4 @@
+import { statedWarReason, warReasonText } from './warReason';
 import { RESOURCE_INFO, fixClause, idleCountText, idleEntries, withArticle, withThe } from './resources';
 import { WONDER_INFO, wonderBonusSentence } from './wonders';
 import { diplomaticTeams, offerLabel } from './diplomacy';
@@ -805,6 +806,14 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
     case 'WarDeclared': {
       const team = (id: number) => ctx.teamName?.(id) ?? `Team ${id}`;
       const r = e.relation;
+      // The reason each declarer stated (AI empires state one), told to its target as "you".
+      const why = r.declarers.flatMap((by) => {
+        const against = r.a === by ? r.b : r.a;
+        const reason = statedWarReason(ctx.events ?? [], by, against);
+        if (!reason) return [];
+        const text = warReasonText(reason, against === ctx.teamId ? null : team(against));
+        return [r.declarers.length > 1 ? `${team(by)}: ${text}` : `Their reason: ${text}`];
+      });
       if (ctx.turn !== undefined && r.effective_turn === ctx.turn) {
         // Surprise war (G20): no treaty, so it started this turn, before any combat.
         const victim = ctx.teamId !== undefined && [r.a, r.b].includes(ctx.teamId) && !r.declarers.includes(ctx.teamId);
@@ -818,11 +827,11 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
             : hit?.type === 'SettlerCaptured' ? `captured your Settler ${at(ctx, hit.at)}` : 'on you: War started this turn';
           return diplomacyLine(`${empire(by)} declared war ${hit ? 'and ' : ''}${what}`, {
             weight: 2, tone: 'bad',
-            details: ['No treaty stood between you, so the declaration took effect at once (a surprise war).'],
+            details: [...why, 'No treaty stood between you, so the declaration took effect at once (a surprise war).'],
           });
         }
         return diplomacyLine(`War: ${team(r.a)} and ${team(r.b)} · started this turn`, {
-          weight: 2, tone: 'neutral', details: [`Declared by ${r.declarers.map(team).join(' and ')}.`,
+          weight: 2, tone: 'neutral', details: [`Declared by ${r.declarers.map(team).join(' and ')}.`, ...why,
             r.declarers.includes(ctx.teamId ?? -1)
               ? 'No treaty stood between you, so the war began at once and the attacks you ordered took place this turn.'
               : 'No treaty stood between them, so War took effect at once and attacks ordered with it resolved this turn.'],
@@ -830,8 +839,16 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
       }
       const onYou = ctx.teamId !== undefined && [r.a, r.b].includes(ctx.teamId) && !r.declarers.includes(ctx.teamId);
       return diplomacyLine(`War: ${team(r.a)} and ${team(r.b)} · begins turn ${r.effective_turn}`, {
-        weight: 2, tone: onYou ? 'bad' : 'neutral', details: [`Declared by ${r.declarers.map(team).join(' and ')}.`,
+        weight: 2, tone: onYou ? 'bad' : 'neutral', details: [`Declared by ${r.declarers.map(team).join(' and ')}.`, ...why,
           `Turn ${r.effective_turn - 1} resolved under Peace. Both teams can plan before the first combat in turn ${r.effective_turn}.`],
+      });
+    }
+    case 'WarReasonStated': {
+      // Folded into its declaration's line by `formatEvents`; alone it still reads as a sentence.
+      const team = (id: number) => ctx.teamName?.(id) ?? `Team ${id}`;
+      const onYou = e.against === ctx.teamId;
+      return diplomacyLine(`${team(e.by)} stated why it declared war on ${onYou ? 'you' : team(e.against)}`, {
+        weight: 1, tone: onYou ? 'bad' : 'neutral', details: [warReasonText(e.reason, onYou ? null : team(e.against))],
       });
     }
     case 'WarJoined': {
@@ -1672,6 +1689,8 @@ export function formatEvents(events: Event[], ctx: ReportContext): ReportLine[] 
   const captured = new Set(events.flatMap((x) => (x.type === 'CityCaptured' ? [x.city] : [])));
   const mine = (p: PlayerId) => p === ctx.me || ctx.team.includes(p);
   for (const e of events) {
+    // A stated war reason is a detail of its declaration's line.
+    if (e.type === 'WarReasonStated' && events.some((x) => x.type === 'WarDeclared' && x.relation.declarers.includes(e.by) && [x.relation.a, x.relation.b].includes(e.against))) continue;
     // A hand-over of the Heir is one line, from the new holder's gain; the old holder's loss folds into it.
     // A hand-over of the Imperial Diwan is one line, from the new holder's gain.
     // The birth line says it all: the first completion of Byzantium's goal is the same event.

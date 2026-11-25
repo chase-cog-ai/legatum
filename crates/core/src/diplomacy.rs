@@ -1415,6 +1415,7 @@ pub fn declare_surprise_wars(
                 .push(team);
         }
     }
+    let stated = stated_war_reasons(state, orders);
     let turn = state.turn;
     let mut d = state.diplomacy.take().expect("checked above");
     for (&(a, b), declarers) in &mut declarations {
@@ -1435,6 +1436,7 @@ pub fn declare_surprise_wars(
         events.push(Event::WarDeclared {
             relation: r.clone(),
         });
+        push_war_reasons(events, &stated, declarers, (a, b));
     }
     for (&(a, b), declarers) in &declarations {
         for &declarer in declarers {
@@ -1655,6 +1657,7 @@ pub fn resolve_boundary(
     };
     d.superseded.clear();
     let effective_turn = before.turn + 1;
+    let stated = stated_war_reasons(before, orders);
     let mut chosen: BTreeMap<(TeamId, TeamId), (PlayerId, Order)> = BTreeMap::new();
     for (&player, os) in orders {
         let team = before.team_of(player);
@@ -1919,6 +1922,7 @@ pub fn resolve_boundary(
                 events.push(Event::WarDeclared {
                     relation: r.clone(),
                 });
+                push_war_reasons(events, &stated, &declarers, pair(team, other));
                 began.extend(
                     declarers
                         .into_iter()
@@ -2402,6 +2406,62 @@ fn end_dead_alliances(
 
 pub fn shares_sight(r: &Relation) -> bool {
     r.state == RelationState::Alliance
+}
+
+/// Why a team says it went to war (`Order::StateWarReason`). Like `DecisionExplanation` it is
+/// a receipt: no rule reads it. AI empires state the reason their own decision rested on
+/// (`legatum_ai`'s `war_reason`); the wording players read lives in the UI.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub enum WarReason {
+    /// The target holds its VP target and is counting down to victory.
+    VictoryHold,
+    /// The target is close to winning: the war is to contain the leader.
+    NearVictory,
+    /// The target's army threatens the declarer's cities.
+    Threat,
+    /// The declarer's faction goal needs this war.
+    FactionGoal,
+    /// The declarer's army stands ready to take one of the target's cities.
+    Opportunity,
+    /// The declarer is the stronger and wants the target's land.
+    Conquest,
+}
+
+/// The reason each team stated this turn for a declaration on another team: the lowest
+/// PlayerId's, then submission order, as `chosen_orders` picks the declaration itself.
+fn stated_war_reasons(
+    state: &GameState,
+    orders: &BTreeMap<PlayerId, &[Order]>,
+) -> BTreeMap<(TeamId, TeamId), WarReason> {
+    let mut stated = BTreeMap::new();
+    for (&player, os) in orders {
+        let team = state.team_of(player);
+        for order in os.iter() {
+            if let Order::StateWarReason { against, reason } = order {
+                stated.entry((team, *against)).or_insert(*reason);
+            }
+        }
+    }
+    stated
+}
+
+/// After the `WarDeclared` between `a` and `b`: one `WarReasonStated` per declarer that gave one.
+fn push_war_reasons(
+    events: &mut Vec<Event>,
+    stated: &BTreeMap<(TeamId, TeamId), WarReason>,
+    declarers: &[TeamId],
+    (a, b): (TeamId, TeamId),
+) {
+    for &by in declarers {
+        let against = if by == a { b } else { a };
+        if let Some(&reason) = stated.get(&(by, against)) {
+            events.push(Event::WarReasonStated {
+                by,
+                against,
+                reason,
+            });
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

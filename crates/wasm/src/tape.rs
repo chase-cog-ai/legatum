@@ -97,6 +97,7 @@ impl Tape {
                             replacement.or(kind.as_deref()),
                             Some(
                                 "DeclareWar"
+                                    | "StateWarReason"
                                     | "BreakTreaty"
                                     | "ProposeTreaty"
                                     | "RespondToProposal"
@@ -559,10 +560,14 @@ mod tests {
                 to: PlayerId(1),
                 amount: 25,
             },
+            Order::StateWarReason {
+                against: TeamId(1),
+                reason: legatum_core::diplomacy::WarReason::NearVictory,
+            },
         ]
     }
 
-    const ORDER_VARIANTS: usize = 32;
+    const ORDER_VARIANTS: usize = 33;
 
     fn variant_index(order: &Order) -> usize {
         match order {
@@ -598,6 +603,7 @@ mod tests {
             Order::AirRecon { .. } => 29,
             Order::BuyTile { .. } => 30,
             Order::GiveGold { .. } => 31,
+            Order::StateWarReason { .. } => 32,
         }
     }
 

@@ -252,12 +252,12 @@ export const perf = { frames: 0, partialFrames: 0, drawMs: 0, maxMs: 0, workMs: 
 
 // ---- movement reach for the selected unit ----
 
-let reachCache: { key: string; tiles: Set<number> } | null = null;
+let reachCache: { key: string; view: PlayerView; tiles: Set<number> } | null = null;
 function reachOf(view: PlayerView, u: UnitView): Set<number> {
   const key = `${u.id}|${u.pos.q},${u.pos.r}|${u.max_moves}|${view.turn}|${view.me}`;
-  if (reachCache && reachCache.key === key && lastView === view) return reachCache.tiles;
+  if (reachCache && reachCache.key === key && reachCache.view === view) return reachCache.tiles;
   const tiles = reachTiles(view, u);
-  reachCache = { key, tiles };
+  reachCache = { key, view, tiles };
   return tiles;
 }
 

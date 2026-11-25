@@ -88,7 +88,7 @@ shows in the list.
   rejoin with the seat's own credential (`join`, or `staging_take` with its token) needs no code, and the host's own
   connection never needs it. After 5 wrong codes from one connection the host closes it (terminal error
   `too_many_codes`); a missing code is not a strike. The guest types the code once in an inline box on the seat screen; it
-  is kept in memory only.
+  is kept in memory only. It takes focus on arrival. A `wrong_join_code` refusal is shown on that box (red box, hint "Wrong code. Check it with the host and try again.") until the player changes the text, on the Join screen and in the game room alike; it is not also raised as the screen's error notice (2026-11-25).
 - **Limit:** every new connection starts with 0 strikes, so the lockout slows guessing but does not stop a script that
   reconnects; the relay's per-address socket and rate caps are what bound that (see Limits). A 4-character code is weak
   against that; use 8 or more for a game you care about.

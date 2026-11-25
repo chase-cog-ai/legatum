@@ -209,7 +209,7 @@ export function CounterDelta({ counter }: { counter: Counter }) {
   const { active, reduced } = useCelebration();
   const amount = active?.deltas.filter((d) => d.counter === counter).reduce((n, d) => n + d.amount, 0) ?? 0;
   if (!amount) return null;
-  return <span key={active!.id} className={`celebrate-delta ${reduced ? 'reduced' : ''}`} data-celebrate-delta={counter}>{amount > 0 ? '+' : '−'}{Math.abs(amount)}</span>;
+  return <span key={active!.id} className={`celebrate-delta ${amount < 0 ? 'cost' : ''} ${reduced ? 'reduced' : ''}`} data-celebrate-delta={counter}>{amount > 0 ? '+' : '−'}{Math.abs(amount)}</span>;
 }
 
 export function MomentLane() {
@@ -260,6 +260,7 @@ export function MomentLane() {
           {card.gains.map((g) => <li key={g.text}>{!g.icon.startsWith('yield-') && <Icon name={g.icon} size={24} />}<b><Amounts text={g.text} /></b></li>)}
         </ul> : <p className="moment-effect plain"><span><Amounts text={card.effect} /></span></p>}
         {card.treaty?.gold && <p className={`moment-treaty-gold ${card.treaty.gold.received ? 'gain' : 'cost'}`} data-testid="moment-treaty-gold"><b><Amounts text={card.treaty.gold.text} /></b></p>}
+        {card.treaty?.upkeep ? <p className="moment-treaty-gold cost" data-testid="moment-treaty-upkeep"><b><Amounts text={`Upkeep −${card.treaty.upkeep} Gold a turn`} /></b></p> : null}
         {card.lore && <p className="moment-lore">“{card.lore}”</p>}
         {card.details.length > 0 && <div className="moment-details">{card.details.map((text) => <p key={text}><Amounts text={text} /></p>)}</div>}
         </div>

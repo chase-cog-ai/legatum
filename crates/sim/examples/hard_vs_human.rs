@@ -1929,7 +1929,7 @@ mod tests {
         // Peaceful contests (rules 51, 2026-11-22: the stronger side takes a contested tile between empires not at War) give four cities at T50, five at T62, no VP at T100 and no win.
         // The Mongols never having Walls (rules 57, 2026-11-22) leaves the Mongol rival open, and the seat wins by elimination at T164.
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege move the win to T170.
-        // Siege starves the land (rules 61: an army at War denies the tile it stands on) moves the win to T198.
+        // Siege starves the land (rules 62: an army at War denies the tile it stands on) moves the win to T198.
         assert_eq!(
             first_map_game(true),
             json!({

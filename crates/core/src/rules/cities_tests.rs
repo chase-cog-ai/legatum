@@ -25,6 +25,7 @@ pub(crate) fn test_game(players: &[(Faction, u8)]) -> GameState {
         ai_alliances: false,
         barbarians: false,
         rule_experiments: Default::default(),
+        deals: false,
     };
     let mut state = blank_game(&setup, Map::new(20, 20, Terrain::Grassland));
     // These city/combat fixtures predate diplomacy and explicitly start at War.
@@ -457,7 +458,7 @@ fn city_turn(state: &mut GameState) -> Vec<Event> {
 
 #[test]
 fn a_foreign_unit_at_peace_does_not_block_a_worked_tile() {
-    // At War it does since rules 61 (`siege_denial_tests`).
+    // At War it does since rules 62 (`siege_denial_tests`).
     let mut s = test_game(&[(Faction::Mongols, 0), (Faction::Byzantium, 1)]);
     for relation in &mut s.diplomacy.as_mut().unwrap().relations {
         relation.state = crate::diplomacy::RelationState::Peace;

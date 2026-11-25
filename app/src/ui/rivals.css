@@ -23,6 +23,8 @@
 .rivals .unmet .rv-name { color: var(--muted); font-style: italic; }
 .rivals .rv-status { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 5px; padding: 2px 0 0 28px; }
 .rivals .rv-status:empty { display: none; }
+/* Deals: Open Borders with this empire, drawn like the Peace beside its name: emblem plus word, no box. */
+.rivals .rv-borders { display: inline-flex; align-items: center; gap: 3px; font: 500 10.5px var(--sans); color: var(--ink-2); white-space: nowrap; }
 .rivals .rv-rel { display: inline-flex; align-items: center; gap: 3px; font: 500 10.5px var(--sans); color: var(--ink-2); white-space: nowrap; }
 .rivals .rv-rel.war { color: var(--bad); font-weight: 600; }
 .rivals .rv-num { text-align: right; font-variant-numeric: lining-nums tabular-nums; }

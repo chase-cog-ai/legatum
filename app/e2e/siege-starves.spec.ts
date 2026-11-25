@@ -8,7 +8,7 @@ import { siegeFixture } from '../src/test/siegeFixture';
 import { spawnUnit, refreshVision } from '../src/test/fixtureEngine';
 import { neighbors, hexEq, tileIndex } from '../src/hex';
 
-// Siege starves the land (rules 61): an army at War takes the yield of the enemy tile it stands on.
+// Siege starves the land (rules 62): an army at War takes the yield of the enemy tile it stands on.
 // The tile card says so, the city's Food drops, and a city cut off from its land shows the
 // starvation countdown with the cause. At the user's laptop window and a desktop one.
 type GameWindow = Window & { legatum: typeof useGame; legatumMap: { toScreen(hex: Hex): { x: number; y: number } } };

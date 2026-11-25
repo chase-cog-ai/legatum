@@ -72,21 +72,16 @@ for (const size of SIZES) {
       await shot(page, size.name, '07-betrayal-record');
     });
 
-    test("an empire you haven't met: the reason once, the Alliance offer clearly disabled", async ({ page }) => {
+    test("an empire you haven't met is hidden: one line counts it, no offers", async ({ page }) => {
       const s = diplomacyState(12, { strangers: true });
       await load(page, coreFixture(s), 12);
       await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
       const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
-      await inbox.locator('.empire-pick').first().click();
-      await expect(inbox.locator('.diplomacy-blocked-reason')).toHaveCount(1);
-      const offer = inbox.getByRole('button', { name: /Offer Alliance/ });
-      await expect(offer).toBeDisabled();
-      // Scroll the inbox's own scroll area (not the page) so the disabled offer is in the shot.
-      await offer.evaluate((el) => {
-        let box = el.parentElement;
-        while (box && !(box.scrollHeight > box.clientHeight && /auto|scroll/.test(getComputedStyle(box).overflowY))) box = box.parentElement;
-        if (box) box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 120;
-      });
+      await expect(inbox.locator('.empire-pick')).toHaveCount(0);
+      const line = inbox.getByTestId('unmet-empires');
+      await expect(line).toContainText('1 empire not met yet');
+      await expect(inbox.getByRole('button', { name: /Offer Alliance/ })).toHaveCount(0);
+      await line.scrollIntoViewIfNeeded();
       await shot(page, size.name, '08-not-met');
     });
 

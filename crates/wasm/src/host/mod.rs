@@ -1395,6 +1395,26 @@ mod tests {
     }
 
     #[test]
+    fn staging_deals_default_off_and_reach_the_setup_when_the_host_turns_them_on() {
+        let legacy = room_config();
+        assert!(!legacy.deals);
+        assert!(!Room::new("deals-off".into(), legacy.clone()).setup().deals);
+        // Off is omitted, so rooms from older clients keep their config shape.
+        assert!(
+            serde_json::to_value(&legacy)
+                .unwrap()
+                .get("deals")
+                .is_none()
+        );
+        let mut on = legacy;
+        on.deals = true;
+        let room = Room::new("deals-on".into(), on);
+        assert!(room.setup().deals);
+        let public = serde_json::to_value(room.state(false)).unwrap();
+        assert_eq!(public["config"]["deals"], serde_json::json!(true));
+    }
+
+    #[test]
     fn staging_accepts_optional_limits_rejects_invalid_values_and_ignores_a_legacy_speed() {
         let legacy = room_config();
         assert_eq!(legacy.turn_limit, Some(100));

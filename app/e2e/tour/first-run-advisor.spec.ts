@@ -6,6 +6,9 @@ test.describe.configure({ mode: 'parallel' });
 for (const size of SIZES) test.describe(`first run with advisor ${size.name}`, () => {
   test.use({ viewport: { width: size.width, height: size.height } });
   test('welcome, build, move, research and end turn', async ({ page }) => {
+    // The laptop size runs on the tech tree (the default view); the large size keeps the era cards.
+    const onTree = size.name === '1000x600';
+    await page.addInitScript((view) => { try { localStorage.setItem('legatum.research-view.v1', view); } catch { /* blocked */ } }, onTree ? 'tree' : 'era');
     await page.goto('/?client=wasm');
     await page.getByRole('button', { name: /^Single Player/ }).click();
     await page.getByLabel('Map seed', { exact: true }).fill('424242');
@@ -28,9 +31,20 @@ for (const size of SIZES) test.describe(`first run with advisor ${size.name}`, (
       const box = await card.boundingBox();
       if (!box) return;
       if (cta) expect(intersects(box, cta), 'the advisor never covers the turn button').toBe(false);
+      // The advisor scrolls a cut-off target into view after a moment: wait until the ring's placement (its inline
+      // position, not its pulse) has settled, then measure it.
+      const placed = () => ring.evaluate((el) => `${(el as HTMLElement).style.left},${(el as HTMLElement).style.top}`);
+      if (await ring.count()) for (let i = 0, last = await placed(); i < 10; i++) {
+        await page.waitForTimeout(100);
+        const now = await placed();
+        if (now === last) break;
+        last = now;
+      }
       const ringBox = await ring.count() ? await ring.boundingBox() : null;
       if (ringBox) {
-        expect(intersects(box, ringBox), 'the advisor never covers its ring').toBe(false);
+        // The ring's glow pulses a few pixels past its box; a 2px touch is not cover.
+        const inner = { x: ringBox.x + 2, y: ringBox.y + 2, width: ringBox.width - 4, height: ringBox.height - 4 };
+        expect(intersects(box, inner), 'the advisor never covers its ring').toBe(false);
         if (await ring.evaluate((el) => el.classList.contains('map-target'))) tileRadius = ringBox.width / 2;
       }
       const selected = await page.evaluate(() => {
@@ -83,7 +97,16 @@ for (const size of SIZES) test.describe(`first run with advisor ${size.name}`, (
     await expect(card).toContainText('Step 2 of 2');
     await expect(ring).toBeVisible();
     await capture('05-research-card-ring');
-    await tech.getByRole('button', { name: 'Research now' }).first().click();
+    if (onTree) {
+      // The ring surrounds the recommended technology's node in the tree; clicking it researches it.
+      const name = /^Click (.+)\.$/.exec((await card.locator('.advisor-step strong').textContent()) ?? '')?.[1];
+      expect(name, 'the advisor names the technology').toBeTruthy();
+      const node = tech.locator('.tree-node', { has: page.locator('.tn-name', { hasText: new RegExp(`^${name}$`) }) });
+      const nodeBox = (await node.boundingBox())!, techRing = (await ring.boundingBox())!;
+      expect(techRing.x <= nodeBox.x && techRing.x + techRing.width >= nodeBox.x + nodeBox.width
+        && techRing.y <= nodeBox.y && techRing.y + techRing.height >= nodeBox.y + nodeBox.height, 'the ring surrounds the tree node').toBe(true);
+      await node.click();
+    } else await tech.getByRole('button', { name: 'Research now' }).first().click();
     // With research chosen, the advisor's next step is closing the panel, and its ring is on Close.
     await expect(card).toHaveAttribute('data-advisor-id', 'closeResearch');
     await expect(ring).toBeVisible();

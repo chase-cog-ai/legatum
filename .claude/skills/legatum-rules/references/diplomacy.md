@@ -15,7 +15,7 @@ periods, trust and call commitments were removed; Call to Arms was removed 2026-
 | Breaking inside the protected window | 120 | first 10 turns (`ALLIANCE_PROTECTED_TURNS`, `leave_cost`) |
 | Peace (ending a war) | free, plus any terms both sides agree (below) | 10 turns of guaranteed Peace (`PEACE_TRUCE_TURNS`), or 20 or 30 by agreement; if Peace begins on turn T, no War may take effect through T+9, and War is possible from T+10. |
 
-**Peace terms (rules 60, `diplomacy::PeaceTerms`).** A Peace offer (`Order::ProposeTreaty { kind: Peace, terms }`) may carry terms; an Alliance offer may not. Nothing here is forced: the other team accepts, refuses or lets the offer lapse like any offer, and every term settles only when the Peace is signed at the boundary (`resolve_boundary`). This is not the removed Byzantium tribute (`not-in-game.md`): that forced Peace on the payee.
+**Peace terms (rules 61, `diplomacy::PeaceTerms`).** A Peace offer (`Order::ProposeTreaty { kind: Peace, terms }`) may carry terms; an Alliance offer may not. Nothing here is forced: the other team accepts, refuses or lets the offer lapse like any offer, and every term settles only when the Peace is signed at the boundary (`resolve_boundary`). This is not the removed Byzantium tribute (`not-in-game.md`): that forced Peace on the payee.
 
 | Term | Field | Rule |
 |---|---|---|
@@ -101,7 +101,7 @@ checked in `crates/core/src/diplomacy.rs::check_order` (ProposeTreaty and accept
 RespondToProposal, error `diplomacy::NOT_MET`) via `DiplomacyState::met`; views list met teams in
 `DiplomacyView::met`. Saves from before the rule have no record (`contacts: None`) and treat every
 pair as met; tapes before version 5 replay without it (`wasm/src/tape.rs::initial_state`).
- the UI states "You haven't met the X yet" once on that empire's row.
+ the UI states "You haven't met the X yet" once on that empire's row. The turn a team first meets another, each of its human seats gets the first-contact plate (`celebrate/MeetingTakeover.tsx`, from the growth of `DiplomacyView.met` between two views in `moments.ts::meetingsForTurn`; no core event, so loaded games and replays never show it).
 
 **War**: declaring against a team at plain Peace is a **surprise war** — effective immediately,
 same turn, before ranged fire/movement; a unit can be ordered into enemy territory with the

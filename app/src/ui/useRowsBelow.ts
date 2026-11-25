@@ -17,9 +17,15 @@ export function useRowsBelow(scroller: RefObject<HTMLElement | null>, selector: 
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     for (const child of el.children) observer.observe(child);
+    // A `display: contents` child has no box and never fires a resize, so content that appears inside one (a hold
+    // strip above the rivals table) is caught here instead, at most once a frame.
+    let frame = 0;
+    const later = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; measure(); }); };
+    const mutations = new MutationObserver(later);
+    mutations.observe(el, { childList: true, subtree: true });
     el.addEventListener('scroll', measure, { passive: true });
     el.addEventListener('toggle', measure, true);
-    return () => { observer.disconnect(); el.removeEventListener('scroll', measure); el.removeEventListener('toggle', measure, true); };
+    return () => { observer.disconnect(); mutations.disconnect(); cancelAnimationFrame(frame); el.removeEventListener('scroll', measure); el.removeEventListener('toggle', measure, true); };
   }, [scroller, selector]);
   return below;
 }

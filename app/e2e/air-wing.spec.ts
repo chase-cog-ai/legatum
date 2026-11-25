@@ -100,7 +100,7 @@ for (const size of SIZES) {
       await openCity(page, setup.own);
       await expect(page.locator('.city-hangar')).toContainText('Hangar 2 / 2');
       await expect(page.getByTestId('air-wing')).toHaveCount(0);
-      await page.getByRole('button', { name: /Bomber · 100 HP/ }).click();
+      await page.getByRole('button', { name: /Bomber · 100 health/ }).click();
       await expect(page.getByTestId('air-wing')).toBeVisible();
       await expect(page.getByTestId('air-wing')).toHaveAttribute('data-selected-plane', '900');
       await expect(page.getByTestId('air-wing').locator('.up-kind')).toHaveText('Bomber');
@@ -159,7 +159,7 @@ for (const size of SIZES) {
     test('aircraft shortcuts open available pickers and explain a full hangar', async ({ page }) => {
       const setup = await start(page, { rebaseDestination: true });
       await openCity(page, setup.own);
-      await expect(page.getByRole('button', { name: /Bomber · 100 HP/ })).toBeVisible();
+      await expect(page.getByRole('button', { name: /Bomber · 100 health/ })).toBeVisible();
       await openPlane(page, 900);
       await page.locator('[data-game-map]').focus();
       await page.keyboard.press('s');
@@ -209,7 +209,7 @@ for (const size of SIZES) {
       // Return opened the strike picker with the targets listed; nothing blocks the Bomber's shot.
       await expect(bomber.getByRole('button', { name: /^Strike/ })).toHaveAttribute('aria-expanded', 'true');
       const row = bomber.locator('.air-target').first();
-      await expect(row).toContainText(/Destroys it|about −\d+ HP/);
+      await expect(row).toContainText(/Destroys it|about −\d+ health/);
       await shot(page, size.name, 'forest-picker');
       await row.click();
       await expect(bomber).toContainText('Striking this turn');
@@ -245,7 +245,7 @@ for (const size of SIZES) {
       await expect(bomber.getByRole('button', { name: /^Strike/ })).toHaveClass(/primary/);
       // The targets are ringed on the map and listed with their forecasts.
       await expect.poll(async () => (await page.evaluate(() => (window as unknown as GameWindow).legatumMap.air))?.candidates.length).toBe(3);
-      await expect(bomber.locator('.air-target').first()).toContainText(/Destroys it|about −\d+ HP/);
+      await expect(bomber.locator('.air-target').first()).toContainText(/Destroys it|about −\d+ health/);
       await shot(page, size.name, 'picker-open');
       // Hovering a ringed target on the map shows the same forecast card a ground unit's shot does.
       // The expanded aircraft card can cover the first candidate at 1440x900; hover a target actually exposed on the canvas.
@@ -388,7 +388,7 @@ test.describe('the 8.9.2 save', () => {
       const planeCity = await page.evaluate(() => { const s = (window as unknown as GameWindow).legatum.getState(); return s.views![s.seat].aircraft?.[0]?.city ?? null; });
       expect(planeCity).not.toBeNull();
       await openCity(page, planeCity!);
-      await page.getByRole('button', { name: /Fighter · \d+ HP/ }).first().click();
+      await page.getByRole('button', { name: /Fighter · \d+ health/ }).first().click();
       const card = page.locator('[data-plane]').first();
       await expect(card).toHaveAttribute('data-air-state', /^(ready|guard)$/);
       const state = await card.getAttribute('data-air-state');

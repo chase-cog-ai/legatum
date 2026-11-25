@@ -1,4 +1,4 @@
-// Peace terms (core `diplomacy::PeaceTerms`, rules 60): what a Peace offer carries besides the
+// Peace terms (core `diplomacy::PeaceTerms`, rules 61): what a Peace offer carries besides the
 // Peace itself, and the plain sentences that say it from the viewer's side. The core validates
 // and settles every term; nothing here decides a rule.
 import { empireOfPlayer, empireTitle } from './empires';

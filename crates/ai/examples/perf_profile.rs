@@ -105,7 +105,9 @@ fn encode(order: &Order) -> Vec<i32> {
         Order::SetResearch { tech } => [6, tech as i32, 0, 0],
         Order::SetScienceConversion { to } => [18, to as i32, 0, 0],
         // Player plans use the standard JSON tape rather than this AI-only codec.
-        Order::SetResearchQueue { .. } | Order::MoveUnitPath { .. } => {
+        Order::SetResearchQueue { .. }
+        | Order::SetResearchGoal { .. }
+        | Order::MoveUnitPath { .. } => {
             panic!("variable-length plans require the standard JSON tape format")
         }
         Order::RangedAttack { unit, target } => [7, unit.0 as i32, target.q, target.r],

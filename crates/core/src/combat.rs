@@ -417,7 +417,7 @@ pub fn attack_strength_rules(
     crate::resources::add_unsupplied(&mut strength, made_by, kind, ranged, unsupplied);
     if city {
         if ranged {
-            strength.add("Siege against city HP", data::siege_city_bonus(kind));
+            strength.add("Siege against city health", data::siege_city_bonus(kind));
         }
         add_mounted_city_penalty_rules(&mut strength, off, made_by, kind, ranged);
     }

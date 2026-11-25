@@ -33,11 +33,11 @@ Only the player-facing strings the diff adds or changes (in "sweep" mode, every 
 
 **3. One idea per sentence,** active voice, second person ("you", "your cities"), at most about 30 words and one semicolon. No stacked qualifiers: split them.
 
-**4. Numbers in the player's terms:** "+1 Gold for every 2 population", "up to 100 HP". A rounding rule is never worth a clause.
+**4. Numbers in the player's terms:** "+1 Gold for every 2 population", "up to 100 health". A rounding rule is never worth a clause.
 
 **5. Benefit and cost said plainly,** each a concrete game effect. A price sits beside the strength it pays for.
 
-**6. Glossary terms** exactly as the glossary spells them (tile, population, Food, city HP, military unit, at Peace...). A synonym is a finding. Text about a rival is third person.
+**6. Glossary terms** exactly as the glossary spells them (tile, population, Food, city health, military unit, at Peace...). A synonym is a finding. Text about a rival is third person.
 
 **7. Still true.** A shorter line must not become wrong: "Barbarians never attack the Celts" is fine as a headline because the exceptions (the Celts can attack barbarians, Celtic walls don't shoot them) are in the Guide; a headline that states something false is a blocker. Check any number you doubt against the code it comes from.
 

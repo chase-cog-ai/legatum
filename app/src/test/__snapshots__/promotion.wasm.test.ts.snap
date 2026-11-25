@@ -74,7 +74,7 @@ exports[`WASM promotion behavior > wasm matches the fixtureClient exactly 1`] = 
     "soldier": 4,
   },
   "lines": [
-    "Your Spearman attacked Byzantium's Spearman at this tile, from 1 tile W: defender −25 HP, attacker −28 HP (72 HP left). Needs orders.",
+    "Your Spearman attacked Byzantium's Spearman at this tile, from 1 tile W: defender −25 health, attacker −28 health (72 health left). Needs orders.",
     "Your Spearman was promoted to level 1 (+10% strength)",
   ],
   "melee": [

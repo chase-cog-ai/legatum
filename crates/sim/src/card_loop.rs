@@ -139,6 +139,7 @@ pub fn actor_key(order: &Order) -> String {
         | Order::Raze { city } => format!("city {}", city.0),
         Order::SetResearch { .. }
         | Order::SetResearchQueue { .. }
+        | Order::SetResearchGoal { .. }
         | Order::SetScienceConversion { .. } => "research".into(),
         o if legatum_core::diplomacy::is_diplomatic(o) => "diplomacy".into(),
         _ => "empire".into(),

@@ -37,8 +37,8 @@
 .replay-controls button, .replay-controls select { min-height: 40px; }
 .replay-controls button { min-width: 40px; }
 .replay-controls .replay-step { font-size: 23px; line-height: 1; }
-.replay-seek { flex: 1; min-width: 0; display: grid; gap: 3px; font: 600 14px var(--num-font); }
-.replay-seek input { width: 100%; accent-color: var(--accent); margin: 0; min-height: 22px; }
+.replay-seek { flex: 1; min-width: 0; display: grid; gap: 2px; font: 600 14px var(--num-font); }
+.replay-seek input { width: 100%; accent-color: var(--accent); margin: 0; min-height: 24px; }
 .replay-speed { display: flex; gap: 6px; align-items: center; margin-inline-start: 6px; }
 .replay-speed select { border: 1px solid var(--rule); background: var(--panel); color: var(--ink); font: inherit; }
 @media (max-width: 650px) {

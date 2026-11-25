@@ -48,7 +48,7 @@ export function foundCityUnitBlocker(view: PlayerView, unit: UnitView): string |
   if (!isFounderCandidate(view, unit)) return 'Only Settlers or Roman melee veterans found cities.';
   if (unit.kind !== 'Settler') {
     if ((unit.level ?? 0) < 1) return 'Fight until this melee unit earns its first promotion.';
-    if (unit.hp < 100) return `Needs full health: ${unit.hp}/100 HP. Heal before founding.`;
+    if (unit.hp < 100) return `Needs full health: ${unit.hp}/100. Heal before founding.`;
   }
   return foundCityBlocker(view, unit.pos);
 }

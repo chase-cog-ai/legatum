@@ -115,7 +115,7 @@ export const FACTION_SHEETS: Record<Faction, FactionSheet> = {
     pairs: [
       { strength: 'A melee veteran at full health can found a city.', strengthDetail: 'A full-health melee veteran (level 1 or higher) can found a city; the unit is consumed.', price: 'Rome cannot train or buy Settlers.', strengthIcon: 'faction-rome', priceIcon: 'unit-settler' },
       specialRow('Rome', 'unit-legionary'),
-      { strength: 'Castrum replaces Walls. Upgrading a melee unit in its city heals it 50 HP.', strengthDetail: 'Castrum replaces Walls. Upgrading a melee unit in its city restores 50 HP, up to full health, once per upgrade order.', strengthIcon: 'building-castrum', onCard: true },
+      { strength: 'Castrum replaces Walls. Upgrading a melee unit in its city restores 50 health.', strengthDetail: 'Castrum replaces Walls. Upgrading a melee unit in its city restores 50 health, up to full health, once per upgrade order.', strengthIcon: 'building-castrum', onCard: true },
     ],
     counteredBy: 'Wound a founder before the city appears, claim the site first, or attack the army left behind.',
   },
@@ -201,7 +201,7 @@ export const FACTION_SHEETS: Record<Faction, FactionSheet> = {
     ratings: { aggression: 5, economy: 1, complexity: 3 },
     pairs: [
       { strength: 'Your military units start at level 1, level up faster and can reach level 6.', strengthDetail: `Your military units start at level 1, gain XP 50% faster and can reach level 6, Spartan Veteran. Each level adds ${RULES.promotion.strengthPercent}% to a unit’s strength.`, strengthIcon: 'unit-spartanhoplite' },
-      { strength: 'Kills heal your units, and capturing a city fully heals your military units nearby.', strengthDetail: 'Destroying an enemy unit restores up to 100 HP, shared among your units that hit it. Capturing a city fully heals your military units within 2 tiles.', strengthIcon: 'mark-heal' },
+      { strength: 'Kills heal your units, and capturing a city fully heals your military units nearby.', strengthDetail: 'Destroying an enemy unit restores up to 100 health, shared among your units that hit it. Capturing a city fully heals your military units within 2 tiles.', strengthIcon: 'mark-heal' },
       { price: 'Settlers and non-military buildings cost 50% more Production.', priceDetail: 'Settlers and non-military buildings cost 50% more Production. Walls, Walls upgrades and the Agoge cost the normal price.', priceIcon: 'unit-settler' },
     ],
     counteredBy: 'Hold behind Walls and deny them kills, so their wounded units stay wounded.',

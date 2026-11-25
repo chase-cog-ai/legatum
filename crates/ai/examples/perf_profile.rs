@@ -58,7 +58,7 @@ fn encode(order: &Order) -> Vec<i32> {
         }
         Order::DeclareWar { against, breach } => [9, i32::from(against.0), i32::from(breach), 0],
         Order::BreakTreaty { with, .. } => [14, i32::from(with.0), 0, 0],
-        Order::ProposeTreaty { to, kind } => [10, i32::from(to.0), kind as i32, 0],
+        Order::ProposeTreaty { to, kind, .. } => [10, i32::from(to.0), kind as i32, 0],
         Order::RespondToProposal {
             proposal, accept, ..
         } => [11, proposal.0 as i32, i32::from(accept), 0],
@@ -105,7 +105,9 @@ fn encode(order: &Order) -> Vec<i32> {
         Order::SetResearch { tech } => [6, tech as i32, 0, 0],
         Order::SetScienceConversion { to } => [18, to as i32, 0, 0],
         // Player plans use the standard JSON tape rather than this AI-only codec.
-        Order::SetResearchQueue { .. } | Order::MoveUnitPath { .. } => {
+        Order::SetResearchQueue { .. }
+        | Order::SetResearchGoal { .. }
+        | Order::MoveUnitPath { .. } => {
             panic!("variable-length plans require the standard JSON tape format")
         }
         Order::RangedAttack { unit, target } => [7, unit.0 as i32, target.q, target.r],
@@ -160,6 +162,7 @@ fn decode(encoded: impl AsRef<[i32]>) -> Order {
                 1 => legatum_core::diplomacy::TreatyKind::Alliance,
                 _ => panic!("invalid treaty kind"),
             },
+            gold: 0,
         },
         11 => Order::RespondToProposal {
             proposal: legatum_core::diplomacy::ProposalId(a as u32),
@@ -512,6 +515,7 @@ mod codec_tests {
             let order = Order::ProposeTreaty {
                 to: TeamId(3),
                 kind,
+                gold: 0,
             };
             assert_round_trip(order);
         }

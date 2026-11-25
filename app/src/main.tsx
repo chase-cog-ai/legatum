@@ -30,7 +30,8 @@ useGame.subscribe((state) => {
   // Several people at one screen (hot seat) share the music every people hears; one player hears their own people's.
   const me = view?.players.find((p) => p.id === view.me);
   const people = view && state.humans.length === 1 ? me?.faction ?? null : null;
-  setMusicForView(view, people, me?.era ?? 1);
+  // Meeting another empire plays their people's music while its plate is up.
+  setMusicForView(view, (view && state.meetingPeople) || people, me?.era ?? 1);
 });
 
 // The terrain art (organic S2; `?terrain=current` skips it) must be decoded before the first map chunk is baked.

@@ -231,7 +231,7 @@ it.each(['Spearman', 'Pikeman', 'Musketman', 'Archer'] as const)(
     act(() => health.click());
     const tip = document.getElementById(health.getAttribute('aria-describedby')!)!;
     expect(tip.textContent).toContain(kind === 'Archer'
-      ? 'Strength drops by 1 per 10 HP lost'
+      ? 'Strength drops by 1 per 10 health lost'
       : 'Sparta infantry ignore wound strength penalties');
   },
 );
@@ -311,10 +311,10 @@ it('the Heal tooltip names the rate and the turns to full', async () => {
   useGame.setState({ client, views: [view], humans: [0], orders: [[]], errors: [[]], ready: [false], seat: 0, selection: { kind: 'unit', id: unit.id } });
   act(() => root.render(<UnitPanel unit={unit} view={view} />));
   const heal = [...container.querySelectorAll<HTMLButtonElement>('button.act')].find((b) => b.textContent?.startsWith('Heal'))!;
-  expect(healForecast(unit)).toBe('Heals 20 HP a turn in your territory: full in 3 turns.');
+  expect(healForecast(unit)).toBe('Heals 20 health a turn in your territory: full in 3 turns.');
   act(() => heal.focus());
   const tip = document.getElementById(heal.getAttribute('aria-describedby')!.split(' ')[0])!;
-  expect(tip.textContent).toContain('Heals 20 HP a turn in your territory: full in 3 turns.');
+  expect(tip.textContent).toContain('Heals 20 health a turn in your territory: full in 3 turns.');
   unit.resting_heal = { total: 0, parts: [['Closed foreign territory', 0]] };
   expect(healForecast(unit)).toBeNull();
   expect(healBlocker(unit)).toContain('nothing heals here');
@@ -395,7 +395,7 @@ it('shows Sparta Fortify enabled at the ordinary rest-heal rate', async () => {
   const fortify = [...container.querySelectorAll<HTMLButtonElement>('button.act')].find((b) => b.textContent?.startsWith('Fortify'))!;
   expect(fortify.disabled).toBe(false);
   expect(fortify.closest('.act-wrap')?.classList.contains('blocked') ?? false).toBe(false);
-  expect(container.querySelector('.up-hints')?.textContent ?? '').toContain('heal up to 20 HP');
+  expect(container.querySelector('.up-hints')?.textContent ?? '').toContain('heal up to 20 health');
 });
 
 it('shows resting defence only with a current bonus, inside the panel instead of floating notes', async () => {

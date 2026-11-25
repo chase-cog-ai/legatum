@@ -222,7 +222,7 @@ export function TileCard({ view, hex, anchor, routeWarning, blockedReason, reinf
             const name = isBarbarian(u.owner) ? `Barbarian ${unit}` : u.owner === view.me ? `Your ${unit}` : ownedName(player ? FACTION_ADJECTIVE[player.faction as Faction] : 'Rival', unit);
             return <><span className="swatch" style={{ background: playerColor(u.owner) }} />
               {player ? <FactionSeal faction={player.faction} size={14} color={playerInk(u.owner)} /> : <Icon name="ui-cross" size={14} color={faction === 'Celts' ? 'currentColor' : BARBARIAN_INK.blood} />}
-              {' '}{u.military && <RankMark level={u.level ?? 0} faction={player?.faction} compact />}{name}{u.military && ` · ${eraName(unitEraTier(u.kind as UnitKind))} era`} · {u.hp} HP · strength {u.strength}</>;
+              {' '}{u.military && <RankMark level={u.level ?? 0} faction={player?.faction} compact />}{name}{u.military && ` · ${eraName(unitEraTier(u.kind as UnitKind))}\u00a0era`} · {u.hp} health · strength {u.strength}</>;
           })()}
           {u.owner === view.me && occupationTileLine(view, u) && <div data-testid="tile-lock"><Icon name="mark-lock" size={12} className="ui-mark" /> {occupationTileLine(view, u)}</div>}
           {u.fortify > 0 && ` · resting defence +${u.fortify}`}

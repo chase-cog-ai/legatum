@@ -225,7 +225,8 @@ fn fresh_brains_on_the_turn_45_save_respond_immediately() {
             o,
             Order::ProposeTreaty {
                 to: HUMAN_TEAM,
-                kind: TreatyKind::Alliance
+                kind: TreatyKind::Alliance,
+                ..
             }
         )));
         // A garrisoned shooter first, then Walls (and Walls' tech).

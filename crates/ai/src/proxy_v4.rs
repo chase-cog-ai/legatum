@@ -830,10 +830,13 @@ impl Diplomat<'_> {
             if p.to != v.team || !self.alive(p.from) || handled.contains(&p.from) {
                 continue;
             }
-            let accept = match p.kind {
-                TreatyKind::Peace => self.wants_peace(p.from),
-                TreatyKind::Alliance => self.alliance_useful(p.from, reserve),
-            };
+            let accept = p.gold >= 0
+                && match p.kind {
+                    TreatyKind::Peace => self.wants_peace(p.from),
+                    TreatyKind::Alliance => self.alliance_useful(p.from, reserve),
+                    // Deals (rules 61): the proxies do not use them.
+                    TreatyKind::OpenBorders => false,
+                };
             let yes = Order::RespondToProposal {
                 proposal: p.id,
                 accept: true,
@@ -880,6 +883,7 @@ impl Diplomat<'_> {
             let alliance = Order::ProposeTreaty {
                 to: team,
                 kind: TreatyKind::Alliance,
+                gold: 0,
             };
             let order = if target == Some(team) {
                 Order::DeclareWar {
@@ -890,6 +894,7 @@ impl Diplomat<'_> {
                 Order::ProposeTreaty {
                     to: team,
                     kind: TreatyKind::Peace,
+                    gold: 0,
                 }
             } else if leave_target == Some(team) {
                 leave(team)
@@ -901,7 +906,7 @@ impl Diplomat<'_> {
             } else {
                 continue;
             };
-            if let Order::ProposeTreaty { to, kind } = &order
+            if let Order::ProposeTreaty { to, kind, .. } = &order
                 && v.diplomacy.peace_cooldowns.iter().any(|c| {
                     c.from == v.team && c.to == *to && c.kind == *kind && v.turn < c.retry_turn
                 })

@@ -63,6 +63,13 @@ it('refuses more supply than there is to spare, and more Gold than the buyer has
   expect(q('supply-forecast').textContent).toBe('If Sparta accepts: +2 Coal supply, −20 Gold each turn.');
 });
 
+it('shows the engine’s refusal on a queued offer', () => {
+  const queued = { type: 'OfferSupply' as const, to: 1, selling: true, resource: 'Iron' as const, amount: 2, gold: 12 };
+  useGame.setState({ orders: [[queued]], errors: [[{ index: 0, message: 'Sparta cannot pay 12 Gold' }]] });
+  act(() => root.render(<TradeSupply view={view} to={1} />));
+  expect(q('supply-offer-refused').textContent).toBe('This offer will not be sent: Sparta cannot pay 12 Gold.');
+});
+
 it('says why no trade is possible', () => {
   view.supply_trade = { partners: [{ player: 1, blocked: 'you are at War with Sparta' }] };
   act(() => root.render(<TradeSupply view={view} to={1} />));

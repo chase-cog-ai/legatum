@@ -85,6 +85,7 @@ function RunningTrade({ t, view, orders }: { t: SupplyTrade; view: PlayerView; o
 /** The offer form on one empire's row: sell it your spare supply, or buy what it has to spare. */
 export function TradeSupply({ view, to }: { view: PlayerView; to: PlayerId }) {
   const orders = useGame((s) => s.orders[s.seat] ?? []);
+  const errors = useGame((s) => s.errors[s.seat] ?? []);
   const partner = view.supply_trade?.partners?.find((p) => p.player === to);
   const theirSpare = new Map(partner?.spare ?? []);
   const uses = partner?.uses ?? [];
@@ -100,11 +101,13 @@ export function TradeSupply({ view, to }: { view: PlayerView; to: PlayerId }) {
   if (!partner || view.finished) return null;
   const name = them(view, to);
   const queued = orders.find((o): o is Extract<Order, { type: 'OfferSupply' }> => o.type === 'OfferSupply' && o.to === to);
+  const refused = queued && errors.find((e) => orders[e.index] === queued)?.message;
   const open = (view.supply_trade?.offers ?? []).some((o) => (o.from === view.me && o.to === to) || (o.from === to && o.to === view.me));
   const head = <h5 className="supply-trade-head">Trade supply</h5>;
   if (partner.blocked) return <div className="supply-trade" data-testid="trade-supply">{head}<p className="diplomacy-blocked-reason">No supply trade: {partner.blocked}.</p></div>;
   if (queued) return <div className="supply-trade" data-testid="trade-supply">{head}
     <p data-testid="supply-offer-queued">Queued: offer {name} {queued.selling ? 'to sell' : 'to buy'} <Terms {...queued} />. <button className="link" onClick={() => edit((os) => os.filter((o) => o !== queued))}>Undo</button></p>
+    {refused && <p className="order-error" role="alert" data-testid="supply-offer-refused">This offer will not be sent: {refused}.</p>}
   </div>;
   if (!sellable.length && !buyable.length) return <div className="supply-trade" data-testid="trade-supply">{head}
     <p className="muted">Nothing to trade now: neither of you has supply to spare that the other can use.</p>

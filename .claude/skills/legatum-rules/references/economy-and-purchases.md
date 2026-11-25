@@ -84,6 +84,7 @@ For a rival city with Oil, the AI's capture score also counts visible rival airc
 **Strategic supply, not a stockpile** (user, 2026-10-19, "Strategic resources become a core reason for war";
 increment 1, the Production line). Nothing is stored and nothing is paid:
 - **Supply:** each known deposit on a tile the empire owns supplies `SUPPLY_PER_DEPOSIT` = 2 of its resource, +`SUPPLY_PER_MINE` = 1 with the appropriate improvement or a city built on it (`resources::deposits`, `supplied`). Germany gets twice both amounts: 4 unimproved, 6 improved (`resources::deposit_supply`, `mine_supply_gain`), unless its `GermanyDoubleSupply` ablation switch is off. The supply chips, tile cards and improvement build cards use these owner-specific amounts. Worked or not, inside the work radius or not.
+- **Supply trades (rules 60):** `resources::supplied` is that deposit supply (`deposits_supply`) plus supply bought and minus supply sold by the turn (`supply_trade::net`); the Gold is a line in each side's Gold breakdown (`supply_trade::gold_lines`). Rules in `diplomacy.md`, "Supply sold by the turn".
 - **Users:** every building tier or unit that needs a resource uses 1 for as long as it exists
   (`building_need`, `unit_need`, `current_users`; table above): e.g. the **Forge** (`Forge`) uses 1 Iron; the
   **Factory** (`Factory`) adds 1 Coal and keeps the Forge's Iron (a Factory city holds the Forge tier, so it

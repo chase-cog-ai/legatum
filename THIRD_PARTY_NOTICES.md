@@ -72,14 +72,14 @@ Contributor Covenant 2.1 (CC BY 4.0), as it says.
 
 ## Audio
 
-The shipped music and sound effects (`app/public/audio/`, 100 files) are third-party works under four licences.
+The shipped music and sound effects (`app/public/audio/`, 119 files) are third-party works under five licences.
 The per-file source, author and processing are in `app/public/audio/CREDITS.md` and
 `app/public/audio/manifest.json`, and the same credits appear in the game under How to Play → Credits.
 
-- **CC0 1.0** (42 files; no attribution required, courtesy credit is given): Kenney (kenney.nl: Music Jingles,
+- **CC0 1.0** (43 files; no attribution required, courtesy credit is given): Kenney (kenney.nl: Music Jingles,
   RPG Audio, Impact Sounds; 34 files), Breviceps ("Short Choir", freesound.org; 2 files), Bastianhallo ("Level up", freesound.org; 1 file) and vitalezzz
-  ("Eclipse Legion", opengameart.org; the title piece and the war excerpt are edits of that one work), and three Freesound recordings: qubodup ("Tanks Shooting", copied
-  from Unciv), conleec ("VHCL_S_Airplane_Prop_001.wav") and monotraum ("sea waves atmo.wav"), the last two as clips the ESC-50
+  ("Eclipse Legion", opengameart.org; the title piece and the war excerpt are edits of that one work), and four Freesound recordings: qubodup ("Tanks Shooting", copied
+  from Unciv), conleec ("VHCL_S_Airplane_Prop_001.wav"), mffm ("Airliner Flyby.wav") and monotraum ("sea waves atmo.wav"), the last three as clips the ESC-50
   dataset marks CC0 in its LICENSE file. The licence
   text is in `app/public/audio/licenses/CC0-1.0.txt`.
 - **CC BY-SA 3.0** (41 files: 16 music tracks, 3 land sounds, 22 battle sounds): from 0 A.D., Copyright Wildfire
@@ -92,6 +92,20 @@ The per-file source, author and processing are in `app/public/audio/CREDITS.md` 
   Escher and two by the Unknown Horizons team, licensed under Creative Commons Attribution-ShareAlike 3.0
   (https://creativecommons.org/licenses/by-sa/3.0/; Debian's copyright file for the game: `content/*`). Trimmed,
   loudness-matched and re-encoded (`tools/audio/build_later.py`); the edited files stay under CC BY-SA 3.0.
+- **CC BY-SA 3.0** (6 more music tracks, for the Modern and Future eras): by LupusMechanicus, from the Warzone 2100
+  community soundtracks (https://wz2100.net/; the Legacy and Aftermath albums, each with its own `license.txt` in
+  Ubuntu's `warzone2100-music` package), licensed under Creative Commons Attribution-ShareAlike 3.0
+  (https://creativecommons.org/licenses/by-sa/3.0/). Cut to the first four minutes, loudness-matched and re-encoded
+  (`tools/audio/build_later.py`); the edited files stay under CC BY-SA 3.0.
+- **GPL version 2 or later** (12 files, for sounds no CC source covered):
+  6 music tracks for the Machine Age and the World War era from The Battle for Wesnoth (https://www.wesnoth.org/),
+  by Mattias Westlund, Jeremy Nicoll, Tyler Johnson and Doug Kaufman; two musket shots by Richard Kettering (Jetrel)
+  and three cries of a falling soldier by Lari Nieminen (zookeeper), also from The Battle for Wesnoth (author and licence of each file in the game's `copyrights.csv`); and one drone
+  sound from Warzone 2100 (https://wz2100.net/; Debian's copyright file for `warzone2100-data`). Trimmed,
+  loudness-matched and re-encoded (`tools/audio/build_gpl.py`, which names each source file); the edited files stay
+  under the GPL, version 2 or later. The licence text is in `app/public/audio/licenses/GPL-2.0-or-later.txt`. The
+  GPL covers these audio files only: they are separate works that the game plays, and it does not extend to
+  Legatum's code or art.
 - **CC BY 4.0** (10 files): 8 music tracks by Alexander Zhelanov and Stian Grenborgen from FreeCol
   (https://www.freecol.org/; Debian's copyright file for the game: `data/default/resources/music/default/*`), and
   two Freesound recordings copied from Unciv: "uzzi_full_single" by Deganoth and "ceremonial cannon fire" by

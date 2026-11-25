@@ -8,7 +8,7 @@
 // grid, glyphs, towns, fog, territory, fog hatch, unexplored veil, known edge.
 import type { CityView, PlayerView, Terrain } from '../types';
 import { PLAYER_BORDER_DASH, rgba } from '../theme';
-import { CITY_CANVAS, CITY_GROUND, WALLED_TOWN_SCALE, cityArtArrivals, drawCityCanvas, cityArtEpoch, cityImage, cityStem, cityTier, footingsStem, walledTown, markStem, ringEraOf, spriteSize, traceCityArt, wallStem } from './cityArt';
+import { CITY_CANVAS, CITY_GROUND, WALLED_TOWN_SCALE, townOval, cityArtArrivals, drawCityCanvas, cityArtEpoch, cityImage, cityStem, cityTier, footingsStem, walledTown, markStem, ringEraOf, spriteSize, traceCityArt, wallStem } from './cityArt';
 import { sitesOf } from './constructionSites';
 import { mapBorderColor, mapPlayerColor, type BorderSpec, type MapStyle } from './style';
 import { getBorderVariant, type BorderVariant } from './borderVariant';
@@ -98,6 +98,8 @@ const PAD = 72;
 /** World size of a city sprite's 512 px canvas (its ground oval is 93% of it: about a hex and a quarter wide, as Civ cities spill past their tile) and how far below the hex centre the oval's middle sits: low enough that the screen-space banner above the hex does not hide the roofs. */
 export const CITY_WORLD = 92;
 export const CITY_DROP = 18;
+/** A town's footprint about its hex centre (world units): the land art and ruins beside a town keep clear of it. */
+export const TOWN_OVAL = townOval(CITY_WORLD, CITY_DROP);
 
 const TERRAIN_IDX: Record<Terrain, number> = {
   Ocean: 1,
@@ -372,7 +374,7 @@ export class TerrainCache {
       const isCity = (i: number) => cityAt.has(i);
       const tundraNear = (i: number) => [0, 1, 2, 3, 4, 5].some((e) => { const j = neighborIndex(i, e, this.w, this.h); return j >= 0 && view.tiles[j].explored && view.tiles[j].terrain === 'Tundra'; });
       this.regions = regions;
-      this.plans = { near: planOrganic({ regions, isCity, tundraNear, far: false }), far: planOrganic({ regions, isCity, tundraNear, far: true }) };
+      this.plans = { near: planOrganic({ regions, isCity, tundraNear, far: false, town: TOWN_OVAL }), far: planOrganic({ regions, isCity, tundraNear, far: true }) };
     }
     if (land) this.rebuildFields();
     this.staleNear(rects);

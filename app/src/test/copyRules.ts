@@ -101,7 +101,7 @@ export const BANNED: CopyRule[] = [
   { pattern: /Σ/, reason: 'a maths symbol', instead: '"added up"' },
   { pattern: /\bmax(imum)? \d|\(max\b|\bmin(imum)? \d|\(min\b/i, reason: 'abbreviation or maths', instead: '"up to 5", "at least 3"' },
   { pattern: /\bresp\.|\bw\/o?\b/i, reason: 'abbreviation', instead: 'the words' },
-  { pattern: /\bhalving\b|\bera.s siege\b/i, reason: 'the Walls and Siege rule in mechanics-speak (UI review, 2026-10-18)', instead: '"Walls halve this attack", "Siege covers level I, but Walls II still reduce damage"', source: true },
+  { pattern: /\bhalving\b|\bera.s siege\b/i, reason: 'the Walls and Siege rule in mechanics-speak (UI review, 2026-10-18)', instead: '"Walls take this hit at half damage", "Siege covers level I, but Walls II still reduce damage"', source: true },
   { pattern: /\bWalls: [^.]{0,60}\bfires?\b/, reason: 'the city\'s shots are "City fire"; Walls only ever means the building (8.9.6 UI review, 2026-10-19)', instead: '"City fire: Athens fires first, about -40 health"', source: true },
   { pattern: /\bmedian score\b/i, reason: 'a statistics word on a player card (8.9.6 UI review, 2026-10-19: "Hard AI: median score N")', instead: '"a typical score of N", "most tries took N turns"', source: true },
   { pattern: /\bstockpil(e|es|ed|ing)\b|\bstored (Iron|Niter|Coal|Oil|Silicon)\b|\b(Iron|Niter|Coal|Oil|Silicon) (per|a|each) turn\b/i, reason: 'Strategic resources are supplied, not stored: there is no stockpile and no income (strategic supply, 2026-10-19)', instead: '"supplies 2 Iron", "uses 1 Iron", "Iron 5 / 6"', source: true },
@@ -143,7 +143,6 @@ export const BANNED: CopyRule[] = [
   { pattern: /\bstays banked in [A-Z]/, reason: 'bookkeeping word order for what a city keeps (8.9.23 UI review: "Granary progress 12 stays banked in Astra")', instead: '"Astra keeps the 12 Production already put into the Granary."', source: true },
   { pattern: /\bwindows from your connection\b/i, reason: 'awkward, and the others may be other people on the same network (relay messages review)', instead: '"people on your internet connection"', source: true },
   { pattern: /\bsent too quickly\b|\btoo much (?:was )?sent\b/i, reason: 'passive network talk with no subject (relay messages review)', instead: '"You are sending too much, too fast."', source: true },
-  { pattern: /“Game” with a number/, reason: 'the default name is "Game" and four characters, not a number (relay messages review)', instead: '"Listed as “Game” and four characters."', source: true },
 ];
 
 /**

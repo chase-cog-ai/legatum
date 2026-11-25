@@ -252,7 +252,7 @@ describe('walled city fire folded into the forecast (playtest-6 H1)', () => {
     const out = cityFireOutcome(walled, 'India', 'Archer')!;
     expect(out.dealt).toBe(exactOdds(20, 26, 100, 200, false, 50).expToDef);
     expect(wallsLine(walled, 'Athens', 'Archer', 1, out.dealt)?.text)
-      .toBe(`Walls I halve this attack on Athens: ${out.dealt} health, or ${out.dealt * 2} with Siege.`);
+      .toBe(`Walls I take this hit at half damage: ${out.dealt} damage, or ${out.dealt * 2} with Siege.`);
     const attacker = view.units.find((u) => u.owner === view.me && u.military)!;
     const target = neighbors(attacker.pos)[0];
     view.units = [attacker];
@@ -413,17 +413,17 @@ describe('reinforcement note', () => {
 describe('wallsLine', () => {
   const f = (walls: { tier: number; covered: number; percent: number }) => ({ walls }) as unknown as BattleForecast;
   it('shows both numbers when Siege would help, and names the missing tech when it only half helps', () => {
-    expect(wallsLine(f({ tier: 1, covered: 0, percent: 50 }), 'Athens', 'Spearman', 1, 18)).toEqual({ text: 'Walls I halve this attack on Athens: 18 health, or 36 with Siege.', tone: 'plain' });
-    expect(wallsLine(f({ tier: 1, covered: 0, percent: 50 }), 'Athens', 'Spearman', 0, 18)!.text).toBe('Walls I halve this attack on Athens.');
-    expect(wallsLine(f({ tier: 2, covered: 1, percent: 75 }), 'Athens', 'Spearman', 1, 27)).toEqual({ text: 'Walls II: Siege covers up to level I, so 75% damage to Athens. Machinery covers level II.', tone: 'plain' });
+    expect(wallsLine(f({ tier: 1, covered: 0, percent: 50 }), 'Athens', 'Spearman', 1, 18)).toEqual({ text: 'Walls I take this hit at half damage: 18 damage, or 36 with Siege.', tone: 'plain' });
+    expect(wallsLine(f({ tier: 1, covered: 0, percent: 50 }), 'Athens', 'Spearman', 0, 18)!.text).toBe('Walls I take this hit at half damage.');
+    expect(wallsLine(f({ tier: 2, covered: 1, percent: 75 }), 'Athens', 'Spearman', 1, 27)).toEqual({ text: "Walls II: Siege covers up to level I, so 75% damage to Athens's Walls. Machinery covers level II.", tone: 'plain' });
     expect(wallsLine(f({ tier: 1, covered: 1, percent: 100 }), 'Athens', 'Spearman', 1, 36)!.tone).toBe('good');
     // Covered, the line says what is ignored; the red City fire row says the city still fires. Never "no Walls penalty" beside a red "Walls: ... fires first".
-    expect(wallsLine(f({ tier: 1, covered: 1, percent: 100 }), 'Athens', 'Spearman', 1, 36)!.text).toBe('Walls I: Siege covers up to level I, so full damage to Athens.');
-    expect(wallsLine(f({ tier: 3, covered: 3, percent: 100 }), 'Athens', 'Spearman', 3, 36)!.text).toBe('Walls III: Siege covers up to level III, so full damage to Athens.');
+    expect(wallsLine(f({ tier: 1, covered: 1, percent: 100 }), 'Athens', 'Spearman', 1, 36)!.text).toBe("Walls I: Siege covers up to level I, so full damage to Athens's Walls.");
+    expect(wallsLine(f({ tier: 3, covered: 3, percent: 100 }), 'Athens', 'Spearman', 3, 36)!.text).toBe("Walls III: Siege covers up to level III, so full damage to Athens's Walls.");
   });
   it('an Industrial unit says its Siege is built in, in core\'s words (designer, 2026-10-28)', () => {
     const builtIn = { walls: { tier: 1, covered: 4, percent: 100, built_in: true } } as unknown as BattleForecast;
-    expect(wallsLine(builtIn, 'Athens', 'Rifleman', 0, 36)).toEqual({ text: 'Walls I: built-in Siege covers up to level IV, so full damage to Athens.', tone: 'good' });
+    expect(wallsLine(builtIn, 'Athens', 'Rifleman', 0, 36)).toEqual({ text: "Walls I: built-in Siege covers up to level IV, so full damage to Athens's Walls.", tone: 'good' });
     expect(BUILT_IN_SIEGE_NOTE).toBe('covers Walls through level IV in the Industrial era, one more level in each later era');
   });
 });

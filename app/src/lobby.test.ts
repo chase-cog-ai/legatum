@@ -147,7 +147,7 @@ describe('lobby', () => {
 
   it('rejects empty, fractional, negative, non-finite and overflowing enabled turn limits', () => {
     for (const turnLimit of [0, -1, 1.5, Infinity, NaN, MAX_TURN_LIMIT + 1]) {
-      expect(problems({ ...newLobby('solo', '42'), turnLimit }).join()).toMatch(/Turn limit/);
+      expect(problems({ ...newLobby('solo', '42'), turnLimit }).join()).toMatch(/Enter a last turn/);
     }
   });
   it('single player defaults to a free-for-all on Standard: you + 5 AIs, all on their own teams, one solo target each', () => {

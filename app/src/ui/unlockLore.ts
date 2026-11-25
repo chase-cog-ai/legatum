@@ -108,7 +108,7 @@ export const BUILDING_WHY: Record<BuildingKind, string> = {
   Supermarket: 'The step up from the Mill: more Food from the same city.',
   AirDefence: 'Meets enemy air strikes on this city, so Bombers must get past it.',
   Factory: 'Heavy Production for a city that builds armies and wonders.',
-  UpgradeWalls: 'Adds city strength. Each era lets you raise Walls one level higher.',
+  UpgradeWalls: 'Adds 50 to the Walls and repairs them. Each era lets you raise Walls one level higher.',
   GreatLibrary: 'One Great Library can be completed in the world. Its holder scores 2 VP.',
   Pyramids: 'One Pyramids can be completed in the world. Its holder scores 2 VP.',
   HagiaSophia: 'One Hagia Sophia can be completed in the world. Its holder scores 2 VP.',

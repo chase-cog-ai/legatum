@@ -762,7 +762,7 @@ export function DiplomacyPanel() {
               {incoming.map((p) => <OfferCard key={p.id} p={p} view={view} forecastView={forecastView} orders={orders} current={p.id === currentOffer}
                 ending={pendingOffers.includes(p.id) ? undefined : forecastView.diplomacy.queued.find((q) => endsOffers(q.order) && otherTeam(view, q.order) === proposalCounterparty(view, p, view.team))?.order} />)}
             </section>
-          : <><h4 className="diplomacy-section">Inbox</h4><p className="muted">No pending proposals. Nothing needs your decision.</p></>}
+          : <><h4 className="diplomacy-section">Inbox</h4><p className="muted">No offers waiting.</p></>}
         {outgoing.map((p) => <SentOffer key={p.id} p={p} view={view} forecastView={forecastView} orders={orders} />)}
         {d.superseded.map((s, i) => <article className="diplomacy-item" key={`superseded-${i}`}>
           <strong>{name(s.player)}’s order was dropped</strong>

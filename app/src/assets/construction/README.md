@@ -47,8 +47,9 @@ by `wonder-fit.json`): the levelled enclosure footings, the wall and mastaba at 
 then the precinct nearly complete with the small pyramid unfinished. Its painting starts warmer
 than the world wonders, so `tools/art/goal-landmark-grade.py goal-royaltomb 0.62` then took the
 stages (and the map copy in `../landmarks/`) down to the wonders' map saturation. Prompts are
-beside each full-size stage. Follow-up: stage 1's enclosure has a rounded front-left corner where
-the finished wall is square.
+beside each full-size stage. Stage 1 was repainted on 2026-11-25 so its footing traces the finished wall's
+square corners. The finished tomb swaps in on the map with the +2 VP seal and no rise, like a finished world
+wonder while construction animation is off (Sam, 2026-11-25).
 
 **Alignment rule:** each stage's camera, scale, structure footprint and ground
 patch stay registered to its finished master. Review the Great Library stages at

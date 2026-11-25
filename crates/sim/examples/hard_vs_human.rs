@@ -1929,7 +1929,8 @@ mod tests {
         // Peaceful contests (rules 51, 2026-11-22: the stronger side takes a contested tile between empires not at War) give four cities at T50, five at T62, no VP at T100 and no win.
         // The Mongols never having Walls (rules 57, 2026-11-22) leaves the Mongol rival open, and the seat wins by elimination at T164.
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege move the win to T170.
-        // Luxury tiles (rules 62) add six bonus tiles to this map: two cities at T30, four at T50, three at T62, no VP at T100 and no win.
+        // Breakable Walls (rules 62: a Walls bar in front of city health) leave the seat with no win on this tape.
+        // Luxury tiles (rules 63) add six bonus tiles to this map: two cities at T30, four at T50, three at T62, no VP at T100 and no win.
         assert_eq!(
             first_map_game(true),
             json!({
@@ -1970,7 +1971,8 @@ mod tests {
         // Peaceful contests (rules 51, 2026-11-22: the stronger side takes a contested tile between empires not at War) give four cities at T50, five at T62, no VP at T100 and no win.
         // The Mongols never having Walls (rules 57, 2026-11-22) leaves the Mongol rival open, and the seat wins by elimination at T183.
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege leave the seat with no win on this tape.
-        // Luxury tiles (rules 62) add six bonus tiles to this map: two cities at T30, four at T50 and T62, two VP at T100 and still no win.
+        // Breakable Walls (rules 62), with Hard's siege forecast playing longer while a Walls bar stands, give the seat an elimination win at T162.
+        // Luxury tiles (rules 63) add six bonus tiles to this map: two cities at T30, four at T50 and T62, two VP at T100 and no win.
         assert_eq!(
             first_map_game(false),
             json!({

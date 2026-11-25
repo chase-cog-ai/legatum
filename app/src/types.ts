@@ -62,6 +62,10 @@ export interface CityAssaultForecast {
   attacks: number;
   city_hp: number;
   city_hp_after: number;
+  /** The Walls bar before and expected after, and the 0-100 chance the attacks break it (breakable Walls). */
+  walls_hp?: number;
+  walls_hp_after?: number;
+  walls_break_chance?: number;
   garrison?: AssaultGarrison | null;
   /** Core `forecast::AssaultSupporter`: units of the city's owner assumed to be ordered into it (supported defence); empty unless named. */
   supporters?: { unit: number; kind: UnitKind; hp: number; hp_after: number; destroyed_chance: number }[];
@@ -451,6 +455,8 @@ export interface CityDetail {
   heal_blocked?: boolean;
   /** The city took battle damage on the turn that just resolved (own cities only); absent otherwise. Survives save and load, unlike the turn report. */
   attacked_last_turn?: boolean;
+  /** Walls, Upgrade Walls and Repair Walls cannot finish or be bought now: the city is under attack (core `rules::cities::walls_work_blocked`). */
+  walls_blocked?: boolean;
   /** Items this city makes only from a population (Settler at 2, upgrade buildings), reached or not. */
   population_unlocks?: PopulationUnlock[];
 }
@@ -493,6 +499,9 @@ export interface CityView {
   greece_captive_at_risk?: boolean;
   walls: boolean;
   walls_level?: number;
+  /** Last observed Walls bar and its full size at this level (core `combat::walls_hp`). Hits land on it before the city's HP; it never heals. */
+  walls_hp?: number;
+  walls_max_hp?: number;
   /** Whether the last visible observation showed a Workshop or its upgrade. */
   has_workshop?: boolean;
   /** Whether the last visible observation showed an Air Defence: it intercepts air strikes on this city (core `BuildingKind::AirDefence`). */
@@ -1230,6 +1239,7 @@ export type Event =
   | { type: 'CityStarved'; city: CityId; owner: PlayerId; population: number }
   | { type: 'CityCaptured'; city: CityId; from: PlayerId; to: PlayerId; bounty?: number }
   | { type: 'AthensCityCaptured'; city: CityId; from: PlayerId; to: PlayerId }
+  | { type: 'WallsBreached'; city: CityId; owner: PlayerId; by?: PlayerId | null }
   | { type: 'CapitalTaken'; captor: PlayerId; capital: CityId; name: string }
   | { type: 'CapitalSacked'; captor: PlayerId; capital: CityId; name: string }
   /** Team only: Gold one empire gave a teammate, after this turn's purchases. */
@@ -1343,12 +1353,19 @@ export interface AirDefenceForecast {
   loss_chance: number;
 }
 
-/** Core `forecast::WallsForecast`: the city's walls tier (1 through 9 Walls levels), the siege tier of the attacker (0 when it has no Siege) and the percent of its damage the attack deals to the city's HP. `built_in`: the attacker is an Industrial or later land unit, whose Siege is built in (core `data::built_in_siege`). */
+/** Core `forecast::WallsForecast`: the city's walls tier (1 through 9 Walls levels), the siege tier of the attacker (0 when it has no Siege) and the percent of its damage the attack deals to the Walls bar (the city's HP behind it takes the hit in full). `built_in`: the attacker is an Industrial or later land unit, whose Siege is built in (core `data::built_in_siege`). */
 interface WallsForecast {
   tier: number;
   covered: number;
   percent: number;
   built_in?: boolean;
+  /** The Walls bar before the attack and its full size. */
+  hp?: number;
+  max_hp?: number;
+  /** Average damage this attack does to the bar (counted in `expected_damage_to_defender`). */
+  expected_damage?: number;
+  /** 0-100: chance this attack breaks the Walls. */
+  break_chance?: number;
 }
 
 interface GarrisonForecast {

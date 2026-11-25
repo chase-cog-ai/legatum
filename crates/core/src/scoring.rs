@@ -618,10 +618,12 @@ fn check_victory(state: &mut GameState, events: &mut Vec<Event>) {
         return;
     }
 
-    if state
-        .setup
-        .turn_limit
-        .is_some_and(|limit| state.turn >= limit)
+    // With no configured limit the game still ends at `DEFAULT_TURN_LIMIT` (rules 62).
+    if state.turn
+        >= state
+            .setup
+            .turn_limit
+            .unwrap_or(crate::data::DEFAULT_TURN_LIMIT)
         && let Some(&(team, vp, _)) = ranked.first()
     {
         if ranked.get(1).is_some_and(|r| r.1 == vp) {
@@ -667,6 +669,21 @@ mod capitals_victory_tests {
 
     fn capital(s: &mut GameState, owner: u8, col: i32) -> CityId {
         city(s, owner, hex(col, 5), 3)
+    }
+
+    #[test]
+    fn a_game_with_no_turn_limit_ends_at_the_default_limit() {
+        let mut s = game(&[0, 1]);
+        capital(&mut s, 0, 2);
+        capital(&mut s, 1, 8);
+        s.setup.turn_limit = None;
+        s.turn = crate::data::DEFAULT_TURN_LIMIT - 1;
+        let (_, early) = won_by(&mut s);
+        assert!(!s.finished, "{early}");
+        s.turn = crate::data::DEFAULT_TURN_LIMIT;
+        let (_, reason) = won_by(&mut s);
+        assert!(s.finished);
+        assert!(reason.contains("turn limit"), "{reason}");
     }
 
     #[test]

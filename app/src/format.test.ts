@@ -888,3 +888,12 @@ describe('objectiveCloseLines', () => {
 it('says a full military-unit cap in words, not a fraction', () => {
   expect(plainOrderError('Astra cannot produce Spearman: Levies full: 3 of 2')).toBe("Astra can't train a Spearman: you have 3 military units and room for 2.");
 });
+
+it('the Royal Tomb standing wears its engraved emblem on the report line, for its owner and for rivals', () => {
+  const faction = (id: number) => (id === 2 ? 'Egypt' : 'India') as Faction;
+  const c: ReportContext = { ...ctx, playerFaction: faction };
+  const own: ReportContext = { ...ctx, playerFaction: (id) => (id === 0 ? 'Egypt' : 'India') };
+  const stands = (player: number): Event => ({ type: 'FactionGoalCompleted', player, faction: 'Egypt', vp: 2 });
+  expect(formatEvents([stands(2)], c).find((l) => l.category === 'victory')).toMatchObject({ icon: 'emblem-tomb' });
+  expect(formatEvents([stands(0)], own).find((l) => l.category === 'victory')).toMatchObject({ icon: 'emblem-tomb' });
+});

@@ -232,12 +232,6 @@ div.seat {
   letter-spacing: 0;
   text-transform: none;
 }
-.host-name .host-name-note {
-  font: 400 12px/11px var(--sans);
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--ink-2);
-}
 .title-actions .btn-sub .spinner {
   display: inline-block;
   vertical-align: middle;
@@ -286,6 +280,8 @@ div.seat {
 }
 .online-room-name {
   font: var(--display-weight) 26px/1.1 var(--display);
+  /* Lining figures: the number tells two games apart, and old-style 0 reads as o. */
+  font-variant-numeric: lining-nums;
   overflow-wrap: anywhere;
 }
 .online-room-meta {

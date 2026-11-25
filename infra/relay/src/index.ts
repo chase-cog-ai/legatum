@@ -7,13 +7,14 @@ import {
   MSG_LOBBY_CLOSED,
   MSG_LOBBY_FULL,
   MSG_TOO_FAST,
+  MSG_TOO_MANY_ON_NETWORK,
   ROOM_ID_LEN,
   ROOM_ID_RE,
   RoomAnnounce,
   clientIp,
-  defaultName,
   hashKey,
   limitsFrom,
+  listedName,
   msgTooManyRooms,
   parseAnnounce,
   randomToken,
@@ -75,12 +76,14 @@ async function route(request: Request, env: Env): Promise<Response> {
     }
     if (!announce) return json({ error: "invalid room announcement" }, 400);
     const room = randomToken(ROOM_ID_LEN);
-    if (!announce.name) announce = { ...announce, name: defaultName(room) };
+    // The list shows a name made from the room id, never one the host typed (shared.ts `listedName`).
+    announce = { ...announce, name: listedName(room) };
     const limits = limitsFrom(env);
     const made = await lobby.create(room, announce, clientIp(request), limits);
     if (!made.ok) {
       if (made.why === "rate") return json({ error: MSG_TOO_FAST }, 429, { "Retry-After": String(made.retryAfterS) });
       if (made.why === "per_ip") return json({ error: msgTooManyRooms(limits.MAX_ROOMS_PER_IP) }, 429);
+      if (made.why === "per_net") return json({ error: MSG_TOO_MANY_ON_NETWORK }, 429);
       return json({ error: MSG_LOBBY_FULL }, 503);
     }
     const hostKey = randomToken(HOST_KEY_LEN);

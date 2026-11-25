@@ -18,14 +18,14 @@ import type { PathStep } from '../path';
 import { tintedIcon } from '../icons';
 import type { LookId } from '../brand/look';
 import { MAP_STYLES, mapBorderColor, mapPlayerColor, type MapStyle } from './style';
-import { TerrainCache } from './terrain';
+import { TerrainCache, TOWN_OVAL } from './terrain';
 import { getBorderVariant } from './borderVariant';
 import { getTerrainVariant } from './terrainVariant';
 import { BANNER_BOTTOM, CITY_UNIT_DROP, HEX_SIZE, K, PIP_HALF, sealRadius, boundary, centerX, centerY, hexPath, isFar, neighborIndex, tokenHalf, tracePolylines } from './grid';
 import { computeLabels, type MapLabel } from './labels';
 import { reachTiles } from './reach';
 import type { MapCue, ReportArrow } from './cues';
-import { drawSiegeBadge, drawSiegeBar, drawSiegeRing, drawSiegeSealRing, SIEGE_BAR_GAP, SIEGE_BAR_H, siegeRingBox, siegeSealRingBox } from './siegeMark';
+import { drawSiegeBadge, drawSiegeBar, drawSiegeRing, drawSiegeSealRing, SIEGE_BAR_GAP, SIEGE_BAR_H, siegeRingBox, siegeSealRingBox, WALLS_STONE, WALLS_TRACK } from './siegeMark';
 import type { SiegeLevel } from '../siege';
 import { miniatureImage } from '../unitArt';
 import { siegePropFor, siegePropImage, siegePropRect, type SiegeProp } from '../siegeProps';
@@ -34,13 +34,13 @@ import { contractLeft } from '../company';
 import { heirTag } from '../heir';
 import { rankLevel } from '../rankInsignia';
 import { FONTS, type BannerSpec, type GoalSeal, bannerMetersSize, bannerRect, drawBadge, drawBanner, drawBannerMeters, type BannerMeter, barbarianMiniature, drawBarbarianToken, drawContractPip, drawContractTag, drawHeirHalo, drawLabel, drawPip, drawPromotion, drawRankInsignia, drawSprite, drawTag, drawToken, drawTokenHealth, miniatureGeometry, nameSprite, sealSprite, TOKEN_INK, capitalSealRadius, CAPITAL_GILT } from './sprites';
-import { mapFeatureImage } from './mapFeatures';
+import { mapFeatureImage, RUIN_MASS } from './mapFeatures';
 import { BARBARIAN, isBarbarian } from '../barbarians';
 import type { Rect } from './compass';
 import type { LensTile, MapLens } from './lenses';
 import { drawLens, drawOwnerOverlay } from './drawLens';
 import { artFadeFor, DEFAULT_OVERLAYS, ownerWashScale, type OverlaySet } from './overlays';
-import { drawYieldIcons, yieldClusterRects, YIELD_FILL } from './yieldIcons';
+import { drawYieldIcons, foldedBonuses, yieldClusterRects, YIELD_FILL } from './yieldIcons';
 import { drawImprovements } from './improvementArt';
 import { drawForts } from './fortMark';
 import { drawResourceIcons, medallionTop, resourceDetail, STACK_LIFT, type Cover } from './resourceIcons';
@@ -62,7 +62,7 @@ import { drawMarchDust, drawMomentFx, drawMomentGround, drawRevealed, revealAt, 
 import { drawAirCandidates, drawAirLabels, drawAirOffscreen, drawAirRings, drawTileCandidates, type AirOverlay } from './airOverlay';
 import { aircraftAsUnit } from '../airWing';
 import { unworkedClaimIndexes } from './unworkedClaims';
-import { cityRing, wallTierOf } from './cityArt';
+import { cityRing, clearOfTown, TOWN_GAP, wallTierOf } from './cityArt';
 
 export { HEX_SIZE } from './grid';
 
@@ -342,7 +342,16 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
   // Tile yields sit under every unit and banner: quiet enough to leave on.
   // A neighbour's medallion, yield cluster or wonder badge never sits on a town (or its walls): they keep clear of its footprint.
   const townCovers = cityArtCovers(view, toScreen, z, hexPx);
-  if (inp.yieldTiles?.length) drawYieldIcons(ctx, inp.yieldTiles, cam, w, h, view.width, dpr, look, inp.lens === 'settle', townCovers);
+  // A unit resting on a wonder's tile covers its middle: the bonus keeps clear of its counter.
+  const tokenCovers = isFar(hexPx) ? [] : view.units.filter((u) => view.tiles[tileIndex(u.pos, view.width, view.height)]?.wonder).map((u) => {
+    const p = toScreen(inp.unitPos.get(u.id) ?? hexToPixel(u.pos, HEX_SIZE)), t = tokenHalf(hexPx);
+    return { x: p.x - t, y: p.y - t, w: t * 2, h: t * 2 };
+  });
+  // Where the yield icons show and there is room, a wonder tile's "+25%" folds into its cluster (after the boosted yield) and
+  // the tile gets no pill; a cramped or unit-covered cluster leaves the bonus to the pill (foldedBonuses).
+  const folded = overlays.yields ? foldedBonuses(inp.yieldTiles ?? [], cam, w, h, view.width, townCovers, tokenCovers) : new Set<number>();
+  const yieldTiles = (inp.yieldTiles ?? []).map((t) => t.bonus && !folded.has(t.index) ? { ...t, bonus: undefined } : t);
+  if (yieldTiles.length) drawYieldIcons(ctx, yieldTiles, cam, w, h, view.width, dpr, look, inp.lens === 'settle', townCovers);
   // Banner positions are known up front so the resource medallions below them can keep clear.
   const bannerMotion = moments?.hold.banner;
   // Known resources, on every lens (as in Civ): top of the hex, under units and banners.
@@ -350,13 +359,8 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     ? { ...view, tiles: view.tiles.map((tile, i) => moments.hold.resources.has(i) ? { ...tile, resource: null } : tile) }
     : view;
   drawResourceIcons(ctx, iconView, cam, w, h, dpr, look, bannerCovers, overlays.resources, townCovers);
-  // A natural wonder's bonus, on its tile: above the lens tint and yield icons, under units and banners.
-  // A unit resting on the wonder's tile covers its middle: the pill keeps clear of its counter.
-  const tokenCovers = isFar(hexPx) ? [] : view.units.filter((u) => view.tiles[tileIndex(u.pos, view.width, view.height)]?.wonder).map((u) => {
-    const p = toScreen(inp.unitPos.get(u.id) ?? hexToPixel(u.pos, HEX_SIZE)), t = tokenHalf(hexPx);
-    return { x: p.x - t, y: p.y - t, w: t * 2, h: t * 2 };
-  });
-  const wonderPillsOverUnits = drawWonderBadges(ctx, view, cam, w, h, dpr, overlays.yields, [...bannerCovers, ...townCovers], tokenCovers);
+  // A natural wonder's bonus, on its tile: above the lens tint and yield icons, under units and banners (folded or as its pill).
+  const wonderPillsOverUnits = drawWonderBadges(ctx, view, cam, w, h, dpr, overlays.yields, [...bannerCovers, ...townCovers], tokenCovers, folded);
 
   // World transform for vector overlays.
   const worldT = () => ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * (w / 2 - cam.x * z), dpr * (h / 2 - cam.y * z));
@@ -756,6 +760,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
   }
 
   // Painted ruins sit on the land beneath counters and banners; remembered art is authored at 60%.
+  const townTiles = new Set(view.cities.map((c) => tileIndex(c.pos, W, view.height)));
   for (let i = 0; i < view.tiles.length; i++) {
     const t = view.tiles[i];
     if (!t.ruin || !t.explored) continue;
@@ -763,7 +768,23 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     if (p.x < -40 || p.x > w + 40 || p.y < -40 || p.y > h + 40) continue;
     const image = mapFeatureImage('ruin', isFar(hexPx), t.visible, hexPx);
     if (image) {
-      const r = isFar(hexPx) ? Math.max(4, hexPx * 0.3) : Math.max(9, hexPx * 0.88);
+      let r = isFar(hexPx) ? Math.max(4, hexPx * 0.3) : Math.max(9, hexPx * 0.88);
+      // Beside a town, the ruins step back and shrink so they never run into its walls (UI review, PR 129: Cologne).
+      if (!isFar(hexPx)) {
+        const k = hexPx / HEX_SIZE;
+        let ox = 0, oy = 0;
+        for (let e = 0; e < 6; e++) {
+          const j = neighborIndex(i, e, W, view.height);
+          if (j < 0 || !view.tiles[j]?.explored || !townTiles.has(j)) continue;
+          const half = r / k;
+          // From where the ruin stands now (a ruin between two towns moves for each in turn, not twice from its centre).
+          const dx = centerX(i, W) - centerX(j, W) + ox, dy = centerY(i, W) - centerY(j, W) + oy;
+          const out = clearOfTown(dx, dy, half * RUIN_MASS.ha, half * RUIN_MASS.hb, TOWN_OVAL, { gap: TOWN_GAP, maxPush: HEX_SIZE * 0.4, minScale: 0.7 });
+          ox += out.dx - dx; oy += out.dy - dy;
+          r *= out.scale;
+        }
+        p.x += ox * k; p.y += oy * k;
+      }
       ctx.drawImage(image, p.x - r, p.y - r, r * 2, r * 2);
     }
   }
@@ -848,7 +869,10 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     if (motion && motion.sx !== 1) { ctx.save(); ctx.translate(x, 0); ctx.scale(motion.sx, 1); ctx.translate(-x, 0); }
     drawSprite(ctx, far.seal, far.x, far.y + (motion?.dy ?? 0), alpha);
     if (motion && motion.sx !== 1) ctx.restore();
-    if (siege.has(c.id)) drawSiegeBar(ctx, far.x, far.y - far.seal.ay + far.seal.h + 2, Math.max(30, far.seal.w), c.hp, c.max_hp, FONTS[look].sans, false);
+    if (siege.has(c.id)) {
+      const bar = bannerBarOf(c, c.hp);
+      drawSiegeBar(ctx, far.x, far.y - far.seal.ay + far.seal.h + 2, Math.max(30, far.seal.w), bar.value, bar.max, FONTS[look].sans, false, bar.walls);
+    }
   }
 
   drawStationBadge(ctx, view, S2, hexPx, w, h);
@@ -999,19 +1023,28 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
       const hpNow = cityHp(c);
       if (level) {
         const barY = r.y + r.h + SIEGE_BAR_GAP;
-        drawSiegeBar(ctx, x, barY, Math.min(Math.max(r.w - 8, 64), 128), hpNow, c.max_hp, FONTS[look].sans);
+        const bar = bannerBarOf(c, hpNow);
+        drawSiegeBar(ctx, x, barY, Math.min(Math.max(r.w - 8, 64), 128), bar.value, bar.max, FONTS[look].sans, true, bar.walls);
         if (meters.length) drawBannerMeters(ctx, look, meters, x, barY + SIEGE_BAR_H + 4, dpr);
         drawSiegeRing(ctx, cover, level, inp.pulseTime ?? inp.time, inp.reducedMotion);
         ambient.push(siegeRingBox(cover));
         drawSiegeBadge(ctx, cover.x + cover.w, cover.y, 11, dpr);
       } else {
-        if (meters.length) drawBannerMeters(ctx, look, meters, x, r.y + r.h + (c.visible && hpNow < c.max_hp ? 6 : 1), dpr);
-        if (c.visible && hpNow < c.max_hp) {
-          const f = Math.max(0, hpNow / c.max_hp);
+        const bar = bannerBarOf(c, hpNow);
+        const hurt = c.visible && bar.value < bar.max;
+        if (meters.length) drawBannerMeters(ctx, look, meters, x, r.y + r.h + (hurt ? 6 : 1), dpr);
+        if (hurt) {
+          const f = Math.max(0, bar.value / bar.max);
           const bw = Math.min(r.w - 16, 72), bx = x - bw / 2, by = r.y + r.h + 1;
-          ctx.fillStyle = TOKEN_INK.atlas.paper; ctx.fillRect(bx, by, bw, 4);
-          ctx.fillStyle = healthColor(f); ctx.fillRect(bx, by, bw * f, 4);
+          // A Walls bar sits on a dark track with a small tower at its left end, so a rival's stone fill never reads as empty (UI review, PR 212).
+          ctx.fillStyle = bar.walls ? WALLS_TRACK : TOKEN_INK.atlas.paper; ctx.fillRect(bx, by, bw, 4);
+          ctx.fillStyle = bar.walls ? WALLS_STONE : healthColor(f); ctx.fillRect(bx, by, bw * f, 4);
           ctx.strokeStyle = TOKEN_INK.atlas.ink; ctx.lineWidth = 0.8; ctx.strokeRect(bx, by, bw, 4);
+          if (bar.walls) {
+            // The banner's own Walls icon, not a second drawing of it (art review, PR 212).
+            const ic = tintedIcon('building-walls', TOKEN_INK.atlas.ink, Math.ceil(10 * dpr));
+            if (ic) ctx.drawImage(ic, bx - 11, by - 3, 10, 10);
+          }
         }
       }
       if (motion && motion.sx !== 1) ctx.restore();
@@ -1052,7 +1085,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     const unitsAt = new Map<number, number>();
     for (const u of view.units) { const t = tileIndex(u.pos, W, H); unitsAt.set(t, (unitsAt.get(t) ?? 0) + 1); }
     drawLens(ctx, inp.lensTiles, cam, w, h, W, dpr, look, 'labels', unitBottoms, [...(inp.lensAvoid ?? []), ...bannerCovers],
-      (i) => medallions && view.tiles[i]?.resource && view.tiles[i]?.explored ? medallionTop(hexPx, cityAt.has(i), (unitsAt.get(i) ?? 0) > 1) : 0, { yieldsOn: overlays.yields, yieldRects: overlays.yields && inp.lensTiles.some((t) => t.rank) ? yieldClusterRects(inp.yieldTiles ?? [], cam, w, h, W, cityArtCovers(view, (p) => worldToScreen(cam, w, h, p.x, p.y), z, hexPx)) : [] });
+      (i) => medallions && view.tiles[i]?.resource && view.tiles[i]?.explored ? medallionTop(hexPx, cityAt.has(i), (unitsAt.get(i) ?? 0) > 1) : 0, { yieldsOn: overlays.yields, yieldRects: overlays.yields && inp.lensTiles.some((t) => t.rank) ? yieldClusterRects(yieldTiles, cam, w, h, W, cityArtCovers(view, (p) => worldToScreen(cam, w, h, p.x, p.y), z, hexPx)) : [] });
   }
 
   if (inp.reportArrow && inp.reportArrow.alpha > 0) {
@@ -1271,7 +1304,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     bannerHits: banners.map((b) => {
       const rect = b.far ? b.cover : bannerRect(look, b.spec, b.x, b.y, b.fs, dpr);
       // What is drawn: the plate, then the strip under it (meters, siege bar or HP bar), centred and no wider than they are.
-      const under = Math.max(b.meters.length ? bannerMetersSize(look, b.meters, dpr).w : 0, siege.has(b.c.id) ? Math.min(Math.max(rect.w - 8, 64), 128) : 0, cityHp(b.c) < b.c.max_hp ? Math.min(rect.w - 16, 72) : 0);
+      const under = Math.max(b.meters.length ? bannerMetersSize(look, b.meters, dpr).w : 0, siege.has(b.c.id) ? Math.min(Math.max(rect.w - 8, 64), 128) : 0, barHurt(b.c, cityHp(b.c)) ? Math.min(rect.w - 16, 72) : 0);
       const parts = b.far ? [b.cover] : [rect, { x: b.x - under / 2, y: rect.y + rect.h, w: under, h: b.cover.h - rect.h }];
       return { city: b.c, rect, cover: b.cover, parts, far: !!b.far };
     }),
@@ -1384,6 +1417,22 @@ function cityBanners(view: PlayerView, cam: Camera, w: number, h: number, dpr: n
   return items;
 }
 
+/**
+ * The bar a city's banner shows: its Walls bar while the Walls stand (hits land there first and it never
+ * heals), otherwise its health.
+ */
+export function bannerBarOf(c: CityView, hpNow: number): { value: number; max: number; walls: boolean } {
+  const max = c.walls_max_hp ?? 0, walls = c.walls_hp ?? 0;
+  if (max > 0 && walls > 0) return { value: walls, max, walls: true };
+  return { value: hpNow, max: c.max_hp, walls: false };
+}
+
+/** The banner shows a damage bar: its Walls bar or its health is below full. */
+function barHurt(c: CityView, hpNow: number): boolean {
+  const bar = bannerBarOf(c, hpNow);
+  return bar.value < bar.max;
+}
+
 /** A named banner's block (plate, meters, siege or damage bar) for a city centred at `p`, in screen px. */
 function bannerBlock(c: CityView, spec: BannerSpec, meters: BannerMeter[], p: { x: number; y: number }, hexPx: number, fs: number, look: LookId, dpr: number, siege: ReadonlyMap<number, SiegeLevel>) {
   const metersH = meters.length ? bannerMetersSize(look, meters, dpr).h + 1 : 0;
@@ -1391,7 +1440,7 @@ function bannerBlock(c: CityView, spec: BannerSpec, meters: BannerMeter[], p: { 
   // 17 px, so hung under the plate they covered the top of the town, most of it at small zoom.
   const y = p.y - hexPx * BANNER_BOTTOM - metersH;
   const rect = bannerRect(look, spec, p.x, y, fs, dpr);
-  return { y, cover: { ...rect, h: rect.h + (siege.has(c.id) ? SIEGE_BAR_H + SIEGE_BAR_GAP + 3 : c.visible && c.hp < c.max_hp ? 6 : 0) + metersH } };
+  return { y, cover: { ...rect, h: rect.h + (siege.has(c.id) ? SIEGE_BAR_H + SIEGE_BAR_GAP + 3 : c.visible && barHurt(c, c.hp) ? 6 : 0) + metersH } };
 }
 
 /**

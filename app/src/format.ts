@@ -379,6 +379,10 @@ export function cityStrengthRule(city: Pick<CityView, 'walls' | 'walls_level'>, 
 }
 
 export const CITY_HEAL_RULE = `A city regains ${CITY_HEAL} health at the end of each turn, unless it took damage that turn or an enemy military unit is adjacent. Empty to full takes ${CITY_HP / CITY_HEAL} turns.`;
+/** The Walls bar, in the board-game voice: the short rule (the Guide has the rest). */
+/** The Walls bar's rule, naming the build item the player actually sees (Rome's "Repair Castrum", UI review PR 212). */
+export const wallsBarRule = (repairItem = 'Upgrade Walls'): string => `Hits land on the Walls first. Walls never heal; ${repairItem} repairs them.`;
+export const WALLS_UNDER_ATTACK_NOTE = "Not while the city is under attack. Production waits.";
 
 /**
  * Your own damaged city's healing, for the city card: how much it regains and how soon it is
@@ -661,7 +665,8 @@ function goalCityGoalLine(e: GoalEvent, ctx: ReportContext): ReportLine {
     const text = kind === 'colonia'
       ? (taker === ctx.me ? `You founded ${name ?? 'a city'}: it is your Colonia Victrix${gain}` : `${who(ctx, taker)} founded its Colonia Victrix${name ? ` at ${name}` : ''}: ${e.vp} VP to whoever holds it`)
       : (taker === ctx.me ? `The Royal Tomb stands in ${name ?? 'your capital'}: your cities build and grow again${gain}` : `${possessiveOf(who(ctx, taker))} Royal Tomb stands${name ? ` in ${name}` : ''}: ${e.vp} VP to whoever holds it`);
-    return line('victory', text, { ...base, players: [taker], ...(where ? { at: where } : {}), tone: mine(taker) ? 'good' : 'neutral' });
+    // The tomb standing wears its engraved reward emblem, like its card; the progress lines keep the goal mark.
+    return line('victory', text, { ...base, ...(kind === 'tomb' ? { icon: 'emblem-tomb' } : {}), players: [taker], ...(where ? { at: where } : {}), tone: mine(taker) ? 'good' : 'neutral' });
   }
   const from = captured.from;
   const city = ctx.cityName(captured.city);
@@ -1141,6 +1146,19 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
           ...(assault ?? []).map((b) => `${unitLabel(ctx, b.attacker as number, b.attacker_owner)} dealt ${b.damage_to_defender} and took ${b.damage_to_attacker}.`),
           `Captured cities lose half their population (never below 1) and resist for ${CAPTURE_RESISTANCE_TURNS} turns (no output).`,
         ],
+      });
+    }
+    case 'WallsBreached': {
+      const by = e.by ?? null;
+      const text = mine(e.owner)
+        ? `${ctx.cityName(e.city)}'s Walls fell. Build Walls again when the attack is over.`
+        : by != null && mine(by)
+          ? `You broke ${ctx.cityName(e.city)}'s Walls. ${ctx.cityName(e.city)} can no longer fire.`
+          : `${ctx.cityName(e.city)}'s Walls fell.`;
+      return line('combat', text, {
+        at: ctx.cityPos(e.city), players: by != null ? [e.owner, by] : [e.owner], weight: 2,
+        tone: mine(e.owner) ? 'bad' : by != null && mine(by) ? 'good' : 'neutral',
+        details: ['Broken Walls are gone for good: the city stops firing and must build Walls again.'],
       });
     }
     case 'AthensCityCaptured':
@@ -1876,6 +1894,9 @@ const isWallsUpgrade = (item: ProductionItem): boolean => item.kind === 'Buildin
 /** "Agra completed a Granary"-style line; a Walls upgrade names the level reached ("Agra raised its Walls to III"). */
 function completedText(item: ProductionItem, ctx: ReportContext, city: number, faction?: Faction): string {
   const level = isWallsUpgrade(item) ? ctx.cityWallsLevel?.(city, 'after') : null;
+  const before = isWallsUpgrade(item) ? ctx.cityWallsLevel?.(city, 'before') : null;
+  // At the era's cap Upgrade Walls repairs the bar instead (the level stays).
+  if (level && before === level) return `${ctx.cityName(city)} repaired its ${itemName({ kind: 'Building', building: 'Walls' }, faction)}`;
   if (level && level > 1) return `${ctx.cityName(city)} raised its ${itemName({ kind: 'Building', building: 'Walls' }, faction)} to ${wallLevelLabel(level)}`;
   return `${ctx.cityName(city)} completed ${builtName(item, ctx, city, faction)}`;
 }

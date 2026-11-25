@@ -4179,7 +4179,7 @@ dialog.gameover::backdrop {
 .city-panel .cp-head { padding: 6px 12px 4px; }
 .city-panel .cp-name { font-size: 28px; margin-top: 5px; }
 .city-panel .cp-meta { margin-top: 6px; gap: 4px 10px; }
-.city-panel .cp-meta > .tip-trigger { display: inline-flex; align-items: center; gap: 4px; }
+.city-panel .cp-meta > .tip-trigger { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .city-panel .cp-block { padding: 8px 14px 0; }
 .city-panel .production-queue { padding-top: 2px; }
 .city-panel .production-choose-block { padding-top: 4px; }
@@ -4193,8 +4193,11 @@ dialog.gameover::backdrop {
 /* The sticky head is a name and three numbers on one line at every window height (1440x900 used to wrap Health onto a second
    line and spend 110 px; astra full review 2026-10-31, section 3). */
 .city-panel .cp-head { padding-top: 4px; padding-bottom: 2px; }
-.city-panel .cp-meta { margin-top: 3px; gap: 3px 10px; font-size: 10px; flex-wrap: nowrap; }
+.city-panel .cp-meta { margin-top: 3px; gap: 3px 8px; font-size: 10px; flex-wrap: nowrap; white-space: nowrap; }
 .city-panel .cp-meta .lbl { font-size: 9px; }
+/* A walled city adds Walls to the head: the row may take a second line rather than clip (breakable Walls). */
+.city-panel .cp-meta.cp-meta-walls { flex-wrap: wrap; }
+.city-panel .cp-meta.cp-meta-walls > .cp-break { flex-basis: 100%; height: 0; }
 .city-panel .cp-meta b { font-size: 12px; }
 .city-panel .cp-pop { width: 18px; height: 18px; }
 /* A taller window (over 700 px) has the room for a larger head. */
@@ -4512,3 +4515,5 @@ dialog.gameover::backdrop {
 .rival-offer { display: inline-flex; flex-direction: column; gap: 2px; }
 .rival-cost { color: var(--bad); font-weight: 600; }
 .alarm-block .rival-win, .hold-block .rival-win { margin-bottom: 14px; }
+.fside-walls-bar { margin-bottom: 2px; }
+.fside-walls-bar + .fside-hp + .fside-delta, .fside-walls-bar + .fside-hp { margin-bottom: 6px; }

@@ -6,7 +6,7 @@ export const emblemUrl = (kind: Emblem) => Object.entries(urls).find(([path]) =>
 const LABEL: Record<Emblem, string> = {
   camp: 'A broken standard over cold embers', hall: 'The Yam Relay Station’s compass rose', ruin: 'A broken arch above buried stones', captured: 'A gate with the banner raised',
   founded: 'A cornerstone on its tile', growth: 'A sprout rising from its tile', milestone: 'A four-point star in a laurel',
-  greatwork: 'A monument in a laurel', tech: 'A four-point star within its orbits',
+  greatwork: 'A monument in a laurel', tech: 'A four-point star within its orbits', tomb: 'A pyramid over a tomb inside a walled court',
 };
 
 /**

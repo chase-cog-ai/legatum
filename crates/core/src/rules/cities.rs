@@ -844,6 +844,7 @@ pub(crate) fn found_city_at(
         id,
         City {
             last_attacked_turn: None,
+            walls_damage: 0,
             id,
             owner,
             founder: owner,
@@ -1324,15 +1325,31 @@ fn complete_item(
         ProductionItem::Building {
             building: BuildingKind::UpgradeWalls,
         } => {
+            if walls_work_blocked(state, &state.cities[&id]) {
+                return false;
+            }
+            let era = state.era_of(owner);
             let city = state.cities.get_mut(&id).expect("city exists");
-            city.walls_level = city.wall_tier() + 1;
+            let level = city.wall_tier();
+            // Below the era's cap it raises the level; at the cap it repairs (Repair Walls).
+            if level < data::MAX_WALL_TIER && level <= era {
+                city.walls_level = level + 1;
+            } else {
+                city.walls_level = level;
+            }
+            city.walls_damage = 0;
             city.buildings.remove(&BuildingKind::Castle);
             city.buildings.remove(&BuildingKind::StarFort);
         }
+        ProductionItem::Building {
+            building: BuildingKind::Walls,
+        } if walls_work_blocked(state, &state.cities[&id]) => return false,
         ProductionItem::Building { building } | ProductionItem::Wonder { building, .. } => {
             economy::install_building(state.cities.get_mut(&id).expect("city exists"), building);
             if building == BuildingKind::Walls {
-                state.cities.get_mut(&id).expect("city exists").walls_level = 1;
+                let city = state.cities.get_mut(&id).expect("city exists");
+                city.walls_level = 1;
+                city.walls_damage = 0;
             }
             if let ProductionItem::Wonder { tile, .. } = item {
                 crate::landmarks::complete(state, id, building, tile);
@@ -1584,6 +1601,17 @@ pub(crate) fn bankruptcy_victim(state: &GameState, p: PlayerId) -> Option<UnitId
         })
         .map(|u| u.id)
 }
+
+/// Walls cannot be built, upgraded, repaired or bought while the city is under attack (breakable
+/// Walls, 2026-11-25): it was hit this turn or last turn, or an at-war military unit stands
+/// next to it ([`heal_blocked_by_adjacent_enemy`]). Production toward them waits.
+pub fn walls_work_blocked(state: &GameState, c: &City) -> bool {
+    c.last_attacked_turn.is_some_and(|t| t + 1 >= state.turn)
+        || heal_blocked_by_adjacent_enemy(state, c)
+}
+
+/// The refusal for Walls work under attack ([`walls_work_blocked`]).
+pub const WALLS_UNDER_ATTACK: &str = "Not while the city is under attack.";
 
 /// True when an at-war military unit stands next to the city: it regains no HP while one does.
 /// Barbarians never count against the Celts (`rules::is_threat`): they cannot besiege them.

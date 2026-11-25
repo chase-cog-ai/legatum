@@ -270,7 +270,7 @@ fn research_upgrade_preview_matches_gold_charged() {
 }
 
 #[test]
-fn no_limit_never_finishes_from_turn_count_but_explicit_limit_still_does() {
+fn no_limit_ends_at_the_default_limit_and_an_explicit_limit_replaces_it() {
     let mut s = test_game(&[(Faction::Byzantium, 0), (Faction::India, 1)]);
     s.setup.turn_limit = None;
     found(&mut s, P0, at(3, 3));
@@ -280,11 +280,18 @@ fn no_limit_never_finishes_from_turn_count_but_explicit_limit_still_does() {
         .find(|c| c.owner == P0)
         .unwrap()
         .population = 2;
-    for turn in [150, 300, 900, 10_000] {
+    for turn in [150, 300, crate::data::DEFAULT_TURN_LIMIT - 1] {
         s.turn = turn;
         scoring::update(&mut s, &mut Vec::new());
         assert!(!s.finished, "ended at {turn}");
     }
+    // Rules 62: with no configured limit the game ends at the default limit.
+    let mut ended = s.clone();
+    ended.turn = crate::data::DEFAULT_TURN_LIMIT;
+    scoring::update(&mut ended, &mut Vec::new());
+    assert!(ended.finished);
+    // An explicit longer limit replaces the default.
+    s.turn = 900;
     s.setup.turn_limit = Some(10_001);
     scoring::update(&mut s, &mut Vec::new());
     assert!(!s.finished);

@@ -31,7 +31,7 @@ export CLOUDFLARE_API_TOKEN=...      # a token with "Edit Cloudflare Workers"
 npx wrangler deploy
 ```
 
-The URL is `https://relay.playlegatum.com` (the `routes` entry in `wrangler.jsonc`; a fork changes it to a domain in its own Cloudflare account, or removes it and uses `https://legatum-relay.<your-subdomain>.workers.dev`). Nothing secret is
+The URL is `https://relay.playlegatum.com` (the `routes` entry in `wrangler.jsonc`; a fork changes it to a domain in its own Cloudflare account, or removes it and sets `"workers_dev": true` to get `https://legatum-relay.<your-subdomain>.workers.dev`). Nothing secret is
 committed. If the token sees several accounts, also set `CLOUDFLARE_ACCOUNT_ID`.
 
 The limits' vars deploy with the Worker from `wrangler.jsonc`. To stop new rooms in an emergency without a
@@ -66,8 +66,9 @@ under the Worker's Variables) without a code change; a missing or unusable value
 | Limit | Default | Var | Where | When broken |
 | --- | --- | --- | --- | --- |
 | New rooms allowed at all | on | `LOBBY_OPEN` (`"0"` = off) | Worker | 503 "Hosting new games is paused. Try again later." Running rooms carry on. |
-| Rooms on the relay | 64 | `MAX_ROOMS` | Lobby | 503 "This lobby is full. Try again in a few minutes." |
+| Rooms on the relay | 256 | `MAX_ROOMS` | Lobby | 503 "This lobby is full. Try again in a few minutes." |
 | Live rooms per client address | 2 | `MAX_ROOMS_PER_IP` | Lobby | 429 "You already have 2 games open. Close one before hosting another." |
+| Live rooms per network (IPv4 /24, IPv6 /48) | 8 | `MAX_ROOMS_PER_NET` | Lobby | 429 "Too many games are open from your network. Try again later." |
 | Room creations per client address | 6 per 10 minutes | `ROOM_CREATES_PER_10_MIN` | Lobby | 429 "You are opening games too quickly. Try again in a few minutes." with `Retry-After` |
 | Guest sockets per client address in one room | 4 | `MAX_GUESTS_PER_IP` | Room | closed 1013 `too many connections from one address` |
 | Guest sockets per room | 8 | | Room | closed 1013 `room is full` |
@@ -94,19 +95,22 @@ under the Worker's Variables) without a code change; a missing or unusable value
   back; the low refill rates bound what a flooding socket costs, since incoming messages are what is billed.
 - The heartbeat applies only to hosts that send `ping` frames (the browser host), because the room cannot
   see the desktop host's protocol pings. A pinging host costs one Lobby call about every 40 s.
-- Room names are cleaned, not trusted: letters of any script, digits, spaces and `' ’ . , ! ? & ( ) # : _ -`
-  are kept, everything else (emoji, symbols, invisible and direction-changing characters) is dropped,
-  whitespace collapses, combining marks are limited to 3 per letter and the name is cut to 40 visible
-  characters. An empty result, or a name containing a term from `BLOCKED_NAME_TERMS` in `src/shared.ts`
-  (a short list of slurs and crude words, matched anywhere in the name with spaces and punctuation
-  removed; add entries there, leaving out any that sit inside ordinary words), becomes `Game <first 4 characters of the room id>`. `POST /rooms`
-  returns the name it kept as `name`. The build label holds letters, digits, spaces and `. · ( ) _ + -` only,
-  and starts with a letter or digit; anything else is refused with 400.
+- The list never shows text a host typed. Anyone can host, so a free-text name would let anyone put any message
+  in front of every player. Each room is listed as two words and a number picked by its room id (`listedName` in
+  `src/shared.ts`, for example "Amber Harbour 07"); `POST /rooms` returns it as `name`, and the app shows the host
+  the same name (`app/src/net/roomName.ts` mirrors the rule). A `name` an older page still sends is checked for
+  type and length, then dropped. `sanitizeName` and `BLOCKED_NAME_TERMS` remain for the build-label check.
+- The build label must be one the game makes (`buildOk`): `Version <n.n.n>` with an optional `· web <hash>` or
+  `(<hash>)`, `Playtest <n>`, `Dev · after <n> (<hash>)`, `Dev (<hash>)`, `Dev build`, a bare version number, or a
+  preview name `playtest-N`, `preview-N`, `test-N` or `beta-N`. Anything else is refused with 400, since the list
+  shows the label to players on another version.
+- Per-network cap: a network is an IPv4 /24 or an IPv6 /48 (`networkKey`), hashed with the same salt and kept only
+  on the room's row. One free IPv6 tunnel account is a /48, which is 65,536 /64s; without this cap one person
+  could fill the list.
 - `POST /rooms` may carry `locked: true` (a boolean, default false; any other type is refused with 400). It means the
   host set a join code. The relay stores and lists only that flag in `GET /lobby` rows (`locked`); the code itself is
   checked by the host's engine and never reaches the relay. Deploy the relay before an app build that sends `locked`.
-- Every answer carries `X-Content-Type-Options: nosniff`, since `/api/status` and the lobby hand back text a
-  host wrote.
+- Every answer carries `X-Content-Type-Options: nosniff`, since `/api/status` hands back text a host wrote.
 
 ### Edge rule
 
@@ -120,9 +124,8 @@ plan allows one rule with a 10-second window, shared with `games.playlegatum.com
 - Same characteristics: IP. Requests: 40. Period: 10 seconds. Action: Block for 10 seconds.
 
 A player sends a handful of requests a minute (the list refreshes, one socket per game; messages inside a
-socket are not requests), so the rule only meets scripts. The `workers.dev` address stays on for builds
-published before the domain and is outside the rule; turn it off (`"workers_dev": false`) once no kept
-build uses it.
+socket are not requests), so the rule only meets scripts. Both Workers have their `workers.dev` address
+turned off (`"workers_dev": false`), so the custom domains, and the rule, are the only way in.
 
 ## Security model
 

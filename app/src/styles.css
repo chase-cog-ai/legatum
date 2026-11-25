@@ -710,7 +710,12 @@ dialog.settings-modal {
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--ink-2);
+  flex-wrap: wrap;
+  gap: 6px 24px;
 }
+/* Neither footer line breaks mid-phrase: on a narrow screen the browser note takes its own row, right-aligned. */
+.title-foot span { white-space: nowrap; }
+.title-foot-note { margin-left: auto; }
 /* Short windows: tighten the vertical rhythm. */
 @media (max-height: 820px) {
   .title-inner::before {

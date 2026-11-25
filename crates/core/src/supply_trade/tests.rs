@@ -122,7 +122,10 @@ fn an_accepted_offer_moves_supply_and_gold_every_turn() {
             .supplied
     };
     assert!(supplied(P0).parts.contains(&("Sold to Sparta".into(), -2)));
-    assert_eq!(supplied(P1).parts, vec![("Bought from Byzantium".into(), 2)]);
+    assert_eq!(
+        supplied(P1).parts,
+        vec![("Bought from Byzantium".into(), 2)]
+    );
     // Only the two empires see the trade.
     assert_eq!(player_view(&s, P1).supply_trade.trades.len(), 1);
     assert!(player_view(&s, PlayerId(2)).supply_trade.trades.is_empty());

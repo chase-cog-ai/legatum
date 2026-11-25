@@ -114,11 +114,7 @@ pub fn gold_lines(state: &GameState, p: PlayerId) -> Vec<(String, i32)> {
                 ))
             } else if t.buyer == p {
                 Some((
-                    format!(
-                        "{} {r} bought from {}",
-                        t.amount,
-                        name_of(state, t.seller)
-                    ),
+                    format!("{} {r} bought from {}", t.amount, name_of(state, t.seller)),
                     -t.gold,
                 ))
             } else {

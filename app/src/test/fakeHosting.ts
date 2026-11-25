@@ -15,6 +15,14 @@ export const fakeHost: { fromSave: string | null; saves: number; liveSave: strin
 export function fakeHostingModule() {
   return {
     hostedGameSave: () => fakeHost.liveSave,
+    hostedRoomId: () => {
+      try {
+        const raw = globalThis.sessionStorage?.getItem(KEY);
+        return raw ? ((JSON.parse(raw) as { room?: { room?: string } }).room?.room ?? null) : null;
+      } catch {
+        return null;
+      }
+    },
     hostingRecord: () => {
       try {
         const raw = globalThis.sessionStorage?.getItem(KEY);

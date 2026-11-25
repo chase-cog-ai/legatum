@@ -7,6 +7,9 @@ import { Game } from './wasm-pkg/legatum.js';
 const projection = <T>(query: Record<string, unknown>): T => engineWork(() => JSON.parse(Game.combat_projection(JSON.stringify(query))) as T);
 
 export const CITY_HP = RULES.cityHp;
+/** The Walls bar: level I and each level above it (core `combat::walls_max_hp`). */
+export const WALLS_BASE_HP = RULES.wallsBaseHp;
+export const WALLS_HP_PER_LEVEL = RULES.wallsHpPerLevel;
 /** HP a city regains at the end of a turn unless it took damage that turn or an at-war military unit is adjacent (core `data::CITY_HEAL`). */
 export const CITY_HEAL = RULES.cityHeal;
 

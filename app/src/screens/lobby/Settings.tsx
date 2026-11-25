@@ -1,3 +1,4 @@
+import { RULES } from '../../data';
 import { aiOnlyTeams, offeredLevels, DIFFICULTY_INFO, MAP_SIZES, MAX_TURN_LIMIT, levelOf, mapSizeLabel, notes, setDifficulty, setMapSize, type AiLevel, type Lobby, type MapSizeId, validTurnLimit } from '../../lobby';
 import { randomSeed } from './randomSeed';
 
@@ -63,11 +64,11 @@ export function Settings({ lobby, onChange }: { lobby: Lobby; onChange?: (l: Lob
         </div>
       ))}
       <Segmented label="Turn limit" value={lobby.turnLimit === null ? 'Off' : 'On'} options={[
-        { id: 'Off', label: 'Off', sub: 'Play until victory' },
-        { id: 'On', label: 'On', sub: 'Most VP at the limit' },
+        { id: 'Off', label: `Turn ${RULES.defaultTurnLimit}`, sub: 'Most VP wins' },
+        { id: 'On', label: 'Custom', sub: 'Choose the last turn' },
       ]} onChange={change && ((value: 'Off' | 'On') => change({ turnLimit: value === 'Off' ? null : (lobby.turnLimit ?? 300) }))} />
       {lobby.turnLimit !== null && <div className="lobby-field">
-        <label className="lbl" htmlFor="turn-limit">Maximum turns</label>
+        <label className="lbl" htmlFor="turn-limit">Last turn</label>
         <input id="turn-limit" type="number" min={1} max={MAX_TURN_LIMIT} step={1}
           value={lobby.turnLimit || ''} readOnly={!change} aria-invalid={!validTurnLimit(lobby.turnLimit)}
           onChange={(e) => change?.({ turnLimit: Number(e.target.value) })} />

@@ -36,6 +36,7 @@ mod siege_deadline_tests {
             &include_bytes!("../tests/fixtures/gergovia-t29.json.gz")[..],
         ))
         .unwrap();
+        let state = crate::fixture::with_rules61_walls(state);
         let view = player_view(&state, PlayerId(5));
         let city = view.cities.iter().find(|c| c.name == "Gergovia").unwrap();
         let ranger = ProductionItem::Unit {
@@ -4752,8 +4753,12 @@ impl Planner<'_> {
                             }) + self.agoge_value(c)
                         }
                         BuildingKind::UpgradeWalls => {
+                            // It also repairs a damaged Walls bar, which never heals by itself.
+                            let missing = (c.walls_max_hp - c.walls_hp).max(0);
                             if threatened {
-                                500 + k.military
+                                500 + k.military + missing
+                            } else if missing > 0 {
+                                150 + 2 * missing
                             } else {
                                 20
                             }

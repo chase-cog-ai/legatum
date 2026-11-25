@@ -10,8 +10,11 @@ import {
   RoomAnnounce,
   RoomInfo,
   Summary,
+  buildOk,
   ipHash,
+  listedName,
   msUntil,
+  networkKey,
   newSalt,
   takeToken,
 } from "./shared";
@@ -21,6 +24,7 @@ export type CreateResult =
   | { ok: true }
   | { ok: false; why: "full" }
   | { ok: false; why: "per_ip" }
+  | { ok: false; why: "per_net" }
   | { ok: false; why: "rate"; retryAfterS: number };
 
 /**
@@ -30,7 +34,7 @@ export type CreateResult =
  *
  * Client addresses: `create` receives the raw address, hashes it at once with a salt that never leaves
  * this object, and keeps only the hash: on the room's row (for the per-address room cap, gone with the
- * row) and in a create-rate bucket (gone once the bucket has refilled, at most 10 minutes later).
+ * row, with a second hash of its network for the per-network cap) and in a create-rate bucket (gone once the bucket has refilled, at most 10 minutes later).
  */
 export class Lobby extends DurableObject<Env> {
   private readonly salt: string;
@@ -48,7 +52,7 @@ export class Lobby extends DurableObject<Env> {
       updated_ms INTEGER NOT NULL
     )`);
     // Columns added after the first deploy. ALTER fails harmlessly when the column already exists.
-    for (const col of ["ip_hash TEXT NOT NULL DEFAULT ''", "heard_ms INTEGER"]) {
+    for (const col of ["ip_hash TEXT NOT NULL DEFAULT ''", "heard_ms INTEGER", "net_hash TEXT NOT NULL DEFAULT ''"]) {
       try {
         sql.exec(`ALTER TABLE rooms ADD COLUMN ${col}`);
       } catch {
@@ -56,6 +60,7 @@ export class Lobby extends DurableObject<Env> {
       }
     }
     sql.exec("CREATE INDEX IF NOT EXISTS rooms_ip ON rooms (ip_hash)");
+    sql.exec("CREATE INDEX IF NOT EXISTS rooms_net ON rooms (net_hash)");
     sql.exec("CREATE TABLE IF NOT EXISTS buckets (ip_hash TEXT PRIMARY KEY, tokens REAL NOT NULL, at_ms INTEGER NOT NULL)");
     sql.exec("CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT NOT NULL)");
     const row = sql.exec("SELECT v FROM kv WHERE k = 'salt'").toArray()[0];
@@ -79,6 +84,8 @@ export class Lobby extends DurableObject<Env> {
    */
   async create(room: string, announce: RoomAnnounce, ip: string, limits: Limits): Promise<CreateResult> {
     const hash = await ipHash(this.salt, ip);
+    // The network's hash: salted like the address's, and kept only on the room's row.
+    const netHash = await ipHash(this.salt, networkKey(ip));
     const sql = this.ctx.storage.sql;
     const now = Date.now();
     this.sweep(now);
@@ -91,11 +98,13 @@ export class Lobby extends DurableObject<Env> {
 
     const mine = sql.exec("SELECT COUNT(*) AS n FROM rooms WHERE ip_hash = ?", hash).one().n as number;
     if (mine >= limits.MAX_ROOMS_PER_IP) return { ok: false, why: "per_ip" };
+    const ours = sql.exec("SELECT COUNT(*) AS n FROM rooms WHERE net_hash = ?", netHash).one().n as number;
+    if (ours >= limits.MAX_ROOMS_PER_NET) return { ok: false, why: "per_net" };
     const count = sql.exec("SELECT COUNT(*) AS n FROM rooms").one().n as number;
     if (count >= limits.MAX_ROOMS) return { ok: false, why: "full" };
 
     sql.exec(
-      "INSERT INTO rooms (room, announce, summary, connected, created_ms, touched_ms, updated_ms, ip_hash, heard_ms) VALUES (?, ?, ?, 0, ?, ?, ?, ?, NULL)",
+      "INSERT INTO rooms (room, announce, summary, connected, created_ms, touched_ms, updated_ms, ip_hash, heard_ms, net_hash) VALUES (?, ?, ?, 0, ?, ?, ?, ?, NULL, ?)",
       room,
       JSON.stringify(announce),
       JSON.stringify(DEFAULT_SUMMARY),
@@ -103,6 +112,7 @@ export class Lobby extends DurableObject<Env> {
       now,
       now,
       hash,
+      netHash,
     );
     sql.exec(
       "INSERT INTO buckets (ip_hash, tokens, at_ms) VALUES (?, ?, ?) ON CONFLICT (ip_hash) DO UPDATE SET tokens = excluded.tokens, at_ms = excluded.at_ms",
@@ -158,7 +168,10 @@ export class Lobby extends DurableObject<Env> {
     for (const r of rows) {
       const a = JSON.parse(r.announce as string) as RoomAnnounce;
       const s = JSON.parse(r.summary as string) as Summary;
-      out.push({ ...a, locked: a.locked === true, ...s, room: r.room as string, updated_ms: r.updated_ms as number });
+      // Rows stored by an older relay hold a typed name and a looser build label: the name is always made
+      // again from the id, and a row whose label would not be accepted today is left out.
+      if (!buildOk(String(a.build))) continue;
+      out.push({ ...a, name: listedName(r.room as string), locked: a.locked === true, ...s, room: r.room as string, updated_ms: r.updated_ms as number });
     }
     return out;
   }

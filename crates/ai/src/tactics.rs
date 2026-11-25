@@ -89,11 +89,14 @@ impl Planner<'_> {
             self.view().era_of(city.owner),
         )
         .total;
-        combat::damage_to_city_hp(
-            combat::wall_damage_percent(tier, covered, false),
+        // The Walls bar stands in front of the HP (breakable Walls): the hit counts for the
+        // share of the whole front it removes.
+        combat::front_damage_as_hp(
             combat::damage(attack, defense, roll),
+            city.hp,
+            city.walls_hp,
+            combat::wall_damage_percent(tier, covered, false),
         )
-        .min(city.hp)
     }
 
     pub(crate) fn ranged_unit_clear(&self, u: &UnitView, from: Hex, to: Hex) -> bool {

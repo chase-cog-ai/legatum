@@ -202,12 +202,26 @@ fn city_risk_round(
                 .iter_mut()
                 .find(|c| c.id == city.id)
                 .expect("own city");
-            target.hp = if killed {
-                0
+            // The Walls bar takes its share first (breakable Walls); the rest reaches the HP.
+            let to_walls = forecast.walls.map_or(0, |w| w.expected_damage);
+            let had_walls = target.walls_hp > 0;
+            if killed {
+                target.hp = 0;
+                target.walls_hp = 0;
             } else {
-                (target.hp - forecast.expected_damage_to_defender).max(1)
-            };
-            risk.threatened |= city.hp - target.hp >= 30 || killed;
+                target.walls_hp = (target.walls_hp - to_walls).max(0);
+                target.hp = (target.hp - (forecast.expected_damage_to_defender - to_walls)).max(1);
+            }
+            // A broken bar destroys the Walls: the city stops firing (`rules::battle`).
+            if had_walls && target.walls_hp == 0 {
+                target.walls = false;
+                target.walls_level = 0;
+                target.walls_max_hp = 0;
+                target.citadel = false;
+                target.star_fort = false;
+            }
+            risk.threatened |=
+                city.hp - target.hp + city.walls_hp - target.walls_hp >= 30 || killed;
         } else if let Some(i) = guard {
             if killed {
                 projected.units.remove(i);
@@ -531,6 +545,7 @@ mod tests {
             &include_bytes!("../tests/fixtures/gergovia-t29.json.gz")[..],
         ))
         .unwrap();
+        let state = crate::fixture::with_rules61_walls(state);
         assert_eq!(state.turn, 29);
         let view = player_view(&state, PlayerId(5));
         let city = view.cities.iter().find(|c| c.id == CityId(5)).unwrap();
@@ -605,6 +620,7 @@ mod tests {
             &include_bytes!("../tests/fixtures/gergovia-t30.json.gz")[..],
         ))
         .unwrap();
+        let state = crate::fixture::with_rules61_walls(state);
         let view = player_view(&state, PlayerId(5));
         let city = view.cities.iter().find(|c| c.id == CityId(5)).unwrap();
         let mut planner = Planner::new(

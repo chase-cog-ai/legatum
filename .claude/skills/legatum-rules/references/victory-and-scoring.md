@@ -43,8 +43,9 @@ App: when an Age begins (`AgeBegan`), every player gets the **score check** take
 There is no capture requirement for winning by VP
   (designer, 2026-10-31: "you shouldn't be able to win with zero conquest" is to be reached by point
   design and measured, not enforced): the 10-turn VP hold is the ordinary VP win rule. Holding the last original capital also wins (rules 37, below). Turn-limit
-  ranking applies only if a game explicitly configures one; the 1,200-turn simulation safety cap
-  does not award a winner (designer, 2026-11-01: no turn-limit backstop for late stalemates).
+  ranking applies at the configured limit, else at turn 500 (`data::DEFAULT_TURN_LIMIT`, rules 62; the designer's
+  2026-11-01 "no turn-limit backstop" was reversed on 2026-11-25). The simulation safety cap (1,200 by default) now only
+  matters for a game that sets a limit above it; it does not award a winner.
   The deck-against-era report script (`tools/sim/objective-deck-report.py`) was deleted with the era arm on 2026-11-22; its last results are in `docs/sim-results/objectives/deck-2026-11-01.md`.
 - **Target:** the solo target per team member (a pair needs two members' worth), held 10 turns at Standard
   (hold rules below unchanged). The solo target uses the earnable era, goal and world wonder points plus one, at most 10
@@ -88,7 +89,7 @@ or above its target for **10 consecutive turn ends** (`data::VP_HOLD_TURNS`).
 **Winning by capitals (designer, 2026-11-15, rules 37: "hunting every last city and Settler is tedious").** A team wins at the end of the turn in which it is the only team that still holds an original capital of its own, in a game with more than one team (`scoring::holds_own_capital`, run in `scoring::check_victory` after last-team-standing and before the VP holds; reason "{team} holds the last capital: every rival's capital has fallen"). A team holds one while any member's original capital (`City::original_capital`, a first-founded capital, never a replacement) stands and is owned by a member of the same team. It has fallen when another team owns it (an occupation lock included: the captor owns the city) or it is gone (ordered Raze, Celtic sack); retaking it puts the team back in. Every empire has its original capital from turn 1. Barbarians are no team. If no team holds its own, or two or more do, the game goes on; a team whose capital is razed can never win this way but still wins by VP. A victory by capitals is a victory, not a draw, even with VP below the target. Public: `PlayerPublic::capital_standing` (see the race panel, §10).
 
 Other game-ending rules are unchanged: one team alive wins outright and instantly (also mid-hold);
-at a configured turn limit the highest VP wins (tie = draw; checked after the holds, so a hold that
+at the turn limit (the configured one, else turn 500, `data::DEFAULT_TURN_LIMIT`, rules 62) the highest VP wins (tie = draw; checked after the holds, so a hold that
 completes on that turn wins first).
 Because a sacrificed VP source can no longer win on the spot, rivals always get N turns to exploit it.
 AI response: every AI treats a holder as the top threat (`coalition::select` ranks holders first;

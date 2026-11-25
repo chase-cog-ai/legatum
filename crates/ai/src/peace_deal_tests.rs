@@ -133,6 +133,13 @@ fn declaring_war_on_the_ai_extorts_no_city_or_reparations() {
         PeaceAnswer::Accept
     );
     assert_eq!(answer_with(&v, -140, plain(), Some(25)), counter(0));
+    // A Peace barely worth signing still pays inside the ceiling, as the plain deal does,
+    // and a truce the pressed side likes does not undo that.
+    assert_eq!(answer_with(&v, -130, plain(), Some(0)), PeaceAnswer::Accept);
+    assert_eq!(
+        answer_with(&v, -130, truce.clone(), Some(0)),
+        PeaceAnswer::Accept
+    );
     assert_eq!(
         answer_with(&v, -140, truce.clone(), Some(25)),
         PeaceAnswer::Counter(0, truce)

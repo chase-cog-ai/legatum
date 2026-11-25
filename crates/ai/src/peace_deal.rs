@@ -247,13 +247,17 @@ impl Planner<'_> {
             }
         };
         if gold != 0 {
-            lines.push(("Gold".into(), gold));
             if gold < 0 {
                 // Asked-for Gold follows the plain deal's rule, whoever declared: paid only
-                // for a war we are losing, up to its ceiling (`deals::deal_score`).
+                // for a war we are losing, up to its ceiling, and inside that ceiling it is
+                // not weighed against the Peace (`deals::deal_score`). So a term we like
+                // never turns a Gold ask we would have paid into a refusal.
                 if !(self.losing_war(other) && -gold <= self.truce_cap()) {
+                    lines.push(("Gold".into(), gold));
                     never.get_or_insert("That is more Gold than this Peace is worth to us".into());
                 }
+            } else {
+                lines.push(("Gold".into(), gold));
             }
         }
         // A war we are winning costs its price whatever else is offered (`deals::tribute`).

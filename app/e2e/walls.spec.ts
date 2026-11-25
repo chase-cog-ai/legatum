@@ -76,7 +76,7 @@ test('attack forecasts show city fire only for walled cities', async ({ page }) 
   await selectUnit(page, setup.nearOpen);
   const card = page.locator('.forecast');
   await hoverForecast(page, setup.open, page.getByTestId('forecast-no-city-fire'));
-  await expect(page.getByTestId('forecast-no-city-fire')).toContainText('cannot fire back: it has no Walls');
+  await expect(page.getByTestId('forecast-no-city-fire')).toContainText('cannot fire back: it has no standing Walls');
   await expect(card).not.toContainText('will fire back');
   await page.screenshot({ path: path.join(shots, 'forecast-unwalled-1440.png') });
 

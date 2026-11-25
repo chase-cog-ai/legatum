@@ -161,6 +161,21 @@ pub enum Event {
         effective_turn: u32,
         reason: String,
     },
+    /// Public (deals, rules 61): teams `a` and `b` (lower id first) opened their borders to each
+    /// other's units from `effective_turn` (`diplomacy::TreatyKind::OpenBorders`).
+    BordersOpened {
+        a: TeamId,
+        b: TeamId,
+        effective_turn: u32,
+    },
+    /// Public (deals, rules 61): Open Borders between `a` and `b` ended: one side closed them,
+    /// they went to War, signed an Alliance (which includes passage), or a team was eliminated.
+    BordersClosed {
+        a: TeamId,
+        b: TeamId,
+        effective_turn: u32,
+        reason: String,
+    },
     TreatyBreached {
         treaty_id: u32,
         by: TeamId,
@@ -390,6 +405,15 @@ pub enum Event {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         bounty: Option<i32>,
     },
+    /// Public: a city's Walls bar was broken this turn, so its Walls are destroyed (level 0; it
+    /// stops firing and must build Walls again). `by`: the empire of the first attacker that hit
+    /// it this stage.
+    WallsBreached {
+        city: CityId,
+        owner: PlayerId,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        by: Option<PlayerId>,
+    },
     /// Public: a first capture of a city owned by Athens grants the captor one free technology.
     AthensCityCaptured {
         city: CityId,
@@ -410,8 +434,9 @@ pub enum Event {
         capital: CityId,
         name: String,
     },
-    /// Team only: Gold one empire gave a teammate (`Order::GiveGold`), after this turn's
-    /// purchases. `amount` is what moved, capped at the Gold the giver had left.
+    /// Seen by both empires' teams: Gold one empire gave another (`Order::GiveGold`, after this
+    /// turn's purchases; `amount` is what moved, capped at the Gold the giver had left), or Gold
+    /// paid in a deal when its treaty took effect (deals, rules 61).
     GoldGiven {
         from: PlayerId,
         to: PlayerId,

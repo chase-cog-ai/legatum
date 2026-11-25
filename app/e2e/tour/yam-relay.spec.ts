@@ -4,7 +4,7 @@ import { test, expect } from '../fixtures';
 import { coreFixture } from '../../src/test/coreFixture';
 import { roadsFixture } from '../../src/test/roadsFixture';
 import { hallFixture } from '../../src/test/hallFixture';
-import { SIZES, closeReportIfOpen, dismissCelebrations, expectRaceWhole, frameHall, hexPoint, loadFixture, openHall, selectThing, shot, stageHallReport, type GameWindow } from './helpers';
+import { SIZES, closeLedger, closeReportIfOpen, dismissCelebrations, expectRaceWhole, frameHall, hexPoint, ledgerGoal, loadFixture, openHall, selectThing, shot, stageHallReport, type GameWindow } from './helpers';
 
 // Each test starts from its own save, so tests can run on separate workers.
 test.describe.configure({ mode: 'parallel' });
@@ -31,11 +31,10 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await expect(built).toContainText('Yam Relay Station');
     await page.mouse.move(5, size.height / 2);
     await shot(page, size, '95d-hall-city-card-built');
-    // Standings now fold into the sidebar's shared scroller. Open them to inspect the held token.
-    await page.locator('.sidebar-standings > summary').click();
-    await page.locator('.panel.vp .vhc-tok[data-held]').first().hover();
-    await expect(page.locator('.vhc-pop .vh-card.k-goal .vh-held')).toContainText('You hold the Yam Relay Station');
+    // Your goal's line in the Score ledger says you hold the Station.
+    await expect(await ledgerGoal(page, { mine: true })).toContainText('You hold the Yam Relay Station');
     await shot(page, size, '95e-hall-race-token-card');
+    await closeLedger(page);
     await page.mouse.move(5, size.height / 2);
     // The goal slip on the objectives sheet says where it stands and shows it on the map.
     await page.getByRole('region', { name: 'Victory race', exact: true }).getByRole('button', { name: 'Score ledger', exact: true }).click();
@@ -119,8 +118,6 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await expect(page.getByTestId('open-road-note')).toBeVisible();
     await page.mouse.move(5, size.height / 2);
     await shot(page, size, '95k-hall-open-road-unit');
-    await page.locator('.sidebar-standings > summary').click();
-    await page.locator('.panel.vp .vhc-tok[data-held]').first().hover();
     await page.mouse.move(5, size.height / 2);
     await page.getByRole('region', { name: 'Victory race', exact: true }).getByRole('button', { name: 'Score ledger', exact: true }).click();
     await expect(page.getByTestId('objective-sheet')).toBeVisible();

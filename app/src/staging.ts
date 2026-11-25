@@ -39,6 +39,8 @@ export interface StagingConfig {
   barbarians?: boolean;
   /** The AI-only teams start in Alliances of two; servers from before it omit it (read as off). */
   ai_alliances?: boolean;
+  /** Deals (rules 61); hosts from before deals omit it (read as off). New rooms turn it on. */
+  deals?: boolean;
   seats: StagingSeat[];
 }
 
@@ -91,6 +93,8 @@ export function configFromLobby(l: Lobby): StagingConfig {
     // Omitted when on (the server's default), so default rooms keep their old config shape.
     ...(l.barbarians === false ? { barbarians: false } : {}),
     ...(l.aiAlliances ? { ai_alliances: true } : {}),
+    // Deals are on in every new game, online too (the host's WASM passes it to the setup).
+    deals: true,
     seats: l.slots.map((s) => ({ kind: KIND[s.kind], name: s.name, faction: s.faction, team: s.team, difficulty: s.kind === 'ai' ? l.difficulty : s.difficulty, ...(s.kind === 'ai' && levelOf(l) === 'Training' ? { search: true } : {}) })),
   };
 }

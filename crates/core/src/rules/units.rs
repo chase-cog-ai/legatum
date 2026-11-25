@@ -2244,7 +2244,7 @@ mod tests {
         assert_eq!(
             up.hp,
             70 + HEAL_TERRITORY,
-            "keeps HP (then heals: it did not act)"
+            "keeps health (then heals: it did not act)"
         );
         assert!(events.iter().any(|e| matches!(
             e,

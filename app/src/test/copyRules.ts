@@ -20,6 +20,9 @@ export interface CopyRule {
 
 /** Mechanics-speak and code terms: describe what the player gets, not the integer maths behind it. */
 export const BANNED: CopyRule[] = [
+  { pattern: /\bpayer is short\b|\bis short of Gold\b/i, reason: 'vague: short of what, and when (plain-language review of deals, 2026-11-25)', instead: '"If the payer cannot pay then, the offer ends."', source: true },
+  { pattern: /\bwar duties\b/i, reason: 'jargon (plain-language review of deals, 2026-11-25)', instead: 'say what the treaty does, or leave it out', source: true },
+  { pattern: /\bEarliest activation\b/i, reason: 'mechanics-speak (UI review of deals, 2026-11-25)', instead: '"If they accept, it starts on turn 14."', source: true },
   { pattern: /\bfoot soldiers?\b/i, reason: 'the class is the Melee line (plain-language review, 2026-11-25)', instead: '"melee units"', source: true },
   { pattern: /\bspare Food\b/i, reason: 'glossary: the Food beyond what a city eats is surplus Food (plain-language review, 2026-11-23)', instead: '"surplus Food"', source: true },
   { pattern: /\brace sidebar\b/i, reason: 'the panel is called the Victory race (master, 2026-11-22)', instead: '"Victory race"', source: true },
@@ -44,7 +47,7 @@ export const BANNED: CopyRule[] = [
   { pattern: /\bvalid JSON\b/i, reason: 'a parser detail in a load failure (UI review, 2026-11-10)', instead: 'This file is not a Legatum save. Nothing was changed; choose another file or start a new game.' },
   { pattern: /^Error: /, reason: 'a stringified exception shown as player text (UI review, 2026-11-10)', instead: 'run the failure through loadErrorMessage' },
   { pattern: /\bunknown owner\b|\boff the map\b/i, reason: 'engine validation detail in a load failure (UI review, 2026-11-10)', instead: 'This save file is damaged and can\'t be loaded. Your save file is kept; ...' },
-  { pattern: /\bat the defen[cs]e ratio\b|\bscaled by the ratio\b/i, reason: 'the pooled city overflow rule was replaced by a per-hit carry in rules 27 (UI review, 2026-11-11)', instead: '"The hit that empties the city\'s HP carries on to the garrison with the part of its damage the city did not absorb. Later hits strike the garrison in full."', source: true },
+  { pattern: /\bat the defen[cs]e ratio\b|\bscaled by the ratio\b/i, reason: 'the pooled city overflow rule was replaced by a per-hit carry in rules 27 (UI review, 2026-11-11)', instead: '"The hit that empties the city\'s health carries on to the garrison with the part of its damage the city did not absorb. Later hits strike the garrison in full."', source: true },
   { pattern: /\bPlayerId\b/, reason: 'engine identifier', instead: 'seat number' },
   { pattern: /first capture of it/i, reason: 'the original-capital rule said it as a count of captures (UI review, 2026-11-05)', instead: '"Hold it to score 1 VP."', source: true },
   { pattern: /\bbinds? (allies|you)\b/i, reason: 'unclear diplomacy effect', instead: 'changes how wars work' },
@@ -98,15 +101,15 @@ export const BANNED: CopyRule[] = [
   { pattern: /Σ/, reason: 'a maths symbol', instead: '"added up"' },
   { pattern: /\bmax(imum)? \d|\(max\b|\bmin(imum)? \d|\(min\b/i, reason: 'abbreviation or maths', instead: '"up to 5", "at least 3"' },
   { pattern: /\bresp\.|\bw\/o?\b/i, reason: 'abbreviation', instead: 'the words' },
-  { pattern: /\bhalving\b|\bera.s siege\b/i, reason: 'the Walls and Siege rule in mechanics-speak (UI review, 2026-10-18)', instead: '"Walls halve this attack", "Siege covers level I, but Walls II still reduce damage"', source: true },
-  { pattern: /\bWalls: [^.]{0,60}\bfires?\b/, reason: 'the city\'s shots are "City fire"; Walls only ever means the building (8.9.6 UI review, 2026-10-19)', instead: '"City fire: Athens fires first, about -40 HP"', source: true },
+  { pattern: /\bhalving\b|\bera.s siege\b/i, reason: 'the Walls and Siege rule in mechanics-speak (UI review, 2026-10-18)', instead: '"Walls take this hit at half damage", "Siege covers level I, but Walls II still reduce damage"', source: true },
+  { pattern: /\bWalls: [^.]{0,60}\bfires?\b/, reason: 'the city\'s shots are "City fire"; Walls only ever means the building (8.9.6 UI review, 2026-10-19)', instead: '"City fire: Athens fires first, about -40 health"', source: true },
   { pattern: /\bmedian score\b/i, reason: 'a statistics word on a player card (8.9.6 UI review, 2026-10-19: "Hard AI: median score N")', instead: '"a typical score of N", "most tries took N turns"', source: true },
   { pattern: /\bstockpil(e|es|ed|ing)\b|\bstored (Iron|Niter|Coal|Oil|Silicon)\b|\b(Iron|Niter|Coal|Oil|Silicon) (per|a|each) turn\b/i, reason: 'Strategic resources are supplied, not stored: there is no stockpile and no income (strategic supply, 2026-10-19)', instead: '"supplies 2 Iron", "uses 1 Iron", "Iron 5 / 6"', source: true },
   { pattern: /\b(\d+|newest|idle|supply|every) users?\b|\busers? (idle|work)/i, reason: '"users" is the code\'s word for the buildings and units that need a strategic resource (strategic supply UI review, 2026-10-20)', instead: '"buildings or units": "2 buildings or units are idle"', source: true },
   { pattern: /\bin use of\b/i, reason: 'demand is not "in use": what is wanted can exceed what is supplied (strategic supply UI review, 2026-10-20: "4 of 2 Iron in use")', instead: '"2 of 2 Iron at work", "needs 4, supplies 2"', source: true },
   { pattern: /\bsupply (\d+|\$\{[^}]*\}) and (\d+|\$\{[^}]*\}) are\b/i, reason: 'the old refusal wording, a sum read aloud (strategic supply UI review, 2026-10-20)', instead: 'the core\'s sentence: "all 2 of your Iron are in use"', source: true },
   { pattern: /\balready counts\b/i, reason: 'says nothing about what a Mine adds (strategic supply UI review, 2026-10-20: "Iron supply already counts" hid the +1 supply)', instead: '"+2 Production and +1 Iron supply when built"', source: true },
-  { pattern: /\bCity health\b|\bHEALTH\b/, reason: 'a city has HP (glossary: "city health" is a Never)', instead: 'HP 200 / 200', source: true },
+  { pattern: /\bHP\b|\bHEALTH\b|\b[Hh]it points\b/, reason: 'say "health" (user, 2026-11-25: a first-time player did not know what HP meant)', instead: '"Health 63 / 100", "−37 health", "city health"', source: true },
   { pattern: /\bNo walls\b/, reason: '"Walls" is the building, so it keeps its capital', instead: 'No Walls', source: true },
   { pattern: /\bStagnant\b/, reason: 'the city overview says "Not growing"; one word for one state', instead: 'Not growing', source: true },
   { pattern: /\bnever attacks? (?:you|the Celts)\b/i, reason: 'the Celts\' barbarian rule has one wording, board-game short (UI review, 2026-11-22)', instead: '"Barbarians don\'t attack the Celts." or "...they don\'t attack you."', source: true },
@@ -140,7 +143,6 @@ export const BANNED: CopyRule[] = [
   { pattern: /\bstays banked in [A-Z]/, reason: 'bookkeeping word order for what a city keeps (8.9.23 UI review: "Granary progress 12 stays banked in Astra")', instead: '"Astra keeps the 12 Production already put into the Granary."', source: true },
   { pattern: /\bwindows from your connection\b/i, reason: 'awkward, and the others may be other people on the same network (relay messages review)', instead: '"people on your internet connection"', source: true },
   { pattern: /\bsent too quickly\b|\btoo much (?:was )?sent\b/i, reason: 'passive network talk with no subject (relay messages review)', instead: '"You are sending too much, too fast."', source: true },
-  { pattern: /“Game” with a number/, reason: 'the default name is "Game" and four characters, not a number (relay messages review)', instead: '"Listed as “Game” and four characters."', source: true },
 ];
 
 /**
@@ -152,7 +154,7 @@ export const GLOSSARY: { canonical: string; meaning: string; synonyms: RegExp[] 
   { canonical: 'population', meaning: 'a city\'s size: each growth claims a tile', synonyms: [/\bpop\b/i, /\bcitizens\b/i] },
   { canonical: 'Production', meaning: 'the yield that builds things', synonyms: [/\bhammers?\b/i] },
   { canonical: 'Gold, Food, Science', meaning: 'yields, always capitalised', synonyms: [/(?<![-\w])(gold|food|science)(?![-\w])/] },
-  { canonical: 'city HP', meaning: 'the city\'s own health bar (200 at full)', synonyms: [/\bcity (health|hit points)\b/i, /\bbreak the walls\b/i] },
+  { canonical: 'city health', meaning: 'the city\'s own health bar (200 at full)', synonyms: [/\bbreak the walls\b/i] },
   { canonical: 'city strength', meaning: 'the city\'s combat strength (Walls add to it)', synonyms: [/\bcity defen[cs]e strength\b/i, /\bcity power\b/i] },
   { canonical: 'Walls', meaning: 'the building only; "walled city" is fine', synonyms: [/\bthe walls\b/] },
   { canonical: 'military unit', meaning: 'any unit that fights (Scouts count unless the rule says otherwise)', synonyms: [/\barmed units?\b/i, /\bregiments?\b/i, /\btroops\b/i] },

@@ -73,6 +73,7 @@ fn is_city_order(order: &Order) -> bool {
             | Order::BuyTile { .. }
             | Order::SetResearch { .. }
             | Order::SetResearchQueue { .. }
+            | Order::SetResearchGoal { .. }
             | Order::SetScienceConversion { .. }
     )
 }
@@ -312,6 +313,9 @@ fn check_order(
                 }
             }
         }
+        Order::SetResearchGoal { tech: Some(tech) } if p.techs.contains(&tech) => {
+            return Err(format!("{} is already researched", data::tech_name(tech)));
+        }
         Order::SetScienceConversion { .. } if !crate::eras::all_researched(&p.techs) => {
             return Err("Finish the technology tree before choosing a Science yield".into());
         }
@@ -509,6 +513,10 @@ fn apply_order(
             let p = state.player_mut(player);
             p.researching = techs.first().copied();
             p.research_queue.clone_from(techs);
+        }
+        Order::SetResearchGoal { tech } => {
+            state.player_mut(player).research_goal = tech;
+            follow_research_goal(state, player);
         }
         Order::SetScienceConversion { to } => {
             state.player_mut(player).science_conversion = to;
@@ -719,7 +727,7 @@ pub(crate) fn check_found_city(state: &GameState, settler: UnitId) -> Result<(),
         }
         if unit.hp < data::UNIT_HP {
             return Err(format!(
-                "Roman founder needs full health ({} of {} HP)",
+                "Roman founder needs full health ({} of {})",
                 unit.hp,
                 data::UNIT_HP
             ));
@@ -836,6 +844,7 @@ pub(crate) fn found_city_at(
         id,
         City {
             last_attacked_turn: None,
+            walls_damage: 0,
             id,
             owner,
             founder: owner,
@@ -1316,15 +1325,31 @@ fn complete_item(
         ProductionItem::Building {
             building: BuildingKind::UpgradeWalls,
         } => {
+            if walls_work_blocked(state, &state.cities[&id]) {
+                return false;
+            }
+            let era = state.era_of(owner);
             let city = state.cities.get_mut(&id).expect("city exists");
-            city.walls_level = city.wall_tier() + 1;
+            let level = city.wall_tier();
+            // Below the era's cap it raises the level; at the cap it repairs (Repair Walls).
+            if level < data::MAX_WALL_TIER && level <= era {
+                city.walls_level = level + 1;
+            } else {
+                city.walls_level = level;
+            }
+            city.walls_damage = 0;
             city.buildings.remove(&BuildingKind::Castle);
             city.buildings.remove(&BuildingKind::StarFort);
         }
+        ProductionItem::Building {
+            building: BuildingKind::Walls,
+        } if walls_work_blocked(state, &state.cities[&id]) => return false,
         ProductionItem::Building { building } | ProductionItem::Wonder { building, .. } => {
             economy::install_building(state.cities.get_mut(&id).expect("city exists"), building);
             if building == BuildingKind::Walls {
-                state.cities.get_mut(&id).expect("city exists").walls_level = 1;
+                let city = state.cities.get_mut(&id).expect("city exists");
+                city.walls_level = 1;
+                city.walls_damage = 0;
             }
             if let ProductionItem::Wonder { tile, .. } = item {
                 crate::landmarks::complete(state, id, building, tile);
@@ -1577,6 +1602,17 @@ pub(crate) fn bankruptcy_victim(state: &GameState, p: PlayerId) -> Option<UnitId
         .map(|u| u.id)
 }
 
+/// Walls cannot be built, upgraded, repaired or bought while the city is under attack (breakable
+/// Walls, 2026-11-25): it was hit this turn or last turn, or an at-war military unit stands
+/// next to it ([`heal_blocked_by_adjacent_enemy`]). Production toward them waits.
+pub fn walls_work_blocked(state: &GameState, c: &City) -> bool {
+    c.last_attacked_turn.is_some_and(|t| t + 1 >= state.turn)
+        || heal_blocked_by_adjacent_enemy(state, c)
+}
+
+/// The refusal for Walls work under attack ([`walls_work_blocked`]).
+pub const WALLS_UNDER_ATTACK: &str = "Not while the city is under attack.";
+
 /// True when an at-war military unit stands next to the city: it regains no HP while one does.
 /// Barbarians never count against the Celts (`rules::is_threat`): they cannot besiege them.
 /// Shared by [`heal_cities`] and the city card's forecast.
@@ -1716,6 +1752,38 @@ fn normalize_research(state: &mut GameState, id: PlayerId) {
     if player.researching.is_some_and(|t| !legal(&t)) {
         player.researching = player.research_queue.first().copied();
     }
+    follow_research_goal(state, id);
+}
+
+/// The research goal picks what comes next when the queue has run out: the goal first once its
+/// era is open, then the rest of the current era cheapest first (every one must be finished to
+/// enter the next era). A known goal is cleared. A non-empty queue is never touched.
+pub fn follow_research_goal(state: &mut GameState, id: PlayerId) {
+    let Some(goal) = state.player(id).research_goal else {
+        return;
+    };
+    let techs = state.player(id).techs.clone();
+    if techs.contains(&goal) {
+        state.player_mut(id).research_goal = None;
+        return;
+    }
+    if !state.player(id).research_queue.is_empty() {
+        return;
+    }
+    let era = crate::eras::current_era(&techs);
+    let mut rest: Vec<(i32, TechId)> = crate::eras::era_techs(era)
+        .filter(|t| !techs.contains(t) && *t != goal)
+        .map(|t| (crate::economy::tech_cost(state, id, t).total, t))
+        .collect();
+    rest.sort();
+    let mut queue: Vec<TechId> = Vec::new();
+    if crate::eras::era_of_tech(goal) == era {
+        queue.push(goal);
+    }
+    queue.extend(rest.into_iter().map(|(_, t)| t));
+    let player = state.player_mut(id);
+    player.researching = queue.first().copied();
+    player.research_queue = queue;
 }
 
 /// Gold a bought tile costs before its ring surcharge: `TILE_GOLD_BASE` plus `TILE_GOLD_PER_TILE`

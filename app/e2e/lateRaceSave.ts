@@ -24,25 +24,25 @@ export async function openLateRace(page: Page) {
   await page.waitForTimeout(600);
 }
 
-/** The race panel's rows: how many sit whole in the rows box and are really in view (not under your pinned row), and the scroll state. */
-export const raceRows = (page: Page) => page.getByRole('region', { name: 'Victory race', exact: true }).evaluate((el) => {
-  const rows = el.querySelector<HTMLElement>('.vp-rows')!, box = rows.getBoundingClientRect();
-  const all = [...rows.querySelectorAll<HTMLElement>(':scope > .vp-row')];
+/** The rivals table's rows: how many sit whole in the sidebar's scroll area and are really in view (not under the "+N more" bar), and the scroll state. */
+export const raceRows = (page: Page) => page.getByRole('complementary', { name: 'Empire sidebar' }).evaluate((el) => {
+  const rows = el.querySelector<HTMLElement>('.sidebar-scroll')!, box = rows.getBoundingClientRect();
+  const all = [...el.querySelectorAll<HTMLElement>('.rivals .rv-row')];
   const inView = (r: HTMLElement) => {
     const b = r.getBoundingClientRect();
     if (b.top < box.top - 1 || b.bottom > box.bottom + 1) return false;
-    // Whatever is on top at the row's top and bottom edges is the row itself, not a pinned row over it (a row half under the pinned one fails).
-    const on = (y: number) => !!document.elementFromPoint(b.left + 14, y)?.closest('.vp-row')?.isSameNode(r);
+    // Whatever is on top at the row's top and bottom edges is the row itself, not a sticky bar over it.
+    const on = (y: number) => !!document.elementFromPoint(b.left + 14, y)?.closest('.rv-row')?.isSameNode(r);
     return on(b.top + 3) && on(b.bottom - 3);
   };
-  const more = el.querySelector('.vp-more');
+  const more = el.querySelector('[data-testid="sidebar-more"]');
   return {
     total: all.length,
     whole: all.filter(inView).length,
-    names: all.filter(inView).map((r) => r.querySelector('.vp-team-name')?.textContent ?? ''),
+    names: all.filter(inView).map((r) => r.querySelector('.rv-name')?.textContent ?? ''),
     scrollTop: Math.round(rows.scrollTop), scrolls: rows.scrollHeight > rows.clientHeight + 1,
     more: more?.textContent?.trim() ?? '',
-    panelBottom: Math.round(el.getBoundingClientRect().bottom),
+    panelBottom: Math.round(rows.getBoundingClientRect().bottom),
     mineInView: all.some((r) => r.classList.contains('mine') && inView(r)),
   };
 });

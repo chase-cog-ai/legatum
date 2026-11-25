@@ -8,6 +8,7 @@ import { rememberedSeat, rememberSeat, type ServerStatus } from '../remote';
 import { FakeSocket } from '../test/fakeSocket';
 import { LobbyScreen } from './LobbyScreen';
 import { hostThisTab } from '../test/fakeHosting';
+import { listedRoomName } from '../net/roomName';
 import { setOnlineApi } from '../platform/online';
 
 vi.mock('../net/hosting', async () => (await import('../test/fakeHosting')).fakeHostingModule());
@@ -286,6 +287,8 @@ it.each([
   expect(container.querySelector('[aria-label="Map size"] [aria-checked="true"]')?.textContent).toContain(size);
   expect(container.querySelector('[aria-label="Seat 4 AI level"]')).toBeNull();
   expect(container.textContent).toContain('Alice');
+  // The host is told the name the public list shows, never a typed one.
+  expect(container.querySelector('.lobby-listed')?.textContent).toBe(`In the game list, this game is “${listedRoomName('r')}”.`);
   const start = container.querySelector<HTMLButtonElement>('.lobby-go')!;
   expect(start.textContent).toContain('Start game');
   expect(start.disabled).toBe(false);
@@ -302,12 +305,13 @@ it.each([
 
   // An unrelated host edit must retain the exact dimensions and configured seat defaults.
   const turnLimitOff = [...container.querySelectorAll<HTMLButtonElement>('[aria-label="Turn limit"] button')]
-    .find((button) => button.textContent?.startsWith('Off'))!;
+    .find((button) => button.textContent?.startsWith('Turn '))!;
   await act(async () => turnLimitOff.click());
   expect(start.disabled).toBe(true);
   expect(posted).toEqual([]);
   await act(async () => vi.advanceTimersByTimeAsync(250));
-  expect(posted).toEqual([{ ...saved, turn_limit: null }]);
+  // A room is a game not yet started: the edit also turns deals on (rules 61), like every new game.
+  expect(posted).toEqual([{ ...saved, turn_limit: null, deals: true }]);
   expect(start.disabled).toBe(true);
   await act(async () => settingsResponse.resolve());
   expect(start.disabled).toBe(true); // A response alone is not the current server snapshot.
@@ -324,7 +328,7 @@ it.each([
       { kind: 'ai', name: 'AI 5', faction: 'Random', team: 0, difficulty: 'Hard' },
       { kind: 'ai', name: 'AI 6', faction: 'Random', team: 1, difficulty: 'Hard' },
       { kind: 'ai', name: 'AI 7', faction: 'Random', team: 3, difficulty: 'Hard' }];
-    expect(posted.at(-1)).toEqual({ ...saved, turn_limit: null, width: 48, height: 32, seats });
+    expect(posted.at(-1)).toEqual({ ...saved, turn_limit: null, deals: true, width: 48, height: 32, seats });
     await act(async () => sockets[0].push({ type: 'staging', state: {
       ...privateRoom, config: { ...config, turn_limit: null, width: 48, height: 32, seats },
     } }));

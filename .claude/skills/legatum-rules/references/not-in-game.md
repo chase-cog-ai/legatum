@@ -39,9 +39,10 @@ Moved verbatim from `game-rules.md` on 2026-11-22, in the original order; the or
 | Sight from an aircraft away from its base | **Absent** — every aircraft sees 4 tiles around its city (`add_air_sight`) and a Recon shows 2 tiles around a tile for one turn (`add_recon_sight`), but there is no sight along a flight, no patrol and no automatic reconnaissance |
 | Manual tile-worker assignment | **Absent** — a city works every tile it owns within 3 hexes (§3) |
 | Luxury resources / amenities | **Absent** — luxuries are planned as flavour tiles only, like natural wonders (user 2026-10-22); no empire-wide rule |
-| Gifts of anything but Gold, or Gold to a non-teammate | **Absent** — only `Order::GiveGold` to a living teammate (§5 "Co-op Gold gifts", `rules/gifts.rs::validate_gifts`) |
+| Gifts of anything but Gold; Gold to a non-teammate in a game without deals | **Absent** — `Order::GiveGold` goes to a living teammate, or, with `GameSetup::deals` on (rules 61), to any living empire your team has met and is not at War with (`turn-and-orders.md` "Co-op Gold gifts", `diplomacy.md` "Deals", `rules/gifts.rs::gift_blocker`) |
+| Trading cities, technologies, resources or units in offers | **Absent** — deals (rules 61) put only Gold in Peace, Alliance and Open Borders offers (`diplomacy.md` "Deals") |
 | Resource trade or stockpile | **Absent** — supply only (§3); resource-specific objectives were rejected (user 2026-10-22) |
 | A conquest requirement for winning by VP | **Absent**: no rule demands a captured city for the ten-turn VP hold (§6). A separate win by capitals exists: the only team still holding an original capital of its own wins (rules 37, §6) |
-| A turn-limit winner backstop | **Absent by default** — no turn limit; the 1,200-turn simulation safety cap names no winner (§6) |
+| A game that never ends | **Absent since rules 62**: with no configured turn limit the game ends at turn 500 (`data::DEFAULT_TURN_LIMIT`), most VP wins, a tie draws (§6) |
 | Decadence | **Off by default** — only the opt-in `decadence-slope` experiment turns it on (§6) |
 | A playable Japan | **Absent** — Sakoku is reserved and `Japan` is only a save alias of India (§8) |

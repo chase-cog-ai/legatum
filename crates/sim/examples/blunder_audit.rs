@@ -475,6 +475,7 @@ mod tests {
             ai_alliances: false,
             barbarians: false,
             rule_experiments: Default::default(),
+            deals: false,
         };
         let mut s = blank_game(&setup, Map::new(12, 10, Terrain::Grassland));
         for relation in &mut s.diplomacy.as_mut().unwrap().relations {
@@ -550,6 +551,7 @@ mod tests {
                 last_purchase_turn: None,
                 buildings: Default::default(),
                 walls_level: 0,
+                walls_damage: 0,
                 hp: data::CITY_HP / 3,
                 grown_tiles: vec![],
                 tiles_claimed: 0,

@@ -1,4 +1,4 @@
-import { expectRaceWhole } from './tour/helpers';
+import { expectRaceWhole, meetEveryone } from './tour/helpers';
 import { revealSidebar } from './sidebarAssertions';
 // VP v2 in the real app (Rust core through WASM): the objectives sheet, decadence and
 // the This Turn objective row. The v2 numbers that need a long game (an era entered, progress)
@@ -117,16 +117,17 @@ for (const size of SIZES) {
     test('a lead over the average empire shows as a lead chip and a decadence chip in the race, a note in the Gold breakdown and a list in the sheet', async ({ page }) => {
       await startEightEmpires(page);
       await stage(page, { era: 2, scored: [], lead: 60, rivalLead: 120 });
+      // A new game has met nobody; a rival's chips show only in a met rival's row.
+      await meetEveryone(page);
       const race = page.getByRole('region', { name: 'Victory race', exact: true });
-      await expect(race.locator('.vp-row.mine').getByTestId('lead-chip')).toHaveText('+60%');
+      await expect(race.locator('.rv-row.mine').getByTestId('lead-chip')).toHaveText('+60%');
       await expect(race.getByTestId('lead-chip')).toHaveCount(2);
       // One rate on every yield: its own red chip with an arrow, in the same two rows.
-      await expect(race.locator('.vp-row.mine').getByTestId('decadence-chip')).toHaveText(`${stagedDecadence}%`);
+      await expect(race.locator('.rv-row.mine').getByTestId('decadence-chip')).toHaveText(`${stagedDecadence}%`);
       await expect(race.getByTestId('decadence-chip')).toHaveCount(2);
-      await expect(race.locator('.vp-row.mine').getByTestId('decadence-chip').locator('.icon')).toHaveCount(1);
+      await expect(race.locator('.rv-row.mine').getByTestId('decadence-chip').locator('.icon')).toHaveCount(1);
       await expectRaceWhole(page);
-      await revealSidebar(page, 'standings');
-      await race.locator('.vp-row.mine').getByTestId('lead-chip').hover();
+      await race.locator('.rv-row.mine').getByTestId('lead-chip').hover();
       await shot(page, 'v3-race-panel-lead', size);
       await page.locator('.gold-stat').click();
       const tip = page.locator('.tip-bubble').filter({ hasText: 'Decadence:' }).first();

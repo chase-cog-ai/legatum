@@ -148,7 +148,7 @@ enum CombatProjection {
         distance: i32,
     },
     CityFireOutcome {
-        forecast: legatum_core::forecast::BattleForecast,
+        forecast: Box<legatum_core::forecast::BattleForecast>,
         faction: Option<Faction>,
         kind: legatum_core::UnitKind,
     },
@@ -1152,6 +1152,9 @@ mod tests {
 
         let setup = GameSetup::standard(7, [Faction::Switzerland, Faction::Byzantium]);
         let mut game = Game::from_setup_json(&json::setup_to_value(&setup).to_string()).unwrap();
+        // Masonry lets the empire build Walls, so the upgrade is listed with Walls as its
+        // missing predecessor (before Masonry it is not listed at all).
+        game.session.state.players[0].techs.insert(TechId::Masonry);
         game.session.state.players[0].techs.insert(TechId::Chivalry);
         game.invalidate_view();
 

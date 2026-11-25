@@ -3,6 +3,7 @@
 // game histories in the browser's archive like any local game.
 import { setLocalEndpoint } from '../remote';
 import { recordGameHistory } from '../platform/archive';
+import { uploadsGames } from '../platform/gameUpload';
 import { loadWasmModule } from '../wasmClient';
 import { BrowserHost, type HostEngine, type RelayRefusal, type RoomAnnounce, type RoomKey, type TunnelState } from './browserHost';
 
@@ -120,6 +121,7 @@ export async function startHosting(relay: string, announce: RoomAnnounce, resume
     room: resume?.room ?? null,
     onSave: keepSave,
     onRefused: (r) => events.refused?.(r),
+    publicRecordings: uploadsGames(),
     onRecording: (json) => void recordGameHistory(json).catch((e) => {
       console.warn('game history', e);
       events.error?.('Could not save this game to your history.');
@@ -144,6 +146,11 @@ export async function startHosting(relay: string, announce: RoomAnnounce, resume
   if (fromSave) keepSave(fromSave);
   setLocalEndpoint({ fetch: host.fetch, socket: () => host.socket() });
   return host;
+}
+
+/** The id of the room this tab hosts, or null. The game list names the room from it (roomName.ts). */
+export function hostedRoomId(): string | null {
+  return active?.room?.room ?? hostingRecord()?.room.room ?? null;
 }
 
 /** The hosted game's save right now (what "Save to file" writes), or null when this tab hosts no game. */

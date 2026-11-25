@@ -98,6 +98,10 @@ pub struct StagingConfig {
     /// host turns it on; omitted when off, so rooms from older clients are unchanged.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub ai_alliances: bool,
+    /// Deals (`GameSetup::deals`, rules 61): Gold in offers, gifts to met empires, Open Borders.
+    /// Off unless the host's client turns it on; omitted when off, so older rooms are unchanged.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub deals: bool,
     #[serde(default, skip_serializing_if = "StagingRules::is_default")]
     pub rule_experiments: StagingRules,
     pub seats: Vec<StagingSeat>,
@@ -138,6 +142,8 @@ pub struct StagingSettings {
     pub barbarians: bool,
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub ai_alliances: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub deals: bool,
     #[serde(skip_serializing_if = "StagingRules::is_default")]
     pub rule_experiments: StagingRules,
     pub seats: Vec<StagingSeat>,
@@ -238,6 +244,7 @@ impl Room {
                 turn_limit: self.config.turn_limit,
                 barbarians: self.config.barbarians,
                 ai_alliances: self.config.ai_alliances,
+                deals: self.config.deals,
                 rule_experiments: self.config.rule_experiments,
                 seats: self.config.seats.clone(),
             },
@@ -559,6 +566,7 @@ impl Room {
             barbarians: self.config.barbarians,
             ai_alliances: self.config.ai_alliances,
             rule_experiments: legatum_core::experiments::RuleExperiments::default(),
+            deals: self.config.deals,
         }
     }
 }
@@ -603,6 +611,7 @@ mod faction_tests {
                 turn_limit: None,
                 barbarians: true,
                 ai_alliances: false,
+                deals: false,
                 rule_experiments: StagingRules::default(),
                 seats,
             },

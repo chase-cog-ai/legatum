@@ -236,7 +236,7 @@ for (const [width, height] of [[1000, 600], [1440, 900]] as const) {
         const line = page.locator('.tilecard-unit');
         await expect(line).toContainText('Spartan Scout');
         await expect(line).toContainText('Ancient era');
-        await expect(line).toContainText('100 HP');
+        await expect(line).toContainText('100 health');
         await expect(line).toContainText('strength 5');
         await expect(line.locator('.faction-mark')).toHaveAttribute('aria-label', 'Sparta');
         await clip(page, `owner-emblem-${width}x${height}-${zoomName}`, sc.ownerScout, { w: 220, h: 150 }, shots ?? 'test-results/unit-owner-identity');

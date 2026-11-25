@@ -68,10 +68,10 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await storm(page, setup);
     const p = await plan(page);
     expect(p?.clashes).toBeGreaterThan(0);
-    const zeroHpAlarm = page.locator('.siege-card.attack').filter({ hasText: '0/200 HP' });
+    const zeroHpAlarm = page.locator('.siege-card.attack').filter({ hasText: '0/200 health' });
     if (await zeroHpAlarm.count()) {
-      await expect(zeroHpAlarm).not.toContainText('Drops to 0 HP');
-      await expect(zeroHpAlarm).toContainText('At 0 HP');
+      await expect(zeroHpAlarm).not.toContainText('Drops to 0 health');
+      await expect(zeroHpAlarm).toContainText('At 0 health');
     }
     // The capture's moment card sits over the city at this size; these shots are about the map.
     await page.addStyleTag({ content: '.moment-lane{visibility:hidden!important}' });

@@ -1300,7 +1300,7 @@ fn artillery_and_drones_cover_their_own_era_with_builtin_siege() {
 }
 
 #[test]
-fn walls_levels_add_era_scaled_strength_and_siege_removes_covered_levels() {
+fn walls_levels_add_to_the_walls_bar_and_siege_removes_the_walls_strength() {
     let faction = Faction::Switzerland;
     let at = |level, covered, era| {
         combat::city_defense_covered_rules(
@@ -1314,32 +1314,17 @@ fn walls_levels_add_era_scaled_strength_and_siege_removes_covered_levels() {
         )
     };
     for era in [0, 4, 8] {
-        let base = at(1, 0, era);
-        let three = at(3, 0, era);
-        assert_eq!(three.total, base.total + 2 * data::era_scaled(5, era));
-        assert_eq!(
-            at(3, 2, era).total,
-            at(0, 0, era).total + data::era_scaled(5, era)
-        );
-        assert_eq!(at(3, 3, era).total, at(0, 0, era).total);
-        assert!(
-            three
-                .parts
-                .iter()
-                .any(|(label, _)| label == "Alpine Redoubt II–III")
-        );
-        assert!(
-            at(3, 2, era)
-                .parts
-                .iter()
-                .any(|(label, _)| label == "Alpine Redoubt III")
-        );
+        // Levels above I add no strength: they add to the Walls bar (breakable Walls).
+        assert_eq!(at(3, 0, era).total, at(1, 0, era).total);
+        assert!(at(1, 0, era).total > at(0, 0, era).total);
+        // Siege that covers level I leaves out the Walls' strength.
+        assert_eq!(at(3, 2, era).total, at(0, 0, era).total);
     }
+    assert_eq!(combat::walls_max_hp(0), 0);
+    assert_eq!(combat::walls_max_hp(1), 100);
+    assert_eq!(combat::walls_max_hp(3), 200);
+    assert_eq!(combat::walls_max_hp(9), 500);
     assert_eq!(data::siege_cover(UnitKind::CombatDrone, None), 8);
-    assert_eq!(
-        at(9, 8, 8).total,
-        at(0, 0, 8).total + data::era_scaled(5, 8)
-    );
     assert_eq!(combat::wall_damage_percent(9, 8, false), 75);
 }
 

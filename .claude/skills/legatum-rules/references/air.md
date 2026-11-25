@@ -19,7 +19,7 @@ Moved verbatim from `game-rules.md` on 2026-11-22, in the original order; the or
 | Bank | 200 | +4 Gold | Banking |
 | Mill | 200 | +3 Food | Feudalism |
 | University | 240 | +4 Science | Education |
-| Upgrade Walls (`UpgradeWalls`, repeatable; rules 58, replaces Castle and Star Fort) | 80 × (new level + 1): II 240, III 320 … IX 800 | +5 city strength per level, era-scaled; capped at the owner's era number; Gold-buyable | Walls (no technology of its own) |
+| Upgrade Walls (`UpgradeWalls`, repeatable; rules 58, replaces Castle and Star Fort) | 80 × (new level + 1): II 240, III 320 … IX 800 | +50 to the Walls bar per level (rules 62); repairs a damaged bar; capped at the owner's era number; Gold-buyable, not while under attack | Walls (no technology of its own) |
 | Forge | 320 | +3 Production; uses 1 Iron (idle without it) | Iron Working |
 | Stock Exchange (`StockExchange`) | 360 | +6 Gold (the Gold line's third tier, after Market and Bank); population 8; uses no resource (it keeps the Bank's Niter) | Electricity |
 | Research Lab (`ResearchLab`) | 360 | +6 Science | Electronics |

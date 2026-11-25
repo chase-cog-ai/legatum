@@ -783,6 +783,7 @@ mod siege_deadline_tests {
             &include_bytes!("../tests/fixtures/gergovia-t30.json.gz")[..],
         ))
         .unwrap();
+        let state = crate::fixture::with_rules61_walls(state);
         let mut view = player_view(&state, PlayerId(5));
         let city = view
             .cities

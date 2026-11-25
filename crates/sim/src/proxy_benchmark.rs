@@ -244,10 +244,13 @@ impl Game {
                         }
                     }
                     Event::ProposalCreated { proposal } if proposal.from == team => {
-                        Some(match proposal.kind {
-                            legatum_core::diplomacy::TreatyKind::Peace => "peace_proposed",
-                            legatum_core::diplomacy::TreatyKind::Alliance => "alliances_proposed",
-                        })
+                        match proposal.kind {
+                            legatum_core::diplomacy::TreatyKind::Peace => Some("peace_proposed"),
+                            legatum_core::diplomacy::TreatyKind::Alliance => {
+                                Some("alliances_proposed")
+                            }
+                            legatum_core::diplomacy::TreatyKind::OpenBorders => None,
+                        }
                     }
                     _ => None,
                 };

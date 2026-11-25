@@ -1,25 +1,20 @@
-// The name a game shows in the game list. The game server shortens names with the same rule (kept in step with
-// infra/relay/src/shared.ts `sanitizeName`, minus its word blocklist, which only the server applies).
+// The name a hosted game shows in the public game list. The list never shows text a player typed: the relay
+// names each room from its id (infra/relay/src/shared.ts `listedName`), and this is a copy of that rule, so the
+// host can tell friends which game to join. Keep the two in step.
 
-/** Most characters of a name the game list shows. */
-export const MAX_ROOM_NAME = 40;
+const ADJECTIVES = [
+  'Amber', 'Bronze', 'Cedar', 'Cobalt', 'Copper', 'Crimson', 'Golden', 'Granite',
+  'Indigo', 'Ivory', 'Jade', 'Marble', 'Olive', 'Saffron', 'Silver', 'Scarlet',
+];
+const NOUNS = [
+  'Banner', 'Bridge', 'Citadel', 'Compass', 'Delta', 'Forum', 'Garden', 'Harbour',
+  'Highland', 'Lantern', 'Meadow', 'Oasis', 'Ridge', 'River', 'Steppe', 'Valley',
+];
+const ID_ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
 
-/** Letters of any script, digits, spaces and a little punctuation survive; everything else is dropped. */
-const DROP = /[^\p{L}\p{M}\p{N}\s'’.,!?&()#:_-]/gu;
-
-type Segmenter = new (locale?: string, options?: { granularity: 'grapheme' }) => { segment(s: string): Iterable<{ segment: string }> };
-
-function visibleCharacters(s: string): string[] {
-  const Seg = (Intl as unknown as { Segmenter?: Segmenter }).Segmenter;
-  return Seg ? Array.from(new Seg(undefined, { granularity: 'grapheme' }).segment(s), (x) => x.segment) : Array.from(s);
-}
-
-/** The name as the game list will show it; '' when nothing usable is left (the list then numbers the game). */
-export function cleanRoomName(raw: string): string {
-  let s = raw.normalize('NFC').replace(DROP, '');
-  s = s.replace(/(^|[^\p{L}\p{M}])\p{M}+/gu, '$1');
-  s = s.replace(/(\p{M}{3})\p{M}+/gu, '$1');
-  s = s.replace(/\s+/gu, ' ').trim();
-  const g = visibleCharacters(s);
-  return g.length > MAX_ROOM_NAME ? g.slice(0, MAX_ROOM_NAME).join('').trimEnd() : s;
+/** The name the game list shows for the room with this id. */
+export function listedRoomName(room: string): string {
+  const at = (i: number) => Math.max(0, ID_ALPHABET.indexOf(room[i] ?? 'a'));
+  const tag = String((at(2) * 32 + at(3)) % 100).padStart(2, '0');
+  return `${ADJECTIVES[at(0) % ADJECTIVES.length]} ${NOUNS[at(1) % NOUNS.length]} ${tag}`;
 }

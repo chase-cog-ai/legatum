@@ -174,12 +174,13 @@ export function wonderBadgeAt(x: number, cy: number, r: number, L: BadgeLayout, 
 }
 
 /**
- * The bonus on the tile itself: "+25% [Science icon]" in a parchment pill (zoomed out, the mark gains a
+ * The bonus on the tile itself, unless it is `folded` into the tile's yield icons (Yields on, room for it, no unit on the
+ * cluster: `foldedBonuses`): "+25% [Science icon]" in a parchment pill (zoomed out, the mark gains a
  * pip in the yield's colour). It draws above the lens tint and the yield icons, under units and banners,
  * and steps to the bottom slot when a banner or a town covers the top (never with the Yields overlay on, where the tile's
  * own yields sit at the bottom), then to the middle.
  */
-export function drawWonderBadges(ctx: CanvasRenderingContext2D, view: PlayerView, cam: Camera, w: number, h: number, dpr: number, yieldsOn: boolean, covers: readonly Cover[], units: readonly Cover[] = []): () => void {
+export function drawWonderBadges(ctx: CanvasRenderingContext2D, view: PlayerView, cam: Camera, w: number, h: number, dpr: number, yieldsOn: boolean, covers: readonly Cover[], units: readonly Cover[] = [], folded: ReadonlySet<number> = new Set()): () => void {
   const hexPx = HEX_SIZE * cam.zoom;
   const far = isFar(hexPx);
   const later: (() => void)[] = [];
@@ -189,6 +190,8 @@ export function drawWonderBadges(ctx: CanvasRenderingContext2D, view: PlayerView
   for (let i = 0; i < view.tiles.length; i++) {
     const t = view.tiles[i];
     if (!t.explored || !t.wonder) continue;
+    // Folded into the tile's yield icons (yieldIcons.ts foldedBonuses): no pill.
+    if (!far && folded.has(i)) continue;
     const x = (centerX(i, view.width) - cam.x) * cam.zoom + w / 2, cy = (centerY(i, view.width) - cam.y) * cam.zoom + h / 2;
     if (x < -90 || x > w + 90 || cy < -90 || cy > h + 90) continue;
     const kind = WONDER_INFO[t.wonder].yield;

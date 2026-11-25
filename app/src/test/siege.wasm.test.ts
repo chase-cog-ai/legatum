@@ -24,7 +24,8 @@ it.skipIf(!available)('core says a city was hit last turn, and the alerts need n
   expect(city.detail?.attacked_last_turn).toBe(true);
   const [alarm] = citiesUnderAttack(view, null);
   expect(alarm).toMatchObject({ kind: 'attack', cityId: s.own, force: '3 Spearmen', attackedLastTurn: true, hit: null });
-  expect(alarm.forecast.text).toBe('Holds about 2 turns unless reinforced');
+  // Its Walls take half of each hit before the health (breakable Walls, rules 62).
+  expect(alarm.forecast.text).toBe('Holds about 4 turns unless reinforced');
 });
 
 it.skipIf(!available)('the AI really attacks an unwalled city, and the report leads with it', () => {
@@ -36,7 +37,7 @@ it.skipIf(!available)('the AI really attacks an unwalled city, and the report le
   const events = result.events_by_player?.[0] ?? result.events;
   const lines = formatEvents(events, contextFromViews(before, after));
   expect(lines[0], 'the attack leads the report').toMatchObject({ category: 'attack', tone: 'bad' });
-  expect(lines[0].text).toMatch(/^Waypost Seven was attacked: 200 → \d+ HP by 3 Spearmen from /);
+  expect(lines[0].text).toMatch(/^Waypost Seven was attacked: 200 → \d+ health by 3 Spearmen from /);
   // Only the city's own record is left once the turn report is gone (a loaded game).
   expect(hitsForTurn(events, before, after)[0]).toMatchObject({ before: 200 });
   expect(hitsForTurn(events, before, after)[0].lost).toBeGreaterThan(0);

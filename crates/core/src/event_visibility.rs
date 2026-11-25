@@ -129,11 +129,15 @@ pub fn visible_events(
                 | Event::PeaceEstablished { .. }
                 | Event::TreatyActivated { .. }
                 | Event::TreatyEnded { .. }
+                | Event::BordersOpened { .. }
+                | Event::BordersClosed { .. }
                 | Event::TreatyBreached { .. }
                 | Event::AllianceBetrayed { .. } => true,
                 Event::TreatyPayment { player, .. } => teammates.contains(player),
-                // Gifts only ever move inside a team.
-                Event::GoldGiven { from, .. } => teammates.contains(from),
+                // Gold between two empires (a gift or a deal) is private to their teams.
+                Event::GoldGiven { from, to, .. } => {
+                    teammates.contains(from) || teammates.contains(to)
+                }
                 // The Gold is private to the two empires.
                 Event::CompanyHired { owner, seller, .. } => {
                     teammates.contains(owner) || teammates.contains(seller)
@@ -165,6 +169,7 @@ pub fn visible_events(
                 | Event::CapitalSacked { .. }
                 | Event::CapitalLost { .. }
                 | Event::AthensCityCaptured { .. }
+                | Event::WallsBreached { .. }
                 | Event::EraEntered { .. }
                 | Event::FactionGoalCompleted { .. }
                 | Event::FactionGoalLost { .. }

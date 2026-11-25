@@ -71,6 +71,8 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
     ['a rival\'s turned', ev({ type: 'CompanyTurned', unit: 'Spearman', owner: 2, origin: 'Sparta', pos: { q: 3, r: 3 } }), 'neutral'],
   ],
   TreatyActivated: [['alliance', ev({ type: 'TreatyActivated', relation: relation({ state: 'Alliance', guarantee_until: 0, security: { id: 3, started_turn: 12, protected_until: 22 } }) }), 'neutral']],
+  BordersOpened: [['open borders', ev({ type: 'BordersOpened', a: 0, b: 2, effective_turn: 12 }), 'neutral']],
+  BordersClosed: [['borders closed', ev({ type: 'BordersClosed', a: 0, b: 2, effective_turn: 12, reason: 'They went to War' }), 'neutral']],
   TreatyEnded: [
     ['your ally left you', ev({ type: 'TreatyEnded', treaty_id: 3, a: 0, b: 2, effective_turn: 12, reason: 'P2 left the Alliance' }), 'bad'],
     ['you left', ev({ type: 'TreatyEnded', treaty_id: 3, a: 0, b: 2, effective_turn: 12, reason: 'P0 & P1 left the Alliance' }), 'neutral'],
@@ -150,6 +152,11 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
   AthensCityCaptured: [
     ['your city rewarded a rival', ev({ type: 'AthensCityCaptured', city: 1, from: 0, to: 2 }), 'bad'],
     ['you earned a free technology', ev({ type: 'AthensCityCaptured', city: 1, from: 2, to: 0 }), 'good'],
+  ],
+  WallsBreached: [
+    ['your Walls fell', ev({ type: 'WallsBreached', city: 1, owner: 0, by: 2 }), 'bad'],
+    ['you broke their Walls', ev({ type: 'WallsBreached', city: 1, owner: 2, by: 0 }), 'good'],
+    ['rivals fought', ev({ type: 'WallsBreached', city: 1, owner: 2, by: 3 }), 'neutral'],
   ],
   CapitalTaken: [
     ['your held point', ev({ type: 'CapitalTaken', captor: 0, capital: 5, name: 'Rome' }), 'good'],
@@ -330,11 +337,11 @@ describe('turn report tone, from the viewer\'s side', () => {
 describe('"from where?" on combat lines', () => {
   it('names the attacker, its position relative to the target, and a signed HP change', () => {
     const [mine] = formatEvents([battle({})], ctx);
-    expect(mine.text).toBe("Your Archer bombarded P2's Spearman at Beacon, from 2 tiles E: −35 HP (65 left)");
-    expect(mine).toMatchObject({ at, from: { q: 5, r: 1 }, hp: [{ text: '−35 HP', tone: 'good' }] });
+    expect(mine.text).toBe("Your Archer bombarded P2's Spearman at Beacon, from 2 tiles E: −35 health (65 left)");
+    expect(mine).toMatchObject({ at, from: { q: 5, r: 1 }, hp: [{ text: '−35 health', tone: 'good' }] });
     const [theirs] = formatEvents([enemyShot], ctx);
-    expect(theirs.text).toBe("P2's Spearman bombarded your Archer at Beacon, from 2 tiles E: −35 HP (65 left)");
-    expect(theirs).toMatchObject({ tone: 'bad', hp: [{ text: '−35 HP', tone: 'bad' }] });
+    expect(theirs.text).toBe("P2's Spearman bombarded your Archer at Beacon, from 2 tiles E: −35 health (65 left)");
+    expect(theirs).toMatchObject({ tone: 'bad', hp: [{ text: '−35 health', tone: 'bad' }] });
   });
 
   it('respects fog: an attacker whose tile the viewer never saw is "out of sight", with no arrow origin', () => {
@@ -346,15 +353,15 @@ describe('"from where?" on combat lines', () => {
 
   it('names a striking city, and its arrow starts at the city', () => {
     const [shot] = formatEvents([battle({ attacker: { city: 5 }, attacker_owner: 2, attacker_at: { q: 1, r: 1 }, defender: { kind: 'Unit', unit: 7, owner: 0, unit_kind: 'Archer' } })], ctx);
-    expect(shot.text).toBe("P2's city Elsewhere fired on your Archer at Beacon: −35 HP (65 left)");
+    expect(shot.text).toBe("P2's city Elsewhere fired on your Archer at Beacon: −35 health (65 left)");
     expect(shot).toMatchObject({ from: { q: 1, r: 1 }, at, tone: 'bad' });
   });
 
   it('melee names both losses, each coloured for its side', () => {
     const [m] = formatEvents([battle({ ranged: false, attacker_at: { q: 4, r: 1 }, damage_to_attacker: 12, attacker_hp_after: 88 })], ctx);
-    expect(m.text).toBe("Your Archer attacked P2's Spearman at Beacon, from 1 tile E: defender −35 HP, attacker −12 HP (88 HP left). Needs orders.");
-    expect(m.hp).toEqual([{ text: '−35 HP', tone: 'good' }, { text: '−12 HP', tone: 'bad' }]);
-    expect(lineSegments(m).filter((s) => s.tone).map((s) => [s.text, s.tone])).toEqual([['−35 HP', 'good'], ['−12 HP', 'bad']]);
+    expect(m.text).toBe("Your Archer attacked P2's Spearman at Beacon, from 1 tile E: defender −35 health, attacker −12 health (88 health left). Needs orders.");
+    expect(m.hp).toEqual([{ text: '−35 health', tone: 'good' }, { text: '−12 health', tone: 'bad' }]);
+    expect(lineSegments(m).filter((s) => s.tone).map((s) => [s.text, s.tone])).toEqual([['−35 health', 'good'], ['−12 health', 'bad']]);
     expect(lineSegments(m).map((s) => s.text).join('')).toBe(m.text);
   });
 });

@@ -76,6 +76,7 @@
 }
 .te.alliance .te-ring.a { right: 30%; left: 2%; }
 .te.alliance .te-ring.b { left: 30%; right: 2%; background: transparent; }
+.te-passage { position: relative; color: var(--ink); }
 .te-star { position: relative; }
 /* The star carries its own red (.star); Peace and Alliance wear ink. */
 .te:not(.bad) .te-star { color: var(--ink); }

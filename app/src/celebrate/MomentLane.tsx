@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 import { pendingAlarms, useGame, type TurnReport } from '../store';
 import type { Event as GameEvent } from '../types';
 import { CrestMedallion } from '../brand/ornaments';
-import { RingMedallion } from '../ui/ringMedallion';
+import { RingMedallion, TreatyEmblem } from '../ui/ringMedallion';
 import { playerColor } from '../theme';
 import { useReducedMotion } from '../ui/useReducedMotion';
 import { motionStill } from '../ui/motion';
@@ -16,10 +16,11 @@ import { unitMiniatureUrl } from '../unitArt';
 import { buildingArtSlug, slugUrl } from '../unlockArt';
 import { resourceArtUrl } from '../icons';
 import { RewardEmblem } from './RewardEmblem';
-import { DURATION, momentsForTurn, planMoments, type Counter, type Emblem, type Moment } from './moments';
+import { DURATION, heldMoment, momentsForTurn, planMoments, type Counter, type Emblem, type Moment } from './moments';
 import { UnlockMomentCard, activateUnlock } from './UnlockMoment';
 import { EraUpTakeover, activateEraUp } from './EraUpTakeover';
 import { ScoreCheck } from './ScoreCheck';
+import { MeetingTakeover } from './MeetingTakeover';
 import { settleResearch } from './researchSettled';
 import { effectiveResearchQueue } from '../orders';
 import './celebrate.css';
@@ -41,6 +42,9 @@ function vignetteFor(card: Moment): string | null {
  * A moment card's one primary (Return): the decision the event leaves (a lost wonder race: choose
  * what the city builds), else the place it happened, else Continue. The turn report is one key away (L).
  */
+/** Past the last card: the story is over. */
+const END = Number.MAX_SAFE_INTEGER;
+
 export function momentPrimary(card: Moment): { label: string; act(): void } {
   const s = useGame.getState();
   if (card.choose !== undefined) {
@@ -125,16 +129,16 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
     if (useGame.getState().unlockReopen || useGame.getState().eraReopen) {
       // A reopened Age plays its era-up and score check in turn, then ends.
       if (playRef.current && playRef.current.index + 1 < shownCount.current) { setPlay((p) => p ? { ...p, index: p.index + 1, started: performance.now(), released: true } : p); return; }
-      useGame.getState().set({ unlockReopen: null, eraReopen: null }); setPlay((p) => p ? { ...p, index: 3, released: true } : p); return;
+      useGame.getState().set({ unlockReopen: null, eraReopen: null }); setPlay((p) => p ? { ...p, index: END, released: true } : p); return;
     }
     setPlay((p) => p ? { ...p, index: p.index + 1, started: performance.now(), released: true } : p);
   }, []);
   // A card held for the player ignores stray gestures (map pans, taps, an opened report): only its own controls close it.
-  const interrupt = useCallback(() => { if (unlockUp.current) return; cancelCelebrationFeedback(); setPlay((p) => p ? { ...p, index: 3 } : p); }, []);
-  unlockUp.current = !!(active?.unlock || active?.eraUp || active?.scoreCheck);
+  const interrupt = useCallback(() => { if (unlockUp.current) return; cancelCelebrationFeedback(); setPlay((p) => p ? { ...p, index: END } : p); }, []);
+  unlockUp.current = heldMoment(active);
   useEffect(() => {
     // An unlock card waits for the player: only its own controls, Return and Esc close it.
-    if (!active || active.unlock || active.eraUp || active.scoreCheck) return;
+    if (!active || heldMoment(active)) return;
     const timer = setTimeout(dismiss, DURATION[active.tier]);
     return () => clearTimeout(timer);
   }, [active, dismiss]);
@@ -142,7 +146,7 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
     if (!active) return;
     // A card held for the player ignores pointers entirely (a map pan or a click on End Turn leaves it up);
     // only its own buttons, Return and Esc act, and never while a dialog covers the screen.
-    if (active.unlock || active.eraUp || active.scoreCheck) {
+    if (heldMoment(active)) {
       const card = active.unlock;
       const eraUp = active.eraUp;
       const held = (e: KeyboardEvent) => {
@@ -198,14 +202,14 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
   };
   // Derive the initial hold before the playback effect runs, avoiding a one-frame report flash.
   const holding = alarmUp || (current ? !!active && play.index === 0 && !play.released : batch.shown.length > 0);
-  return <CelebrationContext.Provider value={{ active, deferred: !!(active?.unlock || active?.eraUp || active?.scoreCheck) && dialogOpen, started: play?.started ?? 0, reduced, collapsed: active ? batch.collapsed.length : 0, holding, dismiss, interrupt, more }}>{children}</CelebrationContext.Provider>;
+  return <CelebrationContext.Provider value={{ active, deferred: heldMoment(active) && dialogOpen, started: play?.started ?? 0, reduced, collapsed: active ? batch.collapsed.length : 0, holding, dismiss, interrupt, more }}>{children}</CelebrationContext.Provider>;
 }
 
 export function CounterDelta({ counter }: { counter: Counter }) {
   const { active, reduced } = useCelebration();
   const amount = active?.deltas.filter((d) => d.counter === counter).reduce((n, d) => n + d.amount, 0) ?? 0;
   if (!amount) return null;
-  return <span key={active!.id} className={`celebrate-delta ${reduced ? 'reduced' : ''}`} data-celebrate-delta={counter}>{amount > 0 ? '+' : '−'}{Math.abs(amount)}</span>;
+  return <span key={active!.id} className={`celebrate-delta ${amount < 0 ? 'cost' : ''} ${reduced ? 'reduced' : ''}`} data-celebrate-delta={counter}>{amount > 0 ? '+' : '−'}{Math.abs(amount)}</span>;
 }
 
 export function MomentLane() {
@@ -213,7 +217,7 @@ export function MomentLane() {
   const lane = useRef<HTMLDivElement>(null);
   const card = active && active.tier !== 'minor' ? active : null;
   const picture = card ? card.art ?? (card.resource ? resourceArtUrl(card.resource, 256) : null) ?? (card.unit ? unitMiniatureUrl(card.unit.kind, card.unit.faction) : null) ?? (card.artSlug ? slugUrl(card.artSlug, 256) : null) ?? (card.building ? slugUrl(buildingArtSlug(card.building, card.faction), 256) ?? slugUrl(buildingArtSlug(card.building), 256) : null) : null;
-  const vignette = card && !card.unlock && !card.eraUp && !card.scoreCheck ? vignetteFor(card) : null;
+  const vignette = card && !heldMoment(card) ? vignetteFor(card) : null;
   // Global layout owns the reservations; publish the actual card + overflow-chip height so
   // reports and phone selection panels can share the screen without guessing text/font sizes.
   useLayoutEffect(() => {
@@ -230,13 +234,19 @@ export function MomentLane() {
       {card?.unlock && !deferred && <UnlockMomentCard moment={card} dismiss={dismiss} />}
       {card?.eraUp && !deferred && <EraUpTakeover moment={card} dismiss={dismiss} />}
       {card?.scoreCheck && !deferred && <ScoreCheck moment={card} dismiss={dismiss} />}
-      {card && !card.unlock && !card.eraUp && !card.scoreCheck && <article key={card.id} className={`moment-card ${card.tier} ${card.partner ? 'partner' : ''} ${card.loss ? 'loss' : ''}`} data-tier={card.tier} aria-label={card.title} onClick={(e) => { if (!(e.target as Element).closest('button')) dismiss(); }}>
+      {card?.meeting && !deferred && <MeetingTakeover moment={card} dismiss={dismiss} />}
+      {card && !heldMoment(card) && <article key={card.id} className={`moment-card ${card.tier} ${card.partner ? 'partner' : ''} ${card.loss ? 'loss' : ''}`} data-tier={card.tier} aria-label={card.title} onClick={(e) => { if (!(e.target as Element).closest('button')) dismiss(); }}>
         <button className="moment-dismiss" aria-label="Dismiss celebration" onClick={dismiss}><Icon name="ui-cross" size={14} /></button>
         {(card.kicker ?? (card.partner ? 'From your ally' : null)) && <div className="moment-kicker">{card.kicker ?? 'From your ally'}</div>}
         <div className="moment-body">
         <div className="moment-heading">
           {vignette && <img className="moment-vignette" src={vignette} alt="" />}
-          {card.frame ? <span className="moment-frame"><PortraitFrame faction={card.frame} fallen crestSize={30} style={{ ['--pw' as string]: '84px', ['--ph' as string]: '104px' }} />{card.seal ? <VpSeal vp={card.seal} /> : null}</span>
+          {card.treaty ? <span className="moment-treaty" data-testid="moment-treaty">
+              <CrestMedallion faction={card.treaty.ours.faction} color={playerColor(card.treaty.ours.id)} size={40} />
+              <span className="moment-treaty-emblem"><TreatyEmblem kind={card.treaty.kind} size={44} /></span>
+              <CrestMedallion faction={card.treaty.theirs.faction} color={playerColor(card.treaty.theirs.id)} size={40} />
+            </span>
+            : card.frame ? <span className="moment-frame"><PortraitFrame faction={card.frame} fallen crestSize={30} style={{ ['--pw' as string]: '84px', ['--ph' as string]: '104px' }} />{card.seal ? <VpSeal vp={card.seal} /> : null}</span>
             : picture ? <img className="moment-wonder-art" src={picture} alt="" /> :
             <span className="moment-crest"><span className="moment-rays" aria-hidden="true" />
               {card.goalMark ? <RingMedallion icon={card.goalMark} tone={card.loss ? 'hollow' : 'gilt'} size={card.tier === 'legendary' ? 72 : 56}
@@ -249,6 +259,8 @@ export function MomentLane() {
         {card.gains?.length ? <ul className="moment-effect moment-gains" aria-label="You gained">
           {card.gains.map((g) => <li key={g.text}>{!g.icon.startsWith('yield-') && <Icon name={g.icon} size={24} />}<b><Amounts text={g.text} /></b></li>)}
         </ul> : <p className="moment-effect plain"><span><Amounts text={card.effect} /></span></p>}
+        {card.treaty?.gold && <p className={`moment-treaty-gold ${card.treaty.gold.received ? 'gain' : 'cost'}`} data-testid="moment-treaty-gold"><b><Amounts text={card.treaty.gold.text} /></b></p>}
+        {card.treaty?.upkeep ? <p className="moment-treaty-gold cost" data-testid="moment-treaty-upkeep"><b><Amounts text={`Upkeep −${card.treaty.upkeep} Gold a turn`} /></b></p> : null}
         {card.lore && <p className="moment-lore">“{card.lore}”</p>}
         {card.details.length > 0 && <div className="moment-details">{card.details.map((text) => <p key={text}><Amounts text={text} /></p>)}</div>}
         </div>

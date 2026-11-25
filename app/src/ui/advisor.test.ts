@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { FixtureClient } from '../test/fixtureEngine';
 import { advisor_orders } from '../wasm-pkg/legatum.js';
 import { neighbors } from '../hex';
-import type { Order } from '../types';
+import type { Order, TechId } from '../types';
+import { TECH_NAME } from '../data';
 import { advisorSuggestion, advisorWhy, practiceKind, PRACTICE_TURNS, readAdvisorPreferences, useAdvisor, type AdvisorContext } from './advisorModel';
 
 async function opening() {
@@ -87,10 +88,23 @@ describe('one decision at a time', () => {
       steps: [{ instruction: 'Click Choose 1 free technology.', target: { kind: 'control', name: 'turn' } }] });
   });
 
+  it('answers an incoming Open Borders offer by its own name, never as a Peace (advisor review of PR 184)', async () => {
+    const { view, ctx } = await opening();
+    const rival = view.players.find((p) => p.team !== view.team)!;
+    view.diplomacy.proposals = [{ id: 50, from: rival.team, to: view.team, proposer: rival.id, kind: 'OpenBorders',
+      created_turn: view.turn, respond_by: view.turn + 2, relation_version: 0, gold: -20 }];
+    const s = advisorSuggestion(ctx(), ['welcome'], []);
+    expect(s).toMatchObject({ title: 'Answer this first', steps: [{ target: { kind: 'control', name: 'turn' } }] });
+    expect(s!.why).toMatch(new RegExp(`^Open Borders with .+: your units may enter each other’s land · asks 20 Gold · respond by turn ${view.turn + 2}$`));
+    expect(s!.why).not.toContain('Peace');
+  });
+
   it('uses plain facts and exact controls on touch', async () => {
     const { view, city, unit, tech, ctx } = await opening();
     const military: Order = { type: 'SetProduction', city: city.id, item: { kind: 'Unit', unit: 'Spearman' } };
-    expect(advisorSuggestion({ ...ctx(), techOpen: true, touch: true }, ['welcome'], [])?.steps[1].instruction).toMatch(/^Tap Research now on /);
+    const pick = advisorSuggestion({ ...ctx(), techOpen: true, touch: true }, ['welcome'], [])?.steps[1];
+    expect(pick?.target).toMatchObject({ kind: 'control', name: 'tech' });
+    expect(pick?.instruction).toBe(`Tap ${TECH_NAME[(pick!.target as { value: TechId }).value]}.`);
     const found = advisorSuggestion({ ...ctx([{ type: 'SetProduction', city: city.id, item: city.detail!.options[0].item }]),
       plan: [{ type: 'FoundCity', unit: unit.id }], touch: true }, ['welcome'], []);
     expect(found?.steps[1].instruction).toBe('Tap Found City.');
@@ -105,10 +119,23 @@ describe('one decision at a time', () => {
     expect(advisorWhy({ type: 'SetProduction', city: city.id, item: { kind: 'Unit', unit: 'Settler' } }, view, city))
       .toBe('A Settler founds a new city, and more cities grow your empire.');
     const upgrade: Order = { type: 'SetProduction', city: city.id, item: { kind: 'Building', building: 'UpgradeWalls' } };
-    expect(advisorWhy(upgrade, view, city)).toBe(`Upgrade Walls adds city strength in ${city.name}.`);
+    expect(advisorWhy(upgrade, view, city)).toBe(`Upgrade Walls adds 50 to ${city.name}'s Walls.`);
     const walled = { ...city, walls: true, walls_level: 2 };
     view.cities = view.cities.map((c) => (c.id === city.id ? walled : c));
     expect(advisorSuggestion(ctx([], null, [upgrade]), ['welcome'], [])?.title).toBe(`Build Upgrade Walls (to III) in ${city.name}`);
+    // Breakable Walls (rules 62): a damaged bar below the era cap still upgrades, and the build restores it.
+    const era = view.players.find((p) => p.id === view.me)!.era;
+    const damaged = { ...walled, walls_level: Math.max(1, era - 1), walls_hp: 60, walls_max_hp: 100 };
+    view.cities = view.cities.map((c) => (c.id === city.id ? damaged : c));
+    expect(advisorWhy(upgrade, view, damaged)).toBe(`${city.name}'s Walls are damaged and never regrow. This build restores them.`);
+    if (era > 1) expect(advisorSuggestion(ctx([], null, [upgrade]), ['welcome'], [])?.title).toMatch(/^Build Upgrade Walls \(to [IVX]+\) in /);
+    // At the era cap the same build is Repair Walls.
+    const capped = { ...damaged, walls_level: era };
+    view.cities = view.cities.map((c) => (c.id === city.id ? capped : c));
+    expect(advisorSuggestion(ctx([], null, [upgrade]), ['welcome'], [])?.title).toBe(`Build Repair Walls in ${city.name}`);
+    // Under attack, Walls work waits.
+    const besieged = { ...capped, detail: { ...capped.detail!, walls_blocked: true } };
+    expect(advisorWhy(upgrade, view, besieged)).toBe(`Walls can't be finished while ${city.name} is under attack. Production waits.`);
     const unlockable = view.research.available.find((option) => view.research.unlocks.some((u) => u.tech === option.tech))?.tech;
     expect(advisorWhy({ type: 'SetResearch', tech: unlockable ?? tech }, view))
       .toMatch(unlockable ? /^.+ unlocks the .+\.$/ : /^Research gives your empire new choices\.$/);
@@ -193,6 +220,29 @@ describe('only new things once the basics are known', () => {
     expect(advisorSuggestion(ctx(orders), ['welcome'], [], { endTurn: PRACTICE_TURNS })).toBeNull();
     const research: Order[] = [{ type: 'SetResearch', tech: view.research.available[0].tech }];
     expect(advisorSuggestion({ ...ctx(research), techOpen: true }, ['welcome'], [], { closeResearch: PRACTICE_TURNS })?.id).not.toBe('closeResearch');
+  });
+});
+
+describe('deals in the Hard plan', () => {
+  // Deals are optional (advisor review of PR 184): the advisor teaches no deal, so Gold in an offer, a
+  // gift to another empire or closing borders in the plan changes nothing it suggests.
+  it('makes no suggestion for Gold offers, gifts to a rival or closing borders', async () => {
+    const { view, plan, ctx } = await opening();
+    const rival = view.players.find((p) => p.team !== view.team)!;
+    const deals: Order[] = [
+      { type: 'ProposeTreaty', to: rival.team, kind: 'OpenBorders', gold: -40 },
+      { type: 'GiveGold', to: rival.id, amount: 30 },
+      { type: 'BreakTreaty', with: rival.team, agreement: 'OpenBorders' },
+    ];
+    for (const done of [[], plan.slice(0, 1), plan]) {
+      const without = advisorSuggestion(ctx(done, null, plan), ['welcome'], []);
+      const withDeals = advisorSuggestion(ctx(done, null, [...deals, ...plan]), ['welcome'], []);
+      expect(withDeals).toEqual(without);
+      expect(JSON.stringify(withDeals ?? {})).not.toMatch(/Open Borders|Give Gold|Close borders|ProposeTreaty|GiveGold|BreakTreaty/);
+    }
+    // With only deal orders in the plan, the advisor falls back to the basics, never to a deal.
+    const only = advisorSuggestion(ctx([], null, deals), ['welcome'], []);
+    expect(JSON.stringify(only ?? {})).not.toMatch(/Open Borders|Give Gold|Close borders/);
   });
 });
 

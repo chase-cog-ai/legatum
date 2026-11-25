@@ -687,6 +687,14 @@ impl Planner<'_> {
             self.decisions.siege_window
         } else {
             self.decisions.siege_rounds
+        } + if rounds.is_none() {
+            // Breakable Walls (rules 62): a standing Walls bar never heals, so a longer siege is
+            // still a sure one. Play a round more for every 50 of the bar (up to 6): without it a
+            // late-era bar (up to 500) outlasts the window and every walled city looks hopeless
+            // (a Hard duel where neither side ever attacked again, 2026-11-25).
+            (city.walls_hp.max(0) / 50).min(6)
+        } else {
+            0
         };
         // Gene `relief_forecast`: the owner's melee units that can step in relieve the city. They
         // still count as attackers in the fire step: the defender's orders are unknown, and

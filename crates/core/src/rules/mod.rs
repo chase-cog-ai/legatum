@@ -591,6 +591,7 @@ pub(crate) mod test_support {
             ai_alliances: false,
             barbarians: false,
             rule_experiments: Default::default(),
+            deals: false,
         };
         {
             let mut state = crate::game::blank_game(&setup, Map::new(12, 10, Terrain::Grassland));
@@ -655,6 +656,7 @@ pub(crate) mod test_support {
                 last_purchase_turn: None,
                 buildings: Default::default(),
                 walls_level: 0,
+                walls_damage: 0,
                 hp: data::CITY_HP,
                 grown_tiles: Vec::new(),
                 tiles_claimed: 0,

@@ -172,6 +172,7 @@ impl ViewBuilder {
                 economy: 0,
                 army: 0,
                 advancement: 0,
+                science: 0,
                 power: 0,
                 lead_percent: 0,
                 decadence_percent: 0,
@@ -200,6 +201,8 @@ impl ViewBuilder {
                     peace_cooldowns: vec![],
                     met: vec![],
                     actions: vec![],
+                    deals: false,
+                    open_borders: Default::default(),
                 }
                 .into(),
                 turn: 20,
@@ -248,6 +251,7 @@ impl ViewBuilder {
                     turns_left: None,
                     known: Vec::new(),
                     skipped: Vec::new(),
+                    goal: None,
                     available: Vec::new(),
                     catalog: Vec::new(),
                     unlocks: Vec::new(),
@@ -498,6 +502,8 @@ impl ViewBuilder {
         let is_capital = !self.view.cities.iter().any(|c| c.owner == owner);
         self.view.cities.push(CityView {
             walls_level: 0,
+            walls_hp: 0,
+            walls_max_hp: 0,
             citadel: false,
             star_fort: false,
             has_workshop: false,
@@ -667,6 +673,7 @@ impl ViewBuilder {
             turns_to_heal: None,
             heal_blocked: false,
             attacked_last_turn: false,
+            walls_blocked: false,
             population_unlocks: Vec::new(),
         }
     }
@@ -734,7 +741,16 @@ pub fn assert_valid(view: &PlayerView, orders: &[Order]) {
             Order::SetAutoFire { .. } => panic!("AI seats do not set human garrison automation"),
             Order::SetCityAutomation { .. } => panic!("AI seats do not delegate city production"),
             Order::BuyTile { .. } => panic!("AI seats do not buy tiles"),
-            Order::GiveGold { .. } => panic!("AI seats do not give Gold"),
+            // Deals (rules 61): Hard's coalition Gold, only with deals on.
+            Order::GiveGold { to, amount } => {
+                assert!(
+                    view.diplomacy.deals,
+                    "AI seats give Gold only with deals on"
+                );
+                assert!(*amount >= 1 && *amount <= view.economy.gold && *to != view.me);
+                let team = view.team_of(*to);
+                assert!(view.diplomacy.met.contains(&team) && !view.teams_at_war(view.team, team));
+            }
             Order::Raze { city } => {
                 let c = own_city(*city);
                 assert!(
@@ -963,7 +979,22 @@ pub fn assert_valid(view: &PlayerView, orders: &[Order]) {
             Order::SetScienceConversion { .. } => {
                 assert_eq!(view.research.known.len(), legatum_core::TechId::ALL.len());
             }
+            Order::SetResearchGoal { .. } => panic!("the AI never sets a research goal"),
         }
     }
     assert!(research <= 1, "more than one research order");
+}
+
+/// A state recorded before breakable Walls (rules 62) with the same siege pressure under them: a
+/// walled city's bar is set to half its HP (capped at the bar's size), since half-damage Walls
+/// in front of the full HP take as long to break as the old half-damage HP alone.
+#[cfg(test)]
+pub(crate) fn with_rules61_walls(mut state: legatum_core::GameState) -> legatum_core::GameState {
+    for c in state.cities.values_mut() {
+        let max = legatum_core::combat::walls_max_hp(c.wall_tier());
+        if max > 0 {
+            c.walls_damage = max - (c.hp / 2).min(max);
+        }
+    }
+    state
 }

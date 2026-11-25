@@ -4,6 +4,7 @@ import { dismissInterstitials, endPlanning } from './turnActions';
 import { chooseCapitalProduction } from './opening';
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
+import { listedGameName } from './listedName';
 
 async function configureLobby(page: Page, seed: string) {
   const small = page.getByRole('radiogroup', { name: 'Map size', exact: true }).getByRole('radio', { name: /^Small/ });
@@ -81,7 +82,7 @@ test('Single Player: choose capital production and play six turns with VP visibl
   for (let turn = 3; turn <= 7; turn++) {
     await endTurn(page, turn);
     await expect(vp).toBeVisible();
-    await expect(vp.locator('.race-headline')).toBeVisible();
+    await expect(vp.locator('.rivals .rv-row.mine')).toBeVisible();
     await expect(vp).toContainText('/10');
     if (turn === 3) await expect(page.getByRole('button', { name: `Build ${first}`, exact: true })).toHaveAttribute('aria-pressed', 'true');
   }
@@ -152,7 +153,7 @@ test('Online: host in one browser, a guest joins from the game list, both Ready 
   await guest.goto('/');
   await guest.getByRole('button', { name: /^Multiplayer/ }).click();
   await guest.getByRole('button', { name: /^Join Game/ }).click();
-  const row = guest.locator('.online-room').filter({ hasText: 'Ada' });
+  const row = guest.locator('.online-room').filter({ hasText: await listedGameName(host) });
   await expect(row).toHaveCount(1, { timeout: 20_000 });
   await row.getByRole('button', { name: /^Join/ }).click();
   await expect(guest.getByRole('heading', { name: 'Game room', exact: true })).toBeVisible();

@@ -1,7 +1,8 @@
 /** The advisor explains one decision from a Hard plan made from this seat's own view. */
 import { create } from 'zustand';
 import { advisorOrders } from '../automation';
-import { buildingStatsFor, itemKey, itemName, TECH_NAME, wallsUpgradeName } from '../data';
+import { buildingStatsFor, itemKey, itemName, TECH_NAME, wallsRepairing, wallsUpgradeName } from '../data';
+import { WALLS_HP_PER_LEVEL } from '../combat';
 import { isThreat } from '../diplomacy';
 import { distance, hexEq } from '../hex';
 import { effectiveResearchQueue, pendingResearchQueue } from '../orders';
@@ -33,6 +34,8 @@ export interface AdvisorContext {
   /** Supplying a plan makes the decision logic pure and easy to test. Undefined reads the loaded WASM. */
   plan?: Order[] | null;
   turnLabel?: string;
+  /** The city whose Buy a tile placement is open, if any: the advisor guides the last click there. */
+  placingTile?: number | null;
 }
 const RESEARCH_FALLBACK = 'Research gives your empire new choices.';
 const ownCities = (v: PlayerView) => v.cities.filter((c) => c.owner === v.me);
@@ -82,7 +85,9 @@ export function advisorWhy(order: Order, view: PlayerView, city?: CityView, unit
       if (!units) return `You have no military units guarding ${city.name}.`;
       return `You have ${units} military ${units === 1 ? 'unit' : 'units'} for ${cities} ${cities === 1 ? 'city' : 'cities'}.`;
     }
-    if (item.kind === 'Building' && item.building === 'UpgradeWalls') return `Upgrade Walls adds city strength in ${city.name}.`;
+    // No Walls work finishes while the city is under attack (core `walls_work_blocked`).
+    if (item.kind === 'Building' && (item.building === 'UpgradeWalls' || item.building === 'Walls') && city.detail?.walls_blocked) return `Walls can't be finished while ${city.name} is under attack. Production waits.`;
+    if (item.kind === 'Building' && item.building === 'UpgradeWalls') return (city.walls_hp ?? 0) < (city.walls_max_hp ?? 0) ? `${city.name}'s Walls are damaged and never regrow. This build restores them.` : `Upgrade Walls adds ${WALLS_HP_PER_LEVEL} to ${city.name}'s Walls.`;
     if (item.kind === 'Building') {
       const yields = buildingStatsFor(factionOf(view), item.building).yields;
       const gain = (['food', 'production', 'gold', 'science'] as YieldKey[]).find((key) => (yields[key] ?? 0) > 0);
@@ -129,7 +134,7 @@ const selected = (ctx: AdvisorContext, kind: string, id: number) => ctx.selectio
 
 function citySuggestion(ctx: AdvisorContext, city: CityView, order?: Extract<Order, { type: 'SetProduction' | 'SetProductionQueue' }>): Suggestion {
   const item = order?.type === 'SetProduction' ? order.item : order?.queue[0];
-  const name = item && (item.kind === 'Building' && item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, factionOf(ctx.view))) : itemName(item, factionOf(ctx.view)));
+  const name = item && (item.kind === 'Building' && item.building === 'UpgradeWalls' ? wallsUpgradeName(city.walls_level ?? Number(city.walls), itemName({ kind: 'Building', building: 'Walls' }, factionOf(ctx.view)), wallsRepairing(city, ctx.view.players.find((p) => p.id === city.owner)?.era ?? 1)) : itemName(item, factionOf(ctx.view)));
   return { id: `city:${city.id}`, title: name ? `Build ${name} in ${city.name}` : `Choose a build in ${city.name}`,
     why: order ? advisorWhy(order, ctx.view, city) : `${city.name} needs a build to use its Production.`,
     current: selected(ctx, 'city', city.id) ? 1 : 0,
@@ -146,7 +151,7 @@ function researchSuggestion(ctx: AdvisorContext, order?: Extract<Order, { type: 
     why: order && tech ? advisorWhy(order, ctx.view) : RESEARCH_FALLBACK, current: ctx.techOpen ? 1 : 0,
     steps: [
       { instruction: `${ctx.touch ? 'Tap' : 'Click'} Research at the top.`, key: ctx.touch ? undefined : 'T', target: control('research') },
-      { instruction: name ? `${ctx.touch ? 'Tap' : 'Click'} Research now on ${name}.` : 'Choose a technology.', target: tech ? control('tech', tech) : null },
+      { instruction: name ? `${ctx.touch ? 'Tap' : 'Click'} ${name}.` : 'Choose a technology.', target: tech ? control('tech', tech) : null },
     ] };
 }
 function unitSuggestion(ctx: AdvisorContext, unit: UnitView, order?: Order): Suggestion | null {
@@ -203,7 +208,7 @@ export function advisorSuggestion(ctx: AdvisorContext, seen: readonly string[], 
   }
   // Situational advice comes before the routine decisions, but never interrupts a unit or panel already in hand.
   if (seen.includes('welcome') && !ctx.techOpen) {
-    const tip = strategyTip(v, tips, ctx.touch, ctx.selection, validOrders(ctx));
+    const tip = strategyTip(v, tips, ctx.touch, ctx.selection, validOrders(ctx), ctx.placingTile ?? null);
     if (tip && !skipped.includes(tip.id) && (!ctx.selection || tip.current > 0)) return tip;
   }
   // Follow the screen: the open Research panel or the selected city or unit is the decision in hand.

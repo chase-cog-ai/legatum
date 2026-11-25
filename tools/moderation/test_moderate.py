@@ -60,6 +60,10 @@ class Moderate(unittest.TestCase):
         self.assertFalse(m.should_close(m.wave_verdict("this fucking bug\n" + real, title="this fucking bug", body=real)))
         self.assertFalse(m.should_close(m.wave_verdict("Shift-click doesn't queue", title="Shift-click doesn't queue", body="")))
         self.assertFalse(m.should_close(m.wave_verdict("Shitake mushrooms as a luxury", title="Shitake mushrooms as a luxury", body="")))
+        idiot = "The Hard AI plays like an idiot: it never attacks my open city"
+        self.assertFalse(m.should_close(m.wave_verdict(idiot, title=idiot, body="Seed 4411, turn 80, it parks its army.")))
+        for bare in ("idiot", "do your job", "get back to work, morons"):
+            self.assertTrue(m.should_close(m.wave_verdict(bare, title=bare, body="")), bare)
 
     def test_added_lines_only(self):
         diff = "--- a/README.md\n+++ b/README.md\n-built for people who love Civilization.\n+paid for with taxpayer dollars."

@@ -8,6 +8,7 @@ import { rememberedSeat, rememberSeat, type ServerStatus } from '../remote';
 import { FakeSocket } from '../test/fakeSocket';
 import { LobbyScreen } from './LobbyScreen';
 import { hostThisTab } from '../test/fakeHosting';
+import { listedRoomName } from '../net/roomName';
 import { setOnlineApi } from '../platform/online';
 
 vi.mock('../net/hosting', async () => (await import('../test/fakeHosting')).fakeHostingModule());
@@ -286,6 +287,8 @@ it.each([
   expect(container.querySelector('[aria-label="Map size"] [aria-checked="true"]')?.textContent).toContain(size);
   expect(container.querySelector('[aria-label="Seat 4 AI level"]')).toBeNull();
   expect(container.textContent).toContain('Alice');
+  // The host is told the name the public list shows, never a typed one.
+  expect(container.querySelector('.lobby-listed')?.textContent).toBe(`In the game list, this game is “${listedRoomName('r')}”.`);
   const start = container.querySelector<HTMLButtonElement>('.lobby-go')!;
   expect(start.textContent).toContain('Start game');
   expect(start.disabled).toBe(false);

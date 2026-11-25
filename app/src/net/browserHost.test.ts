@@ -282,6 +282,7 @@ it.each([
   [429, 'You are opening games too quickly.', '1', 'too_fast', 'You have opened too many games lately. Try again in 1 minute.'],
   [429, 'You are opening games too quickly.', '601', 'too_fast', 'You have opened too many games lately. Try again in 11 minutes.'],
   [429, 'You already have 2 games open. Close one before hosting another.', undefined, 'too_many', 'Your internet connection already has 2 games open. Close one before hosting another.'],
+  [429, 'Too many games are open from your network. Try again later.', undefined, 'network', 'Too many games are open from your network. Try again later.'],
   [503, 'This lobby is full. Try again in a few minutes.', undefined, 'full', 'The game list is full right now. Try again in a few minutes.'],
   [503, 'Hosting new games is paused. Try again later.', undefined, 'closed', 'Hosting new games is paused. Try again later.'],
   [400, 'invalid room announcement', undefined, 'other', 'Could not open your game. Try again.'],
@@ -309,7 +310,7 @@ it('says a retry is useless only for the refusals that a retry cannot fix', () =
   expect(retryLine('too_fast', null)).toBe('Try again in a few minutes');
   expect(retryLine('too_many')).toBe('Close one of your games first');
   expect(retryLine('closed')).toBe('Paused for now');
-  expect(['too_fast', 'too_many', 'closed', 'offline', 'full', 'other'].filter((k) => retryWouldFail(k as never))).toEqual(['too_fast', 'too_many', 'closed']);
+  expect(['too_fast', 'too_many', 'network', 'closed', 'offline', 'full', 'other'].filter((k) => retryWouldFail(k as never))).toEqual(['too_fast', 'too_many', 'network', 'closed']);
 });
 
 it('treats a network failure as offline with the connection advice', async () => {
@@ -320,12 +321,12 @@ it('treats a network failure as offline with the connection advice', async () =>
 });
 
 it('never shows the relay or its status code in a refusal message', () => {
-  for (const kind of ['too_fast', 'too_many', 'full', 'closed', 'offline', 'other'] as const) {
+  for (const kind of ['too_fast', 'too_many', 'network', 'full', 'closed', 'offline', 'other'] as const) {
     expect(refusalMessage(kind, 120)).not.toMatch(/relay|socket|429|503|rate limit/i);
   }
 });
 
-it('sends the room name as the game list will show it', async () => {
+it('never sends the host name to the public game list', async () => {
   let body = '';
   const host = new BrowserHost(options({
     announce: { name: '  Ada \u{1F600} of   Rome  ', build: 'b', rules_version: 1, protocol: 1 },
@@ -335,7 +336,8 @@ it('sends the room name as the game list will show it', async () => {
     },
   }));
   await host.start();
-  expect(JSON.parse(body).name).toBe('Ada of Rome');
+  expect(JSON.parse(body).name).toBe('');
+  expect(body).not.toContain('Ada');
   host.stop();
 });
 

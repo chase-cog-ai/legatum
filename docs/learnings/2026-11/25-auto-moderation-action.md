@@ -28,3 +28,7 @@ Insults (same day): a run of bare-profanity titles ("eat shit", "fuck off") sail
 rule now also closes on insults aimed at people anywhere, and on profanity when the author wrote almost nothing
 else (fewer than 40 letters outside the issue template), so a frustrated player's real report with a swear stays
 open. Profanity matches whole words with known endings ("shitty" yes, "shitake" no).
+
+Name-calling words ("idiot", "moron", "do your job") were first on the anywhere list, which would close a real
+report like "the Hard AI plays like an idiot". They moved to the short-text rule with profanity; the anywhere list
+keeps only phrases that can't describe the game ("fuck you", "eat shit", "asshole", "do your fucking job").

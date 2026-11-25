@@ -61,11 +61,13 @@ MAX_DIFF = 6000
 
 # Insults and abuse aimed at people (added 2026-11-25 after a run of "fuck you" / "eat shit" titles): any of these
 # anywhere closes the item or hides the comment, game point or not.
-INSULTS = ("fuck you", "fuck off", "eat shit", "asshole", "do your job", "do your fucking job", "get back to work",
-           "piece of shit", "go to hell", "kill yourself", "dumbass", "idiot", "moron", "claudeslop", "ai slop")
-# Profanity: closes only when the author wrote almost nothing besides it (a bare title, the empty template), so a
-# frustrated player's real bug report ("this fucking bug ate my save") stays open.
-PROFANITY_RE = re.compile(r"(?<![a-z])(fuck[a-z]*|shit(?:s|ty|head)?|bitch(?:es|y)?|cunts?|bastards?|slop)(?![a-z])")
+INSULTS = ("fuck you", "fuck off", "eat shit", "asshole", "do your fucking job", "piece of shit", "go to hell",
+           "kill yourself", "claudeslop", "ai slop")
+# Profanity and milder name-calling: closes only when the author wrote almost nothing besides it (a bare title, the
+# empty template), so a frustrated player's real report ("this fucking bug ate my save", "the Hard AI plays like an
+# idiot") stays open.
+PROFANITY_RE = re.compile(r"(?<![a-z])(fuck[a-z]*|shit(?:s|ty|head)?|bitch(?:es|y)?|cunts?|bastards?|slop|idiots?|"
+                          r"morons?|dumbass|do your job|get back to work)(?![a-z])")
 OWN_TEXT_MIN = 40
 TEMPLATE_LINES = ("**", "- build:", "- how you ran it", "- os and browser", "steps, and the game seed",
                   "most useful thing you can attach", "screenshots, or errors", "people, difficulty, map size",

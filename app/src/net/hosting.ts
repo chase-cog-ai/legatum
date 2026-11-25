@@ -146,6 +146,11 @@ export async function startHosting(relay: string, announce: RoomAnnounce, resume
   return host;
 }
 
+/** The id of the room this tab hosts, or null. The game list names the room from it (roomName.ts). */
+export function hostedRoomId(): string | null {
+  return active?.room?.room ?? hostingRecord()?.room.room ?? null;
+}
+
 /** The hosted game's save right now (what "Save to file" writes), or null when this tab hosts no game. */
 export function hostedGameSave(): string | null {
   return active?.saveGame() ?? null;

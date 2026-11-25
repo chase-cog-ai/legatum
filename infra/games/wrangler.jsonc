@@ -7,8 +7,8 @@
   "compatibility_date": "2026-10-01",
   // The public address. A custom domain puts the Worker behind the zone's rate-limiting rule (README "Edge rule").
   "routes": [{ "pattern": "games.playlegatum.com", "custom_domain": true }],
-  // The workers.dev address stays on for builds published before the domain; it is outside the edge rule.
-  "workers_dev": true,
+  // No workers.dev address: it would sit outside the edge rule, and no kept build calls it.
+  "workers_dev": false,
   "r2_buckets": [{ "binding": "GAMES", "bucket_name": "legatum-games" }],
   // One Quota object counts the new games per client address and UTC day (it keeps only a salted hash of the address).
   "durable_objects": { "bindings": [{ "name": "QUOTA", "class_name": "Quota" }] },

@@ -87,6 +87,13 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
   }, [razeConfirm]);
+  const [returnConfirm, setReturnConfirm] = useState(false);
+  useEffect(() => {
+    if (!returnConfirm) return;
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { event.preventDefault(); setReturnConfirm(false); } };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [returnConfirm]);
   const [phoneChoice, setPhoneChoice] = useState('');
   const wonderWhere = (tile: CityView['pos']) => { const n = distance(city.pos, tile); return `${n} tile${n === 1 ? '' : 's'} ${bearing(city.pos, tile)}`; };
   /** An improvement names its tile ("Mine — Iron, 2 tiles NE"); every other item keeps its own name. */
@@ -304,6 +311,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
   }
 
   const queue = productionQueue(orders, city.id, d.producing, d.production_queue);
+  const returnOrdered = orders.some((o) => o.type === 'ReturnCity' && o.city === city.id);
   const razeOrdered = orders.some((o) => o.type === 'Raze' && o.city === city.id);
   const razeGold = city.population * 10;
   const losses = razeLosses(view, city);
@@ -329,7 +337,35 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
     </div> : <div className="raze-row">
       <p>Burns the city{razeWorks.length ? ` and destroys ${razeWorks.join(' and ')}` : ''}: its tiles are released; you gain {razeGold} Gold.</p>
       {razeOrdered ? <button className="btn" onClick={() => editOrders((list) => list.filter((o) => !(o.type === 'Raze' && o.city === city.id)))}>Raze ordered · Undo</button>
-        : <button className="btn danger" disabled={view.finished || !!d.raze_blocker} onClick={() => setRazeConfirm(true)}>Raze city</button>}
+        : <button className="btn danger" disabled={view.finished || !!d.raze_blocker || returnOrdered} onClick={() => setRazeConfirm(true)}>Raze city</button>}
+    </div>}
+  </section>;
+  const founderName = d.return_to == null ? '' : empireOfPlayer(view, d.return_to);
+  const returnGold = d.return_gold ?? 0;
+  const returnsPoint = !!d.original_capital;
+  // Offered only for a city taken from someone other than its founder; the same compact block as Raze, above it because it pays more.
+  const returnControl = d.return_to != null && city.owner === view.me && <section className="cp-block cp-raze cp-return" data-testid="city-return">
+    <div className="cp-sub">Return to {founderName}</div>
+    {d.return_blocker && <p role="note" className="prod-blocked">{d.return_blocker}</p>}
+    {returnConfirm && !returnOrdered ? <div role="alertdialog" aria-label={`Return ${city.name} to ${founderName}?`} aria-modal="true" data-testid="return-confirm">
+      <p>Return {city.name} to {founderName}?</p>
+      <ul className="raze-loses">
+        <li>{founderName} gets the city whole: its population, buildings and tiles.</li>
+        {returnsPoint && <li className="raze-vp">You give up the 1 VP for holding this capital.</li>}
+        <li>Your units in the city step outside.</li>
+      </ul>
+      <p>You gain {returnGold} Gold.</p>
+      <div className="raze-buttons">
+        <button className="btn" onClick={() => setReturnConfirm(false)}>Cancel</button>
+        <button className="btn primary confirm" autoFocus onClick={() => {
+          editOrders((list) => [...list.filter((o) => orderCity(o) !== city.id), { type: 'ReturnCity', city: city.id }], 'commit');
+          setReturnConfirm(false);
+        }}>Confirm Return</button>
+      </div>
+    </div> : <div className="raze-row">
+      <p>{founderName} founded this city. Hand it back whole and gain {returnGold} Gold, twice a Raze.</p>
+      {returnOrdered ? <button className="btn" onClick={() => editOrders((list) => list.filter((o) => !(o.type === 'ReturnCity' && o.city === city.id)))}>Return ordered · Undo</button>
+        : <button className="btn" disabled={view.finished || !!d.return_blocker || razeOrdered} onClick={() => setReturnConfirm(true)}>Return city</button>}
     </div>}
   </section>;
   const pendingQueue = orders.some((o) => (o.type === 'SetProductionQueue' || o.type === 'SetProduction') && o.city === city.id);
@@ -551,6 +587,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
       ?? d.options.find((o) => !o.resource_blocker) ?? d.options[0];
     const choiceBlocked = !!choice?.resource_blocker && !sameItem(choice.item, producing);
     return <div className="phone-primary-actions phone-build-choice">
+      {returnControl}
       {razeControl}
       <select aria-label={`Production for ${city.name}`} value={choice ? itemKey(choice.item) : ''} disabled={view.finished || !choice}
         onChange={(event) => { setPhoneChoice(event.target.value); feel.select(); }}>
@@ -1016,6 +1053,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
           </>}
       </section>}
 
+      {returnControl}
       {razeControl}
       {occupiedLine ? <><p className="hint warn" data-testid="city-occupied">{occupiedLine}. Food, Gold and Science continue.</p></> : <>
       <div className="cp-block production-choose-block">

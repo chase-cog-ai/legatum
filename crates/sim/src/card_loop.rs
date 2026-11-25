@@ -136,7 +136,8 @@ pub fn actor_key(order: &Order) -> String {
         | Order::BuyItem { city, .. }
         | Order::HireCompany { city, .. }
         | Order::BuyTile { city, .. }
-        | Order::Raze { city } => format!("city {}", city.0),
+        | Order::Raze { city }
+        | Order::ReturnCity { city } => format!("city {}", city.0),
         Order::SetResearch { .. }
         | Order::SetResearchQueue { .. }
         | Order::SetResearchGoal { .. }

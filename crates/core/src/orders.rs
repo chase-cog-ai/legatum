@@ -94,6 +94,11 @@ pub enum Order {
     Raze {
         city: CityId,
     },
+    /// Hand a captured city back to the empire that founded it, at the turn boundary, for
+    /// population × 20 Gold. Only for a city taken from someone other than its founder.
+    ReturnCity {
+        city: CityId,
+    },
     SetProduction {
         city: CityId,
         item: ProductionItem,

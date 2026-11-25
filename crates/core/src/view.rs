@@ -472,6 +472,16 @@ pub struct CityDetail {
     /// Why a captured city cannot be razed now; None means Raze is legal.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub raze_blocker: Option<String>,
+    /// The living founder this captured city could be handed back to: it was taken from a
+    /// third empire. None hides the Return control.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_to: Option<PlayerId>,
+    /// Why the city cannot be returned now; None with `return_to` set means Return is legal.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_blocker: Option<String>,
+    /// Gold a Return pays (20 per population).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_gold: Option<i32>,
     pub yields: CityYields,
     #[serde(default)]
     pub idle_yields: Option<CityYields>,
@@ -2724,6 +2734,10 @@ fn city_detail(
         raze_blocker: (c.founder != c.owner)
             .then(|| crate::rules::cities::raze_blocker(state, c.owner, c.id))
             .flatten(),
+        return_to: return_to(state, c),
+        return_blocker: return_to(state, c)
+            .and_then(|_| crate::rules::cities::return_blocker(state, c.owner, c.id)),
+        return_gold: return_to(state, c).map(|_| crate::rules::cities::return_gold(c)),
         idle_yields: Some(economy::city_yields_for_item(state, c, None, &base, full)),
         food_stored: c.food_stored,
         growth_threshold,
@@ -2809,6 +2823,19 @@ fn city_detail(
         population_unlocks,
         yields,
     }
+}
+
+/// The founder a Return of `c` would go to: alive, not the owner and not the empire it was
+/// taken from.
+fn return_to(state: &GameState, c: &City) -> Option<PlayerId> {
+    (c.founder != c.owner
+        && !c.founder.is_barbarian()
+        && state
+            .players
+            .get(c.founder.0 as usize)
+            .is_some_and(|p| p.alive)
+        && crate::rules::cities::taken_from(state, c) != c.founder)
+        .then_some(c.founder)
 }
 
 #[cfg(test)]

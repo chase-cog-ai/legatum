@@ -87,11 +87,28 @@ impl Planner<'_> {
 
     /// Whether to raze captured city `i` (`ctx.own_cities[i]`) under `raze_value`.
     pub(crate) fn raze_by_value(&self, i: usize, city: &CityView) -> bool {
+        self.loot_beats_keeping(i, city, city.population.saturating_mul(10))
+    }
+
+    /// The founder a Return of `city` would go to, when the order is legal now and the founder
+    /// is not ahead of us on the public VP track: Gold never buys a leader another city.
+    pub(crate) fn return_target(&self, city: &CityView) -> Option<legatum_core::PlayerId> {
+        let detail = city.detail.as_ref()?;
+        let to = detail
+            .return_to
+            .filter(|_| detail.return_blocker.is_none())?;
+        let v = self.view();
+        let vp = |id| v.players.iter().find(|p| p.id == id).map_or(0, |p| p.vp);
+        (vp(to) <= vp(v.me)).then_some(to)
+    }
+
+    /// Whether giving captured city `i` up for `loot` Gold (a Raze, or a Return at twice the
+    /// price) beats keeping it under `raze_value`.
+    pub(crate) fn loot_beats_keeping(&self, i: usize, city: &CityView, loot: i32) -> bool {
         let Some(detail) = &city.detail else {
             return false;
         };
         let v = self.view();
-        let loot = city.population.saturating_mul(10);
         let horizon = (self.turns_remaining().min(HORIZON) - detail.resistance.max(0)).max(0);
         // Yield per population in hundredths, from our cities past resistance.
         let (out, pop) = self
@@ -257,6 +274,64 @@ mod tests {
         ]);
         assert!(razes(&v, 0));
         assert!(razes(&v, 1));
+    }
+
+    fn returns(view: &PlayerView, gene: i32) -> bool {
+        let mut p = crate::fixture::planner(view, 7);
+        p.decisions.raze_value = gene;
+        p.plan_raze();
+        assert!(!p.orders.iter().any(|o| matches!(o, Order::Raze { .. })));
+        p.orders
+            .iter()
+            .any(|o| matches!(o, Order::ReturnCity { .. }))
+    }
+
+    /// The captured city was founded by a third empire that can take it back.
+    fn returnable(mut v: PlayerView) -> PlayerView {
+        let founder = legatum_core::PlayerId(2);
+        v.cities[0].founder = Some(founder);
+        let d = v.cities[0].detail.as_mut().unwrap();
+        d.return_to = Some(founder);
+        d.return_gold = Some(60);
+        v
+    }
+
+    #[test]
+    fn a_city_it_would_burn_goes_back_to_its_founder_for_twice_the_gold() {
+        let v = returnable(view(&[
+            (20, Hex::new(9, 8)),
+            (21, Hex::new(9, 9)),
+            (22, Hex::new(8, 9)),
+        ]));
+        assert!(returns(&v, 0));
+        assert!(returns(&v, 1));
+    }
+
+    #[test]
+    fn a_safe_city_is_not_handed_back() {
+        let v = returnable(view(&[]));
+        assert!(!returns(&v, 1));
+        assert!(!razes(&v, 1));
+    }
+
+    #[test]
+    fn a_blocked_return_or_a_founder_ahead_on_vp_falls_back_to_the_raze() {
+        let threat = [
+            (20, Hex::new(9, 8)),
+            (21, Hex::new(9, 9)),
+            (22, Hex::new(8, 9)),
+        ];
+        let mut blocked = returnable(view(&threat));
+        blocked.cities[0].detail.as_mut().unwrap().return_blocker = Some("at War".into());
+        assert!(razes(&blocked, 1));
+        let mut leader = returnable(view(&threat));
+        let players: &mut Vec<_> = &mut leader.players;
+        players
+            .iter_mut()
+            .find(|p| p.id == legatum_core::PlayerId(2))
+            .expect("the fixture seats a third empire")
+            .vp = 5;
+        assert!(razes(&leader, 1));
     }
 
     #[test]

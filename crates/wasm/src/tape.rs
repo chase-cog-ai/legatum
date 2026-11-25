@@ -110,6 +110,7 @@ impl Tape {
                                     | "FoundCity"
                                     | "DisbandUnit"
                                     | "Raze"
+                                    | "ReturnCity"
                                     | "SetProduction"
                                     | "SetProductionQueue"
                                     | "BuyItem"
@@ -496,6 +497,7 @@ mod tests {
             Order::FoundCity { unit: UnitId(12) },
             Order::DisbandUnit { unit: UnitId(13) },
             Order::Raze { city: CityId(14) },
+            Order::ReturnCity { city: CityId(16) },
             Order::SetProduction {
                 city: CityId(15),
                 item: settler,
@@ -566,7 +568,7 @@ mod tests {
         ]
     }
 
-    const ORDER_VARIANTS: usize = 33;
+    const ORDER_VARIANTS: usize = 34;
 
     fn variant_index(order: &Order) -> usize {
         match order {
@@ -603,6 +605,7 @@ mod tests {
             Order::BuyTile { .. } => 30,
             Order::GiveGold { .. } => 31,
             Order::SetResearchGoal { .. } => 32,
+            Order::ReturnCity { .. } => 33,
         }
     }
 

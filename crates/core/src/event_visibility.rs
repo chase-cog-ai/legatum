@@ -255,6 +255,9 @@ pub fn visible_events(
                 Event::CityRazed {
                     from, by, at: pos, ..
                 } => teammates.contains(from) || teammates.contains(by) || at(*pos),
+                Event::CityReturned {
+                    by, to, at: pos, ..
+                } => teammates.contains(by) || teammates.contains(to) || at(*pos),
                 Event::AircraftRebased { owner, .. } => teammates.contains(owner),
                 Event::TileClaimed { owner, tile, .. }
                 | Event::TileReleased { owner, tile, .. }

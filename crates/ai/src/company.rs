@@ -68,7 +68,8 @@ impl Planner<'_> {
                     && !self.orders.iter().any(|o| match o {
                         Order::BuyItem { city, .. }
                         | Order::HireCompany { city, .. }
-                        | Order::Raze { city } => *city == c.id,
+                        | Order::Raze { city }
+                        | Order::ReturnCity { city } => *city == c.id,
                         _ => false,
                     })
             })

@@ -336,8 +336,8 @@ export function idleCitiesNeedingProduction(view: PlayerView, orders: Order[]): 
   // While Egypt works on the Royal Tomb no city builds, so none asks for a build.
   if (tombOnAfterOrders(view, orders)) return [];
   const unchosen = new Set(cityAutomationPreview(view, orders)?.unchosen_cities ?? []);
-  // A city ordered razed burns at the turn boundary: it has nothing to build (8.9.29, turn 102 loop).
-  const razing = new Set(orders.flatMap((o) => (o.type === 'Raze' ? [o.city] : [])));
+  // A city ordered razed burns at the turn boundary, and one ordered returned leaves the empire: neither has anything to build (8.9.29, turn 102 loop).
+  const razing = new Set(orders.flatMap((o) => (o.type === 'Raze' || o.type === 'ReturnCity' ? [o.city] : [])));
   return view.cities.filter((c) => c.owner === view.me && c.detail && c.occupation_lock == null && !razing.has(c.id) && (unchosen.has(c.id)
     || (!cityAutomationFocus(c.id, view, orders) && !effectiveProduction(orders, c.id, c.detail.producing))))
     .sort((a, b) => Number(!!b.detail?.wonder_lost) - Number(!!a.detail?.wonder_lost)

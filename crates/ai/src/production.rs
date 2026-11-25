@@ -2420,8 +2420,13 @@ impl Planner<'_> {
 
     /// Burn a captured city only when the visible counterattack outweighs the troops that can
     /// hold it. Compare the loot and denied recapture against its expected retained value.
+    ///
+    /// A city taken from someone other than its founder can instead be handed back to that
+    /// founder for twice the Gold (`Order::ReturnCity`): the same comparison at the higher
+    /// price, and the former owner still cannot retake it from us.
     pub(crate) fn plan_raze(&mut self) {
         let mut raze = Vec::new();
+        let mut hand_back = Vec::new();
         for (i, city) in self.ctx.own_cities.iter().enumerate() {
             let Some(detail) = &city.detail else { continue };
             if !detail.captured || detail.raze_blocker.is_some() {
@@ -2431,8 +2436,12 @@ impl Planner<'_> {
             if self.rome_finish_keeps(detail.former_owner) {
                 continue;
             }
+            let returnable = self.return_target(city).is_some();
+            let return_gold = detail.return_gold.unwrap_or(0);
             if self.decisions.raze_value > 0 {
-                if self.raze_by_value(i, city) {
+                if returnable && self.loot_beats_keeping(i, city, return_gold) {
+                    hand_back.push(city.id);
+                } else if self.raze_by_value(i, city) {
                     raze.push(city.id);
                 }
                 continue;
@@ -2465,15 +2474,25 @@ impl Planner<'_> {
                 / 100;
             let loot = city.population.saturating_mul(10) / 2;
             let retained = keep * (100 - loss_chance) / 100;
-            if loot + denial > retained {
+            if returnable && return_gold / 2 + denial > retained {
+                hand_back.push(city.id);
+            } else if loot + denial > retained {
                 raze.push(city.id);
             }
         }
-        for city in raze {
+        for (city, back) in raze
+            .into_iter()
+            .map(|c| (c, false))
+            .chain(hand_back.into_iter().map(|c| (c, true)))
+        {
             self.orders.retain(|o| !matches!(o,
                 Order::SetProduction { city: id, .. } | Order::SetProductionQueue { city: id, .. }
                 | Order::BuyItem { city: id, .. } | Order::HireCompany { city: id, .. } if *id == city));
-            self.orders.push(Order::Raze { city });
+            self.orders.push(if back {
+                Order::ReturnCity { city }
+            } else {
+                Order::Raze { city }
+            });
         }
     }
 

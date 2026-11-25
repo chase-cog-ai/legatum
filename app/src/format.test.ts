@@ -851,6 +851,13 @@ describe('the Mongols’ Yam Relay Station in the report', () => {
     expect(formatEvent(event, ctx).text).toContain("sacked Hollow Crown's city at this tile and carried off 175 Gold");
   });
 
+  it('reports a returned city: the Gold to the empire that gave it back, the city to its founder', () => {
+    const gave: Event = { type: 'CityReturned', city: 1, by: 0, to: 2, at: { q: 2, r: 2 }, gold: 60 };
+    expect(formatEvent(gave, ctx).text).toBe('You returned Tithe Station to Hollow Crown and gained 60 Gold');
+    const home: Event = { type: 'CityReturned', city: 1, by: 2, to: 0, at: { q: 2, r: 2 }, gold: 60 };
+    expect(formatEvent(home, ctx).text).toBe('Hollow Crown returned Tithe Station to you');
+  });
+
   it('reports an ordered raze and its private Gold without calling it a Celtic sack', () => {
     const event: Event = { type: 'CityRazed', city: 1, from: 2, by: 0, at: { q: 2, r: 2 }, sack_gold: 30, ordered: true };
     expect(formatEvent(event, ctx).text).toBe('You razed at this tile and gained 30 Gold');

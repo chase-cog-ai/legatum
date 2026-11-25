@@ -169,6 +169,11 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
   ],
   SpartaConquest: [['your regiments healed', ev({ type: 'SpartaConquest', city: 1, player: 0, units_healed: 2 }), 'good']],
   SpartaKillHeal: [['your regiments healed by a kill', ev({ type: 'SpartaKillHeal', player: 0, unit: 9, victim_owner: 2, unit_kind: 'Archer', hp_healed: 100 }), 'good']],
+  CityReturned: [
+    ['came home to you', ev({ type: 'CityReturned', city: 1, by: 2, to: 0, at, gold: 60 }), 'good'],
+    ['you returned it', ev({ type: 'CityReturned', city: 1, by: 0, to: 2, at, gold: 60 }), 'good'],
+    ['between rivals', ev({ type: 'CityReturned', city: 1, by: 2, to: 3, at, gold: 60 }), 'neutral'],
+  ],
   CityRazed: [
     ['yours sacked', ev({ type: 'CityRazed', city: 1, from: 0, by: 2, at }), 'bad'],
     ['you sacked', ev({ type: 'CityRazed', city: 1, from: 2, by: 0, at }), 'good'],

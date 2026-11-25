@@ -57,7 +57,8 @@ pub mod rules;
 /// 58: Walls levels replace Castle and Star Fort; upgrades are capped by era and Siege covers levels by tier. A rules-57 save is refused like any other; `wasm::json::upgrade_from_49` converts an older state for analysis tooling.
 /// 59: Egypt's Chariot Archer replaces its Archer (Sam, 2026-11-25): 3 moves, a shot 40% stronger against the melee line, and Forest or Hills without a road take its whole turn to enter. The Medjay is retired, so Egypt's Spearman is plain (no extra sight). The save shape is unchanged.
 /// 60: The tech tree's research goal: `Order::SetResearchGoal` and `Player::research_goal` (fills an empty research queue toward a later technology). No existing order resolves differently.
-pub const RULES_VERSION: u32 = 60;
+/// 61: `Order::ReturnCity` hands a city taken from someone other than its founder back to that founder, whole, for 20 Gold per population (twice a Raze). The save shape is unchanged.
+pub const RULES_VERSION: u32 = 61;
 pub mod scenario;
 pub mod scoring;
 pub mod settlement;

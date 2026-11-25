@@ -66,6 +66,13 @@ pub enum Chronicle {
         #[serde(default, skip_serializing_if = "std::ops::Not::not")]
         ordered: bool,
     },
+    /// `by` handed the captured city back to its founder `to`.
+    Returned {
+        turn: u32,
+        by: PlayerId,
+        to: PlayerId,
+        city: String,
+    },
     War {
         turn: u32,
         a: TeamId,
@@ -227,6 +234,15 @@ fn chronicle_entry(turn: u32, prev: &GameState, s: &GameState, event: &Event) ->
                 from: *from,
                 city: name.name.clone(),
                 ordered: *ordered,
+            })
+        }
+        Event::CityReturned { city, by, to, .. } => {
+            let name = s.cities.get(city).or_else(|| prev.cities.get(city))?;
+            Some(Chronicle::Returned {
+                turn,
+                by: *by,
+                to: *to,
+                city: name.name.clone(),
             })
         }
         Event::WarDeclared { relation } | Event::WarJoined { relation, .. }

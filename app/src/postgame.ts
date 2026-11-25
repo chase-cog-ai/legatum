@@ -193,6 +193,8 @@ function timelineEntry(c: Chronicle, view: PlayerView, nameOf: (id: PlayerId | n
       const lost = yoursP(c.from) && !yoursP(c.by);
       return { ...base, icon: 'ui-alert', text: c.ordered ? `${nameOf(c.by)} razed ${c.city}` : `${nameOf(c.by)} sacked ${c.city}${lost ? ', one of your cities' : `, a city of ${nameOf(c.from)}`}`, who: [c.by, c.from].filter((x) => x < 255), tone: lost ? 'against' : yoursP(c.by) ? 'mine' : 'neutral', yours: yoursP(c.by, c.from) };
     }
+    case 'Returned':
+      return { ...base, icon: 'emblem-founded', text: `${nameOf(c.by)} returned ${c.city} to ${c.to === view.me ? 'you' : nameOf(c.to)}`, who: [c.by, c.to], tone: yoursP(c.to) || yoursP(c.by) ? 'mine' : 'neutral', yours: yoursP(c.by, c.to) };
     case 'War': {
       const declarer = c.by ?? null;
       const other = declarer === c.a ? c.b : declarer === c.b ? c.a : null;
@@ -258,6 +260,9 @@ function marker(c: Chronicle, view: PlayerView, nameOf: (id: PlayerId | null | u
     const who = view.players.find((p) => p.team === by)?.id ?? null;
     const text = c.by !== null && c.by !== undefined ? `Turn ${c.turn}: ${teamName(by)} declared war on ${teamName(other)}` : `Turn ${c.turn}: war between ${teamName(c.a)} and ${teamName(c.b)}`;
     return [{ turn: c.turn, lane: 'war', icon: 'unit-spearman', text, who, mine: c.a === view.team || c.b === view.team }];
+  }
+  if (c.kind === 'Returned') {
+    return [{ turn: c.turn, lane: 'capture', icon: 'emblem-founded', text: `Turn ${c.turn}: ${nameOf(c.by)} returned ${c.city} to ${nameOf(c.to)}`, who: c.by, mine: team(c.by) === view.team || team(c.to) === view.team }];
   }
   if (c.kind === 'Captured' || c.kind === 'Razed') {
     const text = `Turn ${c.turn}: ${nameOf(c.by)} ${c.kind === 'Captured' ? 'captured' : c.ordered ? 'razed' : 'sacked'} ${c.city} (${nameOf(c.from)})`;

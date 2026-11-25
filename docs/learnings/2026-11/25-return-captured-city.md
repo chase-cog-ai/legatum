@@ -1,0 +1,9 @@
+# Returning a captured city to its founder (rules 61)
+
+2026-11-25. `Order::ReturnCity` hands a city taken from someone other than its founder back to that founder for 20 Gold per population.
+
+- `City::occupied_from` is the exact record of who a city was taken from, but `occupation::clear_released` drops it at Peace or elimination. `cities::former_owner` reads the chronicle by city name instead and falls back to the founder when no capture is recorded. `cities::taken_from` reads the record first and the chronicle second; use it when the answer must survive a peace.
+- A captured city cannot simply flip owner: aircraft in its hangar (`air::lose_city_aircraft`), units standing on the tile (a foreign city cannot be occupied at Peace) and every tile whose `city` is this city all have to follow. `battle::capture_city` does this for captures; `cities::return_city` is the peaceful version.
+- The reward is Gold on the Raze scale (20 per population against Raze's 10) so the AI prices it with the comparison it already has (`raze.rs::loot_beats_keeping`), and so a Return is never worse than burning the same city. Returning to an empire ahead on VP is refused by the AI, not by the rules.
+- A returned original capital stops scoring for the returner and scores for nobody while its founder holds it, the same as a retaken capital.
+- Balance (400 eight-empire Hard games, seeds 7600001 to 7600400, against the same seeds on master at 037d1ee2): the AI ordered 40 Returns across 32 games, 375 games ended identically, 0 panics on both. Average length 224.0 against 223.0 turns, VP wins 394 against 395, eliminations per game 1.75 against 1.73. No faction's win count moved by more than 3 games of 400, inside seed noise.

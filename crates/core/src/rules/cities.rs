@@ -67,6 +67,7 @@ fn is_city_order(order: &Order) -> bool {
         Order::SetProduction { .. }
             | Order::SetCityAutomation { .. }
             | Order::Raze { .. }
+            | Order::ReturnCity { .. }
             | Order::SetProductionQueue { .. }
             | Order::BuyItem { .. }
             | Order::HireCompany { .. }
@@ -81,6 +82,7 @@ fn is_city_order(order: &Order) -> bool {
 fn city_of_order(order: &Order) -> Option<CityId> {
     match *order {
         Order::Raze { city }
+        | Order::ReturnCity { city }
         | Order::SetProduction { city, .. }
         | Order::SetCityAutomation { city, .. }
         | Order::SetProductionQueue { city, .. }
@@ -102,6 +104,26 @@ fn owned_city(state: &GameState, player: PlayerId, city: CityId) -> Result<&City
 /// Share the exact refusal with the owner's view, AI and order validation.
 pub fn raze_blocker(state: &GameState, player: PlayerId, city: CityId) -> Option<String> {
     validate_city_order(state, player, &Order::Raze { city }).err()
+}
+
+/// Gold per population paid for handing a captured city back to its founder: twice a Raze.
+pub const RETURN_GOLD_PER_POPULATION: i32 = 20;
+
+/// The Gold a Return of `c` pays.
+pub fn return_gold(c: &City) -> i32 {
+    c.population
+        .max(0)
+        .saturating_mul(RETURN_GOLD_PER_POPULATION)
+}
+
+/// The empire `c` was last taken from: the occupation record while it stands, else the chronicle.
+pub fn taken_from(state: &GameState, c: &City) -> PlayerId {
+    c.occupied_from.unwrap_or_else(|| former_owner(state, c))
+}
+
+/// Share the exact refusal with the owner's view, AI and order validation.
+pub fn return_blocker(state: &GameState, player: PlayerId, city: CityId) -> Option<String> {
+    validate_city_order(state, player, &Order::ReturnCity { city }).err()
 }
 
 /// The last captor's victim, if the chronicle reaches that capture; otherwise the founder. No private information is exposed: the razer's empire already holds the city.
@@ -179,6 +201,36 @@ fn check_order(
             if c.resistance >= data::CAPTURE_RESISTANCE_TURNS {
                 return Err(format!(
                     "{} can be razed from the turn after its capture",
+                    c.name
+                ));
+            }
+        }
+        Order::ReturnCity { city } => {
+            let c = owned_city(state, player, city)?;
+            if c.founder == player {
+                return Err(format!("{} was founded by you", c.name));
+            }
+            let founder = state
+                .players
+                .get(c.founder.0 as usize)
+                .filter(|f| f.alive && !c.founder.is_barbarian())
+                .ok_or_else(|| format!("The empire that founded {} is gone", c.name))?;
+            let founder_name = data::faction_name(founder.faction);
+            if taken_from(state, c) == c.founder {
+                return Err(format!(
+                    "You took {} from {founder_name} itself: only a city taken from another empire can be returned",
+                    c.name
+                ));
+            }
+            if state.at_war(player, c.founder) {
+                return Err(format!(
+                    "You are at War with {founder_name}: make Peace to return {}",
+                    c.name
+                ));
+            }
+            if c.resistance >= data::CAPTURE_RESISTANCE_TURNS {
+                return Err(format!(
+                    "{} can be returned from the turn after its capture",
                     c.name
                 ));
             }
@@ -362,6 +414,7 @@ fn apply_order(
                 walled: false,
             });
         }
+        Order::ReturnCity { city } => return_city(state, player, city, events),
         Order::SetProduction { city, item } => {
             let egypt = egypt_building(state, &state.cities[&city], item);
             let c = state.cities.get_mut(&city).expect("checked");
@@ -535,6 +588,88 @@ pub fn validate_city_order(
     check_order(state, player, order, &BTreeSet::new())
 }
 
+/// Hand `city` back to its founder (`Order::ReturnCity`, already checked). The city comes home
+/// as it stands: full population, buildings and improved land, no resistance and no occupation
+/// record. Aircraft based there are lost, as in any change of hands, and the returning empire's
+/// units step out to the nearest free tile.
+fn return_city(state: &mut GameState, player: PlayerId, city: CityId, events: &mut Vec<Event>) {
+    super::air::lose_city_aircraft(state, city, events);
+    let c = state.cities.get_mut(&city).expect("checked");
+    let (to, pos, gold) = (c.founder, c.pos, return_gold(c));
+    c.owner = to;
+    c.occupied_from = None;
+    c.resistance = 0;
+    c.build_automation = None;
+    c.last_auto_pick = None;
+    c.auto_queued = None;
+    c.production_stored = 0;
+    c.production_banked.clear();
+    c.producing = None;
+    c.production_queue.clear();
+    c.production_queue_notified.clear();
+    c.wonder_lost = None;
+    c.bought = None;
+    for i in 0..state.map.tiles.len() {
+        if state.map.tiles[i].city == Some(city) {
+            state.map.tiles[i].owner = Some(to);
+        }
+    }
+    state.player_mut(player).gold = crate::validation::credit_gold(state.player(player).gold, gold);
+    let leaving: Vec<(UnitId, UnitKind)> = state
+        .units_at(pos)
+        .filter(|u| !state.same_team(u.owner, to))
+        .map(|u| (u.id, u.kind))
+        .collect();
+    for (id, kind) in leaving {
+        let owner = state.units[&id].owner;
+        // The land around the city is the founder's again and closed at Peace; a unit may
+        // stand there and leave (the rule for a unit caught in closed land when Peace is made).
+        if let Some(tile) = step_out_tile(state, owner, pos, kind) {
+            let u = state.units.get_mut(&id).expect("unit");
+            u.pos = tile;
+            u.goto = None;
+            u.path.clear();
+            u.attack_target = None;
+            u.standing_order = None;
+        }
+    }
+    events.push(Event::CityReturned {
+        city,
+        by: player,
+        to,
+        at: pos,
+        gold,
+    });
+}
+
+/// The first adjacent tile, in hex order, a unit leaving a returned city can stand on: passable,
+/// no city, and no unit of another team or of its own class. Closed borders do not count.
+fn step_out_tile(state: &GameState, owner: PlayerId, center: Hex, kind: UnitKind) -> Option<Hex> {
+    let military = data::unit_stats(kind).military;
+    let mut adjacent = center.neighbors().to_vec();
+    adjacent.sort();
+    adjacent.into_iter().find(|h| {
+        state.map.move_cost(*h).is_some()
+            && state.city_at(*h).is_none()
+            && state.units_at(*h).all(|u| {
+                state.same_team(u.owner, owner) && data::unit_stats(u.kind).military != military
+            })
+    })
+}
+
+/// Raze and Return take the city's whole turn: the refusal when it already has another order.
+fn sole_city_order(order: &Order, touched: &BTreeSet<CityId>) -> Option<String> {
+    match order {
+        Order::Raze { city } if touched.contains(city) => {
+            Some("A city can receive only its Raze order this turn".into())
+        }
+        Order::ReturnCity { city } if touched.contains(city) => {
+            Some("A city can receive only its Return order this turn".into())
+        }
+        _ => None,
+    }
+}
+
 /// Validate a player's whole order list the way `apply_city_orders` will apply it: in order,
 /// each city order seeing the effects of the earlier ones (a SetProduction followed by a
 /// BuyItem, gold spent by earlier buys, one buy per city). Non-city orders are ignored.
@@ -558,8 +693,8 @@ pub fn validate_city_orders_projected(
     let mut touched = BTreeSet::new();
     let mut errors = Vec::new();
     for (index, order) in orders.iter().enumerate() {
-        let result = if matches!(order, Order::Raze { city } if touched.contains(city)) {
-            Err("A city can receive only its Raze order this turn".into())
+        let result = if let Some(alone) = sole_city_order(order, &touched) {
+            Err(alone)
         } else {
             check_order(&sim, player, order, &bought)
         };
@@ -652,8 +787,8 @@ pub fn apply_city_orders(
     let mut bought = BTreeSet::new();
     let mut touched = BTreeSet::new();
     for order in orders {
-        let result = if matches!(order, Order::Raze { city } if touched.contains(city)) {
-            Err("A city can receive only its Raze order this turn".into())
+        let result = if let Some(alone) = sole_city_order(order, &touched) {
+            Err(alone)
         } else {
             check_order(state, player, order, &bought)
         };

@@ -106,7 +106,7 @@ AI war, peace and targeting in `ai::diplomacy`, `ai::plan`).
   `first_turn` is 1 for a game recorded from its start. History that no longer lines up with the turn
   (series length or empire count) restarts at the current turn instead of failing.
 - `chronicle` is a list of `history::Chronicle` entries (tag `kind`, each with `turn`) mapped from the turn's
-  events in `chronicle_entry`: `Founded`, `Captured`, `Razed`, `War` (`by` set when one team declared),
+  events in `chronicle_entry`: `Founded`, `Captured`, `Razed`, `Returned` (an ordered Return, `combat.md`), `War` (`by` set when one team declared),
   `Peace`, `Era`, `GreatWork`, `Wonder`, `Objective`, `Goal` (first completion
   only), `Eliminated`, `HoldStarted`, `HoldBroken`, `Won`, `Drawn`. Events of barbarians are skipped, except
   a capture or razing where only one side is a barbarian.

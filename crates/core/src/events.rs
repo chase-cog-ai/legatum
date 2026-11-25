@@ -429,6 +429,15 @@ pub enum Event {
         player: PlayerId,
         units_healed: u32,
     },
+    /// An ordered Return: `by` handed the captured city back to its founder `to` and was paid
+    /// `gold` (20 per population).
+    CityReturned {
+        city: CityId,
+        by: PlayerId,
+        to: PlayerId,
+        at: Hex,
+        gold: i32,
+    },
     /// A Celtic capture sack or an ordered Raze: the city burned. `sack_gold` is the Gold taken
     /// (60 per population for a sack, 10 for an ordered Raze); `camp` marks a Celtic warband camp.
     CityRazed {

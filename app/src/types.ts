@@ -399,6 +399,12 @@ export interface CityDetail {
   former_owner?: PlayerId;
   /** Core's reason Raze is unavailable; absent when legal. */
   raze_blocker?: string;
+  /** The living founder this city can be handed back to; absent when Return is not offered. */
+  return_to?: PlayerId;
+  /** Core's reason Return is unavailable now; absent when legal. */
+  return_blocker?: string;
+  /** Gold a Return pays. */
+  return_gold?: number;
   yields: CityYields;
   idle_yields?: CityYields | null;
   food_stored: number;
@@ -1039,6 +1045,7 @@ export type Chronicle =
   | { kind: 'Founded'; turn: number; player: PlayerId; city: string }
   | { kind: 'Captured'; turn: number; by: PlayerId; from: PlayerId; city: string }
   | { kind: 'Razed'; turn: number; by: PlayerId; from: PlayerId; city: string; ordered?: boolean }
+  | { kind: 'Returned'; turn: number; by: PlayerId; to: PlayerId; city: string }
   | { kind: 'War'; turn: number; a: TeamId; b: TeamId; by?: TeamId | null }
   | { kind: 'Peace'; turn: number; a: TeamId; b: TeamId }
   | { kind: 'Era'; turn: number; player: PlayerId; era: number; first: boolean }
@@ -1074,6 +1081,7 @@ export type Order =
   | { type: 'FoundCity'; unit: UnitId }
   | { type: 'DisbandUnit'; unit: UnitId }
   | { type: 'Raze'; city: CityId }
+  | { type: 'ReturnCity'; city: CityId }
   | { type: 'SetProduction'; city: CityId; item: ProductionItem }
   | { type: 'SetCityAutomation'; city: CityId; focus: CityBuildFocus | null; picked?: ProductionItem | null }
   | { type: 'SetProductionQueue'; city: CityId; queue: ProductionItem[] }
@@ -1223,6 +1231,7 @@ export type Event =
   /** Team only: Gold one empire gave a teammate, after this turn's purchases. */
   | { type: 'GoldGiven'; from: PlayerId; to: PlayerId; amount: number }
   | { type: 'CapitalLost'; player: PlayerId; capital: CityId; name: string }
+  | { type: 'CityReturned'; city: CityId; by: PlayerId; to: PlayerId; at: Hex; gold: number }
   | { type: 'CityRazed'; city: CityId; from: PlayerId; by: PlayerId; at: Hex; original_capital?: boolean; sack_gold?: number; camp?: Hex; ordered?: boolean }
   | { type: 'BuildingDismantled'; city: CityId; owner: PlayerId; building: BuildingKind; reason: string }
   | { type: 'ItemBought'; city: CityId; owner: PlayerId; item: ProductionItem; gold: number }

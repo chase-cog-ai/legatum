@@ -601,6 +601,20 @@ export function momentsForTurn(events: readonly Event[], viewer: PlayerId, befor
           deltas: [{ counter: 'vp', amount: gain ? e.vp : -e.vp }], loss: !gain, emblem: 'greatwork' });
         break;
       }
+      case 'CityReturned': {
+        const nameOf = (id: number) => empireOfPlayer(after, id);
+        const at = cities.get(e.city)?.pos ?? e.at;
+        if (team.has(e.to)) {
+          push(i, e.to, { tier: 'major', at, title: cityName(e.city), kicker: 'A city comes home',
+            effect: `Returned by ${nameOf(e.by)}`, lore: 'The gates open to their founders again.', emblem: 'founded', deltas: [],
+            details: ['The city is yours again, whole: its population, buildings and tiles.'] });
+        } else if (team.has(e.by)) {
+          push(i, e.by, { tier: 'minor', at, title: cityName(e.city), kicker: 'A city returned',
+            effect: `Returned to ${nameOf(e.to)}`, lore: 'A city given back is remembered longer than one burned.', emblem: 'founded', deltas: [],
+            details: [`Gold gained: ${e.gold}.`] });
+        }
+        break;
+      }
       case 'CityRazed': {
         if (events.some((x) => x.type === 'CapitalTaken' && x.capital === e.city) && team.has(e.by)) break;
         // The Station's own loss card names its sacked city. Do not add a second card for that event.

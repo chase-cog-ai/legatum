@@ -483,6 +483,7 @@ pub fn describe(state: &GameState, order: &Order) -> (String, String) {
             ),
         ),
         Order::Raze { city: c } => (city(c), "raze".into()),
+        Order::ReturnCity { city: c } => (city(c), "return to its founder".into()),
         Order::SetProductionQueue { city: c, queue } => (
             city(c),
             format!(

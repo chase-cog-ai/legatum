@@ -578,6 +578,9 @@ impl ViewBuilder {
             original_capital: false,
             former_owner: None,
             raze_blocker: None,
+            return_to: None,
+            return_blocker: None,
+            return_gold: None,
 
             idle_yields: None,
             growth_breakdown: Default::default(),
@@ -737,6 +740,18 @@ pub fn assert_valid(view: &PlayerView, orders: &[Order]) {
             Order::SetCityAutomation { .. } => panic!("AI seats do not delegate city production"),
             Order::BuyTile { .. } => panic!("AI seats do not buy tiles"),
             Order::GiveGold { .. } => panic!("AI seats do not give Gold"),
+            Order::ReturnCity { city } => {
+                let c = own_city(*city);
+                assert!(
+                    c.detail
+                        .as_ref()
+                        .is_some_and(|d| d.return_to.is_some() && d.return_blocker.is_none())
+                );
+                assert!(!orders.iter().any(|other| matches!(other,
+                    Order::SetProduction { city: id, .. } | Order::SetProductionQueue { city: id, .. }
+                    | Order::BuyItem { city: id, .. } | Order::HireCompany { city: id, .. }
+                    | Order::Raze { city: id } if id == city)));
+            }
             Order::Raze { city } => {
                 let c = own_city(*city);
                 assert!(

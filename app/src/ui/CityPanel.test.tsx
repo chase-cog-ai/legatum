@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import { empireOfPlayer } from '../empires';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -66,6 +67,37 @@ it('shows Raze loot, confirms the order, and explains protected cities', async (
   act(() => root.render(<CityPanel city={city} view={view} />));
   expect(container.textContent).toContain('can be razed from the turn after its capture');
   expect(container.querySelector<HTMLButtonElement>('[data-testid="city-raze"] button')!.disabled).toBe(true);
+});
+
+it('offers Return for a city taken from another empire, at twice the Raze Gold, and orders it', async () => {
+  const { city, view } = await renderCity();
+  const edit = vi.fn((change: (orders: any[]) => any[]) => {
+    useGame.setState({ orders: [change(useGame.getState().orders[0])] });
+  });
+  act(() => useGame.setState({ editOrders: edit as any }));
+  expect(container.querySelector('[data-testid="city-return"]')).toBeNull();
+  const founder = view.players.find((p) => p.id !== view.me)!;
+  city.population = 3;
+  city.detail!.captured = true;
+  city.detail!.return_to = founder.id;
+  city.detail!.return_gold = 60;
+  act(() => root.render(<CityPanel city={city} view={view} />));
+  const block = container.querySelector('[data-testid="city-return"]')!;
+  expect(block.textContent).toContain(`Return to ${empireOfPlayer(view, founder.id)}`);
+  expect(block.textContent).toContain('60 Gold');
+  act(() => block.querySelector<HTMLButtonElement>('button')!.click());
+  expect(useGame.getState().orders[0]).toEqual([]);
+  expect(container.querySelector('[data-testid="return-confirm"]')!.textContent).toContain('gets the city whole');
+  act(() => [...container.querySelectorAll('button')].find((b) => b.textContent === 'Confirm Return')!.click());
+  expect(useGame.getState().orders[0]).toEqual([{ type: 'ReturnCity', city: city.id }]);
+  // One fate per city: Raze waits while a Return is ordered.
+  expect(container.querySelector<HTMLButtonElement>('[data-testid="city-raze"] button')!.disabled).toBe(true);
+  act(() => [...container.querySelectorAll('button')].find((b) => b.textContent?.includes('Return ordered'))!.click());
+  expect(useGame.getState().orders[0]).toEqual([]);
+  city.detail!.return_blocker = 'You are at War with Athens: make Peace to return Berea';
+  act(() => root.render(<CityPanel city={city} view={view} />));
+  expect(container.querySelector<HTMLButtonElement>('[data-testid="city-return"] button')!.disabled).toBe(true);
+  expect(container.textContent).toContain('make Peace to return');
 });
 
 it('shows public identity but no remembered city health or population under fog', async () => {

@@ -373,6 +373,7 @@ fn check_references(state: &GameState) -> Result<(), String> {
         Chronicle::Captured { by, from, .. } | Chronicle::Razed { by, from, .. } => {
             player_or_barbarian(*by) && player_or_barbarian(*from)
         }
+        Chronicle::Returned { by, to, .. } => player(*by) && player(*to),
         _ => true,
     };
     if !state.history.chronicle.iter().all(chronicle_ok) {

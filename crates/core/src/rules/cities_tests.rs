@@ -3570,3 +3570,163 @@ fn research_goal_fills_an_empty_queue_across_eras_and_clears_once_known() {
     let clear = Order::SetResearchGoal { tech: None };
     assert!(validate_city_order(&s, P0, &clear).is_ok());
 }
+
+/// P0 founded `city`, P1 took it, P2 took it from P1. P2 is at Peace with P0.
+fn twice_taken() -> (GameState, CityId) {
+    let mut s = test_game(&[
+        (Faction::Athens, 0),
+        (Faction::Athens, 1),
+        (Faction::Athens, 2),
+    ]);
+    found(&mut s, P0, at(3, 3));
+    found(&mut s, P1, at(16, 16));
+    found(&mut s, P2, at(3, 16));
+    let city = found(&mut s, P0, at(11, 5));
+    s.cities.get_mut(&city).unwrap().population = 4;
+    crate::rules::battle::capture_city(&mut s, city, P1, &mut Vec::new());
+    crate::rules::battle::capture_city(&mut s, city, P2, &mut Vec::new());
+    for r in &mut s.diplomacy.as_mut().unwrap().relations {
+        if [r.a, r.b] == [TeamId(0), TeamId(2)] || [r.a, r.b] == [TeamId(2), TeamId(0)] {
+            r.state = crate::diplomacy::RelationState::Peace;
+        }
+    }
+    (s, city)
+}
+
+#[test]
+fn a_twice_taken_city_goes_home_whole_and_pays_twenty_gold_per_population() {
+    let (mut s, city) = twice_taken();
+    let order = Order::ReturnCity { city };
+    assert!(return_blocker(&s, P2, city).unwrap().contains("turn after"));
+    s.cities.get_mut(&city).unwrap().resistance = 5;
+    assert!(return_blocker(&s, P2, city).is_none());
+    let pos = s.cities[&city].pos;
+    let pop = s.cities[&city].population;
+    s.cities
+        .get_mut(&city)
+        .unwrap()
+        .buildings
+        .insert(BuildingKind::Granary);
+    let guard = spawn_unit(&mut s, P2, UnitKind::Spearman, pos);
+    let view = crate::view::player_view(&s, P2);
+    let detail = view.cities.iter().find(|c| c.id == city).unwrap();
+    let detail = detail.detail.as_ref().unwrap();
+    assert_eq!(detail.return_to, Some(P0));
+    assert_eq!(detail.return_blocker, None);
+    assert_eq!(detail.return_gold, Some(pop * 20));
+    // Return takes the city's whole turn, like Raze.
+    let both = [
+        Order::SetProduction {
+            city,
+            item: spearman(),
+        },
+        order.clone(),
+    ];
+    assert_eq!(
+        validate_city_orders(&s, P2, &both)
+            .iter()
+            .map(|e| e.index)
+            .collect::<Vec<_>>(),
+        vec![1]
+    );
+    let (next, events) = crate::resolve_turn(&s, &BTreeMap::from([(P2, vec![order])]));
+    let (control, _) = crate::resolve_turn(&s, &BTreeMap::new());
+    let c = &next.cities[&city];
+    assert_eq!((c.owner, c.founder), (P0, P0));
+    assert_eq!(c.occupied_from, None);
+    assert_eq!(c.resistance, 0);
+    assert!(c.population >= pop);
+    assert!(c.buildings.contains(&BuildingKind::Granary));
+    assert_eq!(next.map.get(pos).unwrap().owner, Some(P0));
+    assert!(
+        next.map
+            .tiles
+            .iter()
+            .filter(|t| t.city == Some(city))
+            .all(|t| t.owner == Some(P0))
+    );
+    assert_eq!(next.player(P2).gold, control.player(P2).gold + pop * 20);
+    // The garrison steps out beside the city instead of standing in a foreign one.
+    let guard = &next.units[&guard];
+    assert_eq!(guard.pos.distance(pos), 1);
+    assert!(events.iter().any(|e| matches!(e, Event::CityReturned {
+        city: id, by, to, gold, ..
+    } if *id == city && *by == P2 && *to == P0 && *gold == pop * 20)));
+    assert!(next.history.chronicle.iter().any(
+        |c| matches!(c, crate::history::Chronicle::Returned { by, to, .. }
+                if *by == P2 && *to == P0)
+    ));
+}
+
+#[test]
+fn return_needs_a_living_founder_at_peace_who_is_not_the_empire_it_was_taken_from() {
+    let (mut s, city) = twice_taken();
+    s.cities.get_mut(&city).unwrap().resistance = 0;
+    assert_eq!(return_blocker(&s, P2, city), None);
+    // Not your city.
+    assert!(return_blocker(&s, P1, city).is_some());
+    // At War with the founder.
+    let mut war = s.clone();
+    for r in &mut war.diplomacy.as_mut().unwrap().relations {
+        r.state = crate::diplomacy::RelationState::War;
+    }
+    assert!(return_blocker(&war, P2, city).unwrap().contains("at War"));
+    // The founder is gone.
+    let mut gone = s.clone();
+    gone.player_mut(P0).alive = false;
+    assert!(return_blocker(&gone, P2, city).unwrap().contains("is gone"));
+    let view = crate::view::player_view(&gone, P2);
+    let detail = view.cities.iter().find(|c| c.id == city).unwrap();
+    assert_eq!(detail.detail.as_ref().unwrap().return_to, None);
+    // Taken straight from its founder: that is a conquest, not a city to hand back.
+    let mut s = two_players();
+    found(&mut s, P0, at(3, 3));
+    found(&mut s, P1, at(16, 16));
+    let direct = found(&mut s, P1, at(11, 5));
+    crate::rules::battle::capture_city(&mut s, direct, P0, &mut Vec::new());
+    s.cities.get_mut(&direct).unwrap().resistance = 0;
+    for r in &mut s.diplomacy.as_mut().unwrap().relations {
+        r.state = crate::diplomacy::RelationState::Peace;
+    }
+    assert!(
+        return_blocker(&s, P0, direct)
+            .unwrap()
+            .contains("taken from another empire")
+    );
+    // Your own city.
+    let home = s.cities.values().find(|c| c.founder == P0).unwrap().id;
+    assert!(
+        return_blocker(&s, P0, home)
+            .unwrap()
+            .contains("founded by you")
+    );
+}
+
+#[test]
+fn returning_an_original_capital_gives_up_its_point_and_no_one_scores_it() {
+    let mut s = test_game(&[
+        (Faction::Athens, 0),
+        (Faction::Athens, 1),
+        (Faction::Athens, 2),
+    ]);
+    let capital = found(&mut s, P0, at(3, 3));
+    found(&mut s, P1, at(16, 16));
+    found(&mut s, P2, at(3, 16));
+    crate::rules::battle::capture_city(&mut s, capital, P1, &mut Vec::new());
+    crate::rules::battle::capture_city(&mut s, capital, P2, &mut Vec::new());
+    s.cities.get_mut(&capital).unwrap().resistance = 0;
+    for r in &mut s.diplomacy.as_mut().unwrap().relations {
+        if [r.a, r.b] == [TeamId(0), TeamId(2)] || [r.a, r.b] == [TeamId(2), TeamId(0)] {
+            r.state = crate::diplomacy::RelationState::Peace;
+        }
+    }
+    assert_eq!(return_blocker(&s, P2, capital), None);
+    assert_eq!(crate::scoring::capitals_held(&s, P2).len(), 1);
+    let (next, _) = crate::resolve_turn(
+        &s,
+        &BTreeMap::from([(P2, vec![Order::ReturnCity { city: capital }])]),
+    );
+    assert_eq!(next.cities[&capital].owner, P0);
+    assert!(crate::scoring::capitals_held(&next, P2).is_empty());
+    assert!(crate::scoring::capitals_held(&next, P0).is_empty());
+}

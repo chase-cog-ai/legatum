@@ -742,6 +742,14 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
   const terms = allianceTerms();
   const sideName = (t: number) => (t === ctx.teamId ? 'you' : empire(t));
   switch (e.type) {
+    case 'CityReturned': {
+      const home = e.to === ctx.me;
+      return line('cities', `${who(ctx, e.by)} returned ${ctx.cityName(e.city)} to ${home ? 'you' : who(ctx, e.to)}${mine(e.by) ? ` and gained ${e.gold} Gold` : ''}`, {
+        at: e.at, players: [e.by, e.to], weight: mine(e.by) || mine(e.to) ? 2 : 1,
+        tone: mine(e.by) || mine(e.to) ? 'good' : 'neutral',
+        details: home ? ['The city is yours again, whole: its population, buildings and tiles.'] : [],
+      });
+    }
     case 'CityRazed': {
       if (e.ordered) return line('combat', `${who(ctx, e.by)} razed ${at(ctx, e.at)}${e.sack_gold === undefined ? '' : ` and gained ${e.sack_gold} Gold`}`, {
         at: e.at, players: [e.by, e.from], weight: mine(e.by) ? 2 : 1,

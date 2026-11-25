@@ -134,3 +134,43 @@ would open at home (`inherited_front_cost`: up to 40 for the share of the army n
 site value by 40% per travel turn after the first city, up from 10%, so both UI advice and AI
 value reaching a city before rival borders close (`core::settlement::analyze_sites`,
 `ai::civilians::choose_site`).
+
+## Supply sold by the turn (rules 60, `crates/core/src/supply_trade.rs`)
+
+An empire with strategic supply to spare lets another empire use it for Gold each turn. Supply is still not a
+stockpile: a trade moves `amount` of the seller's supply to the buyer for as long as it runs.
+
+- **Orders.** `OfferSupply{to, selling, resource, amount, gold}` (`selling`: the sender sells; otherwise it bids to
+  buy), `AnswerSupplyOffer{offer, accept, note}` from the recipient, `EndSupplyTrade{trade}` from either side.
+  Offers are between two players, not teams. Limits: 1 to `MAX_AMOUNT` (6) supply, 0 to `MAX_GOLD` (500) Gold a
+  turn, any of the five strategic resources.
+- **Who.** Two living empires that have met and are not at War (`pair_blocker`). The seller needs that much supply
+  spare (`resources::spare`: after its own users and reserved builds, and after what it already sells); the buyer
+  must know the resource's technology and hold at least one turn's price. Checked when the offer is made and again
+  when it is accepted, so two acceptances in one turn cannot sell the same supply twice: the later one is declined
+  with the reason.
+- **Offers** arrive next turn, lapse after `OFFER_TURNS` (3) turns, and a new offer between the same two players
+  replaces the old one. A decline can carry a `note`; the AI uses it to name its price.
+- **A running trade** changes `resources::supplied` for both (`deposits_supply` plus `supply_trade::net`), shown as
+  "Sold to X" / "Bought from X" lines in the supply breakdown, and adds a Gold income line for both
+  (`economy::player_income`: "2 Iron sold to Sparta" +12, "2 Iron bought from Byzantium" −12). The Gold moves with
+  ordinary income, every turn, from the turn after acceptance.
+- **Ends** (`SupplyTradeEnded{reason}`): War between the two teams, including a surprise war, before that turn's
+  ranged fire and movement (`end_broken`, then `update_supply`, so the buyer's units fight unsupplied at once);
+  either empire eliminated; the seller no longer able to deliver (lost deposit: its newest trades end first, before
+  its own users go idle); the buyer unable to pay this turn's price from its treasury (`end_unpaid`, before income);
+  or `EndSupplyTrade`, with no notice period. The buyer's users then go idle the usual way (newest first).
+- **Events** are seen by the two empires and their teammates only.
+- **View.** `PlayerView.supply_trade`: `trades`, `offers`, and `partners` (per met empire: `blocked` reason, supply
+  it has `spare`, resources it `uses`). UI: `app/src/ui/SupplyTrade.tsx` in the diplomacy panel.
+
+**AI (`crates/ai/src/supply_trade.rs`, all levels; a pure function of the view).** Fair price per supply per turn:
+Iron 4, Niter 6, Coal 8, Oil 10, Silicon 12 Gold.
+- *Sells* only while keeping 1 spare (`KEEP_SPARE`), at no less than 150% of the fair price to an empire at Peace
+  and 100% to an ally. Never to its diplomatic target, to a team at 60% of its VP target or more that is not behind
+  it, or to a non-allied team whose public army is larger than its own. The decline note names the price or reason.
+- *Buys* only supply its own idle users need now, at no more than 200% of the fair price, a quarter of its Gold
+  income, and its treasury. It bids 150% to the met empire with the most to spare (allies first), never its target.
+- *Ends* a sale when its own users go short or the buyer becomes someone it would refuse; ends a purchase it no
+  longer needs or when its income is negative.
+- It never opens a sale itself: the buyer asks.

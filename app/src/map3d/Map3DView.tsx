@@ -44,7 +44,7 @@ export default function Map3DView() {
     firstView.current = true; // a new scene (StrictMode remounts too) is placed again by the view effect
     handoff.current = takeMapHandoff(useGame.getState().focus?.seq ?? 0);
     const canvas = canvasRef.current!;
-    const sc = new MapScene(canvas);
+    const sc = new MapScene(canvas, placeBanners);
     sceneRef.current = sc;
     // Tests and local shot scripts reach the scene here (the 2D map exposes `legatumMap` the same way).
     (window as unknown as { legatumMap3d?: MapScene }).legatumMap3d = sc;
@@ -67,15 +67,7 @@ export default function Map3DView() {
       const r = canvas.getBoundingClientRect();
       return { x: r.left + p.x, y: r.top + p.y, radius: p.radius };
     });
-    let raf = 0;
-    const loop = () => {
-      sc.frame();
-      placeBanners();
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
     return () => {
-      cancelAnimationFrame(raf);
       ro.disconnect();
       unregister();
       setMapProjector(null);
@@ -133,7 +125,7 @@ export default function Map3DView() {
     sc.setOverlays({ hover, selected: selHex ?? null, route });
   }, [view, hover, ownSel, mode, pingMode, pendingMove, orders, selection]);
 
-  // City banners: HTML over the scene, placed every frame.
+  // City banners: HTML over the scene, repositioned when their projection changes.
   const placeBanners = () => {
     const sc = sceneRef.current, box = bannersRef.current;
     if (!sc || !box) return;

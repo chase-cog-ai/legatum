@@ -34,7 +34,7 @@ for (const [w, h] of [[1440, 900]]) {
   errs.push("tgt " + JSON.stringify(tgt) + " c " + JSON.stringify(c));
   await p.mouse.move(c.x + tgt.x, c.y + tgt.y);
   await p.waitForTimeout(4000);
-  errs.push(JSON.stringify(await p.evaluate(({x,y}) => { const sc = window.legatumMap3d; return { pick: sc.pick(x, y), el: document.elementFromPoint(x, y)?.className, hov: sc.hoverRing.visible, st: (() => { const s = window.legatum.getState(); const v = s.views[s.seat]; const u = v.units.find((x) => x.id === s.selection.id); return { pos: u.pos, moves: u.moves, mode: s.mode, here: v.units.filter((z) => z.pos.q === 20 && z.pos.r === 26).map((z) => z.owner), goto: u.goto }; })(), sel: sc.selRing.visible, route: sc.route.visible, anim: sc.animating }; }, { x: tgt.x, y: tgt.y })));
+  errs.push(JSON.stringify(await p.evaluate(({x,y}) => { const sc = window.legatumMap3d; return { pick: sc.pick(x, y), el: document.elementFromPoint(x, y)?.className, hov: sc.hoverRing.visible, st: (() => { const s = window.legatum.getState(); const v = s.views[s.seat]; const u = v.units.find((x) => x.id === s.selection.id); return { pos: u.pos, moves: u.moves, mode: s.mode, here: v.units.filter((z) => z.pos.q === 20 && z.pos.r === 26).map((z) => z.owner), goto: u.goto }; })(), sel: sc.selRing.visible, route: sc.route.visible }; }, { x: tgt.x, y: tgt.y })));
   await p.screenshot({ path: `${out}/select-${w}x${h}.png` });
   await p.evaluate(() => { const sc = window.legatumMap3d; sc.dist = 2.2; sc.placeCamera(); });
   await p.waitForTimeout(3000); await p.screenshot({ path: `${out}/close-${w}x${h}.png` });

@@ -18,6 +18,7 @@ import {
 
 const PARCH = new THREE.Color('#d9c9a3');
 const UP = new THREE.Vector3(0, 1, 0);
+const WATER_FOG_MIN = 0.12;
 /** Units with a finished 3D model (app/public/models/units/<slug>.glb); every other kind stands as its painted
  *  miniature. Empty until the designer approves the first model (the Spearman) for the game. */
 const MODELS: Partial<Record<string, string>> = {};
@@ -63,10 +64,14 @@ export class MapScene {
   private clock = new THREE.Clock();
   private ray = new THREE.Raycaster();
   private disposed = false;
-  /** Bumped whenever something changed that needs a frame even if the camera is still. */
-  private animating = true;
+  private raf: number | null = null;
+  private projectionChanged = true;
+  private waterInView = false;
+  private waterBounds: THREE.Box3[] = [];
+  private frustum = new THREE.Frustum();
+  private viewProjection = new THREE.Matrix4();
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, private placeBanners: () => void) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
@@ -87,10 +92,14 @@ export class MapScene {
     this.selRing = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: '#e2b13a', depthTest: false, side: THREE.DoubleSide }));
     this.route = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: '#f3dc8a', transparent: true, opacity: 0.9, depthTest: false, side: THREE.DoubleSide }));
     for (const o of [this.hoverRing, this.selRing, this.route]) { o.renderOrder = 6; o.visible = false; this.scene.add(o); }
+    canvas.addEventListener('webglcontextrestored', this.onContextRestored);
+    this.invalidate();
   }
 
   dispose() {
     this.disposed = true;
+    if (this.raf !== null) cancelAnimationFrame(this.raf);
+    this.renderer.domElement.removeEventListener('webglcontextrestored', this.onContextRestored);
     this.scene.traverse((o) => {
       const m = o as THREE.Mesh;
       m.geometry?.dispose();
@@ -105,7 +114,7 @@ export class MapScene {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / Math.max(1, h);
     this.camera.updateProjectionMatrix();
-    this.animating = true;
+    this.invalidate(true);
   }
 
   // ---------------- world ----------------
@@ -127,7 +136,7 @@ export class MapScene {
     }
     this.buildStatic();
     this.buildUnits();
-    this.animating = true;
+    this.invalidate(true);
   }
 
   private buildTerrain() {
@@ -190,6 +199,30 @@ export class MapScene {
       data[k * 4 + 3] = 255;
     }
     tex.needsUpdate = true;
+    this.updateWaterBounds(f, data);
+  }
+
+  private updateWaterBounds(f: Field, data: Uint8Array) {
+    const { nx, nz, x0, z0, step } = f.grid;
+    const chunk = 8;
+    this.waterBounds = [];
+    for (let z = 0; z < nz - 1; z += chunk) for (let x = 0; x < nx - 1; x += chunk) {
+      const right = Math.min(x + chunk, nx - 1), bottom = Math.min(z + chunk, nz - 1);
+      let submerged = false, revealed = false;
+      // A water pixel needs sea-level terrain or lower, and fog above the shader's cutoff.
+      // Include adjacent texels because the water shader samples the fog texture linearly.
+      for (let j = Math.max(0, z - 1); j <= Math.min(nz - 1, bottom + 1) && !(submerged && revealed); j++) {
+        for (let i = Math.max(0, x - 1); i <= Math.min(nx - 1, right + 1); i++) {
+          const k = j * nx + i;
+          submerged ||= i >= x && i <= right && j >= z && j <= bottom && f.height[k] <= 0;
+          revealed ||= data[k * 4 + 1] > WATER_FOG_MIN * 255;
+        }
+      }
+      if (submerged && revealed) this.waterBounds.push(new THREE.Box3(
+        new THREE.Vector3(x0 + x * step, 0, z0 + z * step),
+        new THREE.Vector3(x0 + right * step, 0, z0 + bottom * step),
+      ));
+    }
   }
 
   private buildWater() {
@@ -225,7 +258,7 @@ export class MapScene {
           float foam = (1.0 - smoothstep(0.0, 0.05, depth)) * (0.55 + 0.45 * sin(uTime * 1.6 + depth * 90.0 + w1 * 4.0));
           c = mix(c, vec3(0.93, 0.92, 0.86), clamp(foam, 0.0, 1.0) * 0.75);
           float a = mix(0.55, 0.92, smoothstep(0.0, 0.3, depth));
-          float seen = smoothstep(0.62, 0.95, fogv), known = smoothstep(0.12, 0.42, fogv);
+          float seen = smoothstep(0.62, 0.95, fogv), known = smoothstep(${WATER_FOG_MIN}, 0.42, fogv);
           float l = dot(c, vec3(0.299, 0.587, 0.114));
           c = mix(mix(vec3(l), c, 0.35) * 0.85 + uParch * 0.18, c, seen);
           c = mix(uParch, c, known); a = mix(1.0, a, known);
@@ -423,7 +456,7 @@ export class MapScene {
   private texture(url: string): THREE.Texture {
     let t = this.textures.get(url);
     if (!t) {
-      t = new THREE.TextureLoader().load(url, () => { this.animating = true; });
+      t = new THREE.TextureLoader().load(url, () => this.invalidate());
       t.colorSpace = THREE.SRGBColorSpace;
       t.anisotropy = 4;
       this.textures.set(url, t);
@@ -465,7 +498,7 @@ export class MapScene {
           void this.model(slug).then((gltf) => {
             if (!gltf || this.disposed || seq !== this.unitSeq) return;
             this.addSquad(g, gltf, team, i * 7 + k);
-            this.animating = true;
+            this.invalidate();
           });
         } else {
           const url = mapUnitMiniatureUrl(u, factionOf, barbarian);
@@ -579,7 +612,7 @@ export class MapScene {
       this.route.geometry.dispose();
       this.route.geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
     }
-    this.animating = true;
+    this.invalidate();
   }
 
   // ---------------- camera, picking, projection ----------------
@@ -597,7 +630,7 @@ export class MapScene {
     const sh = Math.min(16, Math.max(5, this.dist * 1.1));
     Object.assign(this.sun.shadow.camera, { left: -sh, right: sh, top: sh, bottom: -sh });
     this.sun.shadow.camera.updateProjectionMatrix();
-    this.animating = true;
+    this.invalidate(true);
   }
 
   clampTarget() {
@@ -656,16 +689,28 @@ export class MapScene {
     this.placeCamera();
   }
 
-  /** Render one frame. Returns false when nothing moved (the caller may skip frames). */
-  frame(): boolean {
+  private onContextRestored = () => this.invalidate();
+
+  private invalidate(projectionChanged = false) {
+    this.projectionChanged ||= projectionChanged;
+    if (!this.disposed && this.raf === null) this.raf = requestAnimationFrame(this.frame);
+  }
+
+  private frame = () => {
+    this.raf = null;
+    if (this.projectionChanged) {
+      this.projectionChanged = false;
+      this.viewProjection.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
+      this.frustum.setFromProjectionMatrix(this.viewProjection);
+      this.waterInView = this.waterBounds.some((bounds) => this.frustum.intersectsBox(bounds));
+      this.placeBanners();
+    }
     const dt = Math.min(0.05, this.clock.getDelta());
-    this.uniforms.uTime.value += dt;
+    if (this.waterInView) this.uniforms.uTime.value += dt;
     for (const m of this.mixers) m.update(dt);
     this.renderer.render(this.scene, this.camera);
-    const was = this.animating;
-    this.animating = false;
-    return was;
-  }
+    if (this.waterInView || this.mixers.length) this.invalidate();
+  };
 }
 
 function disposeTree(o: THREE.Object3D) {

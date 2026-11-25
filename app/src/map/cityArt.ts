@@ -72,6 +72,11 @@ export function wallStem(era: number, bastion: boolean, exists: Has = has): stri
   return pick ? `${pick}-walls` : null;
 }
 
+/** The era whose ring art shows a Walls level: level I the Ancient ring, each level one era later (IX Future). */
+export function ringEraOf(level: number): number {
+  return clampEra(Math.max(1, level) - 1);
+}
+
 /** The footings stem for Walls under construction: the same ring as `wallStem`, unfinished. */
 export function footingsStem(era: number, bastion: boolean): string | null {
   const stem = wallStem(era, bastion, (name, size) => has(name.replace(/-walls$/, '-walls-footings'), size));
@@ -81,9 +86,9 @@ export function footingsStem(era: number, bastion: boolean): string | null {
 /** The wall ring a city's town stands in on the map (finished Walls, else footings while Walls are built), as the terrain cache draws it. */
 export function cityRing(view: PlayerView, c: CityView): string | null {
   const owner = view.players.find((p) => p.id === c.owner);
-  const era = Math.max(0, (owner?.era ?? 1) - 1), bastion = owner?.faction === 'Switzerland';
-  if (c.visible && c.walls) return wallStem(era, bastion);
-  return sitesOf(view).some((s) => s.walls && s.city === c.id) ? footingsStem(era, bastion) : null;
+  const bastion = owner?.faction === 'Switzerland';
+  if (c.visible && c.walls) return wallStem(ringEraOf(c.walls_level ?? 1), bastion);
+  return sitesOf(view).some((s) => s.walls && s.city === c.id) ? footingsStem(ringEraOf(1), bastion) : null;
 }
 
 /** A city's visible wall level for its banner: 0 none (or not in sight), 1 through 9 Walls levels. */

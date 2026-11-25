@@ -55,6 +55,19 @@ export function CostChip({ spends, when, lead, id, children }: { spends: Spend[]
   </span></>;
 }
 
+/**
+ * What an action brings in, in the gain colour: "+40 Gold if accepted" on an offer that asks for
+ * Gold, beside where a paid offer shows its red cost chip.
+ */
+export function GainChip({ amount, when }: { amount: number; when?: string }) {
+  if (amount <= 0) return null;
+  return <span className="cost-lead-chip gain-chip" data-gain-chip>
+    <span className="cost-amount" aria-hidden="true">+{amount}<Icon name="yield-gold" size={12} color="currentColor" fallback={<span className="cost-unit"> Gold</span>} /></span>
+    {when && <span className="cost-when" aria-hidden="true">&nbsp;{when}</span>}
+    <span className="sr-only">Gets {amount} Gold{when ? ` ${when}` : ''}</span>
+  </span>;
+}
+
 /** A "For you" line: − for what you give up (red), + for what you gain (green). */
 export function ForYouLine({ tone, children }: { tone: 'cost' | 'gain' | 'note'; children: ReactNode }) {
   return <li className={`for-you-line ${tone}`}>

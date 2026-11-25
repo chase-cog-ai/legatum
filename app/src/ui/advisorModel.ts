@@ -148,7 +148,7 @@ function researchSuggestion(ctx: AdvisorContext, order?: Extract<Order, { type: 
     why: order && tech ? advisorWhy(order, ctx.view) : RESEARCH_FALLBACK, current: ctx.techOpen ? 1 : 0,
     steps: [
       { instruction: `${ctx.touch ? 'Tap' : 'Click'} Research at the top.`, key: ctx.touch ? undefined : 'T', target: control('research') },
-      { instruction: name ? `${ctx.touch ? 'Tap' : 'Click'} Research now on ${name}.` : 'Choose a technology.', target: tech ? control('tech', tech) : null },
+      { instruction: name ? `${ctx.touch ? 'Tap' : 'Click'} ${name}.` : 'Choose a technology.', target: tech ? control('tech', tech) : null },
     ] };
 }
 function unitSuggestion(ctx: AdvisorContext, unit: UnitView, order?: Order): Suggestion | null {

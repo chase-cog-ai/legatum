@@ -797,7 +797,7 @@ pub fn validate_state(state: &GameState) -> Vec<String> {
             errors.push(format!("{name} belongs to an eliminated empire"));
         }
         if !(1..=UNIT_HP).contains(&u.hp) {
-            errors.push(format!("{name} has {} HP", u.hp));
+            errors.push(format!("{name} has {} health", u.hp));
         }
         match state.map.get(u.pos) {
             None => errors.push(format!("{name} is off the map")),
@@ -857,7 +857,7 @@ pub fn validate_state(state: &GameState) -> Vec<String> {
         }
         if !(0..=CITY_HP).contains(&c.hp) || c.population < 1 {
             errors.push(format!(
-                "{name} has {} HP and {} population",
+                "{name} has {} health and {} population",
                 c.hp, c.population
             ));
         }

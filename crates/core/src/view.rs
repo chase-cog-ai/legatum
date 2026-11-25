@@ -896,6 +896,10 @@ pub struct PlayerPublic {
     /// (0 once dead).
     #[serde(default)]
     pub advancement: i32,
+    /// Public Science per turn, the same total as the owner's `EconomyView::science_per_turn`
+    /// (0 once dead). Shown in every player's rivals table.
+    #[serde(default)]
+    pub science: i32,
     #[serde(default)]
     pub power: i32,
     #[serde(default)]
@@ -1069,6 +1073,9 @@ pub struct ResearchView {
     /// exclude them.
     #[serde(default)]
     pub skipped: Vec<TechId>,
+    /// The tech tree's goal (`Player::research_goal`), if any.
+    #[serde(default)]
+    pub goal: Option<TechId>,
     pub available: Vec<TechOption>,
     /// Every existing technology, including locked nodes, at current diffusion prices.
     pub catalog: Vec<TechOption>,
@@ -1322,7 +1329,7 @@ impl PlayerView {
                     .any(|r| (r.a, r.b) == key && r.state == crate::diplomacy::RelationState::War))
     }
 
-    /// Mirrors `GameState::passage_allowed`: own team, War, an Alliance, land the mover's
+    /// Mirrors `GameState::passage_allowed`: own team, War, an Alliance, Open Borders, land the mover's
     /// land of a
     /// Yam Relay Station's holder (open to every empire).
     pub fn passage_allowed(
@@ -1338,6 +1345,10 @@ impl PlayerView {
                 || (!player.is_barbarian()
                     && !self.is_closed(o)
                     && (self.teams_allied(a, b)
+                        || self
+                            .diplomacy
+                            .open_borders
+                            .contains(&crate::diplomacy::pair(a, b))
                         || self.courier_halls.iter().any(|h| h.holder == o)))
         })
     }
@@ -1631,6 +1642,11 @@ pub fn public_view(state: &GameState) -> PublicView {
             } else {
                 0
             },
+            science: if p.alive {
+                economy::player_income(state, p.id).science.total
+            } else {
+                0
+            },
             levy: economy::levy(state, p.id).map(|(units, cap)| LevyView {
                 units: units as u32,
                 cap: cap as u32,
@@ -1790,6 +1806,7 @@ pub(crate) fn order_check_view(state: &GameState, me: PlayerId) -> PlayerView {
                 economy: 0,
                 army: 0,
                 advancement: 0,
+                science: 0,
                 levy: None,
                 companies: 0,
                 power: 0,
@@ -2197,6 +2214,7 @@ pub fn player_view_cached(
         turns_left: current_cost.and_then(|cost| turns_needed(cost - stored, science)),
         known: player.techs.iter().copied().collect(),
         skipped: skipped.clone(),
+        goal: player.research_goal,
         catalog: TechId::ALL.into_iter().map(option).collect(),
         unlocks: crate::research::tech_unlocks_for(state, me, full, cache),
         available: TechId::ALL
@@ -2662,13 +2680,22 @@ fn city_detail(
             !matches!(item, ProductionItem::Building { building }
                 if data::has_building(&c.buildings, *building))
         })
-        // Walls at the top level: nothing more to build, so the upgrade leaves the list.
+        // Walls at the top level: nothing more to build, so the upgrade leaves the list. Before
+        // the empire can build Walls at all, the upgrade is not listed either.
         .filter(|item| {
             *item
                 != (ProductionItem::Building {
                     building: BuildingKind::UpgradeWalls,
                 })
-                || c.wall_tier() < data::MAX_WALL_TIER
+                || (c.wall_tier() < data::MAX_WALL_TIER
+                    && (c.wall_tier() > 0
+                        || data::item_requires_for_rules(
+                            state.setup.rule_experiments,
+                            ProductionItem::Building {
+                                building: BuildingKind::Walls,
+                            },
+                        )
+                        .is_none_or(|t| state.player(c.owner).techs.contains(&t))))
         })
         .filter_map(|item| {
             worded(
@@ -3372,10 +3399,15 @@ pub(crate) mod tests {
     fn upgrade_walls_is_unavailable_until_walls_are_built() {
         let mut s = test_state(24, 16);
         let id = add_city(&mut s, P0, at(5, 5), 5);
-        s.player_mut(P0).techs.extend(crate::eras::era_techs(0));
         let upgrade = ProductionItem::Building {
             building: BuildingKind::UpgradeWalls,
         };
+        // Before the empire can build Walls, the upgrade is not listed at all.
+        s.player_mut(P0).techs.clear();
+        let view = player_view(&s, P0);
+        let detail = city(&view, id).unwrap().detail.as_ref().unwrap();
+        assert!(detail.unavailable.iter().all(|entry| entry.item != upgrade));
+        s.player_mut(P0).techs.extend(crate::eras::era_techs(0));
         let view = player_view(&s, P0);
         let unavailable = city(&view, id)
             .unwrap()

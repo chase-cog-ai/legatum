@@ -38,7 +38,7 @@ describe('splitAmounts', () => {
   it('leaves names and non-amounts alone', () => {
     for (const text of ['Science victory', 'Gold project', 'Production is the city’s', 'Upgrade Gold costs -50%', 'Population 5 required',
       '25% of Production becomes Science', 'T10 Gold', 'Gold plus Production generated per turn', 'Unlocks the 300-Production Great Work',
-      '+10 city strength', '+12 against city HP', '−35 HP', 'Largest Economy', 'Iron and Coal are strategic']) {
+      '+10 city strength', '+12 against city health', '−35 health', 'Largest Economy', 'Iron and Coal are strategic']) {
       expect(hasAmounts(text), text).toBe(false);
       expect(show(text)).toBe(text);
     }

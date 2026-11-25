@@ -521,6 +521,10 @@ pub fn describe(state: &GameState, order: &Order) -> (String, String) {
         Order::SetScienceConversion { to } => {
             ("Research".into(), format!("convert Science to {to:?}"))
         }
+        Order::SetResearchGoal { tech } => (
+            "Research".into(),
+            tech.map_or_else(|| "no goal".into(), |t| format!("goal {t:?}")),
+        ),
         Order::SetResearchQueue { techs } => (
             "Research".into(),
             techs
@@ -539,7 +543,7 @@ pub fn describe(state: &GameState, order: &Order) -> (String, String) {
             "Diplomacy".into(),
             format!("state the reason for war on {}: {reason:?}", team(against)),
         ),
-        Order::ProposeTreaty { to, kind } => (
+        Order::ProposeTreaty { to, kind, .. } => (
             "Diplomacy".into(),
             format!("propose {kind:?} to {}", team(to)),
         ),

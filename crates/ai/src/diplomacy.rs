@@ -550,6 +550,11 @@ impl Planner<'_> {
         };
         let mut handled = BTreeSet::new();
         let mut decisions = Vec::new();
+        let deals = v.diplomacy.deals;
+        if deals {
+            // Deals (rules 61): Gold our open offers may still pay is not spent this turn.
+            self.hold_offer_gold();
+        }
         // Answer the most valuable treaty offers first, accounting for the
         // treaty count earlier acceptances leave (no cap; just the sum).
         let mut budget = TreatyBudget::of(v);
@@ -585,6 +590,12 @@ impl Planner<'_> {
             } else {
                 self.treaty_score(other, p.kind, &accept, &budget)
             };
+            // Deals (rules 61): count the offer's Gold (`deals.rs`).
+            let score = if deals {
+                self.deal_response_score(p, other, score)
+            } else {
+                score
+            };
             let order = Order::RespondToProposal {
                 proposal: p.id,
                 accept: legal(&accept) && score.is_some_and(|s| s >= 0),
@@ -596,6 +607,11 @@ impl Planner<'_> {
                     && p.kind == TreatyKind::Alliance
                 {
                     budget.commit();
+                }
+                // Gold we agreed to pay is not spent on anything else this turn.
+                if matches!(order, Order::RespondToProposal { accept: true, .. }) {
+                    let pays_us = if p.from == other { p.gold } else { -p.gold };
+                    self.gold_left -= (-pays_us).max(0);
                 }
                 decisions.push(order);
                 handled.insert(other);
@@ -626,6 +642,8 @@ impl Planner<'_> {
         }
         let mut offers = Vec::new();
         let mut declarations = Vec::new();
+        // Deals (rules 61): Open Borders partners that have become a threat.
+        let closing = self.borders_to_close();
         for a in &v.diplomacy.actions {
             if a.blocked_reason.is_some() {
                 continue;
@@ -634,20 +652,22 @@ impl Planner<'_> {
                 // Leave an Alliance only when it is free (outside its protected window): a
                 // partner nearing victory, a growing aggressor, an Alliance whose coalition
                 // reason has lapsed, or one we can no longer afford.
-                Order::BreakTreaty { with, .. }
-                    if !handled.contains(&with)
-                        && a.cost == 0
-                        && (progress(v, with) >= (self.decisions.ally_progress_limit as u32)
-                            || v.economy.bankruptcy.is_some()
-                            || self.containment_target() == Some(with)
-                            || oath_target == Some(with)
-                            || (!self.endangered() && self.alliance_war_opportunity(with))
-                            || v.diplomacy.relations.iter().any(|r| {
-                                r.between(v.team, with)
-                                    && r.state == RelationState::Alliance
-                                    && r.security.as_ref().is_some_and(|t| {
-                                        t.coalition_target.is_some_and(|old| {
-                                            !alive(old)
+                Order::BreakTreaty {
+                    with,
+                    agreement: legatum_core::diplomacy::Agreement::Security,
+                } if !handled.contains(&with)
+                    && a.cost == 0
+                    && (progress(v, with) >= (self.decisions.ally_progress_limit as u32)
+                        || v.economy.bankruptcy.is_some()
+                        || self.containment_target() == Some(with)
+                        || oath_target == Some(with)
+                        || (!self.endangered() && self.alliance_war_opportunity(with))
+                        || v.diplomacy.relations.iter().any(|r| {
+                            r.between(v.team, with)
+                                && r.state == RelationState::Alliance
+                                && r.security.as_ref().is_some_and(|t| {
+                                    t.coalition_target.is_some_and(|old| {
+                                        !alive(old)
                                                 // A conqueror is still a reason to stand
                                                 // together when its VP dip (threat.rs).
                                                 || (coalition_pressure(v, old) < 60
@@ -660,14 +680,21 @@ impl Planner<'_> {
                                                 })
                                                 || target == Some(v.team)
                                                 || target == Some(with)
-                                        })
                                     })
-                            })) =>
+                                })
+                        })) =>
                 {
                     decisions.push(a.order.clone());
                     handled.insert(with);
                 }
-                Order::ProposeTreaty { to, kind } if !handled.contains(&to) => {
+                Order::BreakTreaty {
+                    with,
+                    agreement: legatum_core::diplomacy::Agreement::OpenBorders,
+                } if !handled.contains(&with) && closing.contains(&with) => {
+                    decisions.push(a.order.clone());
+                    handled.insert(with);
+                }
+                Order::ProposeTreaty { to, kind, .. } if !handled.contains(&to) => {
                     if oath_target == Some(to) && kind == TreatyKind::Alliance {
                         continue;
                     }
@@ -686,7 +713,14 @@ impl Planner<'_> {
                     }
                     let score = self.treaty_score(to, kind, &a.order, &budget);
                     if let Some(score) = score.filter(|s| *s >= 0) {
-                        offers.push((std::cmp::Reverse(score), to, kind, a.order.clone()));
+                        // Deals (rules 61): a losing AI pays for its truce, a winning one asks.
+                        let gold = if deals { self.offer_gold(to, kind) } else { 0 };
+                        let order = if gold == 0 {
+                            a.order.clone()
+                        } else {
+                            Order::ProposeTreaty { to, kind, gold }
+                        };
+                        offers.push((std::cmp::Reverse(score), to, kind, order));
                     }
                 }
                 Order::DeclareWar { against, breach } if !handled.contains(&against) => {
@@ -936,6 +970,8 @@ impl Planner<'_> {
             offers.sort_by_key(|(score, team, kind, _)| {
                 (
                     std::cmp::Reverse(*kind == TreatyKind::Peace && self.rome_walled_peace(*team)),
+                    // Deals: Open Borders wait for any Peace or Alliance worth offering.
+                    *kind == TreatyKind::OpenBorders,
                     std::cmp::Reverse(slot_limited(v, *team)),
                     *score,
                     *team,
@@ -945,6 +981,9 @@ impl Planner<'_> {
             if let Some((_, _, _, order)) =
                 offers.into_iter().find(|(_, t, _, _)| !handled.contains(t))
             {
+                if let Order::ProposeTreaty { gold, .. } = order {
+                    self.gold_left -= gold.max(0);
+                }
                 decisions.push(order);
             }
         }
@@ -967,6 +1006,10 @@ impl Planner<'_> {
         if let Some(order) = self.rome_second_declaration() {
             decisions.retain(|existing| !matches!(existing, Order::DeclareWar { .. }));
             decisions.push(order);
+        }
+        // Deals (rules 61): Hard's coalition Gold to a partner fighting the leader.
+        if deals && let Some(gift) = self.plan_coalition_gift() {
+            decisions.push(gift);
         }
         self.orders.extend(decisions);
     }
@@ -1360,6 +1403,10 @@ impl Planner<'_> {
         order: &Order,
         budget: &TreatyBudget,
     ) -> Option<i32> {
+        // Deals (rules 61): Open Borders with a useful neighbour that is no threat (`deals.rs`).
+        if kind == TreatyKind::OpenBorders {
+            return self.open_borders_score(other);
+        }
         // The walled Roman opening has no open victim city left to win. Rome's side
         // offers and accepts at once; the defender's ordinary score is untouched.
         if kind == TreatyKind::Peace && self.rome_walled_peace(other) {
@@ -1536,6 +1583,7 @@ impl Planner<'_> {
                         .peace_siege_cost(other)
                         .max(self.peace_prize_cost(other))
             }
+            TreatyKind::OpenBorders => return None,
         };
         Some(score)
     }
@@ -1648,6 +1696,7 @@ impl Planner<'_> {
         let order = Order::ProposeTreaty {
             to: against,
             kind: TreatyKind::Peace,
+            gold: 0,
         };
         let age = v
             .diplomacy
@@ -3044,6 +3093,7 @@ mod tests {
         let order = Order::ProposeTreaty {
             to: rival,
             kind: TreatyKind::Peace,
+            gold: 0,
         };
         p.decisions.peace_withdraw_price = 0;
         let flat = p
@@ -3072,6 +3122,7 @@ mod tests {
         let peace = Order::ProposeTreaty {
             to: enemy,
             kind: TreatyKind::Peace,
+            gold: 0,
         };
         let score = |plan: Option<PlanKind>, gene: i32| {
             let mut p = Planner::new(&v, Knobs::new(50, 50, 50, 50, 100), Faction::Celts, 1);
@@ -3659,6 +3710,7 @@ mod tests {
         let order = Order::ProposeTreaty {
             to: rival,
             kind: TreatyKind::Alliance,
+            gold: 0,
         };
         let score = |price: bool| {
             let mut p = Planner::new(&v, Knobs::for_faction(Faction::India), Faction::India, 1);
@@ -3721,6 +3773,7 @@ mod tests {
         let order = Order::ProposeTreaty {
             to: TeamId(3),
             kind: TreatyKind::Alliance,
+            gold: 0,
         };
         let score = |v: &PlayerView, gene| {
             let mut p = Planner::new(v, Knobs::for_faction(Faction::India), Faction::India, 1);

@@ -1,4 +1,4 @@
-import { expectRaceWhole } from './tour/helpers';
+import { expectRaceWhole, meetEveryone } from './tour/helpers';
 import { revealSidebar } from './sidebarAssertions';
 // The reserved Japan Sakoku rule in a legacy scenario: its action row and confirm, a closed country's public count in a rival's
 // race row, and the map's closed-country border. Checked at the user's laptop
@@ -76,6 +76,8 @@ for (const size of SIZES) {
     test('a rival unit inside the closed empire does not break the held vow: the count and palisade', async ({ page }) => {
       test.setTimeout(120_000);
       await load(page, sakokuRivalCoreSave(true), 100);
+      // The fixture's seat has not met Japan; the closed chip shows only in a met rival's row.
+      await meetEveryone(page);
       await expect(page.locator('[data-testid="closed-chip"]').first()).toHaveText('holding');
       await expectRaceWhole(page);
       await page.evaluate(() => {
@@ -91,6 +93,8 @@ for (const size of SIZES) {
     test('a rival sees a held vow: the chip says holding', async ({ page }) => {
       test.setTimeout(120_000);
       await load(page, sakokuRivalCoreSave(false), 100);
+      // The fixture's seat has not met Japan; the closed chip shows only in a met rival's row.
+      await meetEveryone(page);
       await expect(page.locator('[data-testid="closed-chip"]').first()).toHaveText('holding');
       await expectRaceWhole(page);
       await shot(page, size, '6-rival-holding');

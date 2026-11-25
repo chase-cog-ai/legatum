@@ -163,8 +163,12 @@ clip('race', async (page) => {
   await settle(page, { ...home, zoom: 1.0 });
   const film = await Film.start(page, 'race');
   await film.frames(30);
-  const all = page.getByRole('button', { name: /All empires/ }).first();
-  if (await all.count()) { await film.glide(await centre(page, all), 30, { x: 760, y: 420 }); await press(page, film); await film.frames(110); await film.still('race-panel'); }
+  // The rivals table is always open in the sidebar: rest the pointer on it, no click.
+  const rivals = page.getByRole('table', { name: 'Rivals' }).first();
+  await rivals.scrollIntoViewIfNeeded();
+  await film.glide(await centre(page, rivals.locator('.rv-row').first()), 30, { x: 760, y: 420 });
+  await film.frames(110);
+  await film.still('race-panel');
   const link = page.getByRole('button', { name: 'Score ledger', exact: true }).first();
   await film.glide(await centre(page, link), 30);
   await press(page, film);
@@ -304,13 +308,8 @@ clip('diplomacy', async (page) => {
   await load(page, save(LATE));
   const film = await Film.start(page, 'diplomacy');
   await film.frames(30);
+  // The link sits under the rivals table, always open in the race panel.
   const inbox = page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).first();
-  if (!(await inbox.count())) {
-    // The link sits in the opened race panel.
-    await film.glide(await centre(page, page.locator('summary', { hasText: 'All empires' }).first()), 30, { x: 700, y: 420 });
-    await press(page, film);
-    await film.frames(40);
-  }
   await inbox.scrollIntoViewIfNeeded();
   await film.frames(10);
   await film.glide(await centre(page, inbox), 30);

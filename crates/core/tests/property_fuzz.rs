@@ -210,6 +210,7 @@ fn arena(seed: u64, teams: &[u8]) -> GameState {
                 search: false,
             })
             .collect(),
+        deals: false,
     };
     let mut state = blank_game(
         &setup,

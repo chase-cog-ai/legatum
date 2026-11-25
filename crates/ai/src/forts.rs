@@ -68,3 +68,77 @@ impl Planner<'_> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::fixture::{ENEMY, ME, ViewBuilder, off, planner};
+    use legatum_core::view::FortOffer;
+    use legatum_core::{Order, PlayerView, TechId, UnitId, UnitKind};
+
+    /// Our Spearman (unit 1) has held a tile of our land for a turn and could dig a Fort; an
+    /// enemy Spearman stands `gap` tiles east of it.
+    fn staged(gap: i32, gold: i32) -> PlayerView {
+        let mut view = ViewBuilder::new(30, 16)
+            .known_techs(&[TechId::Feudalism])
+            .gold(gold)
+            .city(1, ME, off(3, 8), 3)
+            .owner(off(8, 8), ME)
+            .unit(1, ME, UnitKind::Spearman, off(8, 8))
+            .unit(20, ENEMY, UnitKind::Spearman, off(8 + gap, 8))
+            .build();
+        let u = view.units.iter_mut().find(|u| u.id == UnitId(1)).unwrap();
+        u.fortify = 3;
+        u.fort_offer = Some(FortOffer {
+            gold: legatum_core::data::FORT_GOLD,
+            blocker: None,
+        });
+        view
+    }
+
+    fn digs(view: &PlayerView) -> bool {
+        let mut p = planner(view, 7);
+        p.plan_forts();
+        p.orders
+            .iter()
+            .any(|o| matches!(o, Order::BuildFort { unit } if *unit == UnitId(1)))
+    }
+
+    #[test]
+    fn a_holding_unit_near_an_enemy_army_digs_a_fort() {
+        assert!(digs(&staged(4, 2000)));
+    }
+
+    #[test]
+    fn no_fort_without_a_threat_the_gold_a_rested_unit_or_room() {
+        // No enemy army within reach of the rule.
+        assert!(!digs(&staged(9, 2000)));
+        // The treasury cannot spare the Gold.
+        assert!(!digs(&staged(4, legatum_core::data::FORT_GOLD - 1)));
+        // A unit that moved last turn is on its way somewhere.
+        let mut moved = staged(4, 2000);
+        moved
+            .units
+            .iter_mut()
+            .find(|u| u.id == UnitId(1))
+            .unwrap()
+            .fortify = 0;
+        assert!(!digs(&moved));
+        // The rule says no (a Fort already here, foreign land, a city).
+        let mut blocked = staged(4, 2000);
+        blocked
+            .units
+            .iter_mut()
+            .find(|u| u.id == UnitId(1))
+            .unwrap()
+            .fort_offer = Some(FortOffer {
+            gold: legatum_core::data::FORT_GOLD,
+            blocker: Some("A Fort already stands here".into()),
+        });
+        assert!(!digs(&blocked));
+        // A Fort two tiles away already holds this ground.
+        let mut crowded = staged(4, 2000);
+        let i = crowded.index(off(6, 8)).unwrap();
+        crowded.tiles[i].fort = true;
+        assert!(!digs(&crowded));
+    }
+}

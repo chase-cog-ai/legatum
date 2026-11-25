@@ -723,7 +723,7 @@ impl Planner<'_> {
                             ..
                         } = &mut order
                         {
-                            terms.gold = self.peace_sweetener(to);
+                            *terms = self.peace_offer(to);
                         }
                         offers.push((std::cmp::Reverse(score), to, kind, order));
                     }

@@ -251,3 +251,18 @@ fn a_long_truce_costs_the_stronger_army_and_a_counter_offer_is_never_countered()
         PeaceAnswer::Refuse
     );
 }
+
+#[test]
+fn the_ai_offers_back_what_it_took_when_its_own_war_turns_on_it() {
+    let mut v = war_view(ME, true);
+    // We hold a city captured from the enemy.
+    v.cities[1].occupied_from = Some(ENEMY);
+    let offer = crate::fixture::planner(&v, 7).peace_offer(enemy(&v));
+    assert_eq!((offer.gold, offer.return_captured), (100, true));
+    // Attacked, it offers a plain Peace: nothing is extorted from its own offers either.
+    let attacked = war_view(ENEMY, true);
+    assert_eq!(
+        crate::fixture::planner(&attacked, 7).peace_offer(enemy(&attacked)),
+        PeaceTerms::default()
+    );
+}

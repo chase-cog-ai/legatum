@@ -989,6 +989,7 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
             check_kind(rp, p.kind)?;
             if matches!(order, Order::RespondToProposal { accept: true, .. }) {
                 afford(state, player, -p.terms.gold, "Accepting this Peace")?;
+                afford_each_turn(state, player, -p.terms.reparations)?;
                 if let Some(c) = p.terms.city.and_then(|c| state.cities.get(&c)) {
                     if c.owner != p.proposer && c.owner != player {
                         return Err(format!(
@@ -2552,6 +2553,7 @@ fn check_terms(
             "Reparations are at most {PEACE_REPARATIONS_MAX} Gold a turn"
         ));
     }
+    afford_each_turn(state, player, terms.reparations)?;
     if terms.truce != 0 && !PEACE_TRUCE_CHOICES.contains(&terms.truce) {
         return Err("A truce lasts 10, 20 or 30 turns".into());
     }
@@ -2636,6 +2638,20 @@ fn afford(state: &GameState, player: PlayerId, cost: i32, what: &str) -> Result<
         return Err(format!(
             "{what} costs {cost} Gold; you have {gold} (need {} more)",
             cost - gold
+        ));
+    }
+    Ok(())
+}
+/// Reparations are promised out of income: `each_turn` Gold a turn is at most what the empire
+/// nets each turn now, so no treaty pays out Gold its payer never earns.
+fn afford_each_turn(state: &GameState, player: PlayerId, each_turn: i32) -> Result<(), String> {
+    if each_turn <= 0 {
+        return Ok(());
+    }
+    let income = crate::economy::player_income(state, player).gold.total;
+    if income < each_turn {
+        return Err(format!(
+            "Reparations of {each_turn} Gold a turn are more than your income of {income} Gold a turn"
         ));
     }
     Ok(())

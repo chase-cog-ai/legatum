@@ -2259,13 +2259,27 @@ fn reparations_are_a_named_gold_line_each_turn_of_the_truce() {
     let order = deal(
         1,
         PeaceTerms {
-            reparations: -7,
+            reparations: -1,
             ..Default::default()
         },
     );
+    // Reparations come out of income: more than the payer nets each turn is refused.
+    let greedy = deal(
+        1,
+        PeaceTerms {
+            reparations: -50,
+            ..Default::default()
+        },
+    );
+    let (asked, _) = step(&war, &[(0, vec![greedy])]);
+    let errs = validate_orders(&asked, PlayerId(1), &[response(1, true)]);
+    assert!(
+        errs[0].message.contains("more than your income"),
+        "{errs:?}"
+    );
     let (s, _) = offer_and_answer(&war, order, true);
     let due = relation(&s).reparations.clone().expect("reparations");
-    assert_eq!((due.from, due.to, due.gold), (PlayerId(1), PlayerId(0), 7));
+    assert_eq!((due.from, due.to, due.gold), (PlayerId(1), PlayerId(0), 1));
     assert_eq!(due.until, relation(&s).guarantee_until);
     let line = |s: &GameState, p: u8, label: &str| {
         player_view(s, PlayerId(p))
@@ -2276,12 +2290,12 @@ fn reparations_are_a_named_gold_line_each_turn_of_the_truce() {
             .find(|(l, _)| l.starts_with(label))
             .map(|(_, v)| *v)
     };
-    assert_eq!(line(&s, 1, "Reparations to"), Some(-7));
-    assert_eq!(line(&s, 0, "Reparations from"), Some(7));
+    assert_eq!(line(&s, 1, "Reparations to"), Some(-1));
+    assert_eq!(line(&s, 0, "Reparations from"), Some(1));
     let (a, _) = step(&s, &[]);
     let (b, _) = step(&plain, &[]);
-    assert_eq!(gold(&a, 0) - gold(&s, 0), gold(&b, 0) - gold(&plain, 0) + 7);
-    assert_eq!(gold(&a, 1) - gold(&s, 1), gold(&b, 1) - gold(&plain, 1) - 7);
+    assert_eq!(gold(&a, 0) - gold(&s, 0), gold(&b, 0) - gold(&plain, 0) + 1);
+    assert_eq!(gold(&a, 1) - gold(&s, 1), gold(&b, 1) - gold(&plain, 1) - 1);
     // They end with the truce.
     let mut t = s.clone();
     while t.turn < due.until {
@@ -2299,7 +2313,7 @@ fn stopping_reparations_is_a_public_betrayal_that_frees_only_the_wronged_side() 
     let order = deal(
         1,
         PeaceTerms {
-            reparations: 5,
+            reparations: 1,
             truce: 20,
             ..Default::default()
         },
@@ -2312,7 +2326,7 @@ fn stopping_reparations_is_a_public_betrayal_that_frees_only_the_wronged_side() 
     assert!(
         events
             .iter()
-            .any(|e| matches!(e, Event::ReparationsStopped { gold: 5, .. }))
+            .any(|e| matches!(e, Event::ReparationsStopped { gold: 1, .. }))
     );
     assert!(events.iter().any(|e| matches!(
         e,
@@ -2374,4 +2388,39 @@ fn capital(s: &mut GameState, p: u8, at: Hex) -> CityId {
     let id = city(s, p, at);
     s.cities.get_mut(&id).unwrap().is_capital = true;
     id
+}
+
+// Exploits: a signed Peace cannot be turned into a free city or a free war.
+
+#[test]
+fn buying_peace_or_a_city_binds_the_buyer_for_the_whole_truce() {
+    // Take a city as a Peace term with a short payment, then try to come back for the rest.
+    let mut at_war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    capital(&mut at_war, 0, h(3, 4));
+    capital(&mut at_war, 1, h(10, 4));
+    let prize = city(&mut at_war, 1, h(8, 6));
+    let order = deal(
+        1,
+        PeaceTerms {
+            gold: 300,
+            city: Some(prize),
+            truce: 30,
+            ..Default::default()
+        },
+    );
+    let (mut s, _) = offer_and_answer(&at_war, order, true);
+    assert_eq!(s.cities[&prize].owner, PlayerId(0));
+    let until = relation(&s).guarantee_until;
+    assert_eq!(until, s.turn + 30);
+    while s.turn < until - 1 {
+        for p in [0, 1] {
+            assert!(
+                !validate_orders(&s, PlayerId(p), &[war(1 - p)]).is_empty(),
+                "turn {}: player {p} can declare inside the truce",
+                s.turn
+            );
+        }
+        s = step(&s, &[]).0;
+        assert!(peaceful(&s));
+    }
 }

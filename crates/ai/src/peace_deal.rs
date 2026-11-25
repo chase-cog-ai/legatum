@@ -331,4 +331,35 @@ impl Planner<'_> {
         let gold = (v.economy.gold / 4).min(20 * TREATY_GOLD_PER_POINT) / 10 * 10;
         if gold >= 20 { gold } else { 0 }
     }
+    /// Gene `peace_terms`: the terms on our own Peace offer. A war we declared that now
+    /// endangers us offers Gold (`peace_sweetener`) and the cities we took from them back; a
+    /// war nobody fights offers a 20-turn truce unless ours is the stronger army.
+    pub(crate) fn peace_offer(&self, to: TeamId) -> PeaceTerms {
+        let mut terms = PeaceTerms::default();
+        if self.decisions.peace_terms == 0 {
+            return terms;
+        }
+        terms.gold = self.peace_sweetener(to);
+        if terms.gold > 0 {
+            let v = self.view();
+            let (ours, theirs) = v
+                .cities
+                .iter()
+                .filter(|c| !c.is_capital)
+                .filter_map(|c| Some((v.team_of(c.owner), v.team_of(c.occupied_from?))))
+                .fold((0, 0), |(ours, theirs), pair| {
+                    if pair == (v.team, to) {
+                        (ours + 1, theirs)
+                    } else if pair == (to, v.team) {
+                        (ours, theirs + 1)
+                    } else {
+                        (ours, theirs)
+                    }
+                });
+            terms.return_captured = ours > 0 || theirs > 0;
+        } else if self.dead_war(to).is_some() && self.peace_advantage(to) <= 0 {
+            terms.truce = 20;
+        }
+        terms
+    }
 }

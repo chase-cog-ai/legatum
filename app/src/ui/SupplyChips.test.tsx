@@ -274,3 +274,14 @@ it('the build card reads aircraft Oil from the generated core rules', () => {
   expect(unitNeed('Bomber')).toBe('Oil');
   expect(needText(unitNeed('Bomber')!)).toBe('Uses 1 Oil');
 });
+
+it('the tooltip keeps supply bought and sold by the turn beside the deposits named by tile', () => {
+  const s = iron({
+    supplied: { total: 5, parts: [['Iron near Lugano, with a Mine', 3], ['Iron near Bern', 3], ['Bought from India', 1], ['Sold to Byzantium', -2]] },
+    deposits: [{ hex: { q: 1, r: 1 }, city: 1, mined: true, supply: 3 }, { hex: { q: 2, r: 1 }, city: 2, mined: false, supply: 3 }],
+  });
+  const text = renderToStaticMarkup(<SupplyTip s={s} view={{ cities: [], players: [], me: 0 }} />).replace(/<[^>]*>/g, ' ');
+  expect(text).toContain('Bought from India');
+  expect(text).toContain('Sold to Byzantium');
+  expect(text).not.toContain('Iron near Lugano');
+});

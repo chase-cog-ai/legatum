@@ -77,7 +77,8 @@ function depositRows(s: SupplyView, view?: Pick<PlayerView, 'cities'>, faction?:
     if (faction === 'Germany' && d.supply % 2 === 0) parts.push([label, d.supply / 2], [GERMANY_DOUBLE_ROW, d.supply / 2]);
     else parts.push([label, d.supply]);
   }
-  return { total: s.supplied.total, parts };
+  // The engine's deposit rows read "Coal near Biel"; its other rows are supply bought and sold by the turn (core `supply_trade::supply_lines`).
+  return { total: s.supplied.total, parts: [...parts, ...s.supplied.parts.filter(([label]) => !label.startsWith(`${name} near `))] };
 }
 const GERMANY_DOUBLE_ROW = 'Germany: deposits supply double';
 

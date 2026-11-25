@@ -111,6 +111,7 @@ fn encode(order: &Order) -> Vec<i32> {
         Order::RangedAttack { unit, target } => [7, unit.0 as i32, target.q, target.r],
         Order::UpgradeUnit { unit } => [8, unit.0 as i32, 0, 0],
         Order::UpgradeSiege { unit } => [17, unit.0 as i32, 0, 0],
+        Order::BuildFort { unit } => [19, unit.0 as i32, 0, 0],
         Order::Action { .. } => panic!("numeric profiling tape does not encode empire actions"),
         Order::GiveGold { .. } => panic!("numeric profiling tape does not encode Gold gifts"),
         Order::AirStrike { .. }
@@ -234,6 +235,7 @@ fn decode(encoded: impl AsRef<[i32]>) -> Order {
         },
         8 => Order::UpgradeUnit { unit },
         17 => Order::UpgradeSiege { unit },
+        19 => Order::BuildFort { unit },
         _ => panic!("invalid order kind"),
     }
 }

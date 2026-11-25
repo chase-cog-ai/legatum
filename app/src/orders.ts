@@ -35,6 +35,7 @@ export const UNIT_ACTIONS = new Set<Order['type']>([
   'RangedAttack',
   'UpgradeUnit',
   'UpgradeSiege',
+  'BuildFort',
 ]);
 
 /** Orders of an aircraft in a hangar (core `rules::air`): one per plane per turn. */
@@ -298,6 +299,8 @@ export function describeOrder(o: Order, view: PlayerView): string {
       return `${unit(o.unit)}: upgrade`;
     case 'UpgradeSiege':
       return `${unit(o.unit)}: buy Siege`;
+    case 'BuildFort':
+      return `${unit(o.unit)}: build a Fort`;
     case 'AirStrike': return `${plane(o.plane)}: air strike on ${target(o.target)}`;
     case 'AirRecon': return `${plane(o.plane)}: recon of ${target(o.target)}`;
     case 'Rebase': return `${plane(o.plane)}: rebase to ${city(o.to)}`;

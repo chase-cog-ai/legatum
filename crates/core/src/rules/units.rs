@@ -139,7 +139,8 @@ pub fn order_unit(order: &Order) -> Option<UnitId> {
         | Order::DisbandUnit { unit }
         | Order::RangedAttack { unit, .. }
         | Order::UpgradeUnit { unit }
-        | Order::UpgradeSiege { unit } => Some(*unit),
+        | Order::UpgradeSiege { unit }
+        | Order::BuildFort { unit } => Some(*unit),
         _ => None,
     }
 }
@@ -438,6 +439,10 @@ pub(crate) fn validate_unit_order(
         Order::UpgradeSiege { .. } => {
             let price = super::siege::check(state, player, id, *gold, 0)?;
             *gold -= price.total;
+            Ok(())
+        }
+        Order::BuildFort { .. } => {
+            *gold -= super::forts::check(state, player, id, *gold)?;
             Ok(())
         }
         _ => Ok(()),
@@ -834,6 +839,27 @@ pub fn apply_unit_orders(
                             });
                         }
                         Err(r) => events.push(fail(format!("Siege for unit {} failed: {r}", id.0))),
+                    }
+                }
+                Order::BuildFort { .. } => {
+                    let gold = state.player(player).gold;
+                    match super::forts::check(state, player, id, gold) {
+                        Ok(price) => {
+                            state.player_mut(player).gold -= price;
+                            if let Some(t) = state.map.get_mut(pos) {
+                                t.fort = true;
+                            }
+                            let u = state.units.get_mut(&id).expect("unit");
+                            u.moves_left = 0;
+                            u.goto = None;
+                            events.push(Event::FortBuilt {
+                                unit: id,
+                                owner: player,
+                                at: pos,
+                                gold: price,
+                            });
+                        }
+                        Err(r) => events.push(fail(format!("Fort by unit {} failed: {r}", id.0))),
                     }
                 }
                 Order::UpgradeUnit { .. } => {

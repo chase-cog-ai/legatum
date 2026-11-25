@@ -6,6 +6,7 @@ import { atWar, borderSteps, canEnter, neutralBlocker, relationWith } from '../d
 import { hexAt, tileIndex } from '../hex';
 import { tileMoveCost } from '../data';
 import { roadMoves } from '../path';
+import { fortStops } from '../forts';
 import { neighborIndex } from './grid';
 
 /** Tile indices the unit can enter this turn (its own tile excluded). */
@@ -16,6 +17,8 @@ export function reachTiles(view: PlayerView, u: Pick<UnitView, 'pos' | 'max_move
   const out = new Set<number>();
   if (start < 0 || u.max_moves <= 0) return out;
   const canStep = borderSteps(view, u.kind, u.pos);
+  // An enemy Fort ends the move on the tile next to it (core `rules::forts::blocker`).
+  const stops = fortStops(view);
   // The road bonus (1, 2 with Railways) for a unit that starts its turn on a road (core `reset_turn`).
   const best = new Map<number, number>([[start, u.max_moves + (view.tiles[start].road ? roadMoves(view) : 0)]]);
   const q: number[] = [start];
@@ -32,7 +35,7 @@ export function reachTiles(view: PlayerView, u: Pick<UnitView, 'pos' | 'max_move
       if (cost === null) continue;
       // The core's rule: one step is always allowed at full moves; otherwise moves >= cost.
       if (!(mv === u.max_moves || mv >= cost)) continue;
-      const left = Math.max(0, mv - cost);
+      const left = stops?.(hexAt(i, W), hexAt(nb, W)) ? 0 : Math.max(0, mv - cost);
       if ((best.get(nb) ?? -1) >= left) continue;
       const city = (view.cities ?? []).find((c) => c.pos.q === hexAt(nb, W).q && c.pos.r === hexAt(nb, W).r);
       const cityTeam = city && view.players.find((p) => p.id === city.owner)?.team;

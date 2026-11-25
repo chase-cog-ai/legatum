@@ -156,6 +156,11 @@ pub enum Order {
     UpgradeSiege {
         unit: UnitId,
     },
+    /// Dig a Fort on the unit's tile (`rules::forts`): own territory, Feudalism, Gold. A
+    /// military unit in a Fort defends better, and an enemy stepping next to it stops there.
+    BuildFort {
+        unit: UnitId,
+    },
     /// An aircraft in a city's hangar strikes a tile: a Bomber within `data::BOMBER_RANGE` of its
     /// city, a Fighter within `data::FIGHTER_STRIKE_RANGE`, in the ranged phase with no
     /// retaliation, unless a Fighter on guard intercepts (`rules::air`). A Fighter that strikes

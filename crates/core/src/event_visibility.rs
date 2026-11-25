@@ -232,9 +232,11 @@ pub fn visible_events(
                 | Event::UnitDisbanded { owner, .. }
                 | Event::UnitUpgraded { owner, .. }
                 | Event::SiegeBought { owner, .. }
+                | Event::StoppedByFort { owner, .. }
                 | Event::WonderRaceLost { owner, .. }
                 | Event::AttackPursuit { owner, .. }
                 | Event::UnitPromoted { owner, .. } => teammates.contains(owner),
+                Event::FortBuilt { owner, at: pos, .. } => teammates.contains(owner) || at(*pos),
                 Event::SettlerCaptured {
                     from, to, at: pos, ..
                 } => teammates.contains(from) || teammates.contains(to) || at(*pos),

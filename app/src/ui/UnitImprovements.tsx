@@ -1,11 +1,11 @@
 import { useId } from 'react';
 import type { ReactNode } from 'react';
 import type { Breakdown, Faction, PlayerView, Resource, UnitKind, UnitView } from '../types';
-import { builtInSiege, MONGOL_SIEGE_REASON, itemName, SIEGE_HEADLINE, SIEGE_USES_IRON, TECH_NAME, UNIT_STATS, unitClass, unitStatsFor } from '../data';
+import { builtInSiege, FORT_EFFECT, FORT_HEADLINE, MONGOL_SIEGE_REASON, itemName, SIEGE_HEADLINE, SIEGE_USES_IRON, TECH_NAME, UNIT_STATS, unitClass, unitStatsFor } from '../data';
 import { siegeTier } from '../combat';
 import { aWorks, fixClause, supplyPerMine, withArticle } from '../resources';
 import { strengthBonus } from '../promotion';
-import { siegeSelected, upgradeSelected } from '../commands';
+import { fortSelected, siegeSelected, upgradeSelected } from '../commands';
 import { isCompany } from '../company';
 import { tileIndex } from '../hex';
 import { Amounts } from './Amounts';
@@ -47,9 +47,10 @@ export function upgradeGain(unit: UnitView, faction: Faction, to: UpgradeCheck['
   return changes.join(' · ');
 }
 
-export function UnitImprovements({ unit, view, check, primary, pending, gold, siegeGold, siegeBlocker }: {
+export function UnitImprovements({ unit, view, check, primary, pending, gold, siegeGold, siegeBlocker, fortGold, fortBlocker }: {
   unit: UnitView; view: PlayerView; check: UpgradeCheck | null;
   primary: 'upgrade' | 'siege' | null; pending?: string; gold: number; siegeGold: number; siegeBlocker?: string | null;
+  fortGold?: number; fortBlocker?: string | null;
 }) {
   const id = useId();
   const faction = view.players.find((p) => p.id === unit.owner)!.faction;
@@ -69,7 +70,8 @@ export function UnitImprovements({ unit, view, check, primary, pending, gold, si
   const reasons = [...new Set([upgradeChecklist ? null : upgradeWhy, siegeWhy].filter((r): r is string => !!r))];
   const upgradeReasonId = upgradeChecklist ? `${id}-upgrade-needs` : upgradeWhy ? `${id}-${reasons.indexOf(upgradeWhy)}` : undefined;
   const siegeReasonId = siegeWhy ? `${id}-${reasons.indexOf(siegeWhy)}` : undefined;
-  if (!check && !offer) return null;
+  const fort = unit.fort_offer;
+  if (!check && !offer && !fort) return null;
   return <section className="unit-improve" aria-label="Improve unit">
     <h3><Star size={10} /> Improve <span /></h3>
     {check && <ImproveRow label={`Upgrade to ${itemName({ kind: 'Unit', unit: check.to }, faction)}`}
@@ -88,6 +90,11 @@ export function UnitImprovements({ unit, view, check, primary, pending, gold, si
       tip={<><p>{SIEGE_HEADLINE} The unit rests this turn.</p><p>{SIEGE_USES_IRON && 'Uses 1 Iron supply while it exists.'}</p>
         <p>Treasury: <Amounts text={`${siegeGold} Gold → ${siegeGold - offer.price.total} Gold`} />.</p>
         <BreakdownTable b={offer.price} title="Siege cost" unit="Gold" /></>} />}
+    {fort && <ImproveRow label="Build Fort" effect={FORT_EFFECT} icon="ui-fort" cost={fort.gold}
+      primary={false} active={pending === 'BuildFort'} blocked={!!fortBlocker} reasonId={fortBlocker ? `${id}-fort` : undefined} onClick={fortSelected}
+      tip={<><p>{FORT_HEADLINE}</p><p>The Fort stays for the rest of the game and serves whoever holds it. The unit rests this turn.</p>
+        {fortGold !== undefined && <p>Treasury: <Amounts text={`${fortGold} Gold → ${fortGold - fort.gold} Gold`} />.</p>}</>} />}
+    {fort && fortBlocker && <p className="act-reason improve-reason" id={`${id}-fort`}><b>Fort: </b><Amounts text={fortBlocker} /></p>}
     {upgradeChecklist && check && <p className="act-reason improve-reason" id={upgradeReasonId}>
       <span className="act-needs"><b>Needs</b>{check.needs.map((n) =>
         <span key={n.label} className={n.met ? 'met' : 'unmet'}>

@@ -472,6 +472,7 @@ pub(crate) fn purchased_defender(view: &PlayerView, city: &CityView, kind: UnitK
         upgrade_supply_blocker: None,
         siege: false,
         siege_offer: None,
+        fort_offer: None,
         sight: None,
         resting_heal: None,
         standing_order: None,

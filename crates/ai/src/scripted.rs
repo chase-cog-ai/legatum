@@ -400,6 +400,7 @@ impl ScriptedBrain {
         p.enforce_purchase_generation();
         p.pass("siege_deadline");
         p.enforce_siege_deadlines();
+        p.plan_forts();
         p.record_fund_deliveries();
         p.pass("end");
         p

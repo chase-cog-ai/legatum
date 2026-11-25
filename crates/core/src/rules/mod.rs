@@ -21,6 +21,7 @@ pub mod barbarians;
 pub mod battle;
 pub mod cities;
 pub mod city_names;
+pub mod forts;
 pub mod gifts;
 pub mod movement;
 pub mod occupation;

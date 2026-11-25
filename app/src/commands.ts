@@ -292,6 +292,12 @@ export function upgradeSelected() {
   if (u && u.upgrade_cost !== null) issue({ type: 'UpgradeUnit', unit: u.id }, false);
 }
 
+/** Dig a Fort with the selected unit (core `Order::BuildFort`). */
+export function fortSelected() {
+  const u = selectedOwnUnit();
+  if (u && u.fort_offer && !u.fort_offer.blocker) issue({ type: 'BuildFort', unit: u.id }, false);
+}
+
 /** Buy Siege for the selected unit (core `Order::UpgradeSiege`). */
 export function siegeSelected() {
   const u = selectedOwnUnit();

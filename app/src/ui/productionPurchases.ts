@@ -53,9 +53,9 @@ const quotedBuyCost = (option: ProductionOption, orders: Order[], errors: OrderE
   return quote ? Math.floor((quote.production.total + quote.additional_settler_production * earlierSettlers(orders, errors, before)) * quote.gold_percent / 100) : option.buy_cost;
 };
 
-type SpendOrder = Extract<Order, { type: 'UpgradeUnit' | 'UpgradeSiege' | 'UpgradeAircraft' | 'BuyItem' | 'HireCompany' | 'BuyTile' }>;
-const isSpend = (order: Order): order is SpendOrder => ['UpgradeUnit', 'UpgradeSiege', 'UpgradeAircraft', 'BuyItem', 'HireCompany', 'BuyTile'].includes(order.type);
-const phase = (order: SpendOrder) => order.type === 'UpgradeUnit' || order.type === 'UpgradeSiege' ? 0
+type SpendOrder = Extract<Order, { type: 'UpgradeUnit' | 'UpgradeSiege' | 'BuildFort' | 'UpgradeAircraft' | 'BuyItem' | 'HireCompany' | 'BuyTile' }>;
+const isSpend = (order: Order): order is SpendOrder => ['UpgradeUnit', 'UpgradeSiege', 'BuildFort', 'UpgradeAircraft', 'BuyItem', 'HireCompany', 'BuyTile'].includes(order.type);
+const phase = (order: SpendOrder) => order.type === 'UpgradeUnit' || order.type === 'UpgradeSiege' || order.type === 'BuildFort' ? 0
   : order.type === 'BuyItem' || order.type === 'HireCompany' || order.type === 'BuyTile' ? 1 : 2;
 
 /** "you have N", or, when queued orders already reserve part of the treasury, "N left after your queued orders". */
@@ -71,6 +71,7 @@ export function pendingSpend(view: PlayerView, orders: Order[], errors: OrderErr
       const unit = view.units.find((u) => u.id === order.unit);
       return { gold: unit?.upgrade_breakdown?.total ?? unit?.upgrade_cost ?? 0, supply: unit?.upgrade_need ?? null };
     }
+    if (order.type === 'BuildFort') return { gold: view.units.find((u) => u.id === order.unit)?.fort_offer?.gold ?? 0, supply: null };
     if (order.type === 'UpgradeSiege') return { gold: view.units.find((u) => u.id === order.unit)?.siege_offer?.price.total ?? 0, supply: SIEGE_USES_IRON ? 'Iron' : null };
     if (order.type === 'UpgradeAircraft') {
       const plane = view.aircraft?.find((a) => a.id === order.plane);

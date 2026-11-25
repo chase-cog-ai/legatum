@@ -136,6 +136,10 @@ export function UnitPanel({ unit, view, peek = false }: { unit: UnitView; view: 
   const upgrade = isCompany(unit) ? null : upgradeCheck(unit, view, gold, upgradeBalance.supply);
   const siegeBlocked = unit.siege_offer?.blocker ?? (unit.siege_offer && siegeGold < unit.siege_offer.price.total ? `Needs ${unit.siege_offer.price.total} Gold (${goldOnHand(siegeGold, view)})`
     : unit.siege_offer && SIEGE_USES_IRON && (siegeBalance.supply.get('Iron') ?? 0) >= (view.supply?.find((s) => s.resource === 'Iron')?.spare ?? 0) ? 'No Iron to spare after your queued orders.' : null);
+  const fortOrder: Order = { type: 'BuildFort', unit: unit.id };
+  const fortAt = orders?.findIndex((o) => o.type === 'BuildFort' && o.unit === unit.id) ?? -1;
+  const fortGold = spend.available(fortOrder, fortAt < 0 ? orders?.length ?? 0 : fortAt).gold;
+  const fortBlocked = unit.fort_offer?.blocker ?? (unit.fort_offer && fortGold < unit.fort_offer.gold ? `Needs ${unit.fort_offer.gold} Gold (${goldOnHand(fortGold, view)})` : null);
   const roleAction = unit.kind === 'Scout' || unit.kind === 'Settler';
   const improvePrimary = !roleAction && upgrade && !upgrade.blocker ? 'upgrade'
     : !roleAction && unit.siege_offer && !siegeBlocked ? 'siege' : null;
@@ -282,7 +286,7 @@ export function UnitPanel({ unit, view, peek = false }: { unit: UnitView; view: 
             </div>
             {healOffered && healBlocked && standing !== 'Heal' && <p className="act-reason" id={healReasonId} data-testid="heal-blocked">{healBlocked}</p>}
           </div>
-          <UnitImprovements unit={unit} view={view} check={upgrade} primary={leads && !coloniaHere ? improvePrimary : null} pending={pending?.type} gold={gold} siegeGold={siegeGold} siegeBlocker={siegeBlocked} />
+          <UnitImprovements unit={unit} view={view} check={upgrade} primary={leads && !coloniaHere ? improvePrimary : null} pending={pending?.type} gold={gold} siegeGold={siegeGold} siegeBlocker={siegeBlocked} fortGold={fortGold} fortBlocker={fortBlocked} />
           {veteran && <RetireAction unit={unit} view={view} retiring={retiring} blocker={veteran.blocker} />}
           <div className="unit-dismiss">
             {asking ? <HeirDisbandConfirm unit={unit} view={view} /> : locked ? null :

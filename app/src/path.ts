@@ -1,5 +1,6 @@
 // Client-side A* for the move preview. Mirrors crates/core/src/path.rs (ties on hex order) but
 // only walks tiles this player has explored; the core pathfinds for real every turn.
+import { fortStops } from './forts';
 import type { Hex, Order, PlayerView, UnitView } from './types';
 import { distance, hexAt, hexEq, neighbors, tileIndex } from './hex';
 import { atWar, borderSteps, canEnter, neutralBlocker, relationWith } from './diplomacy';
@@ -513,7 +514,7 @@ export function roadMoves(view: PlayerView): number {
   return view.research?.known?.includes('Railways') ? RAILWAY_MOVES : ROAD_MOVES;
 }
 
-export function pathTurns(path: Hex[], cost: CostFn, maxMoves: number, movesLeft = maxMoves, from?: Hex, roads?: (h: Hex) => boolean, roadBonus = ROAD_MOVES, crossable?: (h: Hex) => boolean): PathStep[] {
+export function pathTurns(path: Hex[], cost: CostFn, maxMoves: number, movesLeft = maxMoves, from?: Hex, roads?: (h: Hex) => boolean, roadBonus = ROAD_MOVES, crossable?: (h: Hex) => boolean, stops?: (from: Hex, to: Hex) => boolean): PathStep[] {
   const out: PathStep[] = [];
   let turn = 1;
   let moves = movesLeft;
@@ -531,6 +532,8 @@ export function pathTurns(path: Hex[], cost: CostFn, maxMoves: number, movesLeft
       moves = maxMoves + (at && roads?.(at) ? roadBonus : 0);
     }
     moves = Math.max(0, moves - c);
+    // An enemy Fort stops the unit on the tile next to it (core `rules::forts::blocker`).
+    if (at && stops?.(at, path[end])) moves = 0;
     for (const h of path.slice(i, end + 1)) out.push({ hex: h, turn, endsTurn: false });
     at = path[end];
     i = end + 1;
@@ -543,7 +546,7 @@ export function pathTurns(path: Hex[], cost: CostFn, maxMoves: number, movesLeft
 export function planTurns(view: PlayerView, path: Hex[], from: Hex, maxMoves: number, crossable?: (h: Hex) => boolean, mover?: Mover): PathStep[] {
   const roads = viewRoads(view);
   const bonus = roadMoves(view);
-  return pathTurns(path, viewCost(view, mover), maxMoves, maxMoves + (roads?.(from) ? bonus : 0), from, roads, bonus, crossable);
+  return pathTurns(path, viewCost(view, mover), maxMoves, maxMoves + (roads?.(from) ? bonus : 0), from, roads, bonus, crossable, fortStops(view));
 }
 
 /** "+1 move" / "+2 moves (Railways)": the extra moves a unit gets for starting a turn on a road, from the same rule the planner uses. */

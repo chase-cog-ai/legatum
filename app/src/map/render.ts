@@ -42,6 +42,7 @@ import { drawLens, drawOwnerOverlay } from './drawLens';
 import { artFadeFor, DEFAULT_OVERLAYS, ownerWashScale, type OverlaySet } from './overlays';
 import { drawYieldIcons, yieldClusterRects, YIELD_FILL } from './yieldIcons';
 import { drawImprovements } from './improvementArt';
+import { drawForts } from './fortMark';
 import { drawResourceIcons, medallionTop, resourceDetail, STACK_LIFT, type Cover } from './resourceIcons';
 import { drawRoads } from './roadArt';
 import { drawClosedLand } from './sakokuLand';
@@ -315,6 +316,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
   const reveal = moments && momentView ? revealAt(moments.plan, moments.t, view, momentView) : null;
   if (reveal?.improves) drawRevealed(ctx, dpr, w, h, reveal.improves, view, (v) => drawImprovements(ctx, v, cam, w, h, dpr, look));
   else drawImprovements(ctx, view, cam, w, h, dpr, look);
+  drawForts(ctx, view, cam, w, h, dpr);
   // Constructed wonders stand on their chosen tile (landmarks.ts); one being built this turn waits for its construction.
   const building = moments && CONSTRUCTION_ANIMATION ? moments.plan.builds.filter((b) => b.wonder && moments.t < b.t + buildPhases(b).done) : [];
   drawLandmarks(ctx, view, toScreen, hexPx, w, h, dpr, building.length ? (l) => building.some((b) => b.city === l.city) : undefined, fixedLandmarkBoxes, (g, near) => terrain.stampTowns(g, cam, w, h, dpr, near));

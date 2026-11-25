@@ -2220,6 +2220,7 @@ fn movement_round(
     }
 
     // 7. Apply: moves, captures, ruins, stops.
+    let mut fort_stops = Vec::new();
     for id in &succeeded {
         let i = intents[id];
         let u = state.units.get_mut(id).expect("advancing unit is alive");
@@ -2241,6 +2242,21 @@ fn movement_round(
         if u.goto == Some(i.to) {
             u.goto = None;
         }
+        let (owner, moves) = (u.owner, u.moves_left);
+        // Forts block the road: a step that ends next to a Fort held by an enemy is the
+        // unit's last this turn. It keeps its destination and walks on next turn.
+        if moves > 0
+            && let Some(fort) = super::forts::blocker(state, owner, i.from, i.to)
+        {
+            state.units.get_mut(id).expect("unit").moves_left = 0;
+            fort_stops.push(Event::StoppedByFort {
+                unit: *id,
+                owner,
+                at: i.to,
+                fort,
+            });
+        }
+        let u = state.units.get_mut(id).expect("advancing unit is alive");
         events.push(Event::UnitMoved {
             unit: *id,
             owner: i.owner,
@@ -2259,6 +2275,7 @@ fn movement_round(
             });
         }
     }
+    events.append(&mut fort_stops);
     for (unit, city) in &captures_city {
         let owner = state.units[unit].owner;
         battle::capture_city(state, *city, owner, events);

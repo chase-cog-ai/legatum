@@ -274,6 +274,8 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
   ],
   FreeTechsChosen: [['yours', ev({ type: 'FreeTechsChosen', player: 0, from: 2, techs: ['BronzeWorking', 'Currency'] }), 'good']],
   SiegeBought: [['yours', ev({ type: 'SiegeBought', unit: 7, owner: 0, gold: 160 }), 'neutral']],
+  FortBuilt: [['yours', ev({ type: 'FortBuilt', unit: 7, owner: 0, at, gold: 100 }), 'neutral']],
+  StoppedByFort: [['yours', ev({ type: 'StoppedByFort', unit: 7, owner: 0, at, fort: at }), 'neutral']],
   UnitUpgraded: [['routine', ev({ type: 'UnitUpgraded', unit: 7, owner: 0, to: 'Crossbowman', gold: 80 }), 'neutral']],
   BarbarianCampSpawned: [['camp', ev({ type: 'BarbarianCampSpawned', camp: 1, at }), 'neutral']],
   BarbarianCampDiscovered: [['camp', ev({ type: 'BarbarianCampDiscovered', camp: 1, team: 0, at }), 'neutral']],

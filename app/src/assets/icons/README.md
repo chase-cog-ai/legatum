@@ -135,6 +135,7 @@ Replace text glyphs (they differ between macOS and Windows, and some render as c
 | File | Description |
 | --- | --- |
 | `ui-alert.svg` | Warning triangle with an exclamation mark (replaces the warning sign; also the Wake badge). |
+| `ui-fort.svg` | A crenellated wall with an arched gate and two slits: a Fort dug by a unit (the unit card's Build Fort row, the map's Fort mark). |
 | `ui-siege.svg` | Two heavy crossed swords: a city under attack (the This Turn alert, the map banner's badge, the report's "Under attack" lines). Bolder than `title-strongest-army` so it holds at 14 px on a red disc. |
 | `ui-random.svg` | A die with five knocked-out pips: chance and a seed-selected faction. |
 | `ui-camp.svg` | A barbarian camp: four sharpened stakes under a pennant (Celts's Call the Wild; the same palisade-and-pennant the map inks on a camp). |

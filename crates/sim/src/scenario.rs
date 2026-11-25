@@ -458,6 +458,7 @@ pub fn describe(state: &GameState, order: &Order) -> (String, String) {
         Order::DisbandUnit { unit: u } => (unit(u), "disband".into()),
         Order::UpgradeUnit { unit: u } => (unit(u), "upgrade".into()),
         Order::UpgradeSiege { unit: u } => (unit(u), "buy Siege".into()),
+        Order::BuildFort { unit: u } => (unit(u), "build a Fort".into()),
         Order::SetAutomation {
             unit: u,
             automation,

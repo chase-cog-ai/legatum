@@ -175,6 +175,7 @@ pub fn forecast_city_strike(
         if pos == unit.pos { unit.fortify } else { 0 },
         unit.level,
     );
+    combat::add_fort(&mut attacker_defense, view.tile(pos).is_some_and(|t| t.fort));
     if pos == unit.pos {
         combat::add_phalanx_rules(
             &mut attacker_defense,
@@ -379,6 +380,7 @@ pub fn forecast_air_strike(
         upgrade_supply_blocker: None,
         siege: false,
         siege_offer: None,
+        fort_offer: None,
         sight: None,
         resting_heal: None,
         heir_of: None,
@@ -649,6 +651,7 @@ pub fn forecast_attack_mode(
                 fortify,
                 level,
             );
+            combat::add_fort(&mut strength, view.tile(target).is_some_and(|t| t.fort));
             if let Some(u) = enemy_unit {
                 combat::add_phalanx_rules(
                     &mut strength,

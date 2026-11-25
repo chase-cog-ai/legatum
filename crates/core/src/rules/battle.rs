@@ -128,6 +128,7 @@ fn unit_defense_on(
     u: &crate::state::Unit,
     terrain: Terrain,
     fortify: i32,
+    fort: bool,
 ) -> Breakdown {
     let off = state.setup.rule_experiments.faction_rules_off;
     let faction = state.player(u.owner).faction;
@@ -142,6 +143,7 @@ fn unit_defense_on(
         fortify,
         promotion::level_for_rules(off, faction, u.xp),
     );
+    combat::add_fort(&mut strength, fort);
     combat::add_phalanx_rules(
         &mut strength,
         off,
@@ -253,6 +255,7 @@ fn plan_fight_inner(
                         } else {
                             d.fortify
                         },
+                        defend_on.is_none() && state.map.get(d.pos).is_some_and(|t| t.fort),
                     )
                 }
             };
@@ -559,7 +562,7 @@ pub fn soak(state: &GameState, unit: UnitId, attackers: &[UnitId], terrain: Terr
             hp * 1000 / i64::from(hit.max(1))
         })
         .min()
-        .unwrap_or_else(|| hp * i64::from(unit_defense_on(state, u, terrain, 0).total))
+        .unwrap_or_else(|| hp * i64::from(unit_defense_on(state, u, terrain, 0, false).total))
 }
 
 /// A unit's force against a city (user, 2026-11-11, Lucerne): the damage its attack would deal
@@ -1306,6 +1309,10 @@ pub fn resolve_ranged(
                     state.player(u.owner).faction,
                     u.xp,
                 ),
+            );
+            combat::add_fort(
+                &mut defense,
+                state.map.get(u.pos).is_some_and(|t| t.fort),
             );
             combat::add_phalanx_rules(
                 &mut defense,

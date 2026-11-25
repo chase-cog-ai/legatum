@@ -50,6 +50,10 @@ pub struct TileView {
     /// current (roads are laid for everyone to see, and never removed). 0 = none.
     #[serde(default, skip_serializing_if = "is_zero_u8")]
     pub road: u8,
+    /// A Fort stands here (`Tile::fort`, `rules::forts`): public like roads, known on every
+    /// explored tile.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub fort: bool,
 }
 
 fn is_zero_u32(v: &u32) -> bool {
@@ -256,6 +260,7 @@ fn shared_tiles_clone_copies_only_on_write_and_keeps_json_array() {
         resource: None,
         improvement: None,
         road: 0,
+        fort: false,
     };
     let original: SharedTileViews = vec![tile.clone()].into();
     let mut projected = original.clone();
@@ -272,6 +277,14 @@ fn shared_tiles_clone_copies_only_on_write_and_keeps_json_array() {
             .unwrap(),
         projected
     );
+}
+
+/// Digging a Fort with one of the viewer's units (`rules::forts`): the Gold price and, when it
+/// cannot be built now, the reason in words (territory, a city, a Fort already there, Gold).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FortOffer {
+    pub gold: i32,
+    pub blocker: Option<String>,
 }
 
 /// The Siege upgrade of one of the viewer's units (`rules::siege`): the Gold price and, when it
@@ -364,6 +377,10 @@ pub struct UnitView {
     /// cannot be bought now.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub siege_offer: Option<SiegeOffer>,
+    /// Own units that can dig a Fort, once Feudalism is known: its price and why it cannot be
+    /// built now (`rules::forts::check`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fort_offer: Option<FortOffer>,
     pub sight: Option<i32>,
     pub resting_heal: Option<Breakdown>,
     /// An Heir only (public): the Byzantium empire whose goal he carries, whoever holds him now.
@@ -1920,6 +1937,7 @@ pub fn player_view_cached(
                     },
                 ),
                 road: if explored { t.road } else { 0 },
+                fort: explored && t.fort,
             }
         })
         .collect();
@@ -2378,6 +2396,14 @@ fn unit_view(state: &GameState, me: PlayerId, u: &Unit) -> UnitView {
                     blocker,
                 }
             }),
+        fort_offer: (own
+            && data::can_build_fort(u.kind)
+            && state.player(u.owner).techs.contains(&data::FORT_TECH))
+        .then(|| FortOffer {
+            gold: data::FORT_GOLD,
+            blocker: crate::rules::forts::check(state, u.owner, u.id, state.player(u.owner).gold)
+                .err(),
+        }),
     }
 }
 

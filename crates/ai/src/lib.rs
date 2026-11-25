@@ -94,6 +94,7 @@ mod runaway;
 mod scripted;
 pub mod search;
 mod short_objective;
+mod forts;
 mod siege_buy;
 mod site_strategy;
 mod strategy;

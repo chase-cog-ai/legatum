@@ -210,6 +210,8 @@ export interface TileView {
   improvement?: TileImprovement | null;
   /** The tile's road links (core `Tile::road`): bit d links to the neighbour in direction d, 64 marks a road tile. Public and always current on explored tiles. Absent = no road. */
   road?: number;
+  /** A Fort dug by a unit stands here (core `Tile::fort`, `rules::forts`). Public on explored tiles. */
+  fort?: boolean;
 }
 
 /** A built improvement as the viewer sees it; the upgraded form shows only on the viewer's own tiles. */
@@ -324,6 +326,8 @@ export interface UnitView {
   siege?: boolean;
   /** Own land military units without Siege: its Gold price, and why it cannot be bought now (technology, Mongol era, territory, Gold, Iron). */
   siege_offer?: { price: Breakdown; blocker: string | null } | null;
+  /** Digging a Fort with this unit (core `rules::forts`): the Gold price and why it cannot be built now. Own units, once Feudalism is known. */
+  fort_offer?: { gold: number; blocker: string | null } | null;
   sight?: number | null;
   resting_heal?: Breakdown | null;
   /** An Heir only (public): the Byzantium empire whose goal he carries, whoever holds him now. */
@@ -1092,6 +1096,8 @@ export type Order =
   | { type: 'BuyTile'; city: CityId; tile: Hex }
   /** Buy Siege for a land military unit in own territory: its attacks on a city ignore enemy Walls, for good (core `rules::siege`). */
   | { type: 'UpgradeSiege'; unit: UnitId }
+  /** Dig a Fort on the unit's tile (core `Order::BuildFort`). */
+  | { type: 'BuildFort'; unit: UnitId }
   | { type: 'Action'; action: GameAction }
   /** Give Gold to a living teammate (core `rules::gifts`): it moves after this turn's purchases, capped at the Gold left then. */
   | { type: 'GiveGold'; to: PlayerId; amount: number };
@@ -1264,6 +1270,10 @@ export type Event =
   | { type: 'UnitUpgraded'; unit: UnitId; owner: PlayerId; to: UnitKind; gold: number }
   /** A unit was given Siege (core `Event::SiegeBought`). */
   | { type: 'SiegeBought'; unit: UnitId; owner: PlayerId; gold: number }
+  /** A unit dug a Fort on its tile (core `Event::FortBuilt`). */
+  | { type: 'FortBuilt'; unit: UnitId; owner: PlayerId; at: Hex; gold: number }
+  /** A unit stepped next to a Fort an enemy holds and stopped for the turn (core `Event::StoppedByFort`). */
+  | { type: 'StoppedByFort'; unit: UnitId; owner: PlayerId; at: Hex; fort: Hex }
   | { type: 'BarbarianCampSpawned'; camp: number; at: Hex }
   | { type: 'BarbarianCampDiscovered'; camp: number; team: TeamId; at: Hex }
   | { type: 'BarbarianScoutSpotted'; unit: UnitId; city: CityId; owner: PlayerId; at: Hex }

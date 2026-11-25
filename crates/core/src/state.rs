@@ -209,6 +209,10 @@ pub struct Tile {
     /// leave a tile, whoever owns it. Omitted at 0, so road-free maps keep their hashes.
     #[serde(default, skip_serializing_if = "is_zero_u8")]
     pub road: u8,
+    /// A Fort dug here by a unit (`crate::rules::forts`). It stays when the tile changes
+    /// hands. Omitted when false, so Fort-free maps keep their hashes.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub fort: bool,
 }
 
 impl Tile {
@@ -223,6 +227,7 @@ impl Tile {
             resource: None,
             improved: false,
             road: 0,
+            fort: false,
         }
     }
 

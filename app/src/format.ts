@@ -1489,6 +1489,16 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
           at: ctx.idleSupplyAt?.(e.resource) ?? null, players: [e.player], weight: mine(e.player) ? 2 : 0, tone: toneFor(e.player, false),
         });
     }
+    case 'FortBuilt':
+      return line('economy', `${unitLabel(ctx, e.unit, e.owner)} built a Fort for ${e.gold} Gold`, {
+        at: e.at, players: [e.owner],
+        icon: ctx.unitKind(e.unit) ? unitIconName(ctx.unitKind(e.unit)!, ctx.playerFaction?.(e.owner)) : undefined,
+      });
+    case 'StoppedByFort':
+      return line('combat', `${unitLabel(ctx, e.unit, e.owner)} stopped beside an enemy Fort: it moves on next turn`, {
+        at: e.at, players: [e.owner],
+        icon: ctx.unitKind(e.unit) ? unitIconName(ctx.unitKind(e.unit)!, ctx.playerFaction?.(e.owner)) : undefined,
+      });
     case 'SiegeBought':
       return line('economy', `${unitLabel(ctx, e.unit, e.owner)} bought Siege for ${e.gold} Gold: its attacks on a city ignore enemy Walls`, {
         players: [e.owner],

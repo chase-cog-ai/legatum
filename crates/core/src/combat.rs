@@ -385,6 +385,16 @@ pub fn add_phalanx_rules(
     }
 }
 
+/// The line a Fort adds to a military unit defending on its tile (`rules::forts`).
+pub fn add_fort(b: &mut Breakdown, fort: bool) {
+    if fort {
+        b.add(FORT_LABEL, data::FORT_DEFENSE);
+    }
+}
+
+/// The breakdown line a Fort adds.
+pub const FORT_LABEL: &str = "Fort";
+
 /// The breakdown line the phalanx adds.
 pub const PHALANX_LABEL: &str = "Phalanx: next to another Hoplite";
 

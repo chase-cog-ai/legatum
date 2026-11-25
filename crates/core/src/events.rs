@@ -706,6 +706,21 @@ pub enum Event {
         to: UnitKind,
         gold: i32,
     },
+    /// A unit dug a Fort on its tile (`Order::BuildFort`).
+    FortBuilt {
+        unit: UnitId,
+        owner: PlayerId,
+        at: Hex,
+        gold: i32,
+    },
+    /// A unit stepped next to a Fort held by an enemy and stopped for the turn
+    /// (`rules::forts::blocker`). It keeps its destination.
+    StoppedByFort {
+        unit: UnitId,
+        owner: PlayerId,
+        at: Hex,
+        fort: Hex,
+    },
     /// A barbarian camp appeared on a tile no empire could see. In the full log only: no team
     /// is shown it (a team learns of a camp by seeing it: `BarbarianCampDiscovered`).
     BarbarianCampSpawned {

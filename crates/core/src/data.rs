@@ -187,6 +187,16 @@ pub const SIEGE_BASE_GOLD: i32 = 160;
 /// Each Siege unit uses 1 Iron supply while it exists, as the Pikeman does (user, 2026-10-22:
 /// "not sure" about a resource, so this is the one switch: `false` makes Siege cost Gold only).
 pub const SIEGE_USES_IRON: bool = true;
+/// Forts (`rules::forts`): the technology that lets units dig them, the Gold one costs and the
+/// defence it adds to a military unit standing in it (the Hills bonus).
+pub const FORT_TECH: TechId = TechId::Feudalism;
+pub const FORT_GOLD: i32 = 100;
+pub const FORT_DEFENSE: i32 = 5;
+/// Units that can dig a Fort: the land military units that can carry Siege (no Scouts, no
+/// civilians, no aircraft).
+pub fn can_build_fort(kind: UnitKind) -> bool {
+    can_have_siege(kind)
+}
 pub const ROADWORKS_RANGE: i32 = 8;
 pub const RAILWAYS_ROADWORKS_RANGE: i32 = 12;
 /// Ruhr Foundries Germany must hold in its cities for its live goal.

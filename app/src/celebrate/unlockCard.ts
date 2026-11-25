@@ -1,5 +1,5 @@
 import { eraName, eraNumeral } from '../ui/eraResearch';
-import { BUILDING_STATS, FACTION_PIECES, GERMANY_FACTORY_NOTE, TECH_NAME, isGreatWork, itemDescription, itemIcon, itemKey, itemName, sameItem, uniquePieceGain } from '../data';
+import { BUILDING_STATS, FACTION_PIECES, GERMANY_FACTORY_NOTE, TECH_NAME, isGreatWork, techHistory, itemDescription, itemIcon, itemKey, itemName, sameItem, uniquePieceGain } from '../data';
 import { addsText, pieceComparison, standardText } from '../pieceCompare';
 import { TECH_QUOTE } from '../techQuotes';
 import { techCardUnlocks, techUnlockSummary } from '../ui/techCardUnlocks';
@@ -36,6 +36,8 @@ export interface UnlockCard {
   kicker: string;
   quote: string;
   icon: string;
+  /** Your year beside the year the technology really arrived, and the gap in words. Null when history has no single year for it. */
+  history: { yours: string; real: string; pace: 'ahead' | 'behind' | 'level'; gap: string } | null;
   tiles: UnlockTile[];
   /** Where "Show ... in ..." goes: the first unlocked item some city can build now. Null: the primary is Continue. */
   show: { item: ProductionItem; itemName: string; city: number; cityName: string } | null;
@@ -114,6 +116,16 @@ function bestCity(view: PlayerView, item: ProductionItem): { city: CityView; tur
   return found.sort((a, b) => (a.turns ?? 1e9) - (b.turns ?? 1e9) || Number(b.city.is_capital) - Number(a.city.is_capital) || a.city.id - b.city.id)[0] ?? null;
 }
 
+/** "590 years ahead of history", "1 year behind history", "The same year as history". */
+function historyLine(tech: TechId, turn: number): UnlockCard['history'] {
+  const h = techHistory(tech, turn);
+  if (!h) return null;
+  const years = Math.abs(h.gap);
+  const count = `${years.toLocaleString('en-US')} year${years === 1 ? '' : 's'}`;
+  return { yours: h.yours, real: h.real, pace: h.gap > 0 ? 'ahead' : h.gap < 0 ? 'behind' : 'level',
+    gap: h.gap > 0 ? `${count} ahead of history` : h.gap < 0 ? `${count} behind history` : 'The same year as history' };
+}
+
 /** The unlock card for a technology the viewer just finished, from the view after the turn. */
 export function unlockCardFor(view: PlayerView, tech: TechId): UnlockCard {
   const faction = view.players.find((p) => p.id === view.me)?.faction ?? 'India';
@@ -136,6 +148,7 @@ export function unlockCardFor(view: PlayerView, tech: TechId): UnlockCard {
   return {
     tech, quote: TECH_QUOTE[tech], icon: 'yield-science',
     kicker: `Technology discovered · Era ${eraNumeral(era)} · ${eraName(era)}`,
+    history: historyLine(tech, view.turn),
     tiles, keys: tiles.flatMap((t) => t.key ? [t.key] : []),
     show, primary: show ? 'show' : chooseNext ? 'research' : 'continue',
     chooseNext,

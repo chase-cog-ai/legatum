@@ -6,7 +6,7 @@ import type { Moment } from './moments';
 import type { UnlockCard, UnlockTile } from './unlockCard';
 import { itemArtUrl, slugUrl, unlockEntryArt } from '../unlockArt';
 import { resourceArtUrl } from '../icons';
-import { costInFactionYield, costYield, isGreatWork } from '../data';
+import { CALENDAR_NOTE, costInFactionYield, costYield, isGreatWork } from '../data';
 import { parseUpgradeEffect } from '../ui/unlockCardModel';
 
 /** A tile's painted miniature (null while unpainted: the tile keeps its icon). */
@@ -66,6 +66,8 @@ export function UnlockMomentCard({ moment, dismiss }: { moment: Moment; dismiss(
         <span className="unlock-seal"><Icon name={card.icon} size={30} /></span></div>
       <div className="unlock-kicker">{card.kicker}</div>
       <h2 className="unlock-title">{moment.title}</h2>
+      {card.history && <p className="unlock-history" data-testid="unlock-history" data-pace={card.history.pace} title={`The year this technology was really discovered. ${CALENDAR_NOTE}`}>
+        <span>You <b>{card.history.yours}</b></span><span>History <b>{card.history.real}</b></span><span className="unlock-history-gap">{card.history.gap}</span></p>}
       <p className="unlock-quote">“{card.quote}”</p>
       <div className="unlock-rule" aria-hidden="true"><svg width="10" height="10" viewBox="-5.5 -5.5 11 11"><path d="M0 -5L.95 -.95L5 0L.95 .95L0 5L-.95 .95L-5 0L-.95 -.95Z" fill="var(--accent)" /></svg></div>
       <div className="unlock-body">

@@ -30,6 +30,20 @@ describe.skipIf(!available)('the unlock card for every technology', () => {
     }
   });
 
+  it('sets your year beside the year the technology really arrived, and says the gap', () => {
+    const at = (tech: TechId, turn: number) => unlockCardFor({ ...views.get('India')!, turn }, tech).history;
+    // Turn 81 is 1130 AD: the Printing Press (1440 AD) comes early, Education (1088 AD) late.
+    expect(at('PrintingPress', 81)).toEqual({ yours: '1130 AD', real: '1440 AD', pace: 'ahead', gap: '310 years ahead of history' });
+    expect(at('Education', 81)).toEqual({ yours: '1130 AD', real: '1088 AD', pace: 'behind', gap: '42 years behind history' });
+    // There is no year 0: 1000 BC to 1088 AD is 2,087 years.
+    expect(at('Education', 30)).toEqual({ yours: '1000 BC', real: '1088 AD', pace: 'ahead', gap: '2,087 years ahead of history' });
+    expect(at('Writing', 1)?.gap).toBe('800 years ahead of history');
+    expect(at('Irrigation', 1)?.gap).toBe('2,000 years behind history');
+    // History has no single year for Feudalism, and none yet for a Future technology: the line is left out.
+    expect(at('Feudalism', 81)).toBeNull();
+    expect(at('FusionPower', 260)).toBeNull();
+  });
+
   it('shows unlocks as tiles with a plain sentence each: every card a faction researches gives it something', () => {
     for (const [faction, view] of views) for (const tech of TECHS) {
       // A tech with nothing for the faction is skipped: known from the start, never researched (Egypt: Bronze Working).

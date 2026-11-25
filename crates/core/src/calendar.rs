@@ -74,8 +74,9 @@ pub fn calendar_label(turn: u32) -> String {
     format_year(calendar_year(turn))
 }
 
-/// The year each technology really arrived (BC negative), for the designers' tech-pace gauge:
-/// the sim report sets the year a tech is learned in a typical game beside it. Only years that
+/// The year each technology really arrived (BC negative). The unlock card sets it beside the
+/// year the player learned the technology, and the sim report beside the year it is learned in a
+/// typical game (the designers' tech-pace gauge). Only years that
 /// are well established are listed; every technology missing here has no clean single year
 /// (or is Future) and reads as unknown. Never read by the rules.
 const TECH_REAL_YEARS: &[(TechId, i32)] = &[
@@ -111,6 +112,12 @@ pub fn tech_real_year(tech: TechId) -> Option<i32> {
         .map(|(_, y)| *y)
 }
 
+/// Years from `from` to `to` (positive when `to` is later). There is no year 0, so 1 BC to 1 AD
+/// is one year.
+pub fn years_between(from: i32, to: i32) -> i32 {
+    (axis(i64::from(to)) - axis(i64::from(from))) as i32
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -143,6 +150,14 @@ mod tests {
     fn real_years() {
         assert_eq!(tech_real_year(TechId::Flight), Some(1903));
         assert_eq!(tech_real_year(TechId::FusionPower), None);
+    }
+
+    #[test]
+    fn years_between_skips_year_zero() {
+        assert_eq!(years_between(-1, 1), 1);
+        assert_eq!(years_between(-500, 500), 999);
+        assert_eq!(years_between(1903, 1440), -463);
+        assert_eq!(years_between(-3200, -1200), 2000);
     }
 
     #[test]

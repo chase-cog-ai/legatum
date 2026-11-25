@@ -67,6 +67,10 @@ for (const size of SIZES) test.describe(`tech unlock ${size.width}x${size.height
     await expect(card(page)).toContainText('Currency');
     await expect(card(page)).toContainText('Build a Revenue Office in any city: +3 Gold');
     await expect(card(page)).toContainText('Imperial Diwan');
+    // Your year beside the real one: Currency arrived in 600 BC, long after turn 3.
+    const history = card(page).getByTestId('unlock-history');
+    await expect(history).toHaveAttribute('data-pace', 'ahead');
+    await expect(history).toHaveText(/You \d+ BC.*History 600 BC.*[\d,]+ years ahead of history/);
     await expect(card(page).getByRole('button', { name: /^Show Revenue Office in / })).toBeVisible();
     // Nothing is queued behind Currency: the card offers the idle decision as a button too.
     await expect(card(page)).toContainText('No research is set.');

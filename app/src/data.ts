@@ -34,6 +34,19 @@ export const interceptRule = (kind: 'Fighter' | 'StealthFighter' = 'Fighter'): s
 const CALENDAR_LABELS = RULES.calendarLabels as readonly string[];
 /** The display year of a turn, "1040 AD" (core `calendar::calendar_label`, exported with the rules; display only, never a rule). */
 export const calendarLabel = (turn: number): string => CALENDAR_LABELS[Math.min(Math.max(0, Math.floor(turn)), CALENDAR_LABELS.length - 1)];
+const CALENDAR_YEARS = RULES.calendarYears as readonly number[];
+const TECH_REAL_YEARS = RULES.techRealYears as Partial<Record<TechId, { year: number; label: string }>>;
+/** Years on an axis with no gap at the BC/AD step (core `calendar::years_between`): 1 BC to 1 AD is one year. */
+const yearAxis = (year: number): number => year > 0 ? year - 1 : year;
+
+/** How a technology learned on `turn` compares with the year it really arrived (core `calendar::tech_real_year`); null when history has no single year for it. Display only. */
+export function techHistory(tech: TechId, turn: number): { yours: string; real: string; gap: number } | null {
+  const real = TECH_REAL_YEARS[tech];
+  if (!real) return null;
+  const at = Math.min(Math.max(0, Math.floor(turn)), CALENDAR_YEARS.length - 1);
+  // Positive: learned before history did.
+  return { yours: CALENDAR_LABELS[at], real: real.label, gap: yearAxis(real.year) - yearAxis(CALENDAR_YEARS[at]) };
+}
 /** The one plain line that explains the year wherever it is shown. */
 export const CALENDAR_NOTE = 'The year follows the turn number and changes nothing in the game.';
 export const CAPTURE_RESISTANCE_TURNS: number = RULES.captureResistanceTurns;

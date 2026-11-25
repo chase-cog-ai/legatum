@@ -16,6 +16,16 @@ const CALENDAR_LABEL_TURNS: u32 = 1000;
 
 #[test]
 fn ui_rules_match_core() {
+    let tech_real_years = TechId::ALL
+        .into_iter()
+        .filter_map(|tech| {
+            let year = legatum_core::calendar::tech_real_year(tech)?;
+            Some((
+                format!("{tech:?}"),
+                json!({ "year": year, "label": legatum_core::calendar::format_year(year) }),
+            ))
+        })
+        .collect::<BTreeMap<_, _>>();
     let wound_immunity = Faction::ALL
         .map(|faction| {
             (
@@ -384,6 +394,8 @@ fn ui_rules_match_core() {
         },
         "eraNames": legatum_core::eras::ERA_NAMES,
         "calendarLabels": (0..=CALENDAR_LABEL_TURNS).map(legatum_core::calendar::calendar_label).collect::<Vec<_>>(),
+        "calendarYears": (0..=CALENDAR_LABEL_TURNS).map(legatum_core::calendar::calendar_year).collect::<Vec<_>>(),
+        "techRealYears": tech_real_years,
         "techDiffusionPerEmpire": data::TECH_DIFFUSION_PER_EMPIRE,
         "techDiffusionMax": data::TECH_DIFFUSION_MAX,
         "hoplitePhalanxStrength": data::HOPLITE_PHALANX_STRENGTH,

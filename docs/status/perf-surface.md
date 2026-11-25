@@ -20,9 +20,27 @@ unwatched. First seeded 2026-11-22 from a code survey (`addEventListener`, `requ
 | --- | --- | --- | --- |
 | Download: one 3.9 MB script (unminified size, no code splitting), the engine WASM, 0.4 MB of CSS | first visit, every deploy | features added | `lean_check.py` sizes (bytes only) |
 | About 930 images and 4 MB of audio in the build | first visit; each era, city and unit seen | art added | **unwatched**: nobody knows what a first game downloads, or when |
-| Time from the link to a playable turn 1 (parse, WASM compile, new-game setup, first map draw) | every visit | bundle and WASM size | **unwatched** in players' games; `tools/perf/app-load.sh` exists, last run 2026-10 |
+| Time from the link to a playable turn 1 (parse, WASM compile, new-game setup, first map draw) | every visit | bundle and WASM size | `tools/perf/app-load.sh`: 3.40 s median locally (0.32 s to title, 0.88 s from Start game to playable); **unwatched** in players' games |
 | Continue: load a save (`loadClient`, `afterLoad`, first autosave) | Continue, rewind | turns played, save size | `?perf=1` marks only; not in uploads |
 | Title screen art and its animation loop | sitting on the title screen | nothing | **unwatched** (battery on a laptop) |
+
+**Cold-start baseline (2026-11-25, `94adca4f`):** five fresh headless Chromium 159 runs on a Linux
+Xeon VM at 1000×600, serving the optimized WASM and `npm run build` output on loopback. The script
+opens Single Player with the default Standard map and six empires, sets seed `424242`, starts the game,
+and clicks Begin on the people's introduction. It stops when the introduction is gone, turn 1 is
+visible, the 2D map has completed a draw, and the turn control can receive a click. Median phases:
+
+| Phase | Median |
+| --- | ---: |
+| Navigation → title visible | 319 ms |
+| Title → Start game (lobby interaction and seed entry) | 2,207 ms |
+| Start game → introduction | 586 ms |
+| Introduction → playable (including Begin) | 285 ms |
+| Start game → playable | 875 ms |
+| Navigation → playable | 3,396 ms (3,338–3,592 ms) |
+
+The wall-clock times include Playwright interaction and readiness checks, not human decision time.
+Medians are computed separately. This is a local regression benchmark, not a hosted network or device survey.
 
 ## 2. Every frame and every pointer move
 
@@ -89,3 +107,5 @@ One line per sweep: date, the rows taken, what was measured, what changed in the
 - 2026-11-24: engine calls on hover measured from a player's 132-turn game replayed with a profiler: the
   found-city check sent the whole view per pointer move (fixed, one call per view). New row and a watcher
   (`long_engine_ms`); long tasks now split into map drawing, terrain painting, engine calls and the rest.
+- 2026-11-25: `app-load.sh` now runs through the first playable turn: 3.40 s median from navigation in
+  local Chromium, with the title, lobby, new-game setup and introduction timed separately.

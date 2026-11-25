@@ -16,6 +16,7 @@ const MIN_COMPLETE_CHOICES = { 1000: 3, 1280: 5, 1440: 4 } as const;
 
 async function openCity(page: Page, size: { width: number; height: number }, busy: boolean, hp?: number) {
   const setup = wallsFixture();
+  for (const player of setup.fixture.players.slice(1)) { player.isHuman = false; setup.fixture.setup.players[player.id].is_human = false; }
   const own = setup.fixture.cities.find((c) => c.id === setup.own)!;
   setup.fixture.players[0].techs = TECHS.filter((t) => ['Irrigation', 'BronzeWorking', 'Masonry', 'Writing', 'Currency'].includes(t));
   Object.assign(own, busy

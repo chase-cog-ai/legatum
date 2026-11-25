@@ -91,11 +91,6 @@ export function cityRing(view: PlayerView, c: CityView): string | null {
   return sitesOf(view).some((s) => s.walls && s.city === c.id) ? footingsStem(ringEraOf(1), bastion) : null;
 }
 
-/** A city's visible wall level for its banner: 0 none (or not in sight), 1 through 9 Walls levels. */
-export function wallTierOf(c: { visible: boolean; walls: boolean; walls_level?: number }): number {
-  return c.visible && c.walls ? (c.walls_level ?? 1) : 0;
-}
-
 /** Shared far-zoom mark for a tier (not era-specific). */
 export function markStem(tier: CityTier): string {
   return `marks/${tier}-mark`;

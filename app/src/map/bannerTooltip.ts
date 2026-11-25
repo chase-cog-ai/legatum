@@ -2,7 +2,7 @@ import { empireOfPlayer } from '../empires';
 import { goalCitiesAt, goalCityBannerPart, tombSiteAt, tombSiteLine } from '../goalCities';
 import { itemName } from '../data';
 import type { CityView, PlayerView } from '../types';
-import { wallTierOf } from './cityArt';
+import { wallTierOf } from '../combat';
 import { WALL_TIER_LABEL } from './sprites';
 
 /** The parts of a drawn banner, in their visual order: a goal city's seal (left end), population, owner, name, the capital's star (right end). */

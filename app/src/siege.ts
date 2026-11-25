@@ -4,8 +4,7 @@
 // Public numbers only: the player's fogged view (city HP and defense, visible units, war status)
 // plus last turn's visible events and `CityDetail.attacked_last_turn` (which survives a save).
 import { isThreat } from './diplomacy';
-import { CITY_HEAL, CITY_HP, cityDefenseCovered, damage, idiv, unitAttackStrength, unitDefenseStrength, unitRangedStrength, wallDamagePercent } from './combat';
-import { wallTierOf } from './map/cityArt';
+import { CITY_HEAL, CITY_HP, cityDefenseCovered, damage, idiv, unitAttackStrength, unitDefenseStrength, unitRangedStrength, wallDamagePercent, wallTierOf } from './combat';
 import { attacksInMelee, builtInSiege, itemName, pluralUnit } from './data';
 import { distance, hexEq, tileIndex } from './hex';
 import { empireOfPlayer } from './empires';

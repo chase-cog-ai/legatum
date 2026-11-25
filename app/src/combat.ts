@@ -129,6 +129,11 @@ export function siegeCover(kind: UnitKind, siege: boolean, techs: readonly TechI
 /** Core `data::MAX_WALL_TIER`: level IX. */
 export const MAX_WALL_TIER = RULES.maxWallTier;
 
+/** A city's visible wall level: 0 none (or not in sight), 1 through 9 Walls levels. */
+export function wallTierOf(c: { visible: boolean; walls: boolean; walls_level?: number }): number {
+  return c.visible && c.walls ? (c.walls_level ?? 1) : 0;
+}
+
 /**
  * Core `combat::wall_damage_percent`: the percent of its normal damage an attack deals to a walled city's HP. `covered` is the
  * siege tier of the attacker (0 when it has no Siege): at the city's tier or above the Walls do nothing,

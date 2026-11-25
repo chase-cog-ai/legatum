@@ -61,7 +61,8 @@ import { drawMarchDust, drawMomentFx, drawMomentGround, drawRevealed, revealAt, 
 import { drawAirCandidates, drawAirLabels, drawAirOffscreen, drawAirRings, drawTileCandidates, type AirOverlay } from './airOverlay';
 import { aircraftAsUnit } from '../airWing';
 import { unworkedClaimIndexes } from './unworkedClaims';
-import { cityRing, clearOfTown, TOWN_GAP, wallTierOf } from './cityArt';
+import { cityRing, clearOfTown, TOWN_GAP } from './cityArt';
+import { wallTierOf } from '../combat';
 
 export { HEX_SIZE } from './grid';
 

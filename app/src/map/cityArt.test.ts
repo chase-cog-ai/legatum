@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { CITY_ERAS, CITY_TIERS, cityArtArrivals, cityArtEpoch, cityImage, cityStem, cityTier, cityUrl, markStem, missingCityArt, ringEraOf, spriteSize, traceCityArt, wallStem, wallTierOf } from './cityArt';
+import { CITY_ERAS, CITY_TIERS, cityArtArrivals, cityArtEpoch, cityImage, cityStem, cityTier, cityUrl, markStem, missingCityArt, ringEraOf, spriteSize, traceCityArt, wallStem } from './cityArt';
+import { wallTierOf } from '../combat';
 
 const only = (...stems: string[]) => (stem: string, size: 64 | 128 | 512) => size === 512 && stems.includes(stem);
 

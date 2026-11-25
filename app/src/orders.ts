@@ -328,6 +328,11 @@ export function describeOrder(o: Order, view: PlayerView): string {
       return o.techs.length ? `Research ${o.techs.map((t) => TECH_NAME[t]).join(' → ')}` : 'Clear research queue';
     case 'SetScienceConversion': return `Convert Science to ${o.to}`;
     case 'GiveGold': return `Give ${o.amount} Gold to ${withThe(empireOfPlayer(view, o.to))}`;
+    case 'OfferSupply': return o.selling
+      ? `Offer ${withThe(empireOfPlayer(view, o.to))} ${o.amount} ${o.resource} for ${o.gold} Gold a turn`
+      : `Offer ${withThe(empireOfPlayer(view, o.to))} ${o.gold} Gold a turn for ${o.amount} ${o.resource}`;
+    case 'AnswerSupplyOffer': return `${o.accept ? 'Accept' : 'Decline'} a supply offer`;
+    case 'EndSupplyTrade': return 'End a supply trade';
     case 'Action':
       switch (o.action.action) {
         case 'Swarm': return `Kindle the New Fire: offer ${view.actions?.swarm?.population ?? 50} population · +2 VP, permanent`;

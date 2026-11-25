@@ -24,6 +24,8 @@ const at: Hex = { q: 3, r: 1 };
 const ev = (e: Record<string, unknown>) => e as unknown as Event;
 const relation = (over: Record<string, unknown> = {}) => ({ a: 0, b: 2, state: 'War', effective_turn: 13, guarantee_until: 0, version: 1, security: null, war_id: 1, declarers: [2], ...over });
 const proposal = { id: 4, from: 2, to: 0, proposer: 2, created_turn: 11, respond_by: 14, relation_version: 1, kind: 'Peace' };
+const supplyOffer = { id: 1, from: 0, to: 2, selling: true, resource: 'Iron', amount: 2, gold: 12, turn: 11 };
+const supplyTrade = { id: 2, seller: 0, buyer: 2, resource: 'Iron', amount: 2, gold: 12, since: 12 };
 const battle = (over: Record<string, unknown>) => ev({
   type: 'Battle', attacker: 7, attacker_owner: 0, defender: { kind: 'Unit', unit: 9, owner: 2, unit_kind: 'Spearman' }, at,
   attacker_at: { q: 5, r: 1 }, attacker_strength: { total: 15, parts: [] }, defender_strength: { total: 10, parts: [] },
@@ -162,6 +164,16 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
   GoldGiven: [
     ['you gave a teammate Gold', ev({ type: 'GoldGiven', from: 0, to: 1, amount: 40 }), 'neutral'],
     ['a teammate gave you Gold', ev({ type: 'GoldGiven', from: 1, to: 0, amount: 40 }), 'good'],
+  ],
+  SupplyOffered: [
+    ['you offered supply', ev({ type: 'SupplyOffered', offer: supplyOffer }), 'neutral'],
+    ['a rival asks for your supply', ev({ type: 'SupplyOffered', offer: { ...supplyOffer, from: 2, to: 0, selling: false } }), 'neutral'],
+  ],
+  SupplyOfferDeclined: [['your offer was turned down', ev({ type: 'SupplyOfferDeclined', offer: supplyOffer, reason: 'we want 12 Gold a turn for it' }), 'neutral']],
+  SupplyTradeStarted: [['a trade began', ev({ type: 'SupplyTradeStarted', trade: supplyTrade }), 'good']],
+  SupplyTradeEnded: [
+    ['your sale ended', ev({ type: 'SupplyTradeEnded', trade: supplyTrade, reason: 'you are at War' }), 'neutral'],
+    ['your purchase ended', ev({ type: 'SupplyTradeEnded', trade: { ...supplyTrade, seller: 2, buyer: 0 }, reason: 'you are at War' }), 'bad'],
   ],
   CapitalLost: [
     ['your held point lost', ev({ type: 'CapitalLost', player: 0, capital: 5, name: 'Rome' }), 'bad'],

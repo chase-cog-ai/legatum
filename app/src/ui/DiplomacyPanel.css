@@ -198,3 +198,10 @@
 }
 .offer-card .offer-actions .btn { white-space: nowrap; text-align: center; max-width: 100%; }
 .diplomacy-action .btn { white-space: normal; max-width: 100%; }
+/* Supply trades: the offers and running trades above the empire list, and the offer form on an empire's row. */
+.supply-deal .supply-actions { display: flex; gap: 8px; margin: 6px 0; }
+.supply-trade { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule); }
+.supply-trade-head { margin: 0 0 6px; font: 600 13px/1.2 var(--sans); }
+.supply-trade-sides { display: flex; gap: 6px; }
+.supply-trade-form select { padding: 2px 4px; }
+.supply-trade-rule { margin: 6px 0 0; font-size: 12px; }

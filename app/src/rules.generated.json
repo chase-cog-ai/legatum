@@ -10019,7 +10019,7 @@
   "rocketArtilleryRange": 3,
   "rollMax": 120,
   "rollMin": 80,
-  "saveVersion": 59,
+  "saveVersion": 60,
   "settlerCostStep": 50,
   "siege": {
     "baseGold": 160,
@@ -17816,6 +17816,11 @@
       "TrenchInfantry": "Oil"
     },
     "unsuppliedStrengthPercent": 25
+  },
+  "supplyTrade": {
+    "maxAmount": 6,
+    "maxGold": 500,
+    "offerTurns": 3
   },
   "swarmPopulation": 30,
   "swissInterestThreshold": 100,

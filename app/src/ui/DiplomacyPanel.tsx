@@ -19,6 +19,7 @@ import { YIELD_COLORS } from '../theme';
 import { PortraitFrame, PortraitRoundel } from './premium';
 import { RingMedallion, TreatyEmblem } from './ringMedallion';
 import { Amount, Amounts } from './Amounts';
+import { SupplyDeals, TradeSupply } from './SupplyTrade';
 import { TeamGifts } from './GiveGold';
 import { RivalLevy } from './Levy';
 import { aiLevel } from '../aiLevel';
@@ -648,6 +649,7 @@ export function DiplomacyPanel() {
         </article>)}
         {queued.map((s, i) => <p key={`queued-${i}`}>Teammate queued: {name(s.player)} · <Amounts text={describeOrder(s.order, view)} /></p>)}
         {(d.replies??[]).length > 0 && <details className="diplomatic-replies" open><summary>Recent diplomatic replies</summary>{[...(d.replies??[])].reverse().slice(0,8).map((r)=><article className="diplomacy-item" key={`${r.proposal.id}-${r.effective_turn}`}><strong>{teamName(view,r.proposal.to)} {r.accepted?'accepted':'declined'} {treatyName(r.proposal)} · turn {r.effective_turn}</strong>{r.proposal.explanation?.reasons.map((reason,i)=><p key={i}>{reason}</p>)}</article>)}</details>}
+        <SupplyDeals view={view} />
         <TeamGifts view={view} />
         <h4 ref={relationRef} className="diplomacy-section">Empires</h4>
         <ul className="empire-list" aria-label="Empires">
@@ -683,6 +685,7 @@ export function DiplomacyPanel() {
                 {unmet && <p className="diplomacy-blocked-reason">{notMetText(unmet.blocked_reason!, empireTitle(view, team))}</p>}
                 {teamActions.filter((a) => !a.blocked_reason || blockedByContact(a)).map((a, i) => <Action key={i} action={a} view={forecastView} orders={orders} />)}
                 <Unavailable actions={teamActions.filter((a) => a.blocked_reason && !blockedByContact(a))} view={view} />
+                {empireMembers(view, s.team).filter((p) => p.alive).map((p) => <TradeSupply key={p.id} view={view} to={p.id} />)}
               </div>}
             </li>;
           })}

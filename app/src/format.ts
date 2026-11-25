@@ -1276,6 +1276,39 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
         : e.to === ctx.me ? `${cap(withThe(who(ctx, e.from)))} gave you ${e.amount} Gold` : `${cap(withThe(who(ctx, e.from)))} gave ${withThe(who(ctx, e.to))} ${e.amount} Gold`, {
         players: [e.from, e.to], weight: 2, tone: e.to === ctx.me ? 'good' : 'neutral',
       });
+    case 'SupplyOffered': {
+      const o = e.offer, them = withThe(who(ctx, o.from === ctx.me ? o.to : o.from));
+      const terms = `${o.amount} ${o.resource} for ${o.gold} Gold a turn`;
+      return line('diplomacy', o.from === ctx.me
+        ? `You offered ${them} ${o.selling ? `to sell ${terms}` : `to buy ${terms}`}`
+        : `${cap(them)} ${o.selling ? `offered to sell you ${terms}` : `asked to buy ${terms} from you`}: answer in Diplomacy`, {
+        players: [o.from, o.to], weight: 2, tone: 'neutral',
+      });
+    }
+    case 'SupplyOfferDeclined': {
+      const o = e.offer, mine = o.from === ctx.me, them = withThe(who(ctx, mine ? o.to : o.from));
+      const what = `${o.amount} ${o.resource} for ${o.gold} Gold a turn`;
+      return line('diplomacy', mine ? `${cap(them)} turned down your offer (${what})` : `The offer from ${them} (${what}) is off`, {
+        players: [o.from, o.to], weight: 2, tone: 'neutral', details: e.reason ? [mine ? `They said: ${e.reason}.` : `${cap(e.reason)}.`] : [],
+      });
+    }
+    case 'SupplyTradeStarted': {
+      const t = e.trade, selling = t.seller === ctx.me;
+      return line('economy', selling
+        ? `You now sell ${withThe(who(ctx, t.buyer))} ${t.amount} ${t.resource} for ${t.gold} Gold a turn`
+        : `You now buy ${t.amount} ${t.resource} from ${withThe(who(ctx, t.seller))} for ${t.gold} Gold a turn`, {
+        players: [t.seller, t.buyer], weight: 2, tone: 'good', details: ['War between you ends the trade. Either of you can end it in Diplomacy.'],
+      });
+    }
+    case 'SupplyTradeEnded': {
+      const t = e.trade, selling = t.seller === ctx.me;
+      return line('economy', selling
+        ? `Your sale of ${t.amount} ${t.resource} to ${withThe(who(ctx, t.buyer))} ended: ${t.gold} Gold a turn less`
+        : `Your purchase of ${t.amount} ${t.resource} from ${withThe(who(ctx, t.seller))} ended`, {
+        players: [t.seller, t.buyer], weight: 2, tone: selling ? 'neutral' : 'bad',
+        details: [`${cap(e.reason)}.`, ...(selling ? [] : [`Anything that used that ${t.resource} is idle until you find more.`])],
+      });
+    }
     case 'CapitalLost':
       return line('victory', `${who(ctx, e.player)} no longer ${e.player === ctx.me ? 'hold' : 'holds'} the original capital ${e.name}: −1 VP`, {
         at: ctx.cityPos(e.capital), players: [e.player], weight: 2, tone: e.player === ctx.me ? 'bad' : 'neutral',

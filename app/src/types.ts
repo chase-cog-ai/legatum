@@ -261,6 +261,14 @@ export interface SupplyView {
   spare: number;
 }
 
+/** Supply sold by the turn (core `supply_trade::SupplyTrade`): the seller's supply counts as the buyer's for `gold` a turn. */
+export interface SupplyTrade { id: number; seller: PlayerId; buyer: PlayerId; resource: Resource; amount: number; gold: number; since: number }
+/** An offer awaiting `to`'s answer. `selling`: `from` sells; otherwise `from` buys. */
+export interface SupplyOffer { id: number; from: PlayerId; to: PlayerId; selling: boolean; resource: Resource; amount: number; gold: number; turn: number }
+/** What an empire you have met could trade. */
+export interface SupplyPartner { player: PlayerId; blocked?: string | null; spare?: [Resource, number][]; uses?: Resource[] }
+export interface SupplyTradeView { trades?: SupplyTrade[]; offers?: SupplyOffer[]; partners?: SupplyPartner[] }
+
 /** A building tier yielding nothing for lack of strategic supply. */
 interface IdleBuilding {
   building: BuildingKind;
@@ -971,6 +979,8 @@ export interface PlayerView {
   economy: EconomyView;
   /** Strategic supply, one per strategic resource, revealed or not. */
   supply?: SupplyView[];
+  /** Supply trades: running trades, open offers, and what each met empire could trade. Omitted when empty. */
+  supply_trade?: SupplyTradeView;
   research: ResearchView;
   /** Every era after the first, with its public objectives. */
   eras: EraView[];
@@ -1096,7 +1106,11 @@ export type Order =
   | { type: 'UpgradeSiege'; unit: UnitId }
   | { type: 'Action'; action: GameAction }
   /** Give Gold to a living teammate (core `rules::gifts`): it moves after this turn's purchases, capped at the Gold left then. */
-  | { type: 'GiveGold'; to: PlayerId; amount: number };
+  | { type: 'GiveGold'; to: PlayerId; amount: number }
+  /** Offer `to` a supply trade (core `supply_trade`): sell them `amount` supply for `gold` a turn, or buy it from them. */
+  | { type: 'OfferSupply'; to: PlayerId; selling: boolean; resource: Resource; amount: number; gold: number }
+  | { type: 'AnswerSupplyOffer'; offer: number; accept: boolean; note?: string }
+  | { type: 'EndSupplyTrade'; trade: number };
 
 /**
  * A one-time empire action (core `orders::Action`, serde tag "action"). One order carries them
@@ -1219,6 +1233,11 @@ export type Event =
   | { type: 'CapitalSacked'; captor: PlayerId; capital: CityId; name: string }
   /** Team only: Gold one empire gave a teammate, after this turn's purchases. */
   | { type: 'GoldGiven'; from: PlayerId; to: PlayerId; amount: number }
+  /** The two empires only: supply trade offers and trades (core `supply_trade`). */
+  | { type: 'SupplyOffered'; offer: SupplyOffer }
+  | { type: 'SupplyOfferDeclined'; offer: SupplyOffer; reason?: string | null }
+  | { type: 'SupplyTradeStarted'; trade: SupplyTrade }
+  | { type: 'SupplyTradeEnded'; trade: SupplyTrade; reason: string }
   | { type: 'CapitalLost'; player: PlayerId; capital: CityId; name: string }
   | { type: 'CityRazed'; city: CityId; from: PlayerId; by: PlayerId; at: Hex; original_capital?: boolean; sack_gold?: number; camp?: Hex; ordered?: boolean }
   | { type: 'BuildingDismantled'; city: CityId; owner: PlayerId; building: BuildingKind; reason: string }

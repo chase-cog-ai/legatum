@@ -480,6 +480,11 @@ fn ui_rules_match_core() {
             "eraResources": resources::ERA_RESOURCES,
             "strategic": Resource::STRATEGIC,
         },
+        "supplyTrade": {
+            "maxAmount": legatum_core::supply_trade::MAX_AMOUNT,
+            "maxGold": legatum_core::supply_trade::MAX_GOLD,
+            "offerTurns": legatum_core::supply_trade::OFFER_TURNS,
+        },
         "captureResistanceTurns": data::CAPTURE_RESISTANCE_TURNS,
         "aiAllianceAfterTurn": legatum_ai::ALLIANCE_ACQUAINTANCE_TURNS,
         "campClearGold": legatum_core::rules::barbarians::CAMP_CLEAR_GOLD,

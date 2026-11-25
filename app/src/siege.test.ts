@@ -17,7 +17,7 @@ function setup() {
 }
 
 /** A copy of the view with the first own city's HP and the attackers' count changed. */
-function variant(view: PlayerView, patch: { hp?: number; keep?: number; attackedLastTurn?: boolean; add?: { kind: UnitKind; at: [number, number]; owner?: number }[] }): PlayerView {
+function variant(view: PlayerView, patch: { hp?: number; wallsHp?: number; keep?: number; attackedLastTurn?: boolean; add?: { kind: UnitKind; at: [number, number]; owner?: number }[] }): PlayerView {
   const own = view.cities.find((c) => c.owner === view.me)!;
   const enemies = view.units.filter((u) => u.owner !== view.me && u.military);
   const kept = new Set(enemies.slice(0, patch.keep ?? enemies.length).map((u) => u.id));
@@ -26,7 +26,7 @@ function variant(view: PlayerView, patch: { hp?: number; keep?: number; attacked
     return { ...enemies[0], id: 900 + i, kind: a.kind, owner: a.owner ?? enemies[0].owner, pos: fromOffset(...a.at), strength: stats.strength, ranged: stats.ranged, range: stats.range, military: stats.military };
   });
   return { ...view,
-    cities: view.cities.map((c) => c.id !== own.id ? c : { ...c, hp: patch.hp ?? c.hp, detail: c.detail ? { ...c.detail, attacked_last_turn: patch.attackedLastTurn ?? c.detail.attacked_last_turn } : c.detail }),
+    cities: view.cities.map((c) => c.id !== own.id ? c : { ...c, hp: patch.hp ?? c.hp, walls_hp: patch.wallsHp ?? c.walls_hp, detail: c.detail ? { ...c.detail, attacked_last_turn: patch.attackedLastTurn ?? c.detail.attacked_last_turn } : c.detail }),
     units: [...view.units.filter((u) => u.owner === view.me || !u.military || kept.has(u.id)), ...extra] };
 }
 
@@ -62,18 +62,34 @@ describe('cities under attack', () => {
 
   it('forecasts the capture from public numbers: falls next turn when one turn of hits is enough', () => {
     const { view, own } = setup();
-    const weak = variant(view, { hp: 40 });
+    const weak = variant(view, { hp: 40, wallsHp: 0 });
     const { forecast, perTurn } = captureForecast(weak, own, citiesUnderAttack(weak, null)[0].attackers);
     expect(forecast).toMatchObject({ turns: 1, level: 'now', text: 'Falls next turn unless reinforced' });
     expect(perTurn).toBeGreaterThan(40);
-    expect(forecast.detail).toContain('3 Spearmen hit for about');
+    expect(forecast.detail).toContain('loses about 84 health a turn to 3 Spearmen');
     expect(forecast.detail).toContain('Nothing garrisons it');
   });
 
-  it('counts the turns it holds, and a garrison adds the turns it takes to fall', () => {
+  it('Siege makes the attackers hit the Walls bar in full, not at half', () => {
     const { view, own, attackers } = setup();
+    const plain = captureForecast(view, own, view.units.filter((u) => attackers.includes(u.id)));
+    const sieged = { ...view, units: view.units.map((u) => attackers.includes(u.id) ? { ...u, siege: true } : u) };
+    const withSiege = captureForecast(sieged, own, sieged.units.filter((u) => attackers.includes(u.id)));
+    expect(plain.wallsPerTurn).toBeGreaterThan(0);
+    // Siege covers the Walls: the full hit lands on the bar, and the Walls' strength no longer counts.
+    expect(withSiege.wallsPerTurn).toBe(withSiege.perTurn);
+    expect(withSiege.wallsPerTurn).toBeGreaterThan(plain.wallsPerTurn * 2 - 2);
+  });
+
+  it('counts the turns it holds, and a garrison adds the turns it takes to fall', () => {
+    const { view: walled, own, attackers } = setup();
+    // Breakable Walls (rules 62): with the Walls already broken, only the health stands.
+    const view = variant(walled, { wallsHp: 0 });
     const open = captureForecast(view, own, view.units.filter((u) => attackers.includes(u.id)));
     expect(open.forecast.turns).toBe(2);
+    const standing = captureForecast(walled, own, walled.units.filter((u) => attackers.includes(u.id)));
+    expect(standing.forecast.turns!).toBeGreaterThan(open.forecast.turns!);
+    expect(standing.forecast.detail).toContain('never heal');
     expect(open.forecast).toMatchObject({ level: 'soon', text: 'Holds about 2 turns unless reinforced' });
     const ownCity = view.cities.find((c) => c.id === own)!;
     const garrisoned = { ...view, units: [...view.units, { ...view.units.find((u) => u.owner === view.me)!, id: 800, kind: 'Spearman' as const, military: true, strength: 9, ranged: 0, range: 0, hp: 100, fortify: 2, pos: ownCity.pos }] };
@@ -84,7 +100,7 @@ describe('cities under attack', () => {
 
   it('says ranged units cannot take a city, and when it drops to 0 HP', () => {
     const { view, own } = setup();
-    const rangers = variant(view, { keep: 0, hp: 30, add: [{ kind: 'Archer', at: [5, 5] }, { kind: 'Archer', at: [4, 4] }] });
+    const rangers = variant(view, { keep: 0, hp: 30, wallsHp: 0, add: [{ kind: 'Archer', at: [5, 5] }, { kind: 'Archer', at: [4, 4] }] });
     const alarm = citiesUnderAttack(rangers, null)[0];
     expect(alarm.attackers).toHaveLength(2);
     expect(alarm.forecast.turns).toBeNull();
@@ -109,7 +125,7 @@ describe('cities under attack', () => {
 
   it('puts the city that falls soonest first, attacks before warnings', () => {
     const { view } = setup();
-    const alarms = citiesUnderAttack(variant(view, { hp: 40 }), null);
+    const alarms = citiesUnderAttack(variant(view, { hp: 40, wallsHp: 0 }), null);
     expect(alarms[0].forecast.level).toBe('now');
     expect(alarms.map((a) => a.kind)).toEqual(['attack']);
   });

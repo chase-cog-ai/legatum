@@ -2355,7 +2355,11 @@ exports[`city strike core behavior > forecasts the city firing back when attacki
   "loss_chance": 0,
   "ranged": false,
   "walls": {
+    "break_chance": 0,
     "covered": 0,
+    "expected_damage": 8,
+    "hp": 100,
+    "max_hp": 100,
     "percent": 50,
     "tier": 1,
   },
@@ -2402,15 +2406,19 @@ exports[`city strike core behavior > forecasts the city firing back when attacki
     "total": 21,
   },
   "expected_damage_to_attacker": 0,
-  "expected_damage_to_defender": 0,
+  "expected_damage_to_defender": 13,
   "loss_chance": 0,
   "ranged": false,
   "walls": {
+    "break_chance": 0,
     "covered": 0,
+    "expected_damage": 13,
+    "hp": 100,
+    "max_hp": 100,
     "percent": 50,
     "tier": 1,
   },
-  "win_chance": 100,
+  "win_chance": 0,
 }
 `;
 
@@ -2449,15 +2457,19 @@ exports[`city strike core behavior > forecasts the city firing back when attacki
     "total": 21,
   },
   "expected_damage_to_attacker": 0,
-  "expected_damage_to_defender": 0,
+  "expected_damage_to_defender": 14,
   "loss_chance": 0,
   "ranged": false,
   "walls": {
+    "break_chance": 0,
     "covered": 0,
+    "expected_damage": 14,
+    "hp": 100,
+    "max_hp": 100,
     "percent": 50,
     "tier": 1,
   },
-  "win_chance": 100,
+  "win_chance": 0,
 }
 `;
 
@@ -2603,7 +2615,7 @@ exports[`city strike core behavior > several cities hit one unit, and a unit kil
       "kind": "City",
       "owner": 0,
     },
-    "defender_hp_after": 194,
+    "defender_hp_after": 200,
     "defender_roll": 0,
     "defender_strength": {
       "parts": [
@@ -2638,7 +2650,7 @@ exports[`city strike core behavior > several cities hit one unit, and a unit kil
       "q": 6,
       "r": 5,
     },
-    "attacker_hp_after": 194,
+    "attacker_hp_after": 200,
     "attacker_owner": 0,
     "attacker_roll": 85,
     "attacker_strength": {
@@ -2771,7 +2783,7 @@ exports[`city strike core behavior > several cities hit one unit, and a unit kil
 exports[`city strike core behavior > several cities hit one unit, and a unit killed by a city still gets its shot 3`] = `
 [
   {
-    "hp": 194,
+    "hp": 200,
     "id": 0,
     "owner": 0,
   },
@@ -2811,7 +2823,7 @@ exports[`city strike core behavior > several cities hit one unit, and a unit kil
 exports[`city strike core behavior > several cities hit one unit, and a unit killed by a city still gets its shot 5`] = `
 [
   {
-    "hp": 194,
+    "hp": 200,
     "id": 0,
     "owner": 0,
   },
@@ -3052,7 +3064,7 @@ exports[`city strike core behavior > supporting melee attacks take retaliation a
       "kind": "City",
       "owner": 1,
     },
-    "defender_hp_after": 185,
+    "defender_hp_after": 200,
     "defender_roll": 0,
     "defender_strength": {
       "parts": [
@@ -3104,7 +3116,7 @@ exports[`city strike core behavior > supporting melee attacks take retaliation a
       "kind": "City",
       "owner": 1,
     },
-    "defender_hp_after": 185,
+    "defender_hp_after": 200,
     "defender_roll": 0,
     "defender_strength": {
       "parts": [
@@ -3139,7 +3151,7 @@ exports[`city strike core behavior > supporting melee attacks take retaliation a
       "q": 10,
       "r": 8,
     },
-    "attacker_hp_after": 185,
+    "attacker_hp_after": 200,
     "attacker_owner": 1,
     "attacker_roll": 111,
     "attacker_strength": {
@@ -3215,7 +3227,7 @@ exports[`city strike core behavior > supporting melee attacks take retaliation a
       "kind": "City",
       "owner": 1,
     },
-    "defender_hp_after": 171,
+    "defender_hp_after": 200,
     "defender_roll": 91,
     "defender_strength": {
       "parts": [
@@ -3267,7 +3279,7 @@ exports[`city strike core behavior > supporting melee attacks take retaliation a
       "kind": "City",
       "owner": 1,
     },
-    "defender_hp_after": 171,
+    "defender_hp_after": 200,
     "defender_roll": 118,
     "defender_strength": {
       "parts": [
@@ -3414,7 +3426,7 @@ exports[`city strike core behavior > supporting melee attacks take retaliation a
 exports[`city strike core behavior > supporting melee attacks take retaliation and do not preempt simultaneous city attacks 3`] = `
 [
   {
-    "hp": 171,
+    "hp": 200,
     "id": 0,
     "owner": 1,
   },
@@ -3439,7 +3451,7 @@ exports[`city strike core behavior > supporting melee attacks take retaliation a
 exports[`city strike core behavior > supporting melee attacks take retaliation and do not preempt simultaneous city attacks 5`] = `
 [
   {
-    "hp": 171,
+    "hp": 200,
     "id": 0,
     "owner": 1,
   },

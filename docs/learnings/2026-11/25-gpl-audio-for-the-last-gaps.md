@@ -1,0 +1,10 @@
+# GPL audio for the gaps CC sources left (2026-11-25)
+
+- **Decision:** GPL audio from open-source games is allowed, with the GPL noted in the credits. It is for gaps only; a CC source wins where one is as good.
+- **What it bought:** orchestral music for the Machine Age and the World War era and a black-powder musket from The Battle for Wesnoth, and a drone engine from Warzone 2100 (`tools/audio/build_gpl.py`). Wesnoth's `copyrights.csv` gives the author, licence and MD5 of every file, and its files download by exact path from `raw.githubusercontent.com`, so each download can be checked against the MD5.
+- **Check the fidelity before the licence.** Advanced Strategic Command's music looked ideal by title and setting, but the files are 22 kHz, 80 kb/s MP3s. `ffprobe` on the sample rate and bit rate takes a second and would have saved the search.
+- **A tribe is not a soundtrack.** Widelands has an Amazons tribe but its music is one shared pool of untitled-style pieces, with nothing Mesoamerican. Mesoamerican music is still missing after CC and GPL sources.
+- **The audio tooling already allowed the GPL.** `app/scripts/audio-manifest.test.mjs` and `audio-credits.mjs` list `GPL-2.0-or-later`; the test only asks for an attribution and a shipped licence text.
+- **The GPL covers the audio files, not the game.** They are separate works that the game plays (aggregation), each stays GPL after editing, and the build script names each source file. A front-door clip must not carry one.
+- **Never run `scripts/build-web.sh` without `--skip-wasm` in a cloud session.** `wasm-opt` cannot be downloaded there, the failed run leaves `app/src/wasm-pkg` half-written, and vitest then fails every file with a `LinkError` until the engine is rebuilt with `LEGATUM_WASM_NO_OPT=1 scripts/build-wasm.sh` and `app/node_modules/.vite*` caches are cleared.
+- **Never put master among the heads of `git merge -s ours`.** It marks master as merged while dropping its changes. Merge only the old branch that way, then merge master normally.

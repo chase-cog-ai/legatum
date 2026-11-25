@@ -79,7 +79,9 @@ for slug, (key, why) in AMBIENCE.items():
 for group, files in FX.items():
     for i, slug in enumerate(files, 1):
         p = prov[f'fx/{slug}.m4a']
-        gain = round(min(1.6, max(0.3, 10 ** ((FX_TARGET_LUFS - p['lufs']) / 20))), 2)
+        gain = min(1.6, max(0.3, 10 ** ((FX_TARGET_LUFS - p['lufs']) / 20)))
+        # Never lift a file's true peak past -1 dBTP: with both sliders at full it would clip.
+        gain = math.floor(min(gain, 10 ** ((-1.0 - p['peak_dbtp']) / 20)) * 100) / 100
         add(f'fx/{slug}.m4a', [f'fx:{group}:{i}'], p['title'], FX_WHY[group], gain=gain)
 
 (AUDIO / 'manifest.json').write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n')

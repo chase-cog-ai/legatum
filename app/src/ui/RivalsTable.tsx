@@ -21,6 +21,10 @@ export function shortNumber(n: number): string {
 }
 const exact = (n: number) => n.toLocaleString('en-US');
 
+/** Portraits a row shows before the rest fold into a "+N" roundel, so a big team never squeezes its name to one letter a line. */
+export const MAX_CRESTS = 2;
+const crests = <T,>(members: T[]) => members.length > MAX_CRESTS ? members.slice(0, MAX_CRESTS - 1) : members;
+
 /** " · AI 2" tells twin rows apart, so a wrap may fall before the dot but never strands the number. */
 const keepSuffix = (name: string) => name.replace(/ · AI (\d+)/g, ' ·\u00a0AI\u00a0$1');
 
@@ -81,7 +85,8 @@ export function RivalsTable({ view, model, relationOf, onOpen }: {
         const who = <span className="rv-who" role="cell">
           <span className="rv-crests">
             {unmet ? <span className="rv-unknown" aria-hidden="true">?</span>
-              : row.members.map((m) => <PortraitRoundel key={m.id} faction={m.faction} size={22} color={m.ink} />)}
+              : crests(row.members).map((m) => <PortraitRoundel key={m.id} faction={m.faction} size={22} color={m.ink} />)}
+            {!unmet && row.members.length > MAX_CRESTS && <span className="rv-more" title={row.members.map((m) => empireOfPlayer(view, m.id)).join(', ')}>+{row.members.length - MAX_CRESTS + 1}</span>}
           </span>
           <span className="rv-name-col">
             <span className="rv-name">{keepSuffix(label)}</span>

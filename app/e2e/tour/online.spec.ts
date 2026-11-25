@@ -70,6 +70,7 @@ for (const size of SIZES) testWithFailingRequests.describe(`online screens ${siz
     { id: '24b-refused-too-many', status: 429, error: 'You already have 2 games open. Close one before hosting another.', headers: {}, sub: 'Close one of your games first', retry: false },
     { id: '24c-refused-full', status: 503, error: 'This lobby is full. Try again in a few minutes.', headers: {}, sub: 'Try again', retry: true },
     { id: '24d-refused-closed', status: 503, error: 'Hosting new games is paused. Try again later.', headers: {}, sub: 'Paused for now', retry: false },
+    { id: '24f-refused-network', status: 429, error: 'Too many games are open from your network. Try again later.', headers: {}, sub: 'Too many from your network', retry: false },
   ] as const;
   const refuse = (page: Page, r: { status: number; error: string; headers: Record<string, string> }) =>
     page.route(`${E2E_RELAY}/rooms`, (route: Route) => route.request().method() === 'OPTIONS'
@@ -111,7 +112,8 @@ for (const size of SIZES) testWithFailingRequests.describe(`online screens ${siz
     await off.mouse.move(5, 5);
     await shot(off, size, '24e-refused-offline');
 
-    // Worst case: a game is open (Resume row), a two-line notice, and the name note, all at once.
+    // Worst case: a game is open (Resume row) and a two-line notice, at once. The name field has no note: the public
+    // game list never shows a typed name.
     const worst = await page.context().newPage();
     await refuse(worst, REFUSALS[0]);
     await multiplayer(worst);
@@ -120,22 +122,9 @@ for (const size of SIZES) testWithFailingRequests.describe(`online screens ${siz
     await worst.getByRole('button', { name: /^Host Game/ }).click();
     await expect(worst.locator('.title-notice')).toBeVisible();
     await worst.mouse.move(5, 5);
-    await expect(worst.locator('.host-name .host-name-note')).toHaveText('Shown in the game list as “Ada”.');
+    await expect(worst.locator('.host-name .host-name-note')).toHaveCount(0);
     await shot(worst, size, '25a-menu-worst-case');
-    await expectMenuAboveFooter(worst, '25a worst case (Resume + notice + name note)');
-    await worst.getByLabel('Your name', { exact: true }).fill('\u{1F600}\u{1F600}');
-    await expect(worst.locator('.host-name .host-name-note')).toHaveText('Listed as “Game” and four characters.');
-    await expectMenuAboveFooter(worst, '25b worst case, nothing showable');
-    await shot(worst, size, '25b-menu-name-note-empty');
-
-    // The name note with a game open and no other message.
-    const note = await page.context().newPage();
-    await multiplayer(note);
-    await note.evaluate(() => { (window as unknown as GameWindow).legatum.setState({ views: [{ turn: 14, players: [{ id: 0, is_human: true, faction: 'Rome' }] }] as never }); });
-    await note.getByLabel('Your name', { exact: true }).fill('Ada \u{1F600} of Rome');
-    await note.mouse.move(5, 5);
-    await expectMenuAboveFooter(note, '25c name note, game open');
-    await shot(note, size, '25c-menu-name-note-game-open');
+    await expectMenuAboveFooter(worst, '25a worst case (Resume + notice)');
   });
 
   // The two ways a guest's connection can be stopped, on the Join screen with six seats: the notice sits under the
@@ -182,7 +171,7 @@ for (const size of SIZES) testWithFailingRequests.describe(`online screens ${siz
       return { build: info.build, rules_version: info.rules_version, protocol: info.protocol };
     });
     const room = (over: Record<string, unknown> = {}) => ({
-      room: 'room-aaaaaaaa', name: 'Ada', ...mine, players: 2, humans: 2, open_seats: 1, phase: 'staging', turn: 0, updated_ms: 1, ...over,
+      room: 'room-aaaaaaaa', name: 'Amber Harbour 07', ...mine, players: 2, humans: 2, open_seats: 1, phase: 'staging', turn: 0, updated_ms: 1, ...over,
     });
     await page.getByRole('button', { name: /^Join Game/ }).click();
     await page.mouse.move(5, 5);
@@ -207,11 +196,11 @@ for (const size of SIZES) testWithFailingRequests.describe(`online screens ${siz
     mode = 'ok';
     rooms = [
       room(),
-      room({ room: 'room-a2', name: 'Player' }),
-      room({ room: 'room-a3', name: 'Player' }),
-      room({ room: 'room-bbbbbbbb', name: 'Bo from Zürich', build: '8.9.70', phase: 'playing', turn: 14, players: 3 }),
-      room({ room: 'room-cccccccc', name: 'Cy', phase: 'playing', turn: 31, players: 4, open_seats: 0 }),
-      room({ room: 'room-dddddddd', name: '', rules_version: mine.rules_version - 1 }),
+      room({ room: 'room-a2', name: 'Cobalt Steppe 41' }),
+      room({ room: 'room-a3', name: 'Saffron Citadel 93' }),
+      room({ room: 'room-bbbbbbbb', name: 'Ivory Highland 12', build: '8.9.70', phase: 'playing', turn: 14, players: 3 }),
+      room({ room: 'room-cccccccc', name: 'Granite Lantern 60', phase: 'playing', turn: 31, players: 4, open_seats: 0 }),
+      room({ room: 'room-dddddddd', name: 'Scarlet Meadow 28', rules_version: mine.rules_version - 1 }),
     ];
     await page.getByRole('button', { name: /Back/ }).click();
     await page.getByRole('button', { name: /^Multiplayer/ }).click();
@@ -244,8 +233,12 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
     await noHints(guest);
     await multiplayer(host);
     await host.getByLabel('Your name', { exact: true }).fill(hostName);
+    // The game list names a room from its id, never the typed name: the relay's answer says which name it got.
+    const created = host.waitForResponse((r) => r.url().endsWith('/rooms') && r.request().method() === 'POST');
     await host.getByRole('button', { name: /^Host Game/ }).click();
+    const listedName = ((await (await created).json()) as { name: string }).name;
     await expect(host.getByRole('heading', { name: 'Game room', exact: true })).toBeVisible();
+    await expect(host.locator('.lobby-listed')).toHaveText(`In the game list, this game is “${listedName}”.`);
     await expect(host.getByText('Waiting for every online seat to be taken and Ready.', { exact: true })).toBeVisible();
     await host.mouse.move(5, 5);
     await shot(host, size, '40-host-room-waiting');
@@ -256,7 +249,7 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
 
     await multiplayer(guest);
     await guest.getByRole('button', { name: /^Join Game/ }).click();
-    const row = guest.locator('.online-room').filter({ hasText: hostName });
+    const row = guest.locator('.online-room').filter({ hasText: listedName });
     await expect(row).toHaveCount(1, { timeout: 20_000 });
     await guest.mouse.move(5, 5);
     await shot(guest, size, '41-guest-list-live');
@@ -357,7 +350,7 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
     guest = await guestContext.newPage();
     await multiplayer(guest);
     await guest.getByRole('button', { name: /^Join Game/ }).click({ timeout: 15_000 });
-    const again = guest.locator('.online-room').filter({ hasText: hostName });
+    const again = guest.locator('.online-room').filter({ hasText: listedName });
     await expect(again).toHaveCount(1, { timeout: 20_000 });
     await expect(again).toContainText('Your seat is here');
     await guest.mouse.move(5, 5);
@@ -429,8 +422,10 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
     await host2.mouse.move(5, 5);
     await shot(host2, size, '60-host-from-save-bad-file');
     chooser = host2.waitForEvent('filechooser');
+    const created2 = host2.waitForResponse((r) => r.url().endsWith('/rooms') && r.request().method() === 'POST');
     await host2.getByRole('button', { name: /^Host from a save/ }).click();
     await (await chooser).setFiles(savePath);
+    const listedName2 = ((await (await created2).json()) as { name: string }).name;
     await expect(host2.getByTestId('turn-number')).toBeVisible({ timeout: 90_000 });
     await host2.waitForTimeout(1500);
     await begin(host2);
@@ -447,7 +442,7 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
     await noHints(guest2);
     await multiplayer(guest2);
     await guest2.getByRole('button', { name: /^Join Game/ }).click();
-    const row2 = guest2.locator('.online-room').filter({ hasText: hostName });
+    const row2 = guest2.locator('.online-room').filter({ hasText: listedName2 });
     await expect(row2.first()).toBeVisible({ timeout: 20_000 });
     await guest2.mouse.move(5, 5);
     await shot(guest2, size, '63-guest-list-resumed');

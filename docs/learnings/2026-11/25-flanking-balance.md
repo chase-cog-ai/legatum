@@ -1,6 +1,6 @@
 # Flanking did not feed the conquest snowball in 200 Hard games (2026-11-25)
 
-Flanking (rules 62: +2 melee strength per other friendly land military unit next to a defender in the open, at most +6) was A/B tested against the `no-flanking` rules experiment: 200 Hard games each on the same seeds (`legatum-sim --games 200 --seed 5000 --difficulty hard`, 8 empires, medium map).
+Flanking (rules 63: +2 melee strength per other friendly land military unit next to a defender in the open, at most +6) was A/B tested against the `no-flanking` rules experiment: 200 Hard games each on the same seeds (`legatum-sim --games 200 --seed 5000 --difficulty hard`, 8 empires, medium map).
 
 | Measure | Flanking | `no-flanking` |
 | --- | --- | --- |

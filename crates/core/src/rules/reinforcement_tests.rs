@@ -889,9 +889,10 @@ fn rifleman_example(variant: Variant) -> Example {
 
 #[test]
 fn rifleman_worked_example_prints_turn_by_turn() {
-    // Run with --nocapture for the table. Alone the garrison falls on turn 2; with three
+    // Run with --nocapture for the table. Alone the garrison falls on turn 3; with three
     // supporters the city holds and the three attackers are spent by turn 3; with every
-    // supporter pinned by its own attacker the city falls on turn 3.
+    // supporter pinned by its own attacker the city falls on turn 4. (Breakable Walls,
+    // rules 62: the Walls bar must be broken first, one turn more than half-damage Walls.)
     let mut ends = Vec::new();
     for v in [Variant::NoSupport, Variant::Supported, Variant::SupportCut] {
         let e = rifleman_example(v);
@@ -901,5 +902,5 @@ fn rifleman_worked_example_prints_turn_by_turn() {
         }
         ends.push(e.end);
     }
-    assert_eq!(ends, vec![(2, true), (3, false), (3, true)]);
+    assert_eq!(ends, vec![(3, true), (3, false), (4, true)]);
 }

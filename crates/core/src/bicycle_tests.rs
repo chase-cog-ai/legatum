@@ -377,8 +377,8 @@ fn siege_forecast_and_resolution_hit_the_city_while_it_shields_its_garrison() {
     let f = forecast_attack_mode(&player_view(&s, P), a, target, AttackMode::Ranged).unwrap();
     assert_eq!(f.attacker_strength.total, 31);
     assert_eq!(
-        f.defender_strength.total, 38,
-        "10 + 8 population + 15 Bastion + 5 Castle"
+        f.defender_strength.total, 33,
+        "10 + 8 population + 15 Bastion; level II adds to the Walls bar, not strength"
     );
     assert!(f.garrison.as_ref().is_some_and(|g| g.shielded));
     let fight = battle::plan_fight(&s, 0, a, battle::Target::City(c), battle::FightKind::Ranged);

@@ -18,6 +18,9 @@ import coreRules from './rules.generated.json' with { type: 'json' };
 
 /** Offline presentation data exported and checked by crates/ai/tests/ui_rules.rs. */
 export const RULES = coreRules;
+
+/** The turn the game ends on: the configured limit, else the default (core `data::DEFAULT_TURN_LIMIT`, rules 62). */
+export const effectiveTurnLimit = (limit: number | null | undefined): number => limit ?? RULES.defaultTurnLimit;
 type UnitNumbers = Pick<(typeof UNIT_STATS)[UnitKind], 'cost' | 'moves' | 'strength' | 'ranged' | 'range' | 'military' | 'requires' | 'upgradesTo'>;
 type BuildingNumbers = Pick<(typeof BUILDING_STATS)[BuildingKind], 'cost' | 'yields' | 'cityStrength' | 'requires' | 'warBuilding'>;
 const factionUnitStats = RULES.factionUnitStats as Record<Faction, Record<UnitKind, UnitNumbers>>;
@@ -152,8 +155,6 @@ export const CLASS_NOTE: Record<UnitClass, string> = {
   Air: 'Based in a city; strikes from the air.',
 };
 
-/** The Walls rule for city HP (core `combat::WALLS_DAMAGE_PERCENT`), and Siege, the answer to it. */
-const WALLS_HALF_RULE = `attacks on the city's health do ${RULES.walls.damagePercent === 50 ? 'half damage' : `${RULES.walls.damagePercent}% damage`}`;
 /** Siege's rule, in one wording for the unit card, tech card and Guide. */
 /** Indirect fire on a card or tip: the headline (the Guide prints ARTILLERY_RULE in full). */
 export const ARTILLERY_HEADLINE = 'Fires over terrain at targets your team can see, with built-in Siege.';
@@ -257,7 +258,7 @@ export const BUILDING_STATS: Record<
   Market: { cost: 60, yields: { gold: 3 }, cityStrength: 0, requires: 'Currency', summary: '+3 Gold', blurb: '+3 Gold' },
   ImperialDiwan: { cost: 300, yields: {}, cityStrength: 0, requires: 'Currency', summary: 'Build after every city has a Revenue Office; whoever holds its city scores 2 VP', blurb: 'India only: build after every owned city has a Revenue Office. Whoever holds its city scores 2 VP.' },
   Library: { cost: 80, yields: { science: 3 }, cityStrength: 0, requires: 'Writing', summary: '+3 Science', blurb: '+3 Science' },
-  Walls: { cost: 100, yields: {}, cityStrength: 10, requires: 'Masonry', warBuilding: true, summary: '+10 city strength; halves damage to city health and fires at nearby enemies', blurb: `+10 city strength; ${WALLS_HALF_RULE}, and ${WALLS_FIRE_RULE}` },
+  Walls: { cost: 100, yields: {}, cityStrength: 10, requires: 'Masonry', warBuilding: true, summary: '+10 city strength and a Walls bar of 100 that takes hits first. Fires at enemies', blurb: '+10 city strength. Hits land on the Walls first; the city fires at enemies within 2 tiles.' },
   Supermarket: { cost: 360, yields: { food: 4 }, cityStrength: 0, requires: 'GreenRevolution', predecessor: 'Mill', summary: '+4 Food; upgrades your Mill', blurb: '+4 Food, on top of the Granary and Mill' },
   AirDefence: { cost: 320, yields: {}, cityStrength: 0, requires: 'GuidedMissiles', summary: 'Meets enemy air strikes on this city', blurb: 'Stops one enemy air strike on this city each turn. Stealth Bombers pass it.' },
   Mill: { cost: 200, yields: { food: 3 }, cityStrength: 0, requires: 'Feudalism', predecessor: 'Granary', summary: '+3 Food; upgrades your Granary', blurb: '+3 Food' },
@@ -268,7 +269,7 @@ export const BUILDING_STATS: Record<
   Bank: { cost: 200, yields: { gold: 4 }, cityStrength: 0, requires: 'Banking', predecessor: 'Market', minPopulation: 5, summary: '+4 Gold; upgrades your Market', blurb: '+4 Gold' },
   StockExchange: { cost: 360, yields: { gold: 6 }, cityStrength: 0, requires: 'Electricity', predecessor: 'Bank', minPopulation: 8, summary: '+6 Gold; upgrades your Bank', blurb: '+6 Gold, on top of the Market and Bank' },
   Factory: { cost: 440, yields: { production: 5 }, cityStrength: 0, requires: 'Industrialization', predecessor: 'Forge', minPopulation: 6, summary: '+5 Production; upgrades your Forge', blurb: '+5 Production' },
-  UpgradeWalls: { cost: 240, yields: {}, cityStrength: 5, requires: null, warBuilding: true, summary: 'More city strength for each new level', blurb: 'Each new level adds city strength. You can add one level for each era you have reached.' },
+  UpgradeWalls: { cost: 240, yields: {}, cityStrength: 0, requires: null, warBuilding: true, summary: '+50 Walls for each new level; repairs the Walls', blurb: 'Adds a Walls level, up to one per era you have reached. Walls never heal, so this repairs them.' },
   GreatLibrary: { cost: 400, yields: {}, cityStrength: 0, requires: 'Philosophy', summary: 'World wonder: whoever holds its tile scores +2 VP', blurb: 'World wonder: whoever holds its tile scores +2 VP. Requires a Library in this city.' },
   Pyramids: { cost: 360, yields: { production: 1 }, cityStrength: 0, requires: 'Masonry', summary: 'World wonder: +1 Production and +2 held VP', blurb: 'The Pyramids can be completed once in the world. The holder gains +1 Production in its city and +2 VP.' },
   HagiaSophia: { cost: 400, yields: { science: 2 }, cityStrength: 0, requires: 'Machinery', summary: 'World wonder: +2 Science and +2 held VP', blurb: 'Hagia Sophia can be completed once in the world. The holder gains +2 Science in its city and +2 VP.' },
@@ -284,7 +285,7 @@ export const BUILDING_STATS: Record<
 const TECH_BLURB: Record<TechId, string> = {
   Irrigation: "+1 Food in every city",
   BronzeWorking: "Unlocks Workshop",
-  Masonry: "Unlocks Walls and the Pyramids; Quarries +1 Production (walled cities take half damage to city health and fire back)",
+  Masonry: "Unlocks Walls and the Pyramids; Quarries +1 Production",
   Currency: "Unlocks Market",
   Writing: "Unlocks Library",
   Mathematics: `Unlocks Phalangite; Spearmen can upgrade. Units can buy Siege, which covers Walls up to level I.`,
@@ -565,7 +566,7 @@ const CARD_TEXT: Partial<Record<Faction, Partial<Record<string, string>>>> = {
 
 /** Faction variants change the item's effect; the build list reads this instead of the base summary. */
 const CARD_SUMMARY: Partial<Record<Faction, Partial<Record<string, string>>>> = {
-  Switzerland: { 'b:Walls': '+15 city strength; halves damage to city health and fires at enemies' },
+  Switzerland: { 'b:Walls': '+15 city strength and a Walls bar that takes hits first. Fires at enemies' },
   Byzantium: { 'u:Pikeman': 'Stronger Pikeman; holds ground and takes cities' },
   Germany: { 'b:Forge': '+6 Production', 'b:Factory': '+5 Production; upgrades your Ruhr Foundry' },
   Mongols: { 'u:Cataphract': 'Rides or shoots at range 2; a shot cannot take a city' },
@@ -1139,4 +1140,12 @@ const WALL_LEVEL_NUMERALS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII
 /** A Walls level as a Roman numeral ("III"). */
 export const wallLevelLabel = (level: number): string => WALL_LEVEL_NUMERALS[level] ?? String(level);
 /** The build list name of Upgrade Walls for a city at this Walls level (0: no Walls yet). */
-export const wallsUpgradeName = (level = 0, walls = 'Walls'): string => level < 1 ? `Upgrade ${walls}` : level >= 9 ? `Upgrade ${walls} (top level)` : `Upgrade ${walls} (to ${WALL_LEVEL_NUMERALS[level + 1]})`;
+export const wallsUpgradeName = (level = 0, walls = 'Walls', repair = false): string => repair ? `Repair ${walls}` : level < 1 ? `Upgrade ${walls}` : level >= 9 ? `Upgrade ${walls} (top level)` : `Upgrade ${walls} (to ${WALL_LEVEL_NUMERALS[level + 1]})`;
+/**
+ * Upgrade Walls repairs instead of raising the level: the bar is damaged and the city is at its cap (level IX,
+ * or its owner's era number; `era` is 1-based). Core `rules::cities::complete_item`.
+ */
+export const wallsRepairing = (city: { walls_level?: number; walls_hp?: number; walls_max_hp?: number }, era: number): boolean => {
+  const level = city.walls_level ?? 0;
+  return level > 0 && (city.walls_hp ?? 0) < (city.walls_max_hp ?? 0) && (level >= 9 || level >= era);
+};

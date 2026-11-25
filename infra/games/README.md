@@ -33,7 +33,7 @@ promise to players).
   browser with no storage) stays open until a keyed checkpoint locks it. A browser that lost its keys gets
   `409` for its unfinished games and drops them from its queue; what was stored stays.
 - Only pages listed in `ALLOWED_ORIGINS` (`wrangler.jsonc`) may upload: the site, its preview deploys and
-  local dev. Bodies are capped at 4 MiB gzipped and 16 MiB unpacked.
+  local dev. Bodies are capped at 2 MiB gzipped and 16 MiB unpacked.
 - One client address (`CF-Connecting-IP`, an IPv6 address cut to its /64) may store at most 50 new games per
   UTC day: the Worker var `MAX_NEW_GAMES_PER_DAY` in `wrangler.jsonc` (a bad value means 50). A new game is a
   `PUT` whose R2 key does not exist yet; one more is answered `429` with `{"error":"too many new games today"}`

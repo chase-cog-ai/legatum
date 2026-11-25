@@ -27,8 +27,8 @@ export interface Env {
   READ_TOKEN?: string;
 }
 
-/** A 300-turn game is a few hundred KB gzipped; this bounds what a stranger can store per request. */
-export const MAX_GZIP_BYTES = 4 * 1024 * 1024;
+/** The largest real record (285 turns) is about 115 KB gzipped; this bounds what a stranger can store per request. */
+export const MAX_GZIP_BYTES = 2 * 1024 * 1024;
 /** Unpacked: the largest real record (285 turns) is about 1.4 MB, so 16 MB leaves room and stops a gzip bomb early. */
 export const MAX_JSON_BYTES = 16 * 1024 * 1024;
 export const GAME_ID_RE = /^web-\d{13}-[0-9a-f]{16}-[0-9a-f]{16}$/;

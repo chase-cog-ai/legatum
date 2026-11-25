@@ -1,7 +1,7 @@
 import { env as workerEnv, exports } from "cloudflare:workers";
 import { runInDurableObject } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import worker, { checkRecord, originAllowed, tokenMatches, type Env } from "../src/index";
+import worker, { MAX_GZIP_BYTES, checkRecord, originAllowed, tokenMatches, type Env } from "../src/index";
 import { MAX_NEW_GAMES_PER_NETWORK_PER_DAY, addressKey, capFrom, ipHash, networkKey } from "../src/quota";
 
 const env = workerEnv as unknown as Env;
@@ -78,6 +78,8 @@ describe("game uploads", () => {
     expect((await put(fine)).status).toBe(200);
     expect((await put(record(), "https://evil.example")).status).toBe(403);
     expect((await put(record(), ORIGIN, "web-1-x")).status).toBe(404);
+    const big = new Uint8Array(MAX_GZIP_BYTES + 1);
+    expect((await call(`/v1/games/${ID}`, { method: "PUT", headers: { Origin: ORIGIN }, body: big })).status).toBe(413);
     const plain = await call(`/v1/games/${ID}`, { method: "PUT", headers: { Origin: ORIGIN }, body: JSON.stringify(record()) });
     expect(plain.status).toBe(400);
     const get = await call(`/v1/games/${ID}`, { headers: { Origin: ORIGIN } });

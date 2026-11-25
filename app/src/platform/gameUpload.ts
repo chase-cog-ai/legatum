@@ -76,6 +76,8 @@ export async function uploadGameHistory(json: string): Promise<boolean> {
       method: 'PUT', body, signal: AbortSignal.timeout(30000),
       headers: { 'Content-Type': 'application/octet-stream', ...(key ? { 'X-Upload-Key': key } : {}) },
     });
+    // The answer is not needed. Release its body now; left unread, the timeout above would abort it 30 s later.
+    await response.body?.cancel().catch(() => {});
     if (response.ok) return true;
     // 400/404/409/413/422: this record will never be accepted; retrying cannot help (409: the game is stored
     // under another upload key, for example after this browser's storage was cleared). A 403 means this site is

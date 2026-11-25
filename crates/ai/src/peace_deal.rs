@@ -4,8 +4,10 @@
 //! (`treaty_score`, ten Gold a point). The plan's refusals stay refusals: no terms buy off
 //! a war the AI will not end (`wants_peace`). The rules that keep a player from milking it:
 //!
-//! - It gives nothing (Gold, reparations, a city it founded) to the side that declared
-//!   this war on it, so nobody farms it by declaring.
+//! - It gives no reparations and no city it founded to the side that declared this war
+//!   on it, so nobody farms it by declaring.
+//! - Asked-for Gold is the deal's own Gold and keeps the deal's rule with or without
+//!   terms (`deals::deal_score`): paid only for a war it is losing, up to `truce_cap`.
 //! - It gives only while that enemy really endangers a city, never just for liking Peace.
 //! - A city about to fall to someone else is worth nothing; reparations count for a
 //!   quarter of their face value, nothing from a known betrayer.
@@ -247,8 +249,8 @@ impl Planner<'_> {
         if gold != 0 {
             lines.push(("Gold".into(), gold));
             if gold < 0 {
-                give("Gold".into(), &mut never);
-                // The same ceiling a plain deal has (`deals::truce_cap`).
+                // Asked-for Gold follows the plain deal's rule, whoever declared: paid only
+                // for a war we are losing, up to its ceiling (`deals::deal_score`).
                 if !(self.losing_war(other) && -gold <= self.truce_cap()) {
                     never.get_or_insert("That is more Gold than this Peace is worth to us".into());
                 }

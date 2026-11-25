@@ -117,12 +117,26 @@ fn liking_peace_is_no_reason_to_pay_for_it() {
 }
 
 #[test]
-fn declaring_war_on_the_ai_extorts_nothing() {
+fn declaring_war_on_the_ai_extorts_no_city_or_reparations() {
     // Exploit: declare, press a city, demand Gold or the city for Peace; repeat each truce.
     let v = war_view(ENEMY, true);
     assert!(crate::fixture::planner(&v, 7).endangered_by(enemy(&v)));
     assert_eq!(answer_with(&v, 0, plain(), Some(25)), PeaceAnswer::Accept);
-    assert_eq!(answer_with(&v, -10, plain(), Some(25)), counter(0));
+    // Gold keeps the plain deal's rule whether or not terms ride with it: a losing AI pays
+    // up to its ceiling, and not a coin more for a longer truce.
+    let truce = PeaceTerms {
+        truce: 20,
+        ..Default::default()
+    };
+    assert_eq!(
+        answer_with(&v, -130, plain(), Some(25)),
+        PeaceAnswer::Accept
+    );
+    assert_eq!(answer_with(&v, -140, plain(), Some(25)), counter(0));
+    assert_eq!(
+        answer_with(&v, -140, truce.clone(), Some(25)),
+        PeaceAnswer::Counter(0, truce)
+    );
     for terms in [
         PeaceTerms {
             reparations: -1,

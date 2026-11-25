@@ -61,7 +61,7 @@ import { HOST_AWAY, HOST_OFFLINE, connectionFirst, roomBase } from './platform/r
 import { checkSaveText } from './platform/saveLimits';
 import { listAutosaves, newCampaignId, readPendingOrders, writeAutosave as keepAutosave, writePendingOrders, type AutosaveRecord } from './platform/autosaveStore';
 import { abandonGameHistory, recordGameHistory } from './platform/archive';
-import { historyToRecord } from './platform/gameUpload';
+import { historyToRecord, isHistoryCheckpoint } from './platform/gameUpload';
 import { currentActivePlaySeconds, currentPlaySessionId, resetActivePlayTurn } from './activePlayTime';
 import { takeTurnFrameTime } from './frameTelemetry';
 import { mapViewport } from './map/camera';
@@ -335,6 +335,8 @@ export interface State {
   hostNewGame(setup: GameSetup): Promise<void>;
   /** The join code a guest has typed for a locked game (kept in memory only). */
   joinCodeText: string;
+  /** The join code the host last refused, so the code box can say it is wrong until the player changes it. */
+  joinCodeRejected: string | null;
   setJoinCodeText(text: string): void;
   /** Open an online game in this tab and go to its game room. `code` (4 to 12 letters or digits) locks the game. Resolves to an error message, or null. */
   hostOnline(name: string, code?: string): Promise<string | null>;
@@ -543,10 +545,10 @@ async function openInOwnBuild(save: SaveFile, campaign: string | null): Promise<
 
 /**
  * Writes the autosave. Returns the engine save it holds (null if it could not be made), so the caller need not ask the
- * engine again. `uploadNow` sends the game record now rather than at the next five-turn checkpoint (after a rewind).
+ * engine again. `uploadNow` sends the game record now rather than at the next checkpoint (after a rewind).
  */
 function writeAutosave(client: GameClient, views: PlayerView[], uploadNow = false): string | null {
-  if (client.archive && (uploadNow || views[0].finished || (views[0].turn - 1) % 5 === 0)) {
+  if (client.archive && (uploadNow || views[0].finished || isHistoryCheckpoint(views[0].turn - 1))) {
     try {
       const { why, rewinds } = useGame.getState();
       void recordGameHistory(historyToRecord(client as { archive(): string }, why.answers, rewinds)).catch((error) => useGame.getState().set({ error: String(error) }));
@@ -913,7 +915,7 @@ export const useGame = create<State>((set, get) => {
     setServerBase('');
     rememberRoom(null);
     setJoinCode('');
-    set({ net: null, staging: null, stagingSeat: null, stagingConnected: false, stagingLeaving: false, joinCodeText: '' });
+    set({ net: null, staging: null, stagingSeat: null, stagingConnected: false, stagingLeaving: false, joinCodeText: '', joinCodeRejected: null });
   };
 
   const connectRemote = (seat: Seat, name: string, token?: string) => {
@@ -990,6 +992,11 @@ export const useGame = create<State>((set, get) => {
           if (!active()) set({ screen: 'join' });
         }
         if (code === 'join_code_needed' || code === 'wrong_join_code') setNet({ locked: true });
+        if (code === 'wrong_join_code') {
+          // The code box says so beside the typed code; no second notice above the seats.
+          set({ joinCodeRejected: get().joinCodeText, error: null, busy: null });
+          return;
+        }
         if (code === 'removed') {
           // The host took this player out: leave the game screen, keep the room, show why.
           if (remote === rc) dropRemote();
@@ -1331,7 +1338,7 @@ export const useGame = create<State>((set, get) => {
 
     joinOnline: async (relay, room, locked = false) => {
       setJoinCode('');
-      set({ joinCodeText: '' });
+      set({ joinCodeText: '', joinCodeRejected: null });
       const previous = serverBase();
       setServerBase(roomBase(relay, room));
       const status = await fetchStatus(undefined, undefined, 6000);
@@ -1361,6 +1368,7 @@ export const useGame = create<State>((set, get) => {
     },
 
     joinCodeText: '',
+    joinCodeRejected: null,
     setJoinCodeText: (text) => {
       setJoinCode(text);
       set({ joinCodeText: text });
@@ -1502,7 +1510,9 @@ export const useGame = create<State>((set, get) => {
           net: s.net ? { ...s.net, status: { ...s.net.status, staging: null } } : null,
         })),
         error: (message, code) => set((s) => ({
-          error: message, stagingSeat: staging?.seat ?? null,
+          // A wrong code is shown in the code box, not as a second notice.
+          ...(code === 'wrong_join_code' ? { joinCodeRejected: s.joinCodeText, error: null } : { error: message }),
+          stagingSeat: staging?.seat ?? null,
           net: s.net && (code === 'join_code_needed' || code === 'wrong_join_code') ? { ...s.net, locked: true } : s.net,
         })),
       }, undefined, undefined, host);

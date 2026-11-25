@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { listedName } from "../src/shared";
 import { Sock, alarm, announce, call, connect, create, frame, hostedRoom, lobbyRooms } from "./helpers";
 
 describe("announce and lobby", () => {
@@ -12,7 +13,7 @@ describe("announce and lobby", () => {
 
     const host = await connect(`/rooms/${j.room}/host?key=${j.host_key}`);
     const row = (await lobbyRooms()).find((x) => x.room === j.room)!;
-    expect(row).toMatchObject({ name: "Alice", build: "8.9.74", rules_version: 3, protocol: 1, phase: "staging", turn: 0 });
+    expect(row).toMatchObject({ name: listedName(j.room), build: "8.9.74", rules_version: 3, protocol: 1, phase: "staging", turn: 0 });
     expect(typeof row.updated_ms).toBe("number");
     host.ws.close(1000);
   });
@@ -36,8 +37,8 @@ describe("announce and lobby", () => {
   it("lists newest first", async () => {
     const a = await hostedRoom("first-xx");
     const b = await hostedRoom("second-x");
-    const names = (await lobbyRooms()).map((x) => x.name);
-    expect(names.indexOf("second-x")).toBeLessThan(names.indexOf("first-xx"));
+    const ids = (await lobbyRooms()).map((x) => x.room);
+    expect(ids.indexOf(b.room)).toBeLessThan(ids.indexOf(a.room));
     a.host.ws.close(1000);
     b.host.ws.close(1000);
   });
@@ -55,6 +56,7 @@ describe("announce and lobby", () => {
       announce("ok", { build: "<b>1.0</b>" }),
       announce("ok", { build: "see http://evil.example" }),
       announce("ok", { build: " 1.0" }),
+      announce("ok", { build: "Playtest the dev is a loser" }),
       announce("ok", { rules_version: "3" }),
       announce("ok", { protocol: -1 }),
       announce("ok", { protocol: 1.5 }),
@@ -65,11 +67,10 @@ describe("announce and lobby", () => {
     ];
     for (const b of bad) expect((await create(b)).r.status).toBe(400);
     expect((await call("/rooms", { method: "POST", body: "{not json" })).status).toBe(400);
-    // Names are cleaned rather than refused (hosts cut them at 80 characters).
+    // A typed name is accepted from older pages and then dropped: the list names the room from its id.
     const long = await create(announce("x".repeat(80)));
     expect(long.r.status).toBe(200);
-    expect(long.j.name).toBe("x".repeat(40));
-    expect((await create(announce("bad\nname"))).j.name).toBe("bad name");
+    expect(long.j.name).toBe(listedName(long.j.room));
   });
 
   it("answers CORS preflight and sets CORS and no-store headers", async () => {
@@ -180,7 +181,7 @@ describe("host tunnel", () => {
       if (row?.turn === 12) break;
       await new Promise((r) => setTimeout(r, 20));
     }
-    expect(row).toMatchObject({ name: "Alice", ...s });
+    expect(row).toMatchObject({ name: listedName(room), ...s });
     host.ws.close(1000);
   });
 });
@@ -304,11 +305,11 @@ describe("tunnel lifecycle", () => {
 
 // Last on purpose: it fills the relay, and storage is not reset between tests.
 describe("room cap", () => {
-  it("caps the number of rooms at 64", async () => {
+  it("caps the number of rooms at 256", async () => {
     const before = (await lobbyRooms()).length; // hosted rooms only; unhosted rooms count too, so create until refused
     let created = 0;
     let refused: Response | null = null;
-    for (let i = 0; i < 70; i++) {
+    for (let i = 0; i < 270; i++) {
       const { r } = await create(announce(`cap-${i}`));
       if (r.status === 503) {
         refused = r;
@@ -317,7 +318,7 @@ describe("room cap", () => {
       created++;
     }
     expect(refused).not.toBeNull();
-    expect(created + before).toBeLessThanOrEqual(64);
+    expect(created + before).toBeLessThanOrEqual(256);
     expect(created).toBeGreaterThan(0);
-  });
+  }, 60_000); // 256 creations take several seconds on a CI runner
 });

@@ -1008,3 +1008,27 @@ fn an_empty_set_leaves_the_other_factions_numbers_alone() {
         }
     }
 }
+
+/// The game-upload Worker refuses seats whose faction it does not know (infra/games/src/names.ts), so its
+/// list must name exactly the factions the game writes, or real games stop uploading.
+#[test]
+fn upload_worker_knows_every_faction() {
+    let source = include_str!("../../../infra/games/src/names.ts");
+    let list = |name: &str| -> Vec<String> {
+        let start = source
+            .find(&format!("{name}: readonly string[] = ["))
+            .expect(name);
+        let body = &source[start..];
+        let body = &body[body.find("= [").expect("= [") + 3..body.find("];").expect("];")];
+        body.split(',')
+            .map(|s| s.trim().trim_matches('"').to_owned())
+            .filter(|s| !s.is_empty())
+            .collect()
+    };
+    let want: Vec<String> = Faction::ALL
+        .iter()
+        .map(|&f| data::faction_name(f).to_owned())
+        .collect();
+    assert_eq!(list("FACTIONS"), want);
+    assert_eq!(list("DIFFICULTIES"), ["Easy", "Normal", "Hard"]);
+}

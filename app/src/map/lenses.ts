@@ -37,7 +37,7 @@ export const LENS_FADED_ALPHA = 0.3;
 export type LensYield = { kind: 'food' | 'production' | 'gold' | 'science'; value: number };
 /** How a tile is painted: a wash (default), or an owner wash with a hairline (the Borders overlay). */
 type LensFill = 'owner';
-export interface LensTile { index: number; tint: string; label?: string; yields?: LensYield[]; rank?: number; /** Settle: the site's absolute band (Poor to Exceptional), drawn as a paler to deeper green. */ band?: SiteBand; /** Settle, Rome: founding here makes the Colonia Victrix (core `goals::known_colonia_site`): a gilt ring. */ colonia?: boolean; faded: boolean; fill?: LensFill; /** The numeral is drawn only at normal zoom; the far tier keeps the tint alone. */ nearOnly?: boolean }
+export interface LensTile { index: number; tint: string; label?: string; yields?: LensYield[]; rank?: number; /** Settle: the site's absolute band (Poor to Exceptional), drawn as a paler to deeper green. */ band?: SiteBand; /** Settle, Rome: founding here makes the Colonia Victrix (core `goals::known_colonia_site`): a gilt ring. */ colonia?: boolean; /** Yields overlay: a natural wonder's boosted yield; where the cluster has room its "+25%" follows that yield's icons instead of a separate pill (`foldedBonuses`). */ bonus?: LensYield['kind']; faded: boolean; fill?: LensFill; /** The numeral is drawn only at normal zoom; the far tier keeps the tint alone. */ nearOnly?: boolean }
 export const yieldEntries = (y: Yields): LensYield[] => (['food', 'production', 'gold', 'science'] as const).filter((kind) => y[kind] !== 0).map((kind) => ({ kind, value: y[kind] }));
 
 /** Compute only when the view, lens or settlement analysis changes, never on pan/zoom. */

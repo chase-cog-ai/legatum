@@ -170,6 +170,7 @@ pub fn visible_events(
                 | Event::CapitalSacked { .. }
                 | Event::CapitalLost { .. }
                 | Event::AthensCityCaptured { .. }
+                | Event::WallsBreached { .. }
                 | Event::EraEntered { .. }
                 | Event::FactionGoalCompleted { .. }
                 | Event::FactionGoalLost { .. }

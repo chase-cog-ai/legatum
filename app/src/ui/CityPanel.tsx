@@ -1028,7 +1028,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
           <Tip content="Gold available for purchases this turn."><span><Amount n={purchases.gold} unit="Gold" /> ({signed(view.economy.gold_per_turn.total)}/turn) to spend</span></Tip>
         </div>
         {idleChoice && <div className="cp-automation-inline" role="group" aria-label="City building automation">
-          <label htmlFor={`city-automation-${city.id}`}>Automate <kbd className="kbd" title="I: on or off with your last focus. Shift+I: next focus.">I</kbd></label>{autoSelect}
+          <label htmlFor={`city-automation-${city.id}`}>Auto <kbd className="kbd" title="I: on or off with your last focus. Shift+I: next focus.">I</kbd></label>{autoSelect}
         </div>}
       </div>
       {idleChoice && buyTile('row')}

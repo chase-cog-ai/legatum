@@ -520,7 +520,7 @@ pub fn describe(state: &GameState, order: &Order) -> (String, String) {
                 legatum_core::scenario::empire_name(state, *to)
             ),
         ),
-        Order::AnswerSupplyOffer { offer, accept } => (
+        Order::AnswerSupplyOffer { offer, accept, .. } => (
             "Empire".into(),
             format!(
                 "{} supply offer {offer}",

@@ -572,6 +572,7 @@ mod tests {
             Order::AnswerSupplyOffer {
                 offer: 3,
                 accept: true,
+                note: None,
             },
             Order::EndSupplyTrade { trade: 3 },
         ]

@@ -98,6 +98,7 @@ mod siege_buy;
 mod site_strategy;
 mod strategy;
 mod supply;
+pub mod supply_trade;
 mod supply_value;
 mod tactics;
 pub mod threat;

@@ -364,6 +364,8 @@ impl ScriptedBrain {
         let mut p = self.planner_through_plan(view, production_trace);
         p.pass("plan");
         p.plan_diplomacy();
+        let supply_trades = crate::supply_trade::plan(view, p.diplomatic_target());
+        p.orders.extend(supply_trades);
         p.plan_levy_turnover();
         p.pass("execute_snipe");
         p.execute_snipe();

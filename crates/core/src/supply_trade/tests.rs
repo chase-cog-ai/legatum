@@ -68,6 +68,7 @@ fn trading(amount: i32, gold: i32) -> GameState {
             Order::AnswerSupplyOffer {
                 offer,
                 accept: true,
+                note: None,
             },
         )],
     );
@@ -213,6 +214,7 @@ fn a_seller_cannot_sell_supply_it_uses_or_sell_the_same_supply_twice() {
     let accept = |i: usize| Order::AnswerSupplyOffer {
         offer: s.supply_trades.offers[i].id,
         accept: true,
+        note: None,
     };
     let (after, events) = step(&s, &[(P1, accept(0)), (PlayerId(2), accept(1))]);
     assert_eq!(after.supply_trades.trades.len(), 1);
@@ -300,6 +302,7 @@ fn offers_can_be_declined_lapse_and_are_replaced_by_a_newer_one() {
             Order::AnswerSupplyOffer {
                 offer,
                 accept: false,
+                note: None,
             },
         )],
     );
@@ -316,7 +319,8 @@ fn offers_can_be_declined_lapse_and_are_replaced_by_a_newer_one() {
             PlayerId(2),
             &[Order::AnswerSupplyOffer {
                 offer,
-                accept: true
+                accept: true,
+                note: None,
             }]
         )
         .len(),

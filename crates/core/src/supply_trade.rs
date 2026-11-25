@@ -238,7 +238,7 @@ pub fn order_blocker(state: &GameState, player: PlayerId, order: &Order) -> Opti
             pair_blocker(state, player, *to)
                 .or_else(|| terms_blocker(state, player, seller, buyer, *resource, *amount, *gold))
         }
-        Order::AnswerSupplyOffer { offer, accept } => {
+        Order::AnswerSupplyOffer { offer, accept, .. } => {
             let Some(o) = state
                 .supply_trades
                 .offers
@@ -423,7 +423,12 @@ pub fn resolve(
             continue;
         }
         for order in os.iter() {
-            let Order::AnswerSupplyOffer { offer, accept } = order else {
+            let Order::AnswerSupplyOffer {
+                offer,
+                accept,
+                note,
+            } = order
+            else {
                 continue;
             };
             let Some(at) = state
@@ -441,7 +446,7 @@ pub fn resolve(
             if !*accept {
                 events.push(Event::SupplyOfferDeclined {
                     offer: o,
-                    reason: None,
+                    reason: note.clone(),
                 });
             } else if let Some(reason) = blocked {
                 events.push(Event::SupplyOfferDeclined {

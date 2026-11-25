@@ -212,6 +212,9 @@ pub enum Order {
     AnswerSupplyOffer {
         offer: u32,
         accept: bool,
+        /// Why it was declined, shown to the empire that offered ("wants 12 Gold a turn").
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        note: Option<String>,
     },
     /// End a running supply trade you are part of, at the end of this turn.
     EndSupplyTrade {

@@ -1,0 +1,18 @@
+$ tools/perf/app-load.sh
+== Chromium 159.0.8154.6, 1000x600, Standard, seed 424242
+
+Phase                          Median (ms)
+Navigation to title              319
+Title to Start game             2207
+Start game to introduction       586
+Introduction to playable         285
+Start game to playable           875
+Navigation to playable          3396
+
+Raw timing output:
+run 1 (ms): {"navToTitle":319,"titleToStart":2186,"startToIntro":574,"introToPlayable":301,"startToPlayable":875,"navToPlayable":3380} title resources: {"dcl":185,"load":215,"bytes":13136017,"n":111,"heapMB":10}
+run 2 (ms): {"navToTitle":297,"titleToStart":2201,"startToIntro":557,"introToPlayable":283,"startToPlayable":841,"navToPlayable":3338} title resources: {"dcl":169,"load":266,"bytes":13136017,"n":111,"heapMB":10}
+run 3 (ms): {"navToTitle":382,"titleToStart":2286,"startToIntro":620,"introToPlayable":304,"startToPlayable":924,"navToPlayable":3592} title resources: {"dcl":167,"load":267,"bytes":13136017,"n":111,"heapMB":10}
+run 4 (ms): {"navToTitle":299,"titleToStart":2207,"startToIntro":688,"introToPlayable":203,"startToPlayable":891,"navToPlayable":3396} title resources: {"dcl":176,"load":255,"bytes":13136017,"n":111,"heapMB":10}
+run 5 (ms): {"navToTitle":349,"titleToStart":2231,"startToIntro":586,"introToPlayable":285,"startToPlayable":871,"navToPlayable":3451} title resources: {"dcl":229,"load":273,"bytes":13136017,"n":111,"heapMB":10}
+median (ms): {"navToTitle":319,"titleToStart":2207,"startToIntro":586,"introToPlayable":285,"startToPlayable":875,"navToPlayable":3396}

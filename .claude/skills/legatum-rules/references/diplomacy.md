@@ -157,8 +157,10 @@ stockpile: a trade moves `amount` of the seller's supply to the buyer for as lon
   ordinary income, every turn, from the turn after acceptance.
 - **Ends** (`SupplyTradeEnded{reason}`): War between the two teams, including a surprise war, before that turn's
   ranged fire and movement (`end_broken`, then `update_supply`, so the buyer's units fight unsupplied at once);
-  either empire eliminated; the seller no longer able to deliver (lost deposit: its newest trades end first, before
-  its own users go idle); the buyer unable to pay this turn's price from its treasury (`end_unpaid`, before income);
+  either empire eliminated; the seller's deposits no longer covering what it sells (`end_undeliverable`: its newest
+  sales end first; while its deposits still cover its sales, a shortage idles the seller's own users instead, so it
+  ends the sale itself to get the supply back); the buyer's treasury plus this turn's income going below zero
+  (`end_unpaid`, before income, newest purchase first, so a trade never bankrupts the buyer);
   or `EndSupplyTrade`, with no notice period. The buyer's users then go idle the usual way (newest first).
 - **Events** are seen by the two empires and their teammates only.
 - **View.** `PlayerView.supply_trade`: `trades`, `offers`, and `partners` (per met empire: `blocked` reason, supply

@@ -134,6 +134,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         Order::ProposeTreaty {
                             to,
                             kind: TreatyKind::Peace,
+                            ..
                         } => println!("  T{} P{} proposes Peace to T{}", t.turn, id.0, to.0),
                         Order::RespondToProposal {
                             proposal, accept, ..

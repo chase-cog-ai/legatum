@@ -118,7 +118,7 @@ impl Cycler {
         // Our Peace decisions with targets are scripted; drop Hard's own.
         mine.retain(|o| match o {
             Order::RespondToProposal { proposal, .. } => !peace_from_target.contains(proposal),
-            Order::ProposeTreaty { to, kind } => {
+            Order::ProposeTreaty { to, kind, .. } => {
                 !(*kind == TreatyKind::Peace && self.targets.contains_key(to))
             }
             _ => true,
@@ -154,6 +154,7 @@ impl Cycler {
                         extra.push(Order::ProposeTreaty {
                             to: team,
                             kind: TreatyKind::Peace,
+                            gold: 0,
                         });
                     }
                 }

@@ -1,4 +1,4 @@
-# Returning a captured city to its founder (rules 61)
+# Returning a captured city to its founder (rules 62)
 
 2026-11-25. `Order::ReturnCity` hands a city taken from someone other than its founder back to that founder for 20 Gold per population.
 

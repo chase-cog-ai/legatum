@@ -7,7 +7,7 @@ Moved verbatim from `game-rules.md` on 2026-11-22, in the original order; the or
 
 **Peace, Alliance or War** (since 2026-10-03, user decision; Pacts, minimum terms, exit notice
 periods, trust and call commitments were removed; Call to Arms was removed 2026-10-18 for shared wars, below). `RelationState`: `Peace | War | Alliance`
-(`diplomacy.rs`); all start at Peace. `TreatyKind`: `Peace | Alliance`.
+(`diplomacy.rs`); all start at Peace. `TreatyKind`: `Peace | Alliance | OpenBorders` (Open Borders only with deals on, see "Deals" below).
 
 | | Cost (Gold) | Notes |
 |---|---|---|
@@ -88,7 +88,7 @@ pair as met; tapes before version 5 replay without it (`wasm/src/tape.rs::initia
 **War**: declaring against a team at plain Peace is a **surprise war** — effective immediately,
 same turn, before ranged fire/movement; a unit can be ordered into enemy territory with the
 declaration in one submission (G20). **At Peace a unit cannot enter the other empire's territory**
-(except Mongols's Scouts and civilians, §8); allies may, but not into a closed country (§8, Sakoku). Only an Alliance shares vision.
+(except with Open Borders, deals only, below; and except Mongols's Scouts and civilians, §8); allies may, but not into a closed country (§8, Sakoku). Only an Alliance shares vision.
 The AI uses that same opening turn for ranged attacks and eligible melee attacks. Its combat
 forecast projects valid surprise declarations before planning the assault
 (`crates/ai/src/scripted.rs::attack_view`, `city_assault.rs::city_assault_succeeds`,
@@ -134,3 +134,86 @@ would open at home (`inherited_front_cost`: up to 40 for the share of the army n
 site value by 40% per travel turn after the first city, up from 10%, so both UI advice and AI
 value reaching a city before rival borders close (`core::settlement::analyze_sites`,
 `ai::civilians::choose_site`).
+
+## Deals (rules 61, behind GameSetup::deals)
+
+Sam approved the first slice of "more ways to deal with other empires than war or peace" on 2026-11-25. Everything here
+needs `GameSetup::deals` (serde default false, omitted when false); off, each deal is refused with
+`diplomacy::DEALS_OFF` ("Deals are off in this game") and nothing else changes: simulations, the hill climb, old saves,
+tapes and fixtures serialize and resolve exactly as before. The app turns it on for new games. `DiplomacyView::deals`
+says whether it is on.
+
+- **Gold in offers.** `Order::ProposeTreaty { to, kind, gold }` and `PeaceProposal::gold` (both omitted when 0) apply to
+  Peace, Alliance and Open Borders offers. Positive: the proposing empire pays that much Gold to the accepting empire;
+  negative: the accepting empire pays |gold| to the proposer. At most 999 either way (`MAX_DEAL_GOLD`). Checks
+  (`check_order`): the proposer must afford a positive amount now (`afford`, "This offer costs N Gold; ..."), and the
+  accepting player must afford an asked amount now ("Accepting this offer costs N Gold; ..."). At resolution
+  (`resolve_boundary`, after the turn's purchases), when the treaty would take effect, the payer must still have the
+  Gold; if not, the offer ends with `ProposalInvalidated` reason "<Faction> could not pay N Gold" and nothing is signed.
+  Otherwise the Gold moves and `Event::GoldGiven { from, to, amount }` follows `ProposalAccepted`. A Peace pays only when
+  the Peace is made. `DiplomaticAction::cost` quotes the Gold the ordering empire would pay (an accept of an offer that
+  asks for Gold). Deal Gold moves after income, so it is not part of this turn's Swiss interest.
+- **Open Borders** (`TreatyKind::OpenBorders`, no upkeep, no breach cost). Offered and accepted only between two teams
+  that have met, are at Peace (not War, not Alliance) and don't already have them; never with a closed country
+  (Sakoku, `closed_refusal`: "a closed country can't open its borders"; `vow_conflict` likewise). State:
+  `DiplomacyState::open_borders` (team pairs, lower id first; omitted when empty); public in
+  `DiplomacyView::open_borders`. Accepting emits `ProposalAccepted` (then `GoldGiven` if any) and
+  `Event::BordersOpened { a, b, effective_turn }`. Effect: `GameState::passage_allowed` (and its mirror
+  `PlayerView::passage_allowed`) let a unit enter land of a team it has Open Borders with; never a closed country, never
+  barbarians. No vision, no war duties.
+- **Open Borders end** (`Event::BordersClosed { a, b, effective_turn, reason }`, public) when either side orders
+  `BreakTreaty { with, agreement: Agreement::OpenBorders }` (free, no betrayal, next turn; "No Open Borders to end"
+  otherwise), when the two go to War by any path (surprise war, boundary declaration, defenders joining, calls answered)
+  or sign an Alliance (which includes passage), or when a team is eliminated (`close_lapsed_borders`, run after
+  `declare_surprise_wars` and at the end of `resolve_boundary`). Units inside stay, like units left in former allied
+  land (not expelled; closed-land limits apply). Closing borders does not change the relation's `version`.
+- **Gifts:** see `turn-and-orders.md` "Co-op Gold gifts": with deals on, Gold may go to any met empire not at War.
+- The one-diplomatic-order-per-other-team-per-turn rule holds for all of it.
+- **View:** with deals on, `DiplomacyView::actions` adds, per other living team, `ProposeTreaty{kind: OpenBorders,
+  gold: 0}` and `BreakTreaty{agreement: OpenBorders}` with their `blocked_reason`; Gold amounts are the client's to set.
+- **UI** (`app/src/ui/DiplomacyPanel.tsx`, `app/src/deals.ts`, shown only when `DiplomacyView.deals`): an empire's
+  offers share one "Gold with your offer" field (`DealGold`: No Gold, You pay, You ask, and the shared `GoldStepper` of
+  10 up to 999), with the forecast "You pay 40 Gold when they accept. You have 120 Gold." from the treasury less the Gold
+  queued orders already promise (`deals.ts::promisedGold`: gifts, offers we pay for, accepting an offer that asks us for
+  Gold); paying more than that disables the offers with "You have N Gold, so offer at most N." in place. "You pay" puts
+  a red cost chip on each offer, "You ask" a green "+N if accepted" chip. With deals on an empire's detail runs: the
+  Gold field, the offers, Give Gold (`RivalGift`, a met empire not at War, a gift to the team's first living member,
+  same `GoldStepper`), Close borders or Leave the Alliance, then Declare War below a rule. Offer Open Borders shows at
+  Peace while closed ("If they accept, it starts on turn N."), Close borders while open. A queued action keeps its
+  button pressed with a "Queued: Offer Open Borders. You ask 40 Gold. Undo" line under it, as gifts do. An incoming
+  offer's headline carries its Gold ("Switzerland asks 40 Gold for Peace", "… offers Peace and 40 Gold") and its
+  For-you terms say "You pay 40 Gold." or "You get 40 Gold."; the turn button and the advisor name it by kind
+  (`turnFlow.ts::offerDecisionLabel`: "Open Borders with X: your units may enter each other’s land · asks 40 Gold ·
+  respond by turn N"). Open Borders are drawn as emblem plus word, like Peace, on every surface (panel row, rivals
+  table, report lines): `TreatyEmblem kind="OpenBorders"` is Peace's ring with a two-way arrow in place of the star.
+  The report says "Open Borders with X begin.", "X closed the borders." (or "Open Borders with X end: War."), "You
+  gave Sparta 40 Gold for Open Borders" (a `GoldGiven` right after a `ProposalAccepted` with Gold), and an offer line
+  adds "they ask 40 Gold". App passage (`diplomacy.ts::canEnter`, used by routes, reach and the unit card) honours
+  `open_borders`; cities stay closed. Closing borders ends no pending offer (`endsOffers`), and the same treaty with
+  other Gold counts as the same offer (`sameDiplomaticAction`). New local games and online rooms set `deals: true`
+  (`lobby.ts`, `staging.ts::configFromLobby`, `StagingConfig::deals` in `crates/wasm/src/host/staging.rs`); a loaded save
+  keeps its own setup. Tour: `app/e2e/tour/deals.spec.ts`.
+- **AI** (`crates/ai/src/deals.rs`, wired into `diplomacy.rs::plan_diplomacy`; every scripted difficulty unless noted,
+  only when `DiplomacyView::deals` is on, so games without deals plan exactly as before). "Losing" a war: an enemy army
+  presses one of our cities (`endangered_by`), a city is collapsing, or our side's public army is at most 70% of theirs;
+  "winning": at least 150% and none of our cities in danger.
+  - A losing AI's Peace offer pays 20% of its free Gold, at most 200 (nothing if that is under 20). It pays for a Peace
+    it is asked to pay for only while losing, and only up to a third of its free Gold, at most 300.
+  - A winning AI asks 25% of the smallest public treasury among the enemy team's empires, at most 250 (no price under
+    20): its own Peace offers carry that ask, and it refuses a Peace that pays under half of it (it must still want
+    Peace: with no plan, an army at 130% of the enemy's or more wants it only to leave a coalition's war).
+  - Gold paid to the AI adds a point of treaty score per 10 Gold; it never pays for an Alliance or for Open Borders.
+  - Gold its open offers may still pay is held back from the turn's purchases (`Planner::gold_left`), as is Gold it
+    agrees to pay.
+  - Open Borders: offered and accepted when a known city of the partner lies between one of ours and a known city (within
+    20 hexes) of a team we are at War with or our diplomatic target, and the partner is no threat: not the strict VP
+    leader or our top threat, no army stronger than ours within 10 hexes, no military unit within 5 hexes of our
+    cities. A harmless partner that pays for them is accepted anyway. Ended (`BreakTreaty`) when the partner becomes a
+    threat with a margin: the strict leader at half its target or our diplomatic target, an army 25% stronger nearby,
+    or three military units within 3 hexes of our cities.
+  - Coalition Gold (Hard only): every fifth turn, a solvent AI (positive income, not bankrupt) gives 10% of its Gold
+    above its reserve, 10 to 50, to the weakest met partner at War with the leader it fights itself
+    (`shared_leader_war`), or an ally at War with its diplomatic target (`Order::GiveGold`).
+  - The proxies (`proxy_v4`..`v8`, sim benchmarks where deals are off) still decline Open Borders and offers that ask
+    them for Gold.
+- **Tests:** `crates/core/tests/deals.rs`.

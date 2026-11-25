@@ -9,6 +9,7 @@ import { useGame } from '../store';
 import { SOUND_MANIFEST } from '../feel';
 import type { GuideSection } from './guideState';
 import { TREATY_DEFINITION, TREATY_TERMS, allianceTerms } from '../treaties';
+import { GIFT_ARRIVES } from '../deals';
 import { Amount, Amounts } from './Amounts';
 import { HOLD_TURNS } from '../victoryHold';
 import { PROMOTION_XP } from '../promotion';
@@ -95,7 +96,10 @@ export function GuideContent({ section }: { section: GuideSection }) {
       <ol className="guide-ladder" aria-label="Relations between teams">
         {(['Peace', 'Alliance', 'War'] as const).map((kind) => <li key={kind}><b>{kind}</b> {TREATY_DEFINITION[kind]}</li>)}
       </ol>
-      <p>Peace keeps borders closed to foreign units, except an ally’s and the land of whoever holds a Yam Relay Station. Crossing like this is not a provocation.</p>
+      <p>Peace keeps borders closed to foreign units, except an ally’s, an empire you have Open Borders with, and the land of whoever holds a Yam Relay Station. Crossing like this is not a provocation.</p>
+      <p><b>Deals.</b> An offer of Peace, an Alliance or Open Borders can carry Gold: you pay it, or you ask them for it. The Gold moves when the treaty takes effect. If the payer cannot pay then, the offer ends and nothing is signed.</p>
+      <p>You can also give Gold to any empire you have met and are not at War with, from its row in Diplomacy. {GIFT_ARRIVES}</p>
+      <p><b>Open Borders</b> let each side’s units enter the other’s land at Peace. They share no sight. Either side can close them for free, and they also end if the two go to War or sign an Alliance. Units left inside may stay, but cannot heal or fortify there. A closed country (Sakoku) never opens its borders.</p>
       <p>You cannot attack a rival you are at Peace with. Declaring War while at Peace is a surprise war. It takes effect at once, so an attack ordered with it resolves the same turn. Signing Peace after War starts a {TREATY_TERMS.guaranteeTurns}-turn truce between the two teams. Neither may declare War on the other or be pulled back into that war by an ally until the shown end turn has passed. Permanent teammates share vision and victory. You can give Gold to a teammate from the Your team section of the diplomacy panel. It arrives next turn, after this turn's purchases, and you can give at most the Gold you had at the start of the turn. Alliances with other teams do not combine victory scores.</p>
       <p>In a co-op game the AI empires start allied in pairs, so your team meets AI empires that also stand together. To turn this off, set AI alliances to Off in the lobby’s Game settings. The pairs are picked when the game starts, and your team is never in one. If the number of AI empires is odd, one stays alone.</p>
       <p>These are ordinary Alliances. They cost upkeep and share no VP, and they end the way any Alliance ends. You can still make your own treaties with any of them.</p>

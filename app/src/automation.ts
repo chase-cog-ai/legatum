@@ -6,7 +6,7 @@ import { loadedWasmModule } from './wasmClient';
 export const STOP_REASON = {
   Complete: 'nothing reachable left to explore',
   Threatened: 'known enemy military threatens this unit',
-  Damaged: 'health below 60 HP',
+  Damaged: 'health below 60',
   Blocked: 'the planned route was blocked',
 };
 

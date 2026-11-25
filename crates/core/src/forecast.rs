@@ -87,12 +87,12 @@ impl BattleForecast {
 /// What Walls do to one attack on a city's HP (`combat::wall_damage_percent`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WallsForecast {
-    /// The city's walls: 1 Walls, 2 a Castle, 3 a Star Fort.
+    /// The city's Walls level, I through IX.
     pub tier: u8,
     /// The siege tier of the attacker (`data::siege_cover`), 0 when it has no Siege.
     pub covered: u8,
     /// The attacker has Siege built in (an Industrial or later land unit, `data::built_in_siege`):
-    /// it ignores every tier, `data::BUILT_IN_SIEGE_NOTE`.
+    /// it covers levels through its own era tier.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub built_in: bool,
     /// Percent of its normal damage the attack deals to the city's HP.
@@ -1026,7 +1026,7 @@ mod tests {
                 .unwrap()
                 .city_strike
                 .is_none(),
-            "a city at 0 HP doesn't fire"
+            "a city at 0 health doesn't fire"
         );
         s.cities.get_mut(&c).unwrap().hp = 1;
         assert!(
@@ -1073,7 +1073,7 @@ mod tests {
         assert_eq!(single.expected_damage_to_defender, 37);
         assert_eq!(
             combined.city_hp_after, 162,
-            "the integer mean of the remaining HP"
+            "the integer mean of the remaining health"
         );
         assert_eq!(single.attacker_strength.total, 18);
     }
@@ -1122,7 +1122,7 @@ mod tests {
             here.attacker_defense.total - arrival.attacker_defense.total,
             6
         );
-        assert_eq!(here.expected_damage(1), 1, "cap damage at remaining HP");
+        assert_eq!(here.expected_damage(1), 1, "cap damage at remaining health");
         let average = (combat::ROLL_MIN..=combat::ROLL_MAX)
             .map(|roll| {
                 combat::damage(here.city_strength.total, here.attacker_defense.total, roll)
@@ -1152,7 +1152,7 @@ mod tests {
         assert_eq!(
             city_strike_target(&v, city),
             Some(a),
-            "iteration order cannot break HP ties"
+            "iteration order cannot break health ties"
         );
     }
 
@@ -1280,7 +1280,7 @@ mod tests {
         assert_eq!((f.win_chance, f.loss_chance), (51, 0));
         assert_eq!(
             f.expected_damage_to_defender, 37,
-            "capped at the 40 HP left"
+            "capped at the 40 health left"
         );
         assert_eq!(f.expected_damage_to_attacker, 22);
         assert_eq!((f.attacker_hp, f.defender_hp), (100, 40));
@@ -1591,7 +1591,7 @@ mod tests {
         let mean = (sum / n as i64) as i32;
         assert!(
             (mean - both_g.hp_after).abs() <= 6,
-            "resolution leaves about {mean} HP, the forecast says {}",
+            "resolution leaves about {mean} health, the forecast says {}",
             both_g.hp_after
         );
     }

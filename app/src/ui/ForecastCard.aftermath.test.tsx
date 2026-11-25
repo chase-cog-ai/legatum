@@ -117,7 +117,7 @@ describe('ForecastCard', () => {
     // Header, then the aftermath, before the sides.
     expect(card.children[0].className).toContain('forecast-head');
     expect(card.children[1]).toBe(line);
-    expect(byTestId('forecast-fortify').textContent).toMatch(/^Assumes the Archer stays fortified \(\+6 Defense\)\. Firing loses it: chance above\.$/);
+    expect(byTestId('forecast-fortify').textContent).toMatch(/^The odds assume the Archer stays fortified \(\+6 strength\)\. Firing loses it: chance above\.$/);
   });
 
   it('shows a Safe aftermath below the sides, quietly', async () => {

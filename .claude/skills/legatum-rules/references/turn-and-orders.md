@@ -14,7 +14,7 @@ diplomacy (`DeclareWar{against,breach}`, `BreakTreaty` = leave an Alliance,
 `MoveUnitPath{to,path,stop_on_block}`, `SleepUnit{until_healed}`, `SkipUnit`,
 `FoundCity`, `DisbandUnit`, `RangedAttack`, `UpgradeUnit`, `UpgradeSiege`); aircraft (`AirStrike`, `AirRecon`, `Rebase`,
 `UpgradeAircraft`: Eras and technologies, "The air layer"); city (`SetProduction`, `SetProductionQueue`, `BuyItem`, `BuyTile{tile}`, `HireCompany`
-(Byzantium only), `Raze`, `SetCityAutomation`); research (`SetResearch`, `SetResearchQueue`,
+(Byzantium only), `Raze`, `SetCityAutomation`); research (`SetResearch`, `SetResearchQueue`, `SetResearchGoal`,
 `SetScienceConversion` after the last technology);
 and **one-time empire actions** through a single variant, `Action { action }` (`orders.rs::Action`,
 serde tag `"action"`: `{"type":"Action","action":{"action":"Sakoku","close":true}}`): `Swarm` (the Aztecs' New Fire),
@@ -25,6 +25,8 @@ Checks are `rules/actions.rs::validate_action` (run by `validate_orders`: each a
 retirements beyond what completes the goal are refused), resolution is `apply_actions` right after the
 city orders (spending free picks first), and `PlayerView.actions` (`ActionsView`: `swarm`, `sakoku`, `tomb`, `colonia` (Rome's level-3 founders, a preview only), `broadcast`,
 `free_techs`, `retire`, `wild`) says what is available, why not, and previews it.
+
+**A player who drops out of an online game (no rules change; `crates/wasm/src/host/mod.rs::disconnect`).** A disconnected human seat stops holding up the turn: when every connected human is Ready the host resolves it, and the away empire gets no orders (no AI stands in). The game says so: everyone else sees "<name> is not connected" at the top of the map, and Ready opens the end-turn check naming them ("End the turn without <name>?", primary "Wait for <name>"). A seat credential is kept per tab (sessionStorage) and also per device (localStorage, `remote.ts::keptSeat`, the last game seat only), so after a restart the game list marks that game "Your seat is here" and its Rejoin button takes the seat straight back, without the host pressing Open seat. It is offered, never auto-joined.
 
 **Team map pings (no rules change).** A human on a team with another human can ping a tile; the teammates see a ring there until the turn ends. It is not an order and is never in the game state, a save or a tape. Online it is a host message (`ClientMessage::MapPing`, `ServerMessage::MapPing`, `crates/wasm/src/host/mod.rs`, `outbox.rs::Sender::ping`), relayed only to seats on the sender's team, 24 per seat per planning turn. The host's `welcome` says `map_pings` so older hosts are never sent one.
 
@@ -37,7 +39,10 @@ purchases this turn are paid first; with nothing left it fails with an `OrderFai
 after this turn's purchases"). A gift to someone no longer a living teammate at resolution fails the same way. Order:
 player id, then the giver's order list. `Event::GoldGiven{from,to,amount}` is visible to the team only. The teammate
 spends it from next turn. The AI never issues it (`ai/src/fixture.rs` panics on one). UI: "Your team" section of the
-diplomacy panel (`app/src/ui/GiveGold.tsx`), with a forecast of both treasuries.
+diplomacy panel (`app/src/ui/GiveGold.tsx`), with a forecast of both treasuries. **Deals (rules 61, `GameSetup::deals`):**
+the receiver may also be a living empire of another team that the giver's team has met and is not at War with ("you are
+at War with X"); otherwise "X is not on your team" as before. `GoldGiven` is then seen by both empires' teams
+(`event_visibility.rs`). The AI gives Gold only with deals on (Hard's coalition Gold, `diplomacy.md` "Deals").
 
 **One order per unit per turn.** A unit is marked `acted` after its order; a second order for it is
 rejected. The UI never offers a multi-step per-unit queue. A unit that attacked stays where it fought (a melee winner that kills advances into the

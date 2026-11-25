@@ -104,9 +104,9 @@ export const FACTION_SHEETS: Record<Faction, FactionSheet> = {
     pairs: [
       { strength: 'Egyptian cities get double Food, and surplus Food builds what the city is working on.', strengthDetail: `Egyptian cities get double Food. Food beyond what their people eat builds whatever the city is working on, units and Settlers included${EGYPT_NILE_BUILD_PERCENT === 100 ? '' : `: ${EGYPT_NILE_BUILD_PERCENT} progress for every 100 Food`}.`, price: "Egypt has no Production. A city that is building doesn't grow: switch it to Grow to grow it.", strengthIcon: 'yield-food', priceIcon: 'yield-production' },
       { strength: 'Royal Granary replaces the Granary and gives +3 Food total.', strengthIcon: 'building-royalgranary', onCard: true },
-      specialRow('Egypt', 'unit-medjay'),
+      specialRow('Egypt', 'unit-chariot-archer'),
     ],
-    counteredBy: 'Strike while its cities are busy growing or working on the Royal Tomb, and take its Food-rich sites.',
+    counteredBy: 'Strike while it grows or builds the Royal Tomb, take its Food-rich sites, and fight its Chariot Archers in Forest or Hills.',
   },
   Rome: {
     identity: 'Veterans found cities',
@@ -115,7 +115,7 @@ export const FACTION_SHEETS: Record<Faction, FactionSheet> = {
     pairs: [
       { strength: 'A melee veteran at full health can found a city.', strengthDetail: 'A full-health melee veteran (level 1 or higher) can found a city; the unit is consumed.', price: 'Rome cannot train or buy Settlers.', strengthIcon: 'faction-rome', priceIcon: 'unit-settler' },
       specialRow('Rome', 'unit-legionary'),
-      { strength: 'Castrum replaces Walls. Upgrading a melee unit in its city heals it 50 HP.', strengthDetail: 'Castrum replaces Walls. Upgrading a melee unit in its city restores 50 HP, up to full health, once per upgrade order.', strengthIcon: 'building-castrum', onCard: true },
+      { strength: 'Castrum replaces Walls. Upgrading a melee unit in its city restores 50 health.', strengthDetail: 'Castrum replaces Walls. Upgrading a melee unit in its city restores 50 health, up to full health, once per upgrade order.', strengthIcon: 'building-castrum', onCard: true },
     ],
     counteredBy: 'Wound a founder before the city appears, claim the site first, or attack the army left behind.',
   },
@@ -189,7 +189,7 @@ export const FACTION_SHEETS: Record<Faction, FactionSheet> = {
     lore: 'Mongol horse archers shot at full gallop; the yam relay network linked an empire.',
     ratings: { aggression: 4, economy: 2, complexity: 2 },
     pairs: [
-      { strength: 'Your military units, Scouts too, get +1 move.', price: 'Your units get no terrain defence. You never build Walls and buy no Siege before the Medieval era.', strengthIcon: 'mark-move', priceIcon: 'fortify' },
+      { strength: 'Your military units, Scouts too, get +1 move.', price: 'Your units get no terrain defence. You never build or upgrade Walls and buy no Siege before the Medieval era.', strengthIcon: 'mark-move', priceIcon: 'fortify' },
       { strength: `Iron Working unlocks it. A Cataphract that can shoot, ${keshig.ranged} ranged strength, ${keshig.range} tiles.`, price: `A Keshig costs ${keshig.cost} Production, ${keshig.cost - cataphractCost} more than a Cataphract.`, strengthIcon: 'unit-keshig', priceIcon: 'yield-production', onCard: true },
       { strength: 'A city with a Market at least 8 tiles from your capital earns +2 Gold more.', strengthIcon: 'building-market' },
     ],
@@ -201,8 +201,8 @@ export const FACTION_SHEETS: Record<Faction, FactionSheet> = {
     ratings: { aggression: 5, economy: 1, complexity: 3 },
     pairs: [
       { strength: 'Your military units start at level 1, level up faster and can reach level 6.', strengthDetail: `Your military units start at level 1, gain XP 50% faster and can reach level 6, Spartan Veteran. Each level adds ${RULES.promotion.strengthPercent}% to a unit’s strength.`, strengthIcon: 'unit-spartanhoplite' },
-      { strength: 'Kills heal your units, and capturing a city fully heals your military units nearby.', strengthDetail: 'Destroying an enemy unit restores up to 100 HP, shared among your units that hit it. Capturing a city fully heals your military units within 2 tiles.', strengthIcon: 'mark-heal' },
-      { price: 'Settlers and non-military buildings cost 50% more Production.', priceDetail: 'Settlers and non-military buildings cost 50% more Production. Walls, Castles, Star Forts and the Agoge cost the normal price.', priceIcon: 'unit-settler' },
+      { strength: 'Kills heal your units, and capturing a city fully heals your military units nearby.', strengthDetail: 'Destroying an enemy unit restores up to 100 health, shared among your units that hit it. Capturing a city fully heals your military units within 2 tiles.', strengthIcon: 'mark-heal' },
+      { price: 'Settlers and non-military buildings cost 50% more Production.', priceDetail: 'Settlers and non-military buildings cost 50% more Production. Walls, Walls upgrades and the Agoge cost the normal price.', priceIcon: 'unit-settler' },
     ],
     counteredBy: 'Hold behind Walls and deny them kills, so their wounded units stay wounded.',
   },

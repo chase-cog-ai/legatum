@@ -1,12 +1,13 @@
-import type { BuildingKind, Event, Faction, Hex, PlayerId, PlayerView, Resource, RuinReward, UnitKind } from '../types';
-import { ageName, BUILDING_NAME, BUILDING_STATS, factionGoalVp, RULES, TECH_NAME, isGreatWork, itemName } from '../data';
+import type { BuildingKind, CityView, Event, Faction, Hex, PlayerId, PlayerView, ProductionItem, Resource, RuinReward, TeamId, TreatyKind, UnitKind } from '../types';
+import { ageName, BUILDING_NAME, BUILDING_STATS, factionGoalVp, RULES, TECH_NAME, isGreatWork, itemName, wallLevelLabel } from '../data';
 import { TECH_QUOTE } from '../techQuotes';
 import { claimedTile, growthUnlocks } from '../milestones';
 import { yieldsText } from '../cityProgress';
-import { empireOfPlayer, placeName } from '../empires';
+import { empireLocation, empireNameOf, empireOfPlayer, placeName, type EmpireLocation } from '../empires';
 import { isBarbarian } from '../barbarians';
 import { blockedQueueHead, wonderLostLine } from '../wonderRace';
 import { distance } from '../hex';
+import { allianceTerms } from '../treaties';
 import { unlockCardFor, type UnlockCard } from './unlockCard';
 import { eraUpCardFor, type EraUpCard } from './eraUp';
 import { scoreCheckFor, type ScoreCheckCard } from './scoreCheckCards';
@@ -25,10 +26,10 @@ export const DURATION: Record<Tier, number> = { minor: 1000, notable: 3500, majo
 export const OWN_HEIR_BIRTH_TITLE = 'The Heir lives';
 export const RAIDER_SACK_KICKER = 'A city sacked';
 /**
- * The engraved emblem a reward kind wears on its card (`assets/rewards/`). Moments with none (faction goal)
- * keep the player's faction crest.
+ * The engraved emblem a reward kind wears on its card (`assets/rewards/`). A faction goal wears its goal mark
+ * (the Royal Tomb standing wears `emblem-tomb` through `goalMark`), or else the player's faction crest.
  */
-export type Emblem = 'camp' | 'hall' | 'ruin' | 'captured' | 'founded' | 'growth' | 'milestone' | 'greatwork' | 'tech';
+export type Emblem = 'camp' | 'hall' | 'ruin' | 'captured' | 'founded' | 'growth' | 'milestone' | 'greatwork' | 'tech' | 'tomb';
 /** One thing a reward gave you: a yield or item icon (`yield-gold`, `unit-scout`) and its text ("+50 Gold"). */
 export interface Gain { icon: string; text: string }
 export interface Moment {
@@ -42,6 +43,10 @@ export interface Moment {
   eraUp?: EraUpCard;
   /** A World Age has begun: the score check every player gets (`ScoreCheck`), held like the era-up. */
   scoreCheck?: ScoreCheckCard;
+  /** First contact with another empire: the full-screen meeting (`MeetingTakeover`), held like the era-up. */
+  meeting?: MeetingCard;
+  /** A treaty took effect for your team: the card shows both empires' crests either side of its emblem, and any deal Gold. */
+  treaty?: TreatyCard;
   emblem?: Emblem;
   /** What you won, listed in full under the title (camps and ruins); other cards state `effect` alone. */
   gains?: Gain[];
@@ -64,6 +69,88 @@ export interface Moment {
   place?: string;
   /** The event leaves this city without a build: the card's primary is Choose production there. */
   choose?: number;
+}
+
+/** A treaty that took effect for the viewer's team this turn (an accepted offer), with the Gold its deal moved. */
+export interface TreatyCard {
+  kind: TreatyKind;
+  /** The two empires' leaders, the viewer's team first. */
+  ours: { id: PlayerId; faction: Faction };
+  theirs: { id: PlayerId; faction: Faction };
+  /** Deals: the Gold that changed hands, from the viewer's side ("+40 Gold from Athens", "−40 Gold to Athens"). */
+  gold?: { amount: number; received: boolean; text: string };
+  /** An Alliance: the Gold a turn the viewer starts paying now (one per city, minimum one). */
+  upkeep?: number;
+}
+
+/**
+ * An offer between the viewer's team and another that was accepted at `index` (core `ProposalAccepted`,
+ * then `GoldGiven` when its deal moved Gold, then the treaty's own event): one small card, never a takeover.
+ */
+export function treatyMoment(events: readonly Event[], index: number, viewer: PlayerId, after: PlayerView): Omit<Moment, 'id' | 'eventIndex' | 'owner' | 'faction' | 'partner'> | null {
+  const e = events[index];
+  if (e?.type !== 'ProposalAccepted') return null;
+  const p = e.proposal;
+  const other = p.from === after.team ? p.to : p.to === after.team ? p.from : null;
+  if (other === null) return null;
+  const leader = (team: TeamId) => after.players.filter((x) => x.team === team).sort((a, b) => Number(b.id === viewer) - Number(a.id === viewer) || a.id - b.id)[0];
+  const us = leader(after.team), them = leader(other);
+  if (!us || !them) return null;
+  const kind: TreatyKind = p.kind ?? 'Peace';
+  const name = empireNameOf(after.players.filter((x) => x.team === other), after.players);
+  const next = events[index + 1];
+  const paid = next?.type === 'GoldGiven' ? next : null;
+  const mine = new Set(after.players.filter((x) => x.team === after.team).map((x) => x.id));
+  let gold: TreatyCard['gold'];
+  if (paid && (mine.has(paid.to) || mine.has(paid.from))) {
+    const received = mine.has(paid.to);
+    const teammate = (id: PlayerId) => id === viewer ? '' : 'Your teammate: ';
+    gold = { amount: paid.amount, received, text: received
+      ? `${teammate(paid.to)}+${paid.amount} Gold from ${name}`
+      : `${teammate(paid.from)}−${paid.amount} Gold to ${name}` };
+  }
+  const peace = kind === 'Peace' ? events.slice(index + 1).flatMap((x) => x.type === 'PeaceEstablished' ? [x.relation] : [])
+    .find((r) => [r.a, r.b].includes(other) && [r.a, r.b].includes(after.team)) : undefined;
+  const effect = kind === 'Peace' ? (peace ? `No War between you through turn ${peace.guarantee_until - 1}.` : 'The war between you is over.')
+    : kind === 'Alliance' ? 'You defend each other, share sight and cross each other’s borders.'
+    : 'Your units may enter each other’s land.';
+  const title = `${kind === 'OpenBorders' ? 'Open Borders' : kind} with ${name}`;
+  // The Alliance upkeep that starts now, priced as Diplomacy prices it (one Gold a turn per city, minimum one).
+  const upkeep = kind === 'Alliance' ? allianceTerms(after.cities.filter((c) => c.owner === viewer).length).upkeep : 0;
+  // An Alliance is a big moment (the framed card); Peace and Open Borders stay small. No kicker: the title names the event.
+  return { tier: kind === 'Alliance' ? 'major' : 'notable', at: null, title, effect, lore: '', details: [],
+    deltas: gold && (paid!.to === viewer || paid!.from === viewer) ? [{ counter: 'gold', amount: gold.received ? gold.amount : -gold.amount }] : [],
+    treaty: { kind, ours: { id: us.id, faction: us.faction }, theirs: { id: them.id, faction: them.faction }, ...(gold ? { gold } : {}), ...(upkeep ? { upkeep } : {}) } };
+}
+
+/** An empire met for the first time this turn (from the viewer's `diplomacy.met`, which only grows). */
+export interface MeetingCard {
+  team: TeamId;
+  /** The empire's members (one player, or a two-player team), leader first. */
+  members: { id: PlayerId; faction: Faction }[];
+  /** Where the viewer knows them to be now (their nearest city, else a unit in sight); null when only their borders were seen. */
+  where: EmpireLocation | null;
+}
+
+/** Whether a moment waits for the player (its own controls, Return or Esc close it) instead of timing out. */
+export const heldMoment = (m: Moment | null | undefined): boolean => !!(m?.unlock || m?.eraUp || m?.scoreCheck || m?.meeting);
+
+/**
+ * The empires the viewer met this turn, one held meeting card each. Only a turn played with its earlier view known
+ * counts: a loaded game, a replayed card or turn one says nothing, so nobody is met twice.
+ */
+export function meetingsForTurn(before: PlayerView | null, after: PlayerView, base: number): Moment[] {
+  if (!before?.diplomacy?.met || !after.diplomacy?.met) return [];
+  const known = new Set(before.diplomacy.met);
+  return after.diplomacy.met.filter((t) => !known.has(t) && t !== after.team).flatMap((team, i) => {
+    const members = after.players.filter((p) => p.team === team && p.alive).sort((a, b) => a.id - b.id);
+    if (!members.length) return [];
+    const where = empireLocation(after, team);
+    const lead = members[0];
+    return [{ id: `${after.turn}:meet:${team}`, eventIndex: base + i, tier: 'major' as const, owner: lead.id, faction: lead.faction, partner: false,
+      at: where?.at ?? null, title: `You meet ${empireNameOf(members, after.players)}`, effect: '', lore: '', details: [], deltas: [],
+      meeting: { team, members: members.map((p) => ({ id: p.id, faction: p.faction })), where } }];
+  });
 }
 
 /** The painted building a faction goal's generic completion card shows (the faction's own version: Ruhr Foundry, Lyceum). */
@@ -127,6 +214,15 @@ const possessive = (name: string) => (name.endsWith('s') ? `${name}'` : `${name}
 const signedVp = (n: number) => `${n < 0 ? '−' : '+'}${Math.abs(n)} VP`;
 
 /** Presentation only. Caller supplies this viewer's fog-filtered events and views. */
+/** A completed item's card title and line; a Walls upgrade names the level reached ("Walls III", "Raised in Agra"). */
+function wallsTitle(item: ProductionItem, city: CityView | undefined, owner: Faction | undefined, place: string): { title: string; effect: string } {
+  const level = city ? city.walls_level ?? Number(city.walls) : 0;
+  if (item.kind === 'Building' && item.building === 'UpgradeWalls' && level > 1) {
+    return { title: `${itemName({ kind: 'Building', building: 'Walls' }, owner)} ${wallLevelLabel(level)}`, effect: `Raised in ${place}` };
+  }
+  return { title: itemName(item, owner), effect: `Completed in ${place}` };
+}
+
 export function momentsForTurn(events: readonly Event[], viewer: PlayerId, before: PlayerView | null, after: PlayerView): Moment[] {
   const team = new Set(after.players.filter((p) => p.team === after.team).map((p) => p.id));
   const cities = new Map([...(before?.cities ?? []), ...after.cities].map((c) => [c.id, c]));
@@ -307,7 +403,7 @@ export function momentsForTurn(events: readonly Event[], viewer: PlayerId, befor
             lore: 'Let those who follow know what these hands have made.', details: [WONDER_ONLY_ONE],
             deltas: vp === undefined ? [] : [{ counter: 'vp', amount: vp }], emblem: 'greatwork' });
         } else if (e.item.kind === 'Building' || e.item.kind === 'Wonder') push(i, e.owner, { tier: isGreatWork(e.item.building) ? 'legendary' : 'minor', at: e.item.kind === 'Wonder' ? e.item.tile : cities.get(e.city)?.pos ?? null,
-          title: itemName(e.item, faction(e.owner)), effect: `Completed in ${cityName(e.city)}`, lore: 'Let those who follow know what these hands have made.', details: [], deltas: [], emblem: 'greatwork' });
+          ...wallsTitle(e.item, cities.get(e.city), faction(e.owner), cityName(e.city)), lore: 'Let those who follow know what these hands have made.', details: [], deltas: [], emblem: 'greatwork' });
         // An aircraft never stands on the map, so its card is where the player learns what it does.
         else if (e.item.kind === 'Unit' && isAircraft(e.item.unit)) {
           const notice = readyNotice(e.item.unit, cityName(e.city));
@@ -351,19 +447,19 @@ export function momentsForTurn(events: readonly Event[], viewer: PlayerId, befor
                 details: ['Every empire sees where it stands. A rival that captures it takes the points.', 'If it is razed, found another.'],
                 deltas: [{ counter: 'vp', amount: e.vp }], seal: e.vp });
             } else {
-              push(i, e.player, { goalMark: GOAL_CITY_ICON[goalKind], tier: 'legendary', at, title: 'The Royal Tomb', kicker: name ? `It stands in ${name}` : 'The tomb stands', artSlug: GOAL_ART.Egypt,
-                effect: `+${e.vp} VP while you hold it · your cities build and grow again`, lore: 'Cut into the cliff, sealed for eternity.',
+              push(i, e.player, { goalMark: 'emblem-tomb', tier: 'legendary', at, title: 'The Royal Tomb', kicker: name ? `It stands in ${name}` : 'The tomb stands', artSlug: GOAL_ART.Egypt,
+                effect: `+${e.vp} VP while you hold it · your cities build and grow again`, lore: 'Raised in stone, sealed for eternity.',
                 details: ['Every empire sees where it stands. A rival that captures its city takes the points.'],
                 deltas: [{ counter: 'vp', amount: e.vp }], seal: e.vp });
             }
           } else if (!captured) {
             // Every empire is told when a goal city appears, and where: 2 VP to whoever holds it.
             const who = empireOfPlayer(after, e.player);
-            publicCard(i, e.player, { goalMark: GOAL_CITY_ICON[goalKind], tier: 'major', at, title, kicker: who,
+            publicCard(i, e.player, { goalMark: goalKind === 'tomb' ? 'emblem-tomb' : GOAL_CITY_ICON[goalKind], tier: 'major', at, title, kicker: who,
               effect: goalKind === 'colonia'
                 ? `${who} founded its Colonia Victrix${name ? ` at ${name}` : ''}: ${e.vp} VP to whoever holds it`
                 : `The Royal Tomb stands${name ? ` in ${name}` : ''}: ${e.vp} VP to whoever holds it`,
-              lore: goalKind === 'colonia' ? 'Veterans settle on the frontier.' : 'Cut into the cliff, sealed for eternity.',
+              lore: goalKind === 'colonia' ? 'Veterans settle on the frontier.' : 'Raised in stone, sealed for eternity.',
               details: ['Every empire sees where it stands, even through fog. Be at War with its holder and capture the city to take the points.'], deltas: [], seal: e.vp });
           }
           break;
@@ -608,13 +704,32 @@ export function momentsForTurn(events: readonly Event[], viewer: PlayerId, befor
         }
         break;
       }
+      // A treaty took effect for your team (Peace, an Alliance, Open Borders), with any Gold its deal moved.
+      case 'ProposalAccepted': {
+        const card = treatyMoment(events, i, viewer, after);
+        if (card) push(i, viewer, card);
+        break;
+      }
       // Victory already owns the Game Over takeover. No second ceremony over its controls.
     }
   });
+  out.push(...meetingsForTurn(before, after, events.length));
   return out.sort((a, b) => TIER_ORDER[b.tier] - TIER_ORDER[a.tier] || a.eventIndex - b.eventIndex);
 }
 
+/**
+ * The cards a turn plays, in order. Your era-up and the score check lead; every first meeting follows them and is
+ * never folded into "+N more" (it happens once per empire); then up to three of the rest.
+ */
 export function planMoments(moments: readonly Moment[]): { shown: Moment[]; collapsed: Moment[] } {
+  const meets = moments.filter((m) => m.meeting);
+  const rest = planOthers(moments.filter((m) => !m.meeting));
+  const at = rest.shown.findIndex((m) => !m.eraUp && !m.scoreCheck);
+  const k = at < 0 ? rest.shown.length : at;
+  return { shown: [...rest.shown.slice(0, k), ...meets, ...rest.shown.slice(k)], collapsed: rest.collapsed };
+}
+
+function planOthers(moments: readonly Moment[]): { shown: Moment[]; collapsed: Moment[] } {
   // The score check is never collapsed: it plays right after your era-up, else first.
   const check = moments.find((m) => m.scoreCheck);
   const ordered = [...moments].filter((m) => m !== check).sort((a, b) => TIER_ORDER[b.tier] - TIER_ORDER[a.tier] || a.eventIndex - b.eventIndex);

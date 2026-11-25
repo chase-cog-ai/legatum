@@ -101,7 +101,7 @@ describe active relationships after resolution, not counts of declarations or ag
 Session save JSON retains its existing state fields and adds `archive`, carrying the entire
 recording and stable identity. Native/WASM state hashes do not include the recording. The
 browser's per-turn autosave keeps it; a standalone compressed checkpoint is written at game creation,
-every five turns by default, and at finish. A restart restores the same history and retries
+every five turns by default, and at finish (the browser also writes one after each of the first five turns). A restart restores the same history and retries
 the archive write, including a finish interrupted before indexing. Lost online-seat credentials are
 still handled by the host-controlled seat recovery; credentials are never restored
 from a tape. Explicit file loads fork the archive identity rather than overwriting another play.
@@ -113,7 +113,7 @@ design. A loadable legacy save gets an `initial_state` anchor and `complete_hist
 records subsequent turns. The replay command verifies from that anchor. Earlier turns are never
 invented.
 
-In the browser, the app captures each game's history at setup, every five turns, and at the finish,
+In the browser, the app captures each game's history at setup, after each of the first five turns, then every five turns, and at the finish,
 and keeps it in IndexedDB (gzip-compressed where browser compression is available) until it is
 delivered; a newer checkpoint of a game replaces the older one. The complete tape is also in the
 ordinary per-turn autosave. **Load an earlier turn** (local games only) opens one of the game's last 10 autosaved turns under the same game id; the tape then holds only the line played on, the record is uploaded at once instead of at the next checkpoint, and the times the player went back ride along as the upload-only `rewinds` key (`app/src/store.ts` `rewindTo`, `Rewind`; `infra/games/README.md`). With an upload address, uploads retry after a reload, when the browser

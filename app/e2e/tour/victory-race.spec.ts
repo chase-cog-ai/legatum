@@ -1,4 +1,3 @@
-import { revealSidebar } from '../sidebarAssertions';
 // Screen tour, the victory race, holdings and objective cards. One of the domain slices of the old e2e/screen-tour.spec.ts; run it alone with
 // `npx playwright test e2e/tour/victory-race`. Shots land in test-results/screen-tour/<size>/victory-race/.
 import { test, expect } from '../fixtures';
@@ -12,7 +11,7 @@ import { holdBroken, holdStarted, stageHoldReport } from '../holdFixture';
 import { gameOverCoreSave } from '../../src/test/gameOverFixture';
 import { contextFromViews, formatEvents } from '../../src/format';
 import { factionGoalRule } from '../../src/data';
-import { SIZES, loadFixture, shot, type GameWindow } from './helpers';
+import { SIZES, closeLedger, ledgerGoal, loadFixture, openLedger, shot, type GameWindow } from './helpers';
 
 // Each test starts from its own save, so tests can run on separate workers.
 test.describe.configure({ mode: 'parallel' });
@@ -70,7 +69,7 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await loadFixture(page, eliminatedCoreSave(), ELIMINATED_TURN);
     const race = page.getByRole('region', { name: 'Victory race', exact: true });
     // Six empires, one knocked out: five rows, the fallen Athens among none of them.
-    await expect(race.locator('.vp-row')).toHaveCount(5);
+    await expect(race.locator('.rivals .rv-row')).toHaveCount(5);
     await expect(race).not.toContainText('Athens');
     await shot(page, size, '76-eliminated-race');
     await race.getByRole('button', { name: 'Score ledger', exact: true }).click();
@@ -80,7 +79,6 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await shot(page, size, '77-eliminated-race-expanded');
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('objective-sheet')).toHaveCount(0);
-    await revealSidebar(page, 'standings');
     await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
     const empires = page.getByRole('list', { name: 'Empires' });
     await expect(empires.locator('.empire-row')).toHaveCount(4);
@@ -90,20 +88,20 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await shot(page, size, '78-eliminated-diplomacy');
   });
 
-  // The victory race as holdings (round-2 C): tokens per empire, the Nobody row, and a token's card.
+  // The victory race with holdings: the rivals table in the sidebar, and every way to score in the Score ledger.
   test('victory race holdings with 2 empires, and a token card', async ({ page }) => {
     await page.addInitScript(() => { localStorage.setItem('legatum.dev.no-era-hud', '1'); });
     await loadFixture(page, coreFixture(progressFixture().fixture), 2);
     await stageHoldings(page);
     await page.mouse.move(5, size.height / 2);
     await shot(page, size, '79a-vp-holdings-2-empires');
-    await revealSidebar(page, 'standings');
-    await page.locator('.vp-row.mine .vhc-tok.live').first().hover();
-    await expect(page.locator('.vhc-pop')).toBeVisible();
+    // Your held world wonder is a token in your column of the ledger.
+    const sheet = await openLedger(page);
+    await expect(sheet.locator('.sl-row.k-work td.mine .sl-token').first()).toBeVisible();
     await shot(page, size, '79b-vp-token-card-title-2-empires');
-    await page.mouse.move(5, size.height / 2);
-    await page.locator('.vhc-nobody .vhc-open-tok').last().hover();
-    await expect(page.locator('.vhc-pop .vh-card.own-open')).toBeVisible();
+    // Your own goal, scored by nobody yet.
+    const own = await ledgerGoal(page, { mine: true });
+    await expect(own.locator('.sl-goal-state')).toHaveText('Not yet');
     await shot(page, size, '79c-vp-token-card-nobody-2-empires');
   });
 
@@ -123,15 +121,14 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await shot(page, size, '79d-vp-holdings-8-empires');
     await stageHold(page, { mine: true });
     await shot(page, size, '79g-vp-hold-countdown-8-empires');
-    await page.locator('.vp-row:not(.mine) .vhc-tok').first().hover();
-    await expect(page.locator('.vhc-pop')).toBeVisible();
+    // The rival's scored goal is a token in its column of the ledger.
+    const sheet = await openLedger(page);
+    await expect(sheet.locator('.sl-row.k-goal td:not(.mine) .sl-token, .sl-row.k-heldGoal td:not(.mine) .sl-token').first()).toBeVisible();
+    await page.mouse.move(5, size.height - 5);
     await shot(page, size, '79e-vp-token-card-rival-8-empires');
-    await page.mouse.move(5, size.height / 2);
-    await revealSidebar(page, 'standings');
-    await page.locator('.vp-row.mine .vhc-goal-open').first().hover();
-    await expect(page.locator('.vhc-pop .vh-card.k-goal')).toBeVisible();
-    // Your own goal's meter comes from the core: a card for your own goal carries it.
-    await expect(page.locator('.vhc-pop .vh-meter')).toHaveCount(1);
+    // Your own goal's meter comes from the core: your goal's line carries it.
+    const own = await ledgerGoal(page, { mine: true });
+    await expect(own.locator('.vh-meter')).toHaveCount(1);
     await shot(page, size, '79f-vp-token-card-own-goal-8-empires');
   });
 
@@ -191,19 +188,18 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     }, held);
     await page.mouse.move(5, size.height / 2);
     await stage(true);
-    await revealSidebar(page, 'standings');
-    await page.locator('.vp-row.mine [data-source]').first().hover();
-    await expect(page.locator('.vhc-pop .vh-card.k-goal')).toContainText(factionGoalRule('Switzerland'));
-    await expect(page.locator('.vhc-pop .vh-card.k-goal')).not.toContainText(/Quick|Standard/);
-    await expect(page.locator('.vhc-pop .vh-card.k-goal')).toContainText('lost the turn it falls below 5,000');
-    await expect(page.locator('.vhc-pop [role="progressbar"]')).toHaveAttribute('aria-valuenow', '5000');
+    // Your goal's line in the Score ledger: the rule, and that it is lost the turn it stops holding.
+    const held = await ledgerGoal(page, { mine: true });
+    await expect(held).toContainText(factionGoalRule('Switzerland'));
+    await expect(held).not.toContainText(/Quick|Standard/);
+    await expect(held).toContainText('Lost the turn it stops holding');
     await shot(page, size, '79h-switzerland-hoard-held');
-    await page.mouse.move(5, size.height / 2);
+    await closeLedger(page);
     await stage(false);
-    await revealSidebar(page, 'standings');
-    await page.locator('.vp-row.mine .vhc-goal-open').first().hover();
-    await expect(page.locator('.vhc-pop .vh-card.k-goal')).toContainText('4,760 of 5,000 Gold');
+    const lost = await ledgerGoal(page, { mine: true });
+    await expect(lost).toContainText('4,760 of 5,000 Gold');
     await shot(page, size, '79i-switzerland-hoard-lost');
+    await closeLedger(page);
     await page.mouse.move(5, size.height / 2);
     // The turn report: the loss is a bad line for you, then the hoard returns as a plain line.
     const view = await page.evaluate(() => { const st = (window as unknown as GameWindow).legatum.getState(); return st.views![st.seat]; });

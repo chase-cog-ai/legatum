@@ -1,7 +1,7 @@
 // Payoff moments on the map: a founded city takes its painted construction stages while its border spreads ring by ring,
 // a queued wonder or Walls site steps forward with production, an ordinary building settles on its banner, a capture flips
-// the banner and floods the land in the taker's colour, a town grows into its next size, and roads and improvements
-// draw themselves in. legatum-ui: "a static state change at a payoff moment is a defect".
+// the banner and floods the land in the taker's colour, a town grows into its next size, roads and improvements
+// draw themselves in, and light runs along a town's new Walls. legatum-ui: "a static state change at a payoff moment is a defect".
 //
 // Same layer as the combat animation (combatFx.ts, read its header): the plan is plain data built once per resolved
 // turn from the viewer's own events and the views either side of it (nothing hidden is shown), and every frame is a
@@ -19,6 +19,7 @@ import { isGreatWork } from '../data';
 import { HEX_SIZE } from './grid';
 import { rnd, type CombatPlan, type Pt } from './combatFx';
 import { sitesOf } from './constructionSites';
+import { wallTierOf } from './cityArt';
 
 export interface FxFound { city: number; at: Hex; owner: number; tile: number; t: number; seed: number }
 export interface FxBuild { city: number; at: Hex; tile: number; owner: number; item: ProductionItem; wonder: boolean; walls: boolean; from: number; to: number; t: number; seed: number }
@@ -32,6 +33,8 @@ export interface FxRoad { origin: Hex; t: number; reach: number; tiles: Map<numb
 /** A seal stamped on a capital: a VP scored (gilt), an Alliance or Peace signed, a war declared. */
 export type SealKind = 'vp' | 'alliance' | 'peace' | 'war';
 export interface FxSeal { kind: SealKind; at: Hex; owner: number; vp: number; t: number; seed: number; /** Where it stands over its city: 0 above the banner, then left and right of it, so nothing overlaps. */ slot: number }
+/** Walls finished, or raised a level, in sight: light runs once along the town's new ring. */
+export interface FxWalls { city: number; at: Hex; tile: number; t: number }
 /** A unit promoted or upgraded: a glint across its counter. */
 export interface FxGlint { unit: number; t: number; seed: number }
 export interface FxImprove { tile: number; hex: Hex; before: PlayerView['tiles'][number]['improvement']; t: number; seed: number }
@@ -53,6 +56,7 @@ export interface MomentPlan {
   reveals: FxResourceReveal[];
   seals: FxSeal[];
   glints: FxGlint[];
+  walls: FxWalls[];
   capitals: FxCapital[];
 }
 
@@ -73,6 +77,8 @@ export const SEAL_MS = 1900;
 /** How long into its VP seal a captured capital's star holds before going hollow. */
 export const CAPITAL_STAR_LAND = 650;
 export const GLINT_MS = 900;
+/** How long the light takes to cross a town's new wall ring. */
+export const WALLS_MS = 1500;
 export const RESOURCE_REVEAL_MS = 850;
 /** Moments of one kind fire this far apart, so a turn with many reads as a sequence, capped so the last is not late. */
 const STAGGER = 380;
@@ -277,7 +283,18 @@ export function buildMomentPlan(events: readonly Event[], before: PlayerView | n
     if (u && visible(u.pos)) glints.push({ unit: e.unit, t: start + 250 + Math.min(glints.length * 140, STAGGER_CAP), seed: 91 + i });
   });
 
-  if (!glints.length && !seals.length && !founds.length && !builds.length && !tiles.length && !flips.length && !grows.length && !roads.length && !improves.length && !reveals.length) return null;
+  // Walls finished or raised a level, in a city in sight both before and after (a capture or a city coming out of the
+  // fog is not new Walls). Light runs along the new ring once production has played; under the construction animation,
+  // once the ring has been laid in.
+  const walls: FxWalls[] = [];
+  for (const c of after.cities) {
+    const old = before.cities.find((x) => x.id === c.id);
+    if (!old || !old.visible || old.owner !== c.owner || !visible(c.pos) || wallTierOf(c) <= wallTierOf(old)) continue;
+    const b = CONSTRUCTION_ANIMATION ? builds.find((x) => x.city === c.id && x.walls) : undefined;
+    walls.push({ city: c.id, at: c.pos, tile: tileIndex(c.pos, W, H), t: b ? b.t + buildPhases(b).done : econ + 250 + Math.min(walls.length * STAGGER, STAGGER_CAP) });
+  }
+
+  if (!walls.length && !glints.length && !seals.length && !founds.length && !builds.length && !tiles.length && !flips.length && !grows.length && !roads.length && !improves.length && !reveals.length) return null;
   const ends = [
     ...(CONSTRUCTION_ANIMATION ? founds.map((f) => f.t + FOUND.done + LINGER) : []),
     ...(CONSTRUCTION_ANIMATION ? builds.map((b) => b.t + buildPhases(b).settled + LINGER + 600) : []),
@@ -288,9 +305,10 @@ export function buildMomentPlan(events: readonly Event[], before: PlayerView | n
     ...(CONSTRUCTION_ANIMATION ? improves.map((m) => m.t + IMPROVE_MS) : []),
     ...seals.map((x) => x.t + SEAL_MS),
     ...glints.map((x) => x.t + GLINT_MS),
+    ...walls.map((x) => x.t + WALLS_MS),
     ...reveals.map((x) => x.t + RESOURCE_REVEAL_MS),
   ];
-  return { total: Math.max(0, ...ends) + TAIL, founds, builds, tiles, flips, grows, roads, improves, reveals, seals, glints, capitals };
+  return { total: Math.max(0, ...ends) + TAIL, founds, builds, tiles, flips, grows, roads, improves, reveals, seals, glints, walls, capitals };
 }
 
 /** Is any moment still playing at `t`? */

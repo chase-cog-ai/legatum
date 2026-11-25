@@ -3,7 +3,7 @@
 Part of the Legatum rules reference (index: `index.md`). Answers: How do units move, path, pass through friends, use roads, and avoid enemy reach?
 Moved verbatim from `game-rules.md` on 2026-11-22, in the original order; the original section headings are kept inside.
 
-**Movement**: a unit can always take ≥1 step even if it can't afford full terrain cost. `MoveUnit`
+**Movement**: a unit can always take ≥1 step even if it can't afford full terrain cost. **Egypt's Chariot Archer (rules 59):** Forest or Hills without a road cost it one more than its full moves (`data::chariot_step_cost`, `GameState::unit_step_cost`), so it enters one only with its moves untouched and stops there; a road tile costs it 1 like anyone. `MoveUnit`
 is a persistent multi-turn goto; `MoveUnitPath` is a confirmed path re-validated each round. Meeting
 engagements (two hostiles into the same tile, or a swap) get no terrain/fortify bonus either side.
 Two hostile military claimants entering a tile held only by a hostile civilian meet as on empty

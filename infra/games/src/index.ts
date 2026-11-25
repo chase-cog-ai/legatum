@@ -1,6 +1,6 @@
 /**
  * Legatum game uploads. The hosted web build posts each game's record (gzipped JSON, every seat under its
- * default name) to `PUT /v1/games/<game id>`, at least every five turns and when the game ends. The Worker
+ * default name) to `PUT /v1/games/<game id>`, after each of the first five turns, then every five turns, and when the game ends. The Worker
  * checks the shape and stores it in R2 as `games/<YYYY-MM>/<game id>.json.gz`, replacing the previous
  * checkpoint of the same game. A client address may start at most MAX_NEW_GAMES_PER_DAY new games per UTC day
  * (the `Quota` Durable Object). The only thing kept about a sender is a salted hash of that address (cut to
@@ -9,7 +9,8 @@
  * and a later checkpoint under another key, or none, is refused with 409.
  */
 
-import { Quota, capFrom, clientIp } from "./quota";
+import { DIFFICULTIES, FACTIONS } from "./names";
+import { DEFAULT_MAX_NEW_GAMES_TOTAL_PER_DAY, Quota, capFrom, clientIp } from "./quota";
 
 export { Quota };
 
@@ -19,6 +20,8 @@ export interface Env {
   QUOTA: DurableObjectNamespace<Quota>;
   /** New games one client address may store per UTC day (default 50). A bad value falls back to the default. */
   MAX_NEW_GAMES_PER_DAY?: string;
+  /** New games all addresses together may store per UTC day (default 50000). A bad value falls back to the default. */
+  MAX_NEW_GAMES_TOTAL_PER_DAY?: string;
   ALLOWED_ORIGINS: string;
   /** Secret (`wrangler secret put READ_TOKEN`) for the private read API the analysis job on the developer's Mac uses. Unset = no read API. */
   READ_TOKEN?: string;
@@ -26,7 +29,8 @@ export interface Env {
 
 /** A 300-turn game is a few hundred KB gzipped; this bounds what a stranger can store per request. */
 export const MAX_GZIP_BYTES = 4 * 1024 * 1024;
-export const MAX_JSON_BYTES = 64 * 1024 * 1024;
+/** Unpacked: the largest real record (285 turns) is about 1.4 MB, so 16 MB leaves room and stops a gzip bomb early. */
+export const MAX_JSON_BYTES = 16 * 1024 * 1024;
 export const GAME_ID_RE = /^web-\d{13}-[0-9a-f]{16}-[0-9a-f]{16}$/;
 const DEFAULT_NAME_RE = /^(Player|AI) ([1-9])$/;
 const OUTCOMES = ["in-progress", "vp", "draw", "elimination", "turn-limit", "stalled", "panic", "abandoned"];
@@ -113,8 +117,20 @@ function rewindOk(x: unknown): boolean {
   return turnOk(o.from_turn) && turnOk(o.to_turn) && (o.to_turn as number) < (o.from_turn as number);
 }
 
-/** The record's shape, and the rule that matters most: no seat carries a name a player typed. */
-export function checkRecord(id: string, record: unknown): Metadata | string {
+/** The engine build that played the game: a full git commit (crates/wasm/build.rs). */
+const ENGINE_RE = /^[0-9a-f]{40}$/;
+/** Game ids carry the time the game started (crates/wasm history `game_id`). Uploads began after this. */
+export const FIRST_GAME_MS = Date.UTC(2026, 10, 1);
+const DAY_MS = 86_400_000;
+/** The start time inside a game id (`web-<ms>-…`, already checked by GAME_ID_RE). */
+const gameStartMs = (id: string): number => Number(id.slice(4, 17));
+
+/**
+ * The record's shape, and the rule that matters most: no seat carries a name a player typed. The engine,
+ * factions, difficulties and start time must be ones the game itself writes, so made-up records are refused.
+ * `now` is for tests only.
+ */
+export function checkRecord(id: string, record: unknown, now: number = Date.now()): Metadata | string {
   if (!record || typeof record !== "object") return "not a game record";
   const r = record as { metadata?: Metadata; tape?: unknown; coach_answers?: unknown; rewinds?: unknown };
   const m = r.metadata;
@@ -124,12 +140,17 @@ export function checkRecord(id: string, record: unknown): Metadata | string {
   if (!OUTCOMES.includes(m.outcome)) return "unknown outcome";
   if (!Number.isInteger(m.turn_count) || m.turn_count < 0 || m.turn_count > 10_000) return "bad turn count";
   if (typeof m.created_at !== "string" || !CREATED_AT_RE.test(m.created_at) || Number.isNaN(Date.parse(m.created_at))) return "bad created_at";
+  // The id's start time must be after launch and not in the future. created_at is written with it, or is older
+  // when a save loaded from a file starts a new game id (History::fork keeps created_at), but never later.
+  const started = gameStartMs(id);
+  if (!(started >= FIRST_GAME_MS && started <= now + DAY_MS) || Date.parse(m.created_at) > started + DAY_MS) return "bad start time";
+  if (typeof m.engine_commit !== "string" || !ENGINE_RE.test(m.engine_commit)) return "unknown engine";
   if (!Array.isArray(m.seats) || m.seats.length < 1 || m.seats.length > 9) return "bad seats";
   for (const [i, s] of m.seats.entries()) {
     const name = DEFAULT_NAME_RE.exec(String(s?.name));
     if (!name || name[1] !== (s.human ? "Player" : "AI") || Number(name[2]) !== i + 1) return "seat names must be the defaults";
-    // Stored as listing metadata and shown on the analysis Mac: plain words only.
-    if (!/^[A-Za-z][A-Za-z ]{0,23}$/.test(String(s.faction)) || !/^[A-Za-z]{1,12}$/.test(String(s.difficulty))) return "bad faction or difficulty";
+    // Stored as listing metadata and shown on the analysis Mac: only names the game uses.
+    if (!FACTIONS.includes(String(s.faction)) || !DIFFICULTIES.includes(String(s.difficulty))) return "bad faction or difficulty";
   }
   // The player's coach-question answers ride along as an optional list of objects.
   if (r.coach_answers !== undefined) {
@@ -173,7 +194,9 @@ async function putGame(request: Request, env: Env, id: string): Promise<Response
   try { record = JSON.parse(text); } catch { return json({ error: "body must be gzipped JSON" }, 400); }
   const m = checkRecord(id, record);
   if (typeof m === "string") return json({ error: m }, 422);
-  const key = `games/${m.created_at.slice(0, 7)}/${id}.json.gz`;
+  // The month comes from the id, not from created_at, so a sender cannot store a second copy of a game under
+  // another month, past the upload-key lock on the first.
+  const key = `games/${new Date(gameStartMs(id)).toISOString().slice(0, 7)}/${id}.json.gz`;
   // A later checkpoint of a stored game replaces it and is never counted. A new game spends the address's daily quota.
   // A game first stored with a key takes checkpoints only under that key. A game stored without one (an older
   // build) is open as before, and the first keyed checkpoint locks it.
@@ -181,7 +204,10 @@ async function putGame(request: Request, env: Env, id: string): Promise<Response
   const lockedTo = existing?.customMetadata?.key ?? "";
   if (lockedTo && !sameHash(lockedTo, keyHash)) return json({ error: "this game belongs to another upload key" }, 409);
   if (!existing) {
-    const taken = await env.QUOTA.getByName("quota").take(clientIp(request), capFrom(env.MAX_NEW_GAMES_PER_DAY));
+    const taken = await env.QUOTA.getByName("quota").take(
+      clientIp(request), capFrom(env.MAX_NEW_GAMES_PER_DAY), Date.now(),
+      capFrom(env.MAX_NEW_GAMES_TOTAL_PER_DAY, DEFAULT_MAX_NEW_GAMES_TOTAL_PER_DAY),
+    );
     if (!taken.ok) {
       return new Response(JSON.stringify({ error: "too many new games today" }), {
         status: 429,
@@ -195,7 +221,7 @@ async function putGame(request: Request, env: Env, id: string): Promise<Response
     customMetadata: {
       outcome: m.outcome,
       turns: String(m.turn_count),
-      engine: String(m.engine_commit ?? "").slice(0, 40),
+      engine: m.engine_commit,
       winner: m.winner == null ? "" : String(m.winner),
       seats: m.seats.map((s) => `${s.faction}${s.human ? "*" : ""}:${s.difficulty}`).join(" ").slice(0, 512),
       ...(keyHash || lockedTo ? { key: keyHash || lockedTo } : {}),

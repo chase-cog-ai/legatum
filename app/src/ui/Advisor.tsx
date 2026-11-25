@@ -8,7 +8,8 @@ import { loadWasmModule, loadedWasmModule } from '../wasmClient';
 import { FactionMark } from './bits';
 import { Kbd } from './index';
 import { useGuide } from './guideState';
-import { advisorSuggestion, useAdvisor, type AdvisorTarget } from './advisorModel';
+import { pendingResearchQueue } from '../orders';
+import { advisorSuggestion, practiceKind, useAdvisor, type AdvisorTarget, type PracticeKind } from './advisorModel';
 import { useCoarsePointer } from './useCoarsePointer';
 import './Advisor.css';
 
@@ -28,11 +29,18 @@ export function targetElement(target: Exclude<NonNullable<AdvisorTarget>, { kind
     case 'skip': return action(/^Skip/i);
     case 'explore': return action(/^Auto-explore/i);
     case 'ranged': return action(/^Ranged attack/i);
-    case 'build': return [...document.querySelectorAll<HTMLElement>('.city-panel .production-choice')]
-      .find((e) => e.dataset.item === target.value)?.querySelector<HTMLElement>('button.prod') ?? null;
+    case 'build': {
+      const card = [...document.querySelectorAll<HTMLElement>('.city-panel .production-choice')].find((e) => e.dataset.item === target.value);
+      // An older unit folded under "Also: ..." is reached by opening that list first.
+      const folded = card?.closest<HTMLDetailsElement>('details.unit-line');
+      return folded && !folded.open ? folded.querySelector<HTMLElement>('summary') : card?.querySelector<HTMLElement>('button.prod') ?? null;
+    }
+    case 'buyTile': return [...document.querySelectorAll<HTMLElement>('.city-panel button')].find((e) => /^Buy a tile/.test(e.textContent?.trim() ?? '') && e.getClientRects().length) ?? null;
     case 'closeResearch': return first('dialog.tech-modal[open] button[aria-label="Close research"]');
-    case 'tech': return [...document.querySelectorAll<HTMLElement>('dialog.tech-modal .era-card')]
-      .find((e) => e.dataset.tech === target.value)?.querySelector<HTMLElement>('button[data-testid="research-now"]') ?? null;
+    // The tech tree's node for it, or on the This era view its card's Research now.
+    case 'tech': return [...document.querySelectorAll<HTMLElement>('dialog.tech-modal .tree-node')].find((e) => e.dataset.tech === target.value)
+      ?? [...document.querySelectorAll<HTMLElement>('dialog.tech-modal .era-card')]
+        .find((e) => e.dataset.tech === target.value)?.querySelector<HTMLElement>('button[data-testid="research-now"]') ?? null;
   }
 }
 function targetRect(target: AdvisorTarget): { x: number; y: number; width: number; height: number; tile: boolean } | null {
@@ -70,7 +78,10 @@ function AdvisorRing({ target, still }: { target: AdvisorTarget; still: boolean 
     const scroll = window.setTimeout(() => {
       if (target.kind !== 'control') return;
       const el = targetElement(target), r = el?.getBoundingClientRect();
-      if (el && r && (r.top < 0 || r.bottom > innerHeight || !targetRect(target))) el.scrollIntoView({ block: 'center', inline: 'nearest' });
+      // A tree node can sit cut off at the edge of the tree's own scroll area while still inside the window.
+      const box = el?.closest('.tree-scroll')?.getBoundingClientRect();
+      const clipped = !!box && !!r && (r.top < box.top || r.bottom > box.bottom || r.left < box.left || r.right > box.right);
+      if (el && r && (r.top < 0 || r.bottom > innerHeight || clipped || !targetRect(target))) el.scrollIntoView({ block: clipped ? 'nearest' : 'center', inline: 'nearest' });
     }, 150);
     return () => { cancelAnimationFrame(frame); window.clearTimeout(scroll); };
   }, [target?.kind, target?.kind === 'tile' ? `${target.hex.q},${target.hex.r}` : target?.kind === 'control' ? `${target.name}:${target.value}` : '']);
@@ -79,6 +90,33 @@ function AdvisorRing({ target, still }: { target: AdvisorTarget; still: boolean 
     style={{ left: rect.x, top: rect.y, width: rect.width, height: rect.height }}>
       {rect.tile && <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="none"><polygon points="50,3 97,26 97,74 50,97 3,74 3,26" fill="none" stroke="currentColor" strokeWidth="5" /></svg>}
     </div>;
+}
+
+/** Count the routine steps this player does themselves, so the advisor stops pointing at them once they are known. */
+function usePractice() {
+  const view = useGame((s) => s.views?.[s.seat]);
+  const orders = useGame((s) => s.orders[s.seat]);
+  const errors = useGame((s) => s.errors[s.seat]);
+  const ready = useGame((s) => !!s.ready[s.seat]);
+  const techOpen = useGame((s) => s.techOpen);
+  const practise = useAdvisor((s) => s.practise);
+  const turn = view?.turn;
+  useEffect(() => {
+    if (!view || !orders?.length) return;
+    const kinds = orders.filter((_, i) => !errors?.some((e) => e.index === i)).map((o) => practiceKind(o, view)).filter((k): k is PracticeKind => k !== null);
+    if (kinds.length) practise(kinds, view.turn);
+  }, [orders, errors, view, practise]);
+  const lastTurn = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (turn === undefined) return;
+    if (ready || (lastTurn.current !== undefined && turn > lastTurn.current)) practise(['endTurn'], ready ? turn : lastTurn.current!);
+    lastTurn.current = turn;
+  }, [turn, ready, practise]);
+  const researchWasOpen = useRef(false);
+  useEffect(() => {
+    if (researchWasOpen.current && !techOpen && turn !== undefined && pendingResearchQueue(orders ?? [])?.length) practise(['closeResearch'], turn);
+    researchWasOpen.current = techOpen;
+  }, [techOpen]);
 }
 
 export function Advisor() {
@@ -94,7 +132,7 @@ export function Advisor() {
   const techOpen = useGame((s) => s.techOpen);
   const client = useGame((s) => s.client);
   const animationsOn = useCombatFx((s) => s.enabled);
-  const paused = useGame((s) => !!s.busy || !!s.endTurnConfirmation || s.reportOpen || s.diplomacyOpen || !!s.ready[s.seat] || !!s.place ||
+  const paused = useGame((s) => !!s.busy || !!s.endTurnConfirmation || s.reportOpen || s.diplomacyOpen || !!s.ready[s.seat] || (!!s.place && s.place.intent !== 'tile') ||
     (s.client?.kind === 'remote' && s.net?.conn !== 'open'));
   const [blockingOverlay, setBlockingOverlay] = useState(false);
   useEffect(() => {
@@ -105,9 +143,11 @@ export function Advisor() {
     const unsubscribe = useGame.subscribe(check);
     return () => { observer.disconnect(); unsubscribe(); };
   }, []);
+  const placingTile = useGame((s) => (s.place?.intent === 'tile' ? s.place.city : null));
   const guideOpen = useGuide((s) => s.open);
   const { active: celebration, holding } = useCelebration();
-  const { enabled, seen, skipped, skippedTurn, markSeen, skip, setEnabled } = useAdvisor();
+  const { enabled, seen, skipped, skippedTurn, practice, tips, markSeen, skip, setEnabled, noteTip } = useAdvisor();
+  usePractice();
   const [, refreshPlan] = useState(0);
   useEffect(() => {
     if (!view || !enabled || loadedWasmModule()) return;
@@ -118,10 +158,14 @@ export function Advisor() {
   const hidden = paused || blockingOverlay || guideOpen || holding || !!celebration || !enabled || !view || view.finished;
   const turnLabel = document.querySelector<HTMLElement>('.seatbar .cta-label')?.textContent?.trim()
     ?? document.querySelector<HTMLElement>('.phone-turn-dock button[aria-label^="Next decision"]')?.textContent?.trim() ?? undefined;
-  const suggestion = view && enabled ? advisorSuggestion({ view, orders: orders[seat] ?? [], errors: errors[seat], selection,
-    humans: humans.length, remote: client?.kind === 'remote', touch, techOpen, mode, turnLabel, local: useGame.getState(),
+  const advice = view && enabled ? advisorSuggestion({ view, orders: orders[seat] ?? [], errors: errors[seat], selection,
+    humans: humans.length, remote: client?.kind === 'remote', touch, techOpen, mode, turnLabel, placingTile, local: useGame.getState(),
     forecast: client ? (unit, at, mode) => client.forecast(view.me, unit, at, mode) : undefined }, seen,
-    skippedTurn === view.turn ? skipped : []) : null;
+    skippedTurn === view.turn ? skipped : [], practice, tips) : null;
+  // While a tile is being placed, only the tip that asked for that tile keeps guiding (its last step rings the tile).
+  const suggestion = placingTile !== null && !(advice?.tip && advice.current === 2) ? null : advice;
+  const tipKey = !hidden && suggestion?.tip ? suggestion.id.slice('tip:'.length) : null;
+  useEffect(() => { if (tipKey && view) noteTip(tipKey, view.turn); }, [tipKey, view?.turn, noteTip]);
   const [modal, setModal] = useState<HTMLDialogElement | null>(null);
   useEffect(() => { setModal(techOpen ? document.querySelector<HTMLDialogElement>('dialog.tech-modal[open]') : null); }, [techOpen]);
   // The card's top edge in pixels when the usual slot would cover the step's target or the selected tile; null keeps the CSS slot.
@@ -205,7 +249,11 @@ export function Advisor() {
       </div>}
       <div className="advisor-actions">
         {welcome ? <button className="btn primary" onClick={() => markSeen('welcome')}>Continue {!touch && <Kbd>Return</Kbd>}</button>
-          : lesson ? <button className="btn primary" onClick={() => markSeen(suggestion.id)}>Got it</button>
+          : suggestion.tip ? (suggestion.steps.some((st) => st.target)
+              // A ring is the call to action; dismissing it stays a quiet link.
+              ? <button className="advisor-link" onClick={() => skip(suggestion.id, view!.turn)}>Not now</button>
+              : <button className="btn primary" onClick={() => skip(suggestion.id, view!.turn)}>Got it</button>)
+            : lesson ? <button className="btn primary" onClick={() => markSeen(suggestion.id)}>Got it</button>
             : <button className="advisor-link" onClick={() => skip(suggestion.id, view!.turn)}>Not now</button>}
         <button className="advisor-link" onClick={() => setEnabled(false)}>Turn off</button>
       </div>
@@ -215,9 +263,14 @@ export function Advisor() {
 }
 
 export function AdvisorSettings() {
-  const { enabled, setEnabled } = useAdvisor();
+  const { enabled, setEnabled, practice, resetPractice } = useAdvisor();
+  const practised = Object.values(practice).some((n) => (n ?? 0) > 0);
+  const [reset, setReset] = useState(false);
+  useEffect(() => { if (!reset) return; const t = window.setTimeout(() => setReset(false), 2500); return () => window.clearTimeout(t); }, [reset]);
   return <div className="hint-settings" onKeyDown={(e) => { if (e.key !== 'Escape') e.stopPropagation(); }}>
     <label><input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />Show the advisor</label>
-    <div className="hint-settings-foot"><span>On by default. Turn it off any time.</span></div>
+    <div className="hint-settings-foot"><span>On by default. Steps you already know, like moving a unit, stop showing after a few turns.</span>
+      {practised ? <button onClick={() => { resetPractice(); setReset(true); }}>Show every step again</button>
+        : reset && <span role="status">Every step will show again.</span>}</div>
   </div>;
 }

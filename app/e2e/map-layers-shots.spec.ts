@@ -126,3 +126,40 @@ for (const [width, height] of [[1000, 600], [1440, 900]] as const) {
     });
   });
 }
+
+// Walls finishing (momentFx `walls`): the capital's Walls are new this turn, and the light runs along the ring. Frames
+// at about these times through the payoff (the screenshot itself takes a few frames, so each lands a little later), at two zooms, so a reviewer can see it start, cross the ring and leave nothing behind.
+for (const [width, height] of [[1000, 600], [1440, 900]] as const) {
+  test.describe(`${width}x${height}`, () => {
+    test.use({ viewport: { width, height } });
+    test('walls finishing payoff', async ({ page }) => {
+      test.skip(!shots, 'shots only: set MAP_LAYER_SHOTS');
+      test.setTimeout(300_000);
+      const s = scene(false);
+      await open(page, coreFixture(s.setup.fixture), false);
+      await mkdir(shots!, { recursive: true });
+      for (const zoom of [0.9, 1.4]) {
+        await frame(page, s.home, zoom, width);
+        for (const ms of [0, 250, 500, 750, 1000, 1250, 1600]) {
+          await page.evaluate(async ({ at, ms }) => {
+            const w = window as unknown as MapWindow;
+            const momentsFile = '/src/map/momentFx.ts';
+            const { buildMomentPlan } = await import(/* @vite-ignore */ momentsFile);
+            const st = w.legatum.getState();
+            const view = st.views![st.seat as number];
+            const city = view.cities.find((c) => c.pos.q === at.q && c.pos.r === at.r)!;
+            const before = { ...view, cities: view.cities.map((c) => c.id === city.id ? { ...c, walls: false, walls_level: 0 } : c) };
+            const moments = buildMomentPlan([], before, view, 0);
+            // The light starts at econ + 250 (750 ms after the moves); hold the clock `ms` into it.
+            const start = performance.now() - (moments.walls[0].t + ms);
+            st.set({ anim: { start, duration: 0, paths: new Map(), plan: null, moments } } as never);
+          }, { at: s.home, ms });
+          await page.waitForTimeout(16);
+          const c = await page.evaluate((at) => { const m = (window as unknown as MapWindow).legatumMap; const b = document.querySelector('[data-game-map]')!.getBoundingClientRect(); const p = m.toScreen(at); return { x: p.x + b.left, y: p.y + b.top }; }, s.home);
+          const half = { w: 120, h: 90 };
+          await page.screenshot({ path: `${shots}/${prefix}-walls-payoff-z${zoom}-${String(ms).padStart(4, '0')}ms-${width}x${height}.png`, clip: { x: Math.max(0, c.x - half.w), y: Math.max(0, c.y - half.h + 20), width: half.w * 2, height: half.h * 2 } });
+        }
+      }
+    });
+  });
+}

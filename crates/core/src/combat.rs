@@ -277,6 +277,11 @@ pub fn add_fight_class_bonus_rules(
     if extra != 0 {
         b.add(label, extra);
     }
+    let (label, volley) =
+        fight_chariot_volley_for_rules(off, faction, own, other, attacker_side, shot);
+    if volley != 0 {
+        b.add(label, volley);
+    }
 }
 
 /// The breakdown lines of the Gaesatae's charge and missing shield wall.
@@ -323,6 +328,37 @@ pub fn fight_reislaufer_bonus_for_rules(
         (
             REISLAUFER_LABEL,
             base * data::REISLAUFER_MOUNTED_PERCENT / 100,
+        )
+    } else {
+        ("", 0)
+    }
+}
+
+/// The breakdown line of the Chariot Archer's volley against the melee line (states the percentage).
+pub const CHARIOT_VOLLEY_LABEL: &str = "Shooting melee units (+40%)";
+
+/// The extra an Egyptian Chariot Archer's shot gets against a melee-line unit
+/// (`data::CHARIOT_ARCHER_VOLLEY_PERCENT` of its own ranged strength, rounded down; Sam,
+/// 2026-11-25): only for its own shot (`attacker_side && shot`), never defending, and only while
+/// the class triangle applies (`triangle_applies`), as for every class bonus.
+pub fn fight_chariot_volley_for_rules(
+    off: FactionRuleSet,
+    made_by: Faction,
+    own: UnitKind,
+    other: UnitKind,
+    attacker_side: bool,
+    shot: bool,
+) -> (&'static str, i32) {
+    if attacker_side
+        && shot
+        && data::is_chariot_archer_rules(off, made_by, own)
+        && data::unit_class(other) == Some(UnitClass::Melee)
+        && triangle_applies(own, other)
+    {
+        let ranged = data::unit_stats_for_rules(off, made_by, own).ranged;
+        (
+            CHARIOT_VOLLEY_LABEL,
+            ranged * data::CHARIOT_ARCHER_VOLLEY_PERCENT / 100,
         )
     } else {
         ("", 0)
@@ -381,7 +417,7 @@ pub fn attack_strength_rules(
     crate::resources::add_unsupplied(&mut strength, made_by, kind, ranged, unsupplied);
     if city {
         if ranged {
-            strength.add("Siege against city HP", data::siege_city_bonus(kind));
+            strength.add("Siege against city health", data::siege_city_bonus(kind));
         }
         add_mounted_city_penalty_rules(&mut strength, off, made_by, kind, ranged);
     }
@@ -806,7 +842,7 @@ pub fn city_defense_with_fort(
     )
 }
 
-/// `fort` is the Walls tier above plain Walls: 0 none, 1 a Castle, 2 a Star Fort. Each adds its
+/// `fort` is the Walls tier above plain Walls: 0 none, then one for each Walls level above I. Each adds its
 /// own strength on top of the tier below. `era` is the owner's era (0 Ancient): every line
 /// except the wounds rides the era curve (`data::era_scaled`), so a city keeps pace with the
 /// units of its day (user, 2026-10-18: city strength and Walls tiers follow the same curve).
@@ -852,7 +888,7 @@ pub fn city_defense_covered(
 
 /// A city's defence against an attacker a Siege of tier `covered` covers
 /// (`wall_damage_percent`): the strength of the Walls tiers up to `covered` is left out, and
-/// the higher tiers (a Castle, a Star Fort) still count. `wall_tier` as in `data::wall_tier`.
+/// the higher Walls levels still count. `wall_tier` as in `data::wall_tier`.
 pub fn city_defense_covered_rules(
     off: FactionRuleSet,
     faction: Faction,
@@ -877,30 +913,30 @@ pub fn city_defense_covered_rules(
             ),
         );
     }
-    if wall_tier >= 2 && covered < 2 {
+    // Upgrade levels past Siege cover share one row ("Walls III–VI"), each adding the same
+    // era-scaled amount.
+    let first = covered.saturating_add(1).max(2);
+    if wall_tier >= first {
+        let walls = data::building_name_for(faction, BuildingKind::Walls);
+        let label = if first == wall_tier {
+            format!("{walls} {}", data::wall_level_label(first))
+        } else {
+            format!(
+                "{walls} {}–{}",
+                data::wall_level_label(first),
+                data::wall_level_label(wall_tier)
+            )
+        };
         b.add(
-            "Castle upgrade",
-            data::era_scaled(
-                data::building_stats(BuildingKind::Castle).city_strength,
-                era,
-            ),
-        );
-    }
-    if wall_tier >= 3 && covered < 3 {
-        b.add(
-            "Star Fort upgrade",
-            data::era_scaled(
-                data::building_stats(BuildingKind::StarFort).city_strength,
-                era,
-            ),
+            label,
+            i32::from(wall_tier - first + 1) * data::era_scaled(5, era),
         );
     }
     wounded(&mut b, hp, CITY_HP, 20);
     b
 }
 
-/// City strike, as in Civ 6: only a walled city fires. Any Walls tier counts (a Castle upgrades
-/// Walls, and the Switzerland' Alpine Redoubt is their Walls), and a city at 0 HP stops firing.
+/// City strike, as in Civ 6: only a walled city fires. Any Walls level counts (including Switzerland's Alpine Redoubt), and a city at 0 HP stops firing.
 /// Unwalled cities rely on their garrison and HP alone. Resolution, forecasts and the AI all ask
 /// this one function.
 pub fn city_can_fire(walls: bool, hp: i32) -> bool {

@@ -107,6 +107,10 @@ pub fn state_from_value(mut v: Value, check_version: bool) -> Result<GameState, 
             legatum_core::RULES_VERSION
         ));
     }
+    // Tooling reads of an older state (upgrades, rehashes) convert the retired Castle and Star Fort.
+    if !check_version && version.is_none_or(|n| n < u64::from(legatum_core::RULES_VERSION)) {
+        migrate_legacy_walls(&mut v);
+    }
     if let Some(setup) = v.get_mut("setup") {
         seed_from_string(setup, "seed")?;
     }
@@ -116,23 +120,75 @@ pub fn state_from_value(mut v: Value, check_version: bool) -> Result<GameState, 
     Ok(state)
 }
 
-/// The oldest rules version `upgrade_from_49` reads (it reads 49 to 56 and the current one).
+/// Earlier rules stored Castles and Star Forts as buildings. Rules 58 stores a city's
+/// completed Walls level and treats either old build order as Upgrade Walls.
+fn migrate_legacy_walls(value: &mut Value) {
+    match value {
+        Value::Array(items) => {
+            for item in items {
+                migrate_legacy_walls(item);
+            }
+        }
+        Value::Object(object) => {
+            let is_city = object.contains_key("population");
+            let has_walls_level = object.contains_key("walls_level");
+            if let Some(Value::Array(buildings)) = object.get_mut("buildings") {
+                let old_level = if buildings.iter().any(|b| b == "StarFort") {
+                    3
+                } else if buildings.iter().any(|b| b == "Castle" || b == "Citadel") {
+                    2
+                } else if buildings.iter().any(|b| b == "Walls") {
+                    1
+                } else {
+                    0
+                };
+                if old_level > 0 && is_city && !has_walls_level {
+                    buildings.retain(|b| b != "Castle" && b != "Citadel" && b != "StarFort");
+                    if !buildings.iter().any(|b| b == "Walls") {
+                        buildings.push(Value::from("Walls"));
+                    }
+                    object.insert("walls_level".into(), Value::from(old_level));
+                }
+            }
+            if object.contains_key("walls") && object.contains_key("citadel") {
+                let level = if object.get("star_fort") == Some(&Value::Bool(true)) {
+                    3
+                } else if object.get("citadel") == Some(&Value::Bool(true)) {
+                    2
+                } else if object.get("walls") == Some(&Value::Bool(true)) {
+                    1
+                } else {
+                    0
+                };
+                object.insert("walls_level".into(), Value::from(level));
+            }
+            if let Some(Value::String(kind)) = object.get_mut("building")
+                && (kind == "Castle" || kind == "Citadel" || kind == "StarFort")
+            {
+                *kind = "UpgradeWalls".into();
+            }
+            for nested in object.values_mut() {
+                migrate_legacy_walls(nested);
+            }
+        }
+        _ => {}
+    }
+}
+
 pub const UPGRADABLE_RULES_VERSION: u32 = 49;
 
-/// Simulation only (the app keeps refusing a save from any other rules version): read a rules-49,
-/// rules-50 to rules-56 saved state as a current (rules-57) one, for analysis that starts from
+/// Read a rules-49 to rules-60 saved state as a current (rules-61) one, for analysis that starts from
 /// recorded positions which cannot be regenerated (hill-climb do-no-harm states). `json` is a save
-/// (`save_version` 49 to 57) or a bare state line with no `save_version` (`audit_states` output; a
-/// line carrying `capitals_taken` is read as rules 49, any other as rules 50 to 56). See
+/// (`save_version` 49 to 60) or a bare state line with no `save_version` (`audit_states` output; a
+/// line carrying `capitals_taken` is read as rules 49, any other as rules 50 to 59). See
 /// `upgrade_value_from_49` and `upgrade_value_from_50` for what changes.
 pub fn upgrade_from_49(json: &str) -> Result<GameState, String> {
     check_json_size(json)?;
     let v: Value = serde_json::from_str(json).map_err(|e| format!("invalid JSON: {e}"))?;
     match v.get("save_version").and_then(Value::as_u64) {
         None if carries_rules_49_fields(&v) => upgrade_value_from_49(v),
-        None | Some(50) | Some(51) | Some(52) | Some(53) | Some(54) | Some(55) | Some(56) => {
-            upgrade_value_from_50(v)
-        }
+        None | Some(50) | Some(51) | Some(52) | Some(53) | Some(54) | Some(55) | Some(56)
+        | Some(57) | Some(58) | Some(59) | Some(60) => upgrade_value_from_50(v),
         Some(49) => upgrade_value_from_49(v),
         Some(n) if n == u64::from(legatum_core::RULES_VERSION) => parse_state(json),
         Some(n) => Err(format!(
@@ -150,20 +206,23 @@ pub fn carries_rules_49_fields(v: &Value) -> bool {
         .is_some_and(|ps| ps.iter().any(|p| p.get("capitals_taken").is_some()))
 }
 
-/// The rules-50 to rules-56 upgrade of a parsed state to rules 57: the identity (the rules-54
+/// The rules-50 to rules-60 upgrade of a parsed state to rules 61: migrate old Walls buildings and orders to Walls levels (rules 58) (the rules-54
 /// `Player` fields for the Colonia Victrix and the royal tomb take their defaults: no Colonia, no
 /// work, no tomb; rules 56 only changes the order of city names; rules 57 shuts the Mongols' Walls
-/// line for good, and Walls a Mongol city already has stay standing in an upgraded state). Rules 51
+/// line for good, and Walls a Mongol city already has stay standing in an upgraded state; rules 59
+/// turns Egypt's Archers into Chariot Archers and its Medjay into plain Spearmen, by rule, with no
+/// field; rules 60 adds the optional research goal, and rules 61 only adds the deals fields, which
+/// take their defaults: deals off, no Open Borders). Rules 51
 /// changes how peaceful units contest a tile, rules 52 renames identifiers (the old names still
 /// parse through serde aliases) and rules 53 changes who counts for Humble the mighty
 /// (`objectives::humbles`, judged each turn from the turn-start VP); rules 55 adds city
 /// automation focuses and the Food project (the old `Balanced` focus parses as `Economy`). None
-/// changes a field, and a capture counted under the older rules stays counted.
+/// changes a field before the Walls migration, and a capture counted under the older rules stays counted.
 pub fn upgrade_value_from_50(v: Value) -> Result<GameState, String> {
     state_from_value(v, false)
 }
 
-/// The rules-49 to rules-50 upgrade of a parsed state (then rules 51 to 57; 54 only adds defaulted fields):
+/// The rules-49 to rules-60 upgrade of a parsed state (54 only adds defaulted fields):
 /// - `Player::capitals_taken` (49: every original capital the empire ever captured, kept for good)
 ///   is gone. Rules 50 derives a held capital's point from who holds it now, so a capital the
 ///   taker still holds keeps scoring and one it lost stops. A Celtic entry whose city no longer
@@ -176,6 +235,7 @@ pub fn upgrade_value_from_50(v: Value) -> Result<GameState, String> {
 ///
 /// Faithful except for the slot, which only names which card scored (it never changes VP).
 pub fn upgrade_value_from_49(mut v: Value) -> Result<GameState, String> {
+    migrate_legacy_walls(&mut v);
     let mut taken: Vec<Vec<(u64, String)>> = Vec::new();
     if let Some(players) = v.get_mut("players").and_then(Value::as_array_mut) {
         for p in players {
@@ -197,7 +257,7 @@ pub fn upgrade_value_from_49(mut v: Value) -> Result<GameState, String> {
     }
     let mut state: GameState =
         serde_json::from_value(v).map_err(|e| format!("invalid rules-49 state: {e}"))?;
-    // Every later upgrade step (50 to 53) is the identity.
+    // Other later rule changes do not alter these scored records.
     for (i, list) in taken.into_iter().enumerate() {
         let Some(p) = state.players.get(i) else {
             continue;
@@ -231,6 +291,44 @@ pub fn upgrade_value_from_49(mut v: Value) -> Result<GameState, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn old_states_upgrade_castle_and_star_fort_to_walls_levels_for_tooling() {
+        let state = legatum_core::new_game(&GameSetup::all_ai(3));
+        for version in 49..=57 {
+            let mut save = state_to_value(&state);
+            save["save_version"] = Value::from(version);
+            let cities = save["cities"].as_object_mut().unwrap();
+            let ids: Vec<_> = cities.keys().take(2).cloned().collect();
+            for (i, id) in ids.iter().enumerate() {
+                let city = cities.get_mut(id).unwrap();
+                let castle_name = if version < 52 { "Citadel" } else { "Castle" };
+                city["buildings"] = serde_json::json!(if i == 0 {
+                    vec!["Walls", castle_name]
+                } else {
+                    vec!["Walls", castle_name, "StarFort"]
+                });
+                city.as_object_mut().unwrap().remove("walls_level");
+            }
+            // The app refuses the old save; analysis tooling upgrades it.
+            assert!(parse_state(&save.to_string()).is_err(), "rules {version}");
+            let loaded = upgrade_from_49(&save.to_string()).unwrap();
+            for (i, id) in ids.iter().enumerate() {
+                let city = &loaded.cities[&legatum_core::CityId(id.parse().unwrap())];
+                assert_eq!(
+                    city.walls_level,
+                    if i == 0 { 2 } else { 3 },
+                    "rules {version}"
+                );
+                assert!(!city.buildings.contains(&legatum_core::BuildingKind::Castle));
+                assert!(
+                    !city
+                        .buildings
+                        .contains(&legatum_core::BuildingKind::StarFort)
+                );
+            }
+        }
+    }
 
     #[test]
     fn oversized_save_is_rejected_before_json_parsing() {
@@ -311,7 +409,7 @@ mod tests {
     }
 
     #[test]
-    fn rules_57_saves_round_trip_and_a_version_56_save_is_refused() {
+    fn rules_61_saves_round_trip_and_a_version_60_save_is_refused() {
         // Rules 47: held shots at fallen cities; 48: Egypt's Nile and its Grow project. The save
         // shape only gains the project value, so a city growing on the Nile round-trips at 48,
         // and a 47 save is refused rather than migrated. Rules 49: Egypt starts knowing the Bronze
@@ -323,8 +421,11 @@ mod tests {
         // focuses and the Food project; the save shape only gains values, the app refuses a 54 save.
         // Rules 56: city names in list order; the save shape is unchanged, and the app refuses a 55 save.
         // Rules 57: the Mongols never have Walls; the save shape is unchanged, and a 56 save is
-        // refused.
-        assert_eq!(legatum_core::RULES_VERSION, 57);
+        // refused. Rules 58: Walls levels replace Castle and Star Fort. Rules 59: Egypt's Chariot
+        // Archer replaces its Archer; the save shape is unchanged, and a 58 save is refused. Rules 60:
+        // the research goal adds an optional `Player` field; a 59 save is refused and upgrades.
+        // Rules 61: deals, behind an optional switch; the app refuses a 60 save.
+        assert_eq!(legatum_core::RULES_VERSION, 61);
         let mut setup = GameSetup::all_ai(3);
         setup.players[0].faction = legatum_core::Faction::Egypt;
         let mut state = legatum_core::new_game(&setup);
@@ -347,7 +448,7 @@ mod tests {
         );
         assert_eq!(state.cities[&city].producing, Some(grow), "{events:?}");
         let save = state_to_json(&state);
-        assert!(save.contains("\"save_version\":57"));
+        assert!(save.contains("\"save_version\":61"));
         assert!(!save.contains("capitals_taken"));
         assert!(
             state
@@ -358,12 +459,12 @@ mod tests {
         assert!(save.contains("\"Grow\""));
         assert_eq!(parse_state(&save).unwrap(), state);
         let mut old: Value = serde_json::from_str(&save).unwrap();
-        old["save_version"] = Value::from(56);
+        old["save_version"] = Value::from(60);
         assert!(
             parse_state(&old.to_string())
                 .unwrap_err()
                 .contains(&format!(
-                    "incompatible rules version: saved Some(56), current {}",
+                    "incompatible rules version: saved Some(60), current {}",
                     legatum_core::RULES_VERSION
                 ))
         );

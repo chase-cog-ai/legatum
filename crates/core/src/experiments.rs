@@ -110,8 +110,8 @@ faction_rules! {
     SwissReislaufer => ("swiss_reislaufer", Switzerland, Strength),
     GermanyPanzer => ("germany_panzer", Germany, Strength),
     EgyptConstruction => ("egypt_construction", Egypt, Strength),
-    EgyptMedjay => ("egypt_medjay", Egypt, Strength),
-    EgyptRoyalGranary => ("egypt_royal_granary", Egypt, Strength),
+    // Keep bit 58 vacant: retired Egyptian Medjay (replaced by the Chariot Archer, rules 59).
+    EgyptRoyalGranary = 59 => ("egypt_royal_granary", Egypt, Strength),
     RomeVeteranCities => ("rome_veteran_cities", Rome, Strength),
     RomeNoSettlers => ("rome_no_settlers", Rome, Drawback),
     RomeLegionary => ("rome_legionary", Rome, Strength),
@@ -121,6 +121,9 @@ faction_rules! {
     EgyptNile => ("egypt_nile", Egypt, Strength),
     RomeGoal => ("rome_goal", Rome, Strength),
     EgyptGoal => ("egypt_goal", Egypt, Strength),
+    // The Chariot Archer (Sam, 2026-11-25): Egypt's Archer, 3 moves, +40% shot against the melee
+    // line, and Forest or Hills without a road take its whole turn to enter.
+    EgyptChariotArcher => ("egypt_chariot_archer", Egypt, Strength),
 }
 
 impl FactionRule {

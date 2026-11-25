@@ -12,8 +12,9 @@ pub enum Order {
         #[serde(default)]
         breach: bool,
     },
-    /// Leave an Alliance; takes effect next turn. Inside its protected window it costs Gold
-    /// and is a betrayal.
+    /// Leave an Alliance (`Agreement::Security`); takes effect next turn. Inside its protected
+    /// window it costs Gold and is a betrayal. `Agreement::OpenBorders` ends Open Borders
+    /// (deals on): free, never a betrayal, next turn.
     BreakTreaty {
         with: TeamId,
         agreement: crate::diplomacy::Agreement,
@@ -21,6 +22,11 @@ pub enum Order {
     ProposeTreaty {
         to: TeamId,
         kind: crate::diplomacy::TreatyKind,
+        /// Deals (`GameSetup::deals`): Gold that changes hands when the treaty takes effect.
+        /// Positive: the proposer pays it to the other team; negative: the proposer asks the
+        /// other team to pay its absolute value. At most 999 either way. Omitted when 0.
+        #[serde(default, skip_serializing_if = "crate::orders::is_zero")]
+        gold: i32,
     },
     RespondToProposal {
         proposal: crate::diplomacy::ProposalId,
@@ -137,6 +143,12 @@ pub enum Order {
     SetResearchQueue {
         techs: Vec<TechId>,
     },
+    /// Head for a technology in a later era (the tech tree's goal), or clear the goal with None.
+    /// Whenever the research queue runs out, the goal fills it: the current era's technologies,
+    /// cheapest first, and the goal itself first once its era opens. Persists until it is known.
+    SetResearchGoal {
+        tech: Option<TechId>,
+    },
     /// Choose the yield generated from Science after the last technology; persists across turns.
     SetScienceConversion {
         to: ScienceConversion,
@@ -191,7 +203,8 @@ pub enum Order {
     Action {
         action: Action,
     },
-    /// Give Gold to a living teammate (same team, never yourself). It moves after every empire's
+    /// Give Gold to a living teammate (same team, never yourself), or, with deals on
+    /// (`GameSetup::deals`), to any living empire your team has met and is not at War with. It moves after every empire's
     /// purchases this turn, capped at the Gold the giver has left then, so the teammate can spend
     /// it from next turn (`rules::gifts`).
     GiveGold {
@@ -236,6 +249,10 @@ pub enum Action {
     /// Celts, Call the warbands: raise a barbarian camp in the territory of every Celts city, once per
     /// turn. The goal is live: held while every city owned has a camp in its territory.
     CallTheWild,
+}
+
+pub(crate) fn is_zero(n: &i32) -> bool {
+    *n == 0
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

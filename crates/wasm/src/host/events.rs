@@ -40,6 +40,7 @@ mod tests {
                 vec![Order::ProposeTreaty {
                     to: TeamId(1),
                     kind: TreatyKind::Peace,
+                    gold: 0,
                 }],
             )]),
         );
@@ -81,6 +82,7 @@ mod alliance_terms_visibility {
             Order::ProposeTreaty {
                 to: TeamId(1),
                 kind: TreatyKind::Alliance,
+                gold: 0,
             },
         )
         .0;
@@ -162,6 +164,7 @@ mod alliance_visibility {
             Order::ProposeTreaty {
                 to: TeamId(1),
                 kind: TreatyKind::Alliance,
+                gold: 0,
             },
         )
         .0;

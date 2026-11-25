@@ -37,10 +37,19 @@ const building = (b: BuildingKind): ProductionItem => ({ kind: 'Building', build
 
 /** The faction pieces that stand against a standard item, keyed by the piece's `itemKey`. Names come from core's replacement names; a rename with the same stats is listed too, so it reads as the rename it is. */
 const PIECES: Partial<Record<Faction, Record<string, PieceSpec>>> = {
-  Egypt: { 'b:Granary': { against: building('Granary') }, 'u:Spearman': { against: unit('Spearman'), rules: [{ text: '+1 sight.', tone: 'good' }] } },
+  Egypt: {
+    'b:Granary': { against: building('Granary') },
+    'u:Archer': {
+      against: unit('Archer'),
+      rules: [
+        { text: `+${RULES.specialUnitNumbers.chariotArcherVolleyPercent}% strength when it shoots melee units.`, tone: 'good' },
+        { text: 'Entering Forest or Hills takes its whole turn.', tone: 'bad' },
+      ],
+    },
+  },
   Rome: {
     'u:Phalangite': { against: unit('Phalangite'), rules: [{ text: 'A city founded by this Legionary starts at population 2 instead of 1.', tone: 'good' }] },
-    'b:Walls': { against: building('Walls'), rules: [{ text: 'Upgrading a melee unit in this city restores 50 HP, up to full health, once per order.', tone: 'good' }] },
+    'b:Walls': { against: building('Walls'), rules: [{ text: 'Upgrading a melee unit in this city restores 50 health, up to full health, once per order.', tone: 'good' }] },
   },
   Aztecs: { 'u:Spearman': { against: unit('Spearman') } },
   Celts: {
@@ -236,8 +245,10 @@ export function standardText(c: PieceComparison): string {
 export function comparisonSentence(c: PieceComparison): string {
   if (c.mode === 'adds') return `${c.name}: ${addsText(c).replace(/^Not a replacement: a/, 'not a replacement, a')}`;
   if (c.same) return `${c.name}: ${sameText(c).replace(/^Same/, 'same')}`;
-  const bits = [...inGoodFirstOrder(c.diffs).map(deltaText), ...c.rules.map(ruleClause)];
-  return `${c.name} compared with ${the(c.against)}: ${bits.join(c.rules.length > 1 ? '; ' : ', ')}.`;
+  // The numbers and the first rule read as one list; each further rule gets its own clause, so a sentence holds at most one semicolon per extra rule.
+  const [first, ...rest] = c.rules.map(ruleClause);
+  const head = [...inGoodFirstOrder(c.diffs).map(deltaText), ...(first ? [first] : [])].join(', ');
+  return `${c.name} compared with ${the(c.against)}: ${[head, ...rest].join('; ')}.`;
 }
 
 /** The faction's own pieces that have a comparison, as items (the faction sheet's piece first). */

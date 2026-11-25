@@ -85,8 +85,7 @@ export type BuildingKind =
   | 'University'
   | 'Bank'
   | 'Factory'
-  | 'Castle'
-  | 'StarFort'
+  | 'UpgradeWalls'
   | 'GreatLibrary'
   | 'Pyramids'
   | 'HagiaSophia'
@@ -493,9 +492,7 @@ export interface CityView {
   greece_captive_tech?: boolean;
   greece_captive_at_risk?: boolean;
   walls: boolean;
-  /** A Castle or better. */
-  citadel?: boolean;
-  star_fort?: boolean;
+  walls_level?: number;
   /** Whether the last visible observation showed a Workshop or its upgrade. */
   has_workshop?: boolean;
   /** Whether the last visible observation showed an Air Defence: it intercepts air strikes on this city (core `BuildingKind::AirDefence`). */
@@ -560,6 +557,8 @@ export interface PlayerPublic {
   army?: number;
   /** Public technological progress: furthest era entered (times 1000) plus technologies known (0 once dead). */
   advancement?: number;
+  /** Public Science per turn, the same total the owner sees in its top bar (0 once dead). */
+  science?: number;
   /** The trailing average of this empire's total yields (Food + Production + Gold + Science). */
   power?: number;
   /** Its Power over the mean living empire's, in percent (negative below it). */
@@ -662,6 +661,8 @@ export interface ResearchView {
   known: TechId[];
   /** Techs this faction skips: known from the start because they give it nothing. Research screens leave them out; `era_total` and `era_known` exclude them. */
   skipped?: TechId[];
+  /** The tech tree's goal: a later technology the engine researches toward whenever the queue runs out. */
+  goal?: TechId | null;
   available: TechOption[];
   catalog: TechOption[];
   unlocks: TechUnlock[];
@@ -739,7 +740,10 @@ export interface Relation {
   war_id: number | null;
   declarers: TeamId[];
 }
-export type TreatyKind = 'Peace' | 'Alliance';
+/** `OpenBorders` exists only with deals on (core `GameSetup::deals`, rules 61). */
+export type TreatyKind = 'Peace' | 'Alliance' | 'OpenBorders';
+/** What `BreakTreaty` ends: `Security` an Alliance, `OpenBorders` Open Borders (deals). */
+export type Agreement = 'Security' | 'OpenBorders';
 /** The terms of an active Alliance. Leaving before `protected_until` costs Gold and is a betrayal. */
 interface SecurityTreaty { id: number; started_turn: number; protected_until: number }
 /** `by` left an Alliance with `against` inside its protected window, or declared war on it while allied. */
@@ -755,6 +759,8 @@ export interface PeaceProposal {
   created_turn: number;
   respond_by: number;
   relation_version: number;
+  /** Deals: Gold that changes hands when the treaty takes effect. Positive: the proposer pays it; negative: the accepting empire pays its absolute value. Omitted when 0. */
+  gold?: number;
   /** Peace only: the teams that have agreed so far, the proposer first. A Peace binds only its two named teams. */
   consents?: TeamId[];
   /** Views only: the teams whose answer is still awaited (never the proposer). */
@@ -775,7 +781,7 @@ interface SupersededOrder {
 export interface DiplomaticAction {
   order: Order;
   effective_turn: number;
-  /** One-off Gold from the ordering empire for leaving an Alliance early. */
+  /** One-off Gold from the ordering empire: leaving an Alliance early, or a deal's Gold it would pay. */
   cost: number;
   /** Gold per turn each empire on both teams pays while a signed Alliance lasts. */
   upkeep?: number;
@@ -817,6 +823,10 @@ export interface DiplomacyView {
   peace_cooldowns: { from: TeamId; to: TeamId; retry_turn: number; kind?: TreatyKind }[];
   /** Other teams this team has met (core `DiplomacyView::met`): an Alliance needs contact. */
   met?: TeamId[];
+  /** Public: every team pair (lower id first) with Open Borders. Omitted when none. */
+  open_borders?: [TeamId, TeamId][];
+  /** Deals are on in this game (core `GameSetup::deals`). Omitted when off. */
+  deals?: boolean;
   actions: DiplomaticAction[];
 }
 
@@ -1059,8 +1069,9 @@ export type AirPick = 'strike' | 'rebase' | 'recon';
 export type Order =
   | { type: 'DeclareWar'; against: TeamId; breach?: boolean }
   /** Byzantium only, at War with `to`: pay the quoted price and begin an enforced Peace this turn. */
-  | { type: 'BreakTreaty'; with: TeamId; agreement: 'Security' }
-  | { type: 'ProposeTreaty'; to: TeamId; kind: TreatyKind }
+  | { type: 'BreakTreaty'; with: TeamId; agreement: Agreement }
+  /** `gold` (deals only): positive, the proposer pays it; negative, the other team is asked to pay its absolute value (at most 999). Omitted when 0. */
+  | { type: 'ProposeTreaty'; to: TeamId; kind: TreatyKind; gold?: number }
   | { type: 'RespondToProposal'; proposal: number; accept: boolean; explanation?: DecisionExplanation }
   | { type: 'WithdrawProposal'; proposal: number }
   | { type: 'SetAutomation'; unit: UnitId; automation: Automation | null; path?: Hex[]; stop_reason?: ExploreStopReason | null }
@@ -1079,6 +1090,7 @@ export type Order =
   | { type: 'BuyItem'; city: CityId; item: ProductionItem }
   | { type: 'SetResearch'; tech: TechId }
   | { type: 'SetResearchQueue'; techs: TechId[] }
+  | { type: 'SetResearchGoal'; tech: TechId | null }
   | { type: 'SetScienceConversion'; to: 'Gold' | 'Food' | 'Production' }
   | { type: 'RangedAttack'; unit: UnitId; target: Hex }
   /** An aircraft in a city's hangar strikes a tile within its range: a Bomber's 5, a Fighter's 3 (core `rules::air`). A striking Fighter does not intercept that turn. */
@@ -1166,6 +1178,8 @@ export type Event =
   | { type: 'CompanyTurned'; unit: UnitKind; owner: PlayerId; origin?: Faction | null; pos: Hex }
   | { type: 'TreatyActivated'; relation: Relation }
   | { type: 'TreatyEnded'; treaty_id: number; a: TeamId; b: TeamId; effective_turn: number; reason: string }
+  | { type: 'BordersOpened'; a: TeamId; b: TeamId; effective_turn: number }
+  | { type: 'BordersClosed'; a: TeamId; b: TeamId; effective_turn: number; reason: string }
   | { type: 'TreatyBreached'; treaty_id: number; by: TeamId; with: TeamId; player: PlayerId; cost: number; effective_turn: number }
   | { type: 'TreatyPayment'; player: PlayerId; gold: number; cause: string; treaty_id: number | null; effective_turn: number }
   | { type: 'AllianceBetrayed'; betrayal: Betrayal }
@@ -1329,7 +1343,7 @@ export interface AirDefenceForecast {
   loss_chance: number;
 }
 
-/** Core `forecast::WallsForecast`: the city's walls tier (1 Walls, 2 a Castle, 3 a Star Fort), the siege tier of the attacker (0 when it has no Siege) and the percent of its damage the attack deals to the city's HP. `built_in`: the attacker is an Industrial or later land unit, whose Siege is built in (core `data::built_in_siege`). */
+/** Core `forecast::WallsForecast`: the city's walls tier (1 through 9 Walls levels), the siege tier of the attacker (0 when it has no Siege) and the percent of its damage the attack deals to the city's HP. `built_in`: the attacker is an Industrial or later land unit, whose Siege is built in (core `data::built_in_siege`). */
 interface WallsForecast {
   tier: number;
   covered: number;
@@ -1385,6 +1399,8 @@ export interface GameSetup {
   barbarians?: boolean;
   /** The teams with no human seat start in Alliances of two (core `GameSetup::ai_alliances`). Omitted when off. */
   ai_alliances?: boolean;
+  /** Deals (rules 61): Gold in offers, gifts to any met empire not at War, Open Borders. Omitted when off. */
+  deals?: boolean;
   /** Core rule experiments (only the switches the app reads); omitted when all default. */
   rule_experiments?: RuleSwitches;
 }

@@ -7,7 +7,7 @@ import { UNSUPPLIED_STRENGTH_PERCENT } from '../resources';
 import { tileIndex } from '../hex';
 import { roadBonusText } from '../path';
 import { siegeCityBonus, siegeTier } from '../combat';
-import { ARTILLERY_HEADLINE, BUILT_IN_SIEGE_NOTE, builtInSiege, canAutoExplore, firesIndirect, CLASS_NAME, CLASS_NOTE, attacksInMelee, eraName, minCityGap, RULES, SIEGE_USES_IRON, UNIT_STATS, ignoresWounds, itemName, unitClass, unitEraTier } from '../data';
+import { ARTILLERY_HEADLINE, builtInSiege, canAutoExplore, firesIndirect, CLASS_NAME, CLASS_NOTE, attacksInMelee, eraName, minCityGap, RULES, SIEGE_USES_IRON, UNIT_STATS, ignoresWounds, itemName, unitClass, unitEraTier, wallLevelLabel } from '../data';
 import { occupationLead, occupationNote } from './forecastWarnings';
 import { describeOrder, errorsWhere, orderUnit, pendingUnitOrder, sleepOrderText } from '../orders';
 import {
@@ -51,7 +51,7 @@ import { clearRetire, pendingRetire, retireEntry } from '../goalActions';
 import { isTopRank } from '../rankInsignia';
 import { RankMark } from './RankMark';
 
-export const siegeCityHint = (bonus: number) => `+${bonus} ranged strength against city HP. Hits land one at a time. The hit that empties the city's HP carries on to the garrison with the part of its damage the city did not absorb. Later hits strike the garrison in full. Ranged fire cannot capture.`;
+export const siegeCityHint = (bonus: number) => `+${bonus} ranged strength against city health. Hits land one at a time. The hit that empties the city's health carries on to the garrison with the part of its damage the city did not absorb. Later hits strike the garrison in full. Ranged fire cannot capture.`;
 
 /** Whether this Roman veteran founds the Colonia Victrix where he stands (core `goals::known_colonia_site`, through the settle site), cached per view. */
 const coloniaCache = new WeakMap<PlayerView, Map<number, boolean>>();
@@ -158,7 +158,7 @@ export function UnitPanel({ unit, view, peek = false }: { unit: UnitView; view: 
   const exploreAction = canAutoExplore(unit.kind) && !locked && (
     <Action label={exploring ? 'Stop auto-explore' : 'Auto-explore'} hotkey="E" primary={leads && unit.kind === 'Scout'} active={exploring}
       onClick={toggleAutoExploreSelected}
-      tip="Explore reachable land and ruins using known terrain. Avoid known armies, retreat when hurt, and stop below 60 HP or when threatened or blocked. Any manual order takes control; the map marks exploring units with A." />
+      tip="Explore reachable land and ruins using known terrain. Avoid known armies, retreat when hurt, and stop below 60 health or when threatened or blocked. Any manual order takes control; the map marks exploring units with A." />
   );
 
   // The phone sheet reserves this row outside its scrolling details. Keep the same
@@ -208,8 +208,8 @@ export function UnitPanel({ unit, view, peek = false }: { unit: UnitView; view: 
       </div>
       <div className="unit-panel-body" ref={scroll} tabIndex={overflow ? 0 : undefined} role="region" aria-label="Unit details and actions">
       <div className="up-stats">
-        <Tip content={ignoresWounds(owner?.faction, unit.kind) ? 'Health. Sparta infantry ignore wound strength penalties.' : 'Health. Strength drops by 1 per 10 HP lost.'} className="up-stat">
-          <span className="lbl">HP</span>
+        <Tip content={ignoresWounds(owner?.faction, unit.kind) ? 'Health. Sparta infantry ignore wound strength penalties.' : 'Health. Strength drops by 1 per 10 health lost.'} className="up-stat">
+          <span className="lbl">Health</span>
           <Bar value={unit.hp} max={100} color={healthColor(unit.hp / 100)} className="hp-bar" />
           <b>{unit.hp}</b>
         </Tip>
@@ -298,7 +298,7 @@ export function UnitPanel({ unit, view, peek = false }: { unit: UnitView; view: 
         {(unit.siege || builtInSiege(unit.kind as UnitKind)) && <div className="hint" data-testid="siege-note">{siegeNote(view, unit)}</div>}
         {firesIndirect(unit.kind) && <div className="hint">{ARTILLERY_HEADLINE}</div>}
         {closed && <p className="hint warn">Closed foreign territory: no attacks, healing or fortification. Every move must bring this unit closer to an exit.</p>}
-        {mine && !closed && unit.resting_heal && unit.hp < 100 && <Tip as="div" className="hint" content={<BreakdownTable b={unit.resting_heal} title="Resting healing" unit="HP" />}>Rest here: heal up to {Math.min(unit.resting_heal.total, 100 - unit.hp)} HP this turn if you neither move nor fight.</Tip>}
+        {mine && !closed && unit.resting_heal && unit.hp < 100 && <Tip as="div" className="hint" content={<BreakdownTable b={unit.resting_heal} title="Resting healing" unit="health" />}>Rest here: heal up to {Math.min(unit.resting_heal.total, 100 - unit.hp)} health this turn if you neither move nor fight.</Tip>}
         {siegeCityBonus(unit.kind) > 0 && <div className="hint">{siegeCityHint(siegeCityBonus(unit.kind))}</div>}
         {mode === 'ranged' && <div className="hint warn">Choose a target within range <span className="mouse-only">· Esc to cancel</span><button className="link touch-only" onClick={toggleRangedMode}>Cancel targeting</button></div>}
         {teammate && (
@@ -373,11 +373,11 @@ function ClassTip({ kind, bow = false }: { kind: UnitKind; bow?: boolean }) {
   </>;
 }
 
-const SIEGE_REACH = ['', 'Walls', 'Walls and Castles', 'Walls, Castles and Star Forts'];
+const SIEGE_REACH = ['', 'I', 'II', 'III'];
 
 /** What Siege does for this unit today: its owner's technology sets how high it reaches (core `data::siege_tier`); a rival's is private. The rule itself is `SIEGE_RULE`. An Industrial or later unit has it built in (core `data::built_in_siege`). */
 function siegeNote(view: PlayerView, unit: UnitView): string {
-  if (builtInSiege(unit.kind as UnitKind)) return `Siege built in: ${BUILT_IN_SIEGE_NOTE}.`;
+  if (builtInSiege(unit.kind as UnitKind)) return `Siege built in: covers Walls up to level ${wallLevelLabel(unitEraTier(unit.kind as UnitKind))} when it attacks a city.`;
   const tier = unit.owner === view.me ? siegeTier(view.research.known) : 0;
-  return tier > 1 ? `Siege: ignores enemy ${SIEGE_REACH[tier]} when it attacks a city.` : 'Siege: ignores enemy Walls when it attacks a city.';
+  return tier > 1 ? `Siege: covers Walls up to level ${SIEGE_REACH[tier]} when it attacks a city.` : 'Siege: covers Walls up to level I when it attacks a city.';
 }

@@ -40,7 +40,7 @@ const FACTION_ART: Partial<Record<Faction, Partial<Record<UnitKind, string>>>> =
   Byzantium: { Pikeman: 'tagmatic-soldier' },
   Rome: { Phalangite: 'legionary' },
   Aztecs: { Spearman: 'eagle-warrior' },
-  Egypt: { Spearman: 'medjay' },
+  Egypt: { Archer: 'chariot-archer' },
   Celts: { Phalangite: 'gaesatae' },
   Athens: { CompositeArcher: 'peltast' },
   India: { Knight: 'war-elephant' },

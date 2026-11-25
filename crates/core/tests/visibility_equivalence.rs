@@ -451,6 +451,7 @@ fn tape_order(n: &[i32]) -> Order {
                 1 => TreatyKind::Alliance,
                 _ => panic!("invalid treaty kind"),
             },
+            gold: 0,
         },
         11 => Order::RespondToProposal {
             proposal: ProposalId(n[1] as u32),
@@ -483,6 +484,7 @@ fn numeric_diplomacy_rows_preserve_alliances_and_response_receipts() {
             Order::ProposeTreaty {
                 to: TeamId(3),
                 kind: TreatyKind::Alliance,
+                gold: 0,
             },
         ),
         (
@@ -564,7 +566,8 @@ fn numeric_unit_indices_preserve_production_and_purchases() {
 #[test]
 fn numeric_building_indices_preserve_production_and_purchases() {
     for (index, building) in BuildingKind::ALL.into_iter().enumerate() {
-        assert_eq!(building as usize, index);
+        // Retired Castle and Star Fort variants leave gaps in enum discriminants;
+        // numeric tape entries follow the active `ALL` order.
         let city = CityId(53);
         let item = ProductionItem::Building { building };
         assert_eq!(

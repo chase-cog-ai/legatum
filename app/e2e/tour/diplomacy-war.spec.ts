@@ -1,4 +1,3 @@
-import { revealSidebar } from '../sidebarAssertions';
 // Screen tour, diplomacy, treaties, war declarations and alarms. One of the domain slices of the old e2e/screen-tour.spec.ts; run it alone with
 // `npx playwright test e2e/tour/diplomacy-war`. Shots land in test-results/screen-tour/<size>/diplomacy-war/.
 import { test, expect } from '../fixtures';
@@ -13,7 +12,7 @@ import { warDeclaredCoreSave } from '../../src/test/warDeclaredFixture';
 import { ALARM_EVENTS, ALARM_TURN, alarmCoreSave } from '../../src/test/alarmFixture';
 import { alarmsForTurn } from '../../src/celebrate/alarms';
 import { contextFromViews, formatEvents } from '../../src/format';
-import { SIZES, centred, dismissCelebrations, hexPoint, loadFixture, openReport, primaries, selectThing, shot, type GameWindow } from './helpers';
+import { SIZES, centred, dismissCelebrations, hexPoint, loadFixture, meetEveryone, openReport, primaries, selectThing, shot, type GameWindow } from './helpers';
 
 // Each test starts from its own save, so tests can run on separate workers.
 test.describe.configure({ mode: 'parallel' });
@@ -25,7 +24,6 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
   test('diplomacy: inbox, alliance offer and declaring war', async ({ page, browser }) => {
     test.setTimeout(120_000);
     await loadFixture(page, diplomacyCoreSave(16, { met: true }), 16);
-    await revealSidebar(page, 'standings');
     await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
     const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
     await expect(inbox).toBeVisible();
@@ -91,7 +89,6 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
   test('treaties: first contact in the inbox, then an accepted Alliance and Peace in the report', async ({ page }) => {
     // First contact: a freshly met empire's row opens with its leader, quote and relation emblem.
     await loadFixture(page, diplomacyCoreSave(3, { met: true }), 3);
-    await revealSidebar(page, 'standings');
     await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
     await expect(page.getByRole('complementary', { name: 'Diplomacy', exact: true }).locator('.relation-head')).toBeVisible();
     await shot(page, size, '16b-first-contact-inbox');
@@ -196,6 +193,8 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
   test('attack at Peace: foreign city card, ranged War prompt and the Fix order card', async ({ page }) => {
     const CITY = { q: 19, r: 8 }; // Switzerland' capital Harmonia; the Archer stands 2 tiles west.
     await loadFixture(page, warPromptCoreSave(false, true), 1);
+    // The fixture's seat has no first-contact record with Switzerland; its rivals row shows Peace or War only once met.
+    await meetEveryone(page);
     const archer = await page.evaluate(() => {
       const s = (window as unknown as GameWindow).legatum.getState(), v = s.views![s.seat];
       return v.units.find((u) => u.owner === v.me && u.kind === 'Archer')!.id;
@@ -240,9 +239,8 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await dialog.locator('.btn.primary').click();
     await expect(dialog).toHaveCount(0);
     // The race says what the city card says, and the notice keeps clear of the race title.
-    await revealSidebar(page, 'standings');
-    await expect(page.locator('.vp-row .vhc-rel.declared')).toBeVisible();
-    await expect(page.locator('.vp-row .vhc-rel.declared')).toHaveAttribute('data-relation', 'War declared');
+    await expect(page.locator('.rv-row .rv-rel.declared')).toBeVisible();
+    await expect(page.locator('.rv-row .rv-rel.declared')).toHaveAttribute('data-relation', 'War declared');
     const notice = (await page.locator('.decision-notice').boundingBox())!, title = (await page.locator('.vp .ph').boundingBox())!;
     expect(notice.x + notice.width <= title.x || notice.y >= title.y + title.height).toBe(true);
     await shot(page, size, '40-war-declared-notice');

@@ -163,7 +163,7 @@ function strikeStrength(view: PlayerView, u: UnitView, mode: 'ranged' | 'melee')
 export function captureForecast(view: PlayerView, cityId: number, attackers: readonly UnitView[]): { forecast: Forecast; perTurn: number } {
   const city = view.cities.find((c) => c.id === cityId)!;
   const modes = attackers.map((u) => ({ u, mode: strikeMode(u, city) })).filter((m): m is { u: UnitView; mode: 'ranged' | 'melee' } => m.mode !== null);
-  if (!modes.length) return { perTurn: 0, forecast: { turns: null, level: 'quiet', text: 'Nothing beside it now', short: 'nothing beside it', detail: `${city.name} regains ${CITY_HEAL} HP a turn while no enemy stands next to it.` } };
+  if (!modes.length) return { perTurn: 0, forecast: { turns: null, level: 'quiet', text: 'Nothing beside it now', short: 'nothing beside it', detail: `${city.name} regains ${CITY_HEAL} health a turn while no enemy stands next to it.` } };
   const wound = (h: number) => idiv(CITY_HP - h, 20);
   const defense = (hp: number) => Math.max(1, city.strength + wound(city.hp) - wound(hp));
   const melee = modes.some((m) => m.mode === 'melee');
@@ -183,17 +183,17 @@ export function captureForecast(view: PlayerView, cityId: number, attackers: rea
       if (grHp <= 0 && melee) fell = t;
     } else if (melee) fell = t;
   }
-  const sum = `${forceText(modes.map((m) => ({ kind: m.u.kind, faction: factionOf(view, m.u.owner) })))} hit for about ${first} HP a turn at average rolls against defence ${defense(city.hp)}`;
-  const guard = garrison ? ` Its ${itemName({ kind: 'Unit', unit: garrison.kind }, factionOf(view, garrison.owner))} (${garrison.hp} HP) must fall before it is taken.` : ' Nothing garrisons it.';
-  const detail = `${sum}; ${city.name} has ${city.hp} HP and does not heal while they stand beside it.${guard}${melee ? '' : ' Ranged units wear it down but cannot take it.'}`;
+  const sum = `${forceText(modes.map((m) => ({ kind: m.u.kind, faction: factionOf(view, m.u.owner) })))} hit for about ${first} health a turn at average rolls against defence ${defense(city.hp)}`;
+  const guard = garrison ? ` Its ${itemName({ kind: 'Unit', unit: garrison.kind }, factionOf(view, garrison.owner))} (${garrison.hp} health) must fall before it is taken.` : ' Nothing garrisons it.';
+  const detail = `${sum}; ${city.name} has ${city.hp} health and does not heal while they stand beside it.${guard}${melee ? '' : ' Ranged units wear it down but cannot take it.'}`;
   if (fell !== null) {
     const text = fell <= 1 ? 'Falls next turn unless reinforced' : `Holds about ${fell} turns unless reinforced`;
     return { perTurn: first, forecast: { turns: fell, text, short: fell <= 1 ? 'falls next turn' : `falls in about ${fell} turns`, detail, level: fell <= 1 ? 'now' : fell <= 3 ? 'soon' : 'holding' } };
   }
   if (!melee && zeroTurn !== null) {
-    return { perTurn: first, forecast: { turns: null, short: city.hp <= 0 ? 'at 0 HP' : zeroTurn <= 1 ? '0 HP next turn' : `0 HP in ${zeroTurn} turns`, text: city.hp <= 0 ? 'At 0 HP; no melee unit to take it yet' : zeroTurn <= 1 ? 'Drops to 0 HP next turn; no melee unit to take it yet' : `Drops to 0 HP in about ${zeroTurn} turns; no melee unit to take it yet`, detail, level: zeroTurn <= 1 ? 'soon' : 'holding' } };
+    return { perTurn: first, forecast: { turns: null, short: city.hp <= 0 ? 'at 0 health' : zeroTurn <= 1 ? '0 health next turn' : `0 health in ${zeroTurn} turns`, text: city.hp <= 0 ? 'At 0 health; no melee unit to take it yet' : zeroTurn <= 1 ? 'Drops to 0 health next turn; no melee unit to take it yet' : `Drops to 0 health in about ${zeroTurn} turns; no melee unit to take it yet`, detail, level: zeroTurn <= 1 ? 'soon' : 'holding' } };
   }
-  return { perTurn: first, forecast: { turns: null, short: 'holding for now', text: `Holds for now: it loses about ${first} HP a turn`, detail, level: 'holding' } };
+  return { perTurn: first, forecast: { turns: null, short: 'holding for now', text: `Holds for now: it loses about ${first} health a turn`, detail, level: 'holding' } };
 }
 
 /**

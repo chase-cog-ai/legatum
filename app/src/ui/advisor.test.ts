@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { FixtureClient } from '../test/fixtureEngine';
 import { advisor_orders } from '../wasm-pkg/legatum.js';
 import { neighbors } from '../hex';
-import type { Order } from '../types';
-import { advisorSuggestion, advisorWhy, type AdvisorContext } from './advisorModel';
+import type { Order, TechId } from '../types';
+import { TECH_NAME } from '../data';
+import { advisorSuggestion, advisorWhy, practiceKind, PRACTICE_TURNS, readAdvisorPreferences, useAdvisor, type AdvisorContext } from './advisorModel';
 
 async function opening() {
   const client = new FixtureClient();
@@ -87,10 +88,23 @@ describe('one decision at a time', () => {
       steps: [{ instruction: 'Click Choose 1 free technology.', target: { kind: 'control', name: 'turn' } }] });
   });
 
+  it('answers an incoming Open Borders offer by its own name, never as a Peace (advisor review of PR 184)', async () => {
+    const { view, ctx } = await opening();
+    const rival = view.players.find((p) => p.team !== view.team)!;
+    view.diplomacy.proposals = [{ id: 50, from: rival.team, to: view.team, proposer: rival.id, kind: 'OpenBorders',
+      created_turn: view.turn, respond_by: view.turn + 2, relation_version: 0, gold: -20 }];
+    const s = advisorSuggestion(ctx(), ['welcome'], []);
+    expect(s).toMatchObject({ title: 'Answer this first', steps: [{ target: { kind: 'control', name: 'turn' } }] });
+    expect(s!.why).toMatch(new RegExp(`^Open Borders with .+: your units may enter each other’s land · asks 20 Gold · respond by turn ${view.turn + 2}$`));
+    expect(s!.why).not.toContain('Peace');
+  });
+
   it('uses plain facts and exact controls on touch', async () => {
     const { view, city, unit, tech, ctx } = await opening();
     const military: Order = { type: 'SetProduction', city: city.id, item: { kind: 'Unit', unit: 'Spearman' } };
-    expect(advisorSuggestion({ ...ctx(), techOpen: true, touch: true }, ['welcome'], [])?.steps[1].instruction).toMatch(/^Tap Research now on /);
+    const pick = advisorSuggestion({ ...ctx(), techOpen: true, touch: true }, ['welcome'], [])?.steps[1];
+    expect(pick?.target).toMatchObject({ kind: 'control', name: 'tech' });
+    expect(pick?.instruction).toBe(`Tap ${TECH_NAME[(pick!.target as { value: TechId }).value]}.`);
     const found = advisorSuggestion({ ...ctx([{ type: 'SetProduction', city: city.id, item: city.detail!.options[0].item }]),
       plan: [{ type: 'FoundCity', unit: unit.id }], touch: true }, ['welcome'], []);
     expect(found?.steps[1].instruction).toBe('Tap Found City.');
@@ -104,6 +118,11 @@ describe('one decision at a time', () => {
     expect(advisorWhy(military, view, city)).toBe('You have 2 military units for 2 cities.');
     expect(advisorWhy({ type: 'SetProduction', city: city.id, item: { kind: 'Unit', unit: 'Settler' } }, view, city))
       .toBe('A Settler founds a new city, and more cities grow your empire.');
+    const upgrade: Order = { type: 'SetProduction', city: city.id, item: { kind: 'Building', building: 'UpgradeWalls' } };
+    expect(advisorWhy(upgrade, view, city)).toBe(`Upgrade Walls adds city strength in ${city.name}.`);
+    const walled = { ...city, walls: true, walls_level: 2 };
+    view.cities = view.cities.map((c) => (c.id === city.id ? walled : c));
+    expect(advisorSuggestion(ctx([], null, [upgrade]), ['welcome'], [])?.title).toBe(`Build Upgrade Walls (to III) in ${city.name}`);
     const unlockable = view.research.available.find((option) => view.research.unlocks.some((u) => u.tech === option.tech))?.tech;
     expect(advisorWhy({ type: 'SetResearch', tech: unlockable ?? tech }, view))
       .toMatch(unlockable ? /^.+ unlocks the .+\.$/ : /^Research gives your empire new choices\.$/);
@@ -150,4 +169,94 @@ describe('one decision at a time', () => {
     const plan = JSON.parse(advisor_orders(JSON.stringify(client.view(0)))) as Order[];
     expect(plan.some((o) => o.type === 'MoveUnit' || o.type === 'MoveUnitPath')).toBe(true);
   });
+});
+
+describe('only new things once the basics are known', () => {
+  it('stops pointing at a routine unit move after a few turns of practice, but keeps builds, research and settlers', async () => {
+    const { city, unit, plan, ctx, view } = await opening();
+    const cityDone = [plan[0]];
+    expect(practiceKind(plan[1], view)).toBe(unit.kind === 'Settler' ? null : 'move');
+    if (unit.kind === 'Settler') return;
+    expect(advisorSuggestion(ctx(cityDone), ['welcome'], [], { move: PRACTICE_TURNS - 1 })?.id).toBe(`unit:${unit.id}`);
+    expect(advisorSuggestion(ctx(cityDone), ['welcome'], [], { move: PRACTICE_TURNS })?.id).not.toBe(`unit:${unit.id}`);
+    const known = { move: PRACTICE_TURNS, fortify: PRACTICE_TURNS, skip: PRACTICE_TURNS, explore: PRACTICE_TURNS, endTurn: PRACTICE_TURNS };
+    expect(advisorSuggestion(ctx(), ['welcome'], [], known)?.id).toBe(`city:${city.id}`);
+    expect(advisorSuggestion({ ...ctx(cityDone), techOpen: true }, ['welcome'], [], known)?.id).toBe('research');
+  });
+
+  it('keeps attacks, settler moves and Found City as advice', async () => {
+    const { view } = await opening();
+    const own = view.units.find((u) => u.owner === view.me)!;
+    const settler = { ...own, id: 9001, kind: 'Settler' as const, military: false };
+    const rival = view.players.find((p) => p.id !== view.me && p.team !== view.team)!;
+    const enemy = { ...own, id: 9002, owner: rival.id, pos: neighbors(own.pos)[1] };
+    view.units.push(enemy);
+    view.units.push(settler);
+    expect(practiceKind({ type: 'MoveUnit', unit: settler.id, to: neighbors(settler.pos)[0] }, view)).toBeNull();
+    expect(practiceKind({ type: 'FoundCity', unit: settler.id }, view)).toBeNull();
+    expect(practiceKind({ type: 'RangedAttack', unit: own.id, target: enemy.pos }, view)).toBeNull();
+    expect(practiceKind({ type: 'MoveUnit', unit: own.id, to: enemy.pos }, view)).toBeNull();
+    expect(practiceKind({ type: 'SleepUnit', unit: own.id }, view)).toBe('fortify');
+    expect(practiceKind({ type: 'SkipUnit', unit: own.id }, view)).toBe('skip');
+  });
+
+  it('stays quiet about End turn and Close Research once practised', async () => {
+    const { view, plan, ctx } = await opening();
+    const orders: Order[] = [plan[0], plan[2], ...view.units.filter((u) => u.owner === view.me).map((u) => ({ type: 'SkipUnit' as const, unit: u.id }))];
+    expect(advisorSuggestion(ctx(orders), ['welcome'], [], { endTurn: PRACTICE_TURNS - 1 })?.id).toBe('endTurn');
+    expect(advisorSuggestion(ctx(orders), ['welcome'], [], { endTurn: PRACTICE_TURNS })).toBeNull();
+    const research: Order[] = [{ type: 'SetResearch', tech: view.research.available[0].tech }];
+    expect(advisorSuggestion({ ...ctx(research), techOpen: true }, ['welcome'], [], { closeResearch: PRACTICE_TURNS })?.id).not.toBe('closeResearch');
+  });
+});
+
+describe('deals in the Hard plan', () => {
+  // Deals are optional (advisor review of PR 184): the advisor teaches no deal, so Gold in an offer, a
+  // gift to another empire or closing borders in the plan changes nothing it suggests.
+  it('makes no suggestion for Gold offers, gifts to a rival or closing borders', async () => {
+    const { view, plan, ctx } = await opening();
+    const rival = view.players.find((p) => p.team !== view.team)!;
+    const deals: Order[] = [
+      { type: 'ProposeTreaty', to: rival.team, kind: 'OpenBorders', gold: -40 },
+      { type: 'GiveGold', to: rival.id, amount: 30 },
+      { type: 'BreakTreaty', with: rival.team, agreement: 'OpenBorders' },
+    ];
+    for (const done of [[], plan.slice(0, 1), plan]) {
+      const without = advisorSuggestion(ctx(done, null, plan), ['welcome'], []);
+      const withDeals = advisorSuggestion(ctx(done, null, [...deals, ...plan]), ['welcome'], []);
+      expect(withDeals).toEqual(without);
+      expect(JSON.stringify(withDeals ?? {})).not.toMatch(/Open Borders|Give Gold|Close borders|ProposeTreaty|GiveGold|BreakTreaty/);
+    }
+    // With only deal orders in the plan, the advisor falls back to the basics, never to a deal.
+    const only = advisorSuggestion(ctx([], null, deals), ['welcome'], []);
+    expect(JSON.stringify(only ?? {})).not.toMatch(/Open Borders|Give Gold|Close borders/);
+  });
+});
+
+describe('practice counting', () => {
+  it('counts each routine once per turn, persists it, and can be reset', () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) });
+    useAdvisor.setState({ practice: {}, practised: [], practisedTurn: -1 });
+    const { practise } = useAdvisor.getState();
+    practise(['move', 'move'], 3);
+    practise(['move', 'skip'], 3);
+    practise(['move'], 4);
+    expect(useAdvisor.getState().practice).toEqual({ move: 2, skip: 1 });
+    expect(readAdvisorPreferences().practice).toEqual({ move: 2, skip: 1 });
+    practise(['move'], 5); practise(['move'], 6);
+    expect(useAdvisor.getState().practice.move).toBe(PRACTICE_TURNS);
+    useAdvisor.getState().resetPractice();
+    expect(readAdvisorPreferences().practice).toEqual({});
+    vi.unstubAllGlobals();
+  });
+});
+
+it('a Settler with no planned order still gets a card when moving is learned', async () => {
+  const { view, plan, ctx } = await opening();
+  const own = view.units.find((u) => u.owner === view.me)!;
+  const settler = { ...own, id: 9101, kind: 'Settler' as const, military: false };
+  view.units = [...view.units.filter((u) => u.owner !== view.me), settler];
+  const s = advisorSuggestion({ ...ctx([plan[0], plan[2]]), plan: [] }, ['welcome'], [], { move: PRACTICE_TURNS });
+  expect(s?.id).toBe(`unit:${settler.id}`);
 });

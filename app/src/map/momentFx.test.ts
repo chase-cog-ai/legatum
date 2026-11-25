@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUILD_MS, CONSTRUCTION_ANIMATION, FLIP_MS, FOUND, LINGER, buildMomentPlan, buildPhases, holdAt, momentTime, momentsLive, movesEnd } from './momentFx';
+import { BUILD_MS, CONSTRUCTION_ANIMATION, FLIP_MS, FOUND, LINGER, WALLS_MS, buildMomentPlan, buildPhases, holdAt, momentTime, momentsLive, movesEnd } from './momentFx';
 import { buildCombatPlan } from './combatFx';
 import { tileIndex } from '../hex';
 import type { Event, Hex, PlayerView } from '../types';
@@ -116,6 +116,20 @@ describe('payoff moments plan', () => {
     expect(at(FOUND.done).banner.has(4)).toBe(false);
     const end = holdAt(plan, plan.total);
     expect([end.towns.size, end.owner.size, end.banner.size, end.sig]).toEqual([0, 0, 0, holdAt(plan, plan.total + 500).sig]);
+  });
+
+  it('runs light along a ring when Walls finish or rise a level in sight, and not for a capture or a city out of the fog', () => {
+    const at = (walls: boolean, level: number, extra: { owner?: number; visible?: boolean } = {}) =>
+      view(tiles([[CITY, 0]]), [{ id: 4, owner: 0, pos: CITY, ...extra }].map((c) => ({ ...c, walls, walls_level: level })) as never);
+    const built = buildMomentPlan([], at(false, 0), at(true, 1), 0)!;
+    expect(built.walls).toEqual([expect.objectContaining({ city: 4, tile: tileIndex(CITY, W, H) })]);
+    // After the moves (econ is start + 500), and the plan lasts until the light has crossed.
+    expect(built.walls[0].t).toBeGreaterThan(500);
+    expect(built.total).toBeGreaterThanOrEqual(built.walls[0].t + WALLS_MS);
+    expect(buildMomentPlan([], at(true, 2), at(true, 3), 0)!.walls).toHaveLength(1);
+    expect(buildMomentPlan([], at(true, 3), at(true, 3), 0)?.walls ?? []).toHaveLength(0);
+    expect(buildMomentPlan([], at(false, 0, { owner: 2 }), at(true, 1), 0)?.walls ?? []).toHaveLength(0);
+    expect(buildMomentPlan([], at(false, 0, { visible: false }), at(true, 1), 0)?.walls ?? []).toHaveLength(0);
   });
 
   it('with construction switched off, shows new towns, buildings and walls at once but keeps them in the plan for a new design', () => {

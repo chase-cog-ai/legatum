@@ -797,8 +797,7 @@ fn next_step(
     let exits = (!open(u.pos)).then(|| exits_from(state, open));
     let cost = |a, b| {
         state
-            .map
-            .move_cost(b)
+            .unit_step_cost(u, b)
             .filter(|_| path::border_step(&state.map, a, b, open, exits.as_deref()))
     };
     let max_moves = state.unit_moves_of(u);
@@ -1314,7 +1313,7 @@ fn movement_round(
             && let Some((landing, total)) = path::hop(
                 route,
                 u.pos,
-                |_, h| state.map.move_cost(h),
+                |_, h| state.unit_step_cost(u, h),
                 |h| {
                     stationary_friend(state, &dense, &movers, &staying, u, h)
                         || state
@@ -1360,8 +1359,11 @@ fn movement_round(
             stopped.insert(id);
             continue;
         }
-        let cost =
-            hop_cost.unwrap_or_else(|| state.map.move_cost(to).expect("path steps are passable"));
+        let cost = hop_cost.unwrap_or_else(|| {
+            state
+                .unit_step_cost(u, to)
+                .expect("path steps are passable")
+        });
         if !can_step(u.moves_left, state.unit_moves_of(u), cost) {
             stopped.insert(id);
             continue;
@@ -2664,7 +2666,7 @@ mod tests {
             assert_eq!(
                 next.cities[&c].owner,
                 PlayerId(0),
-                "garrison HP {garrison_hp}, Mongols {mongol_garrison}: {events:?}"
+                "garrison health {garrison_hp}, Mongols {mongol_garrison}: {events:?}"
             );
             assert_eq!(next.units.contains_key(&g), garrison_hp == 100);
             if garrison_hp == 100 {

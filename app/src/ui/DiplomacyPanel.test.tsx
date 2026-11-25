@@ -39,9 +39,7 @@ const labelled = (label: string) => [...container.querySelectorAll<HTMLButtonEle
 it('shows the recorded AI level in diplomacy and the victory race', () => {
   act(() => root.render(<><VpTrack /><DiplomacyPanel /></>));
   expect([...container.querySelectorAll('.empire-pick-level')].map((e) => e.textContent)).toContain('AI · Normal');
-  const standings = container.querySelector<HTMLDetailsElement>('.sidebar-standings')!;
-  act(() => { standings.open = true; });
-  expect([...container.querySelectorAll('.vp-ai-level')].map((e) => e.textContent)).toContain('AI · Normal');
+  expect([...container.querySelectorAll('.rivals button.rv-row')].map((e) => e.getAttribute('title'))).toContain('AI · Normal. Open Diplomacy');
 });
 
 /** Our view with 120 Gold and +7 net Gold per turn, and the Alliance upkeep. */
@@ -311,7 +309,8 @@ it('lists empires with mark, faction name, relation and VP, and collapses unusab
   expect(open.textContent).toContain('No combat or captures; closed borders.');
   // Team 1 has an outstanding proposal to us: its offers are one muted line, not disabled buttons.
   expect([...open.querySelectorAll('button')].some((b) => b.textContent?.startsWith('Offer'))).toBe(false);
-  expect(open.querySelector('.diplomacy-unavailable')!.textContent).toMatch(/^Not now: Offer Alliance.*outstanding proposal/);
+  // Its reason says whose answer the offers wait for, and by when (not core's bare "outstanding proposal").
+  expect(open.querySelector('.diplomacy-unavailable')!.textContent).toBe(`Not now: Offer Alliance. ${empireTitle(view, 1)}’${empireTitle(view, 1).endsWith('s') ? '' : 's'} Alliance offer waits for your answer in the Inbox, due turn 3.`);
   act(() => (rows.find((r) => r !== open)!.querySelector('.empire-pick') as HTMLButtonElement).click());
   expect(useGame.getState().diplomacyTeam).not.toBe(1);
 });

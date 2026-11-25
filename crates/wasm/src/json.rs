@@ -188,7 +188,9 @@ pub fn upgrade_from_49(json: &str) -> Result<GameState, String> {
     match v.get("save_version").and_then(Value::as_u64) {
         None if carries_rules_49_fields(&v) => upgrade_value_from_49(v),
         None | Some(50) | Some(51) | Some(52) | Some(53) | Some(54) | Some(55) | Some(56)
-        | Some(57) | Some(58) | Some(59) | Some(60) | Some(61) | Some(62) => upgrade_value_from_50(v),
+        | Some(57) | Some(58) | Some(59) | Some(60) | Some(61) | Some(62) => {
+            upgrade_value_from_50(v)
+        }
         Some(49) => upgrade_value_from_49(v),
         Some(n) if n == u64::from(legatum_core::RULES_VERSION) => parse_state(json),
         Some(n) => Err(format!(

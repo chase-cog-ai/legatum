@@ -4282,6 +4282,7 @@ dialog.gameover::backdrop {
 .cp-raze .raze-row p, .cp-raze [data-testid="raze-confirm"] p { margin: 0 0 4px; font: 500 12px/1.35 var(--sans); }
 .cp-raze .raze-row p { flex: 1; min-width: 0; margin: 0; text-wrap: pretty; }
 .cp-raze .raze-row .btn { flex: none; }
+.cp-raze .raze-row.stacked { flex-direction: column; align-items: stretch; gap: 4px; }
 .cp-raze .raze-loses { margin: 0 0 4px; padding-left: 16px; font: 500 12px/1.35 var(--sans); }
 .cp-raze .raze-loses .raze-vp { color: var(--bad); font-weight: 700; }
 .cp-raze .raze-buttons { display: flex; gap: 8px; margin-top: 2px; }

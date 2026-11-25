@@ -362,7 +362,7 @@ export function CityPanel({ city, view, peek = false }: { city: CityView; view: 
           setReturnConfirm(false);
         }}>Confirm Return</button>
       </div>
-    </div> : <div className="raze-row">
+    </div> : <div className={returnOrdered ? 'raze-row stacked' : 'raze-row'}>
       <p>{founderName} founded this city. Hand it back whole and gain {returnGold} Gold, twice a Raze.</p>
       {returnOrdered ? <button className="btn" onClick={() => editOrders((list) => list.filter((o) => !(o.type === 'ReturnCity' && o.city === city.id)))}>Return ordered · Undo</button>
         : <button className="btn" disabled={view.finished || !!d.return_blocker || razeOrdered} onClick={() => setReturnConfirm(true)}>Return city</button>}

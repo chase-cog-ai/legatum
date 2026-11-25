@@ -2619,16 +2619,15 @@ fn check_cession(
     if c.is_capital {
         return Err(format!("{} is a capital and cannot be handed over", c.name));
     }
-    if let Some(to) = to {
-        if state.player(to).faction == crate::Faction::Celts
-            && c.founder != to
-            && !state
-                .setup
-                .rule_experiments
-                .rule_off(crate::experiments::FactionRule::CeltsNoKeep)
-        {
-            return Err("The Celts keep no city they did not found".into());
-        }
+    if let Some(to) = to
+        && state.player(to).faction == crate::Faction::Celts
+        && c.founder != to
+        && !state
+            .setup
+            .rule_experiments
+            .rule_off(crate::experiments::FactionRule::CeltsNoKeep)
+    {
+        return Err("The Celts keep no city they did not found".into());
     }
     Ok(())
 }

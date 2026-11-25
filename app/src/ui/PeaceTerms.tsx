@@ -42,6 +42,8 @@ export function draftError(view: PlayerView, d: Draft): string | null {
   if (!Number.isInteger(gold) || gold < 0 || gold > PEACE_GOLD_MAX) return `Gold is a whole number up to ${PEACE_GOLD_MAX}.`;
   if (d.goldSide === 'pay' && gold > view.economy.gold) return `You have ${view.economy.gold} Gold.`;
   if (!Number.isInteger(rep) || rep < 0 || rep > REPARATIONS_MAX) return `Gold each turn is a whole number up to ${REPARATIONS_MAX}.`;
+  const income = view.economy.gold_per_turn.total;
+  if (d.repSide === 'pay' && rep > Math.max(0, income)) return `Gold each turn comes out of your income: ${income} Gold a turn.`;
   return null;
 }
 

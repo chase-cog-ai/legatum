@@ -621,14 +621,21 @@ impl Planner<'_> {
     }
 }
 
-/// A forecast shot's damage to the city's HP at every roll, as resolution computes it.
+/// A forecast shot's damage to the city at every roll, in the city's HP: with a Walls bar
+/// standing, the share of the whole front (bar and HP) it removes (`combat::front_damage_as_hp`).
 fn shot_rolls(f: &legatum_core::BattleForecast) -> Shot {
     let percent = f.walls.map_or(100, |w| w.percent);
+    let walls_hp = f.walls.map_or(0, |w| w.hp);
     (combat::ROLL_MIN..=combat::ROLL_MAX)
         .map(|r| {
-            combat::damage_to_city_hp(
+            combat::front_damage_as_hp(
+                combat::damage_to_city_hp(
+                    f.city_hp_percent.unwrap_or(100),
+                    combat::damage(f.attacker_strength.total, f.defender_strength.total, r),
+                ),
+                f.defender_hp,
+                walls_hp,
                 percent,
-                combat::damage(f.attacker_strength.total, f.defender_strength.total, r),
             )
         })
         .collect()

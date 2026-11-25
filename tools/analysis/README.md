@@ -15,7 +15,7 @@ Analysis only. This separate Cargo workspace calls the existing core, player vie
 
 The supplied results use source commit `f59bb2546a7cdc4df4120b81bbcc5baaf2edb058`, Rust/Cargo 1.98.1, and Python 3.14.7. Python scripts use only the standard library. Run commands from the repository root. The analysis crate has its own lockfile.
 
-Probe runs use Standard pace with no turn limit. `--safety-cap` defaults to 1,200 turns; if the game is unfinished at the cap, it records `outcome: "stalled"` and `finished: false` without awarding victory. An optional `--turn-limit N` lets the core finish by VP at turn N; it is independent of the safety cap. Both limits accept 1 through 4294967294. Telemetry records the fixed Standard pace, optional turn limit, and effective safety cap.
+Probe runs use Standard pace with no configured turn limit, so the core ends them at turn 500 (`data::DEFAULT_TURN_LIMIT`, most VP wins; rules 62; results recorded before 2026-11-25 ran on). `--safety-cap` defaults to 1,200 turns and can only fire for a larger `--turn-limit`; if the game is unfinished at the cap, it records `outcome: "stalled"` and `finished: false` without awarding victory. An optional `--turn-limit N` lets the core finish by VP at turn N; it is independent of the safety cap. Both limits accept 1 through 4294967294. Telemetry records the fixed Standard pace, optional turn limit, and effective safety cap.
 
 Reproduce the requested simulator batches:
 

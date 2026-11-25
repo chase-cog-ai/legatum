@@ -302,7 +302,7 @@ it.each([
 
   // An unrelated host edit must retain the exact dimensions and configured seat defaults.
   const turnLimitOff = [...container.querySelectorAll<HTMLButtonElement>('[aria-label="Turn limit"] button')]
-    .find((button) => button.textContent?.startsWith('Off'))!;
+    .find((button) => button.textContent?.startsWith('Turn '))!;
   await act(async () => turnLimitOff.click());
   expect(start.disabled).toBe(true);
   expect(posted).toEqual([]);

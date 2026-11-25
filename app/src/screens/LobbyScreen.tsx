@@ -26,6 +26,7 @@ import {
   type LobbyMode,
 } from '../lobby';
 import { closeStaging, configFromLobby, everyoneReady, lobbyFromStaging, withOccupants, stagingEnabled, startStaging, settingsAcknowledged, StagingSettingsWriter, type StagingConfig } from '../staging';
+import { effectiveTurnLimit } from '../data';
 import { HOLD_TURNS, turnsWord } from '../victoryHold';
 import { Amount } from '../ui/Amounts';
 import { SeatsTable } from './lobby/SeatsTable';
@@ -272,7 +273,7 @@ export function Victory({ lobby }: { lobby: Lobby }) {
         <h3>Victory</h3>
       </div>
       <p className="lobby-victory-lede">
-        A team wins by reaching its VP target and holding it for {HOLD_TURNS} turns{lobby.turnLimit === null ? ". No turn limit." : `; otherwise the most VP at turn ${lobby.turnLimit}.`} Teammates share vision and victory.
+        A team wins by reaching its VP target and holding it for {HOLD_TURNS} turns; otherwise the most VP at turn {effectiveTurnLimit(lobby.turnLimit)}. Teammates share vision and victory.
       </p>
       <div className="team-targets">
         {ts.map((t) => (

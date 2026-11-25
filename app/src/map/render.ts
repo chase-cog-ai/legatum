@@ -25,7 +25,7 @@ import { BANNER_BOTTOM, CITY_UNIT_DROP, HEX_SIZE, K, PIP_HALF, sealRadius, bound
 import { computeLabels, type MapLabel } from './labels';
 import { reachTiles } from './reach';
 import type { MapCue, ReportArrow } from './cues';
-import { drawSiegeBadge, drawSiegeBar, drawSiegeRing, drawSiegeSealRing, SIEGE_BAR_GAP, SIEGE_BAR_H, siegeRingBox, siegeSealRingBox } from './siegeMark';
+import { drawSiegeBadge, drawSiegeBar, drawSiegeRing, drawSiegeSealRing, SIEGE_BAR_GAP, SIEGE_BAR_H, siegeRingBox, siegeSealRingBox, WALLS_STONE, WALLS_TRACK } from './siegeMark';
 import type { SiegeLevel } from '../siege';
 import { miniatureImage } from '../unitArt';
 import { siegePropFor, siegePropImage, siegePropRect, type SiegeProp } from '../siegeProps';
@@ -867,7 +867,10 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     if (motion && motion.sx !== 1) { ctx.save(); ctx.translate(x, 0); ctx.scale(motion.sx, 1); ctx.translate(-x, 0); }
     drawSprite(ctx, far.seal, far.x, far.y + (motion?.dy ?? 0), alpha);
     if (motion && motion.sx !== 1) ctx.restore();
-    if (siege.has(c.id)) drawSiegeBar(ctx, far.x, far.y - far.seal.ay + far.seal.h + 2, Math.max(30, far.seal.w), c.hp, c.max_hp, FONTS[look].sans, false);
+    if (siege.has(c.id)) {
+      const bar = bannerBarOf(c, c.hp);
+      drawSiegeBar(ctx, far.x, far.y - far.seal.ay + far.seal.h + 2, Math.max(30, far.seal.w), bar.value, bar.max, FONTS[look].sans, false, bar.walls);
+    }
   }
 
   drawStationBadge(ctx, view, S2, hexPx, w, h);
@@ -1018,19 +1021,28 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
       const hpNow = cityHp(c);
       if (level) {
         const barY = r.y + r.h + SIEGE_BAR_GAP;
-        drawSiegeBar(ctx, x, barY, Math.min(Math.max(r.w - 8, 64), 128), hpNow, c.max_hp, FONTS[look].sans);
+        const bar = bannerBarOf(c, hpNow);
+        drawSiegeBar(ctx, x, barY, Math.min(Math.max(r.w - 8, 64), 128), bar.value, bar.max, FONTS[look].sans, true, bar.walls);
         if (meters.length) drawBannerMeters(ctx, look, meters, x, barY + SIEGE_BAR_H + 4, dpr);
         drawSiegeRing(ctx, cover, level, inp.pulseTime ?? inp.time, inp.reducedMotion);
         ambient.push(siegeRingBox(cover));
         drawSiegeBadge(ctx, cover.x + cover.w, cover.y, 11, dpr);
       } else {
-        if (meters.length) drawBannerMeters(ctx, look, meters, x, r.y + r.h + (c.visible && hpNow < c.max_hp ? 6 : 1), dpr);
-        if (c.visible && hpNow < c.max_hp) {
-          const f = Math.max(0, hpNow / c.max_hp);
+        const bar = bannerBarOf(c, hpNow);
+        const hurt = c.visible && bar.value < bar.max;
+        if (meters.length) drawBannerMeters(ctx, look, meters, x, r.y + r.h + (hurt ? 6 : 1), dpr);
+        if (hurt) {
+          const f = Math.max(0, bar.value / bar.max);
           const bw = Math.min(r.w - 16, 72), bx = x - bw / 2, by = r.y + r.h + 1;
-          ctx.fillStyle = TOKEN_INK.atlas.paper; ctx.fillRect(bx, by, bw, 4);
-          ctx.fillStyle = healthColor(f); ctx.fillRect(bx, by, bw * f, 4);
+          // A Walls bar sits on a dark track with a small tower at its left end, so a rival's stone fill never reads as empty (UI review, PR 212).
+          ctx.fillStyle = bar.walls ? WALLS_TRACK : TOKEN_INK.atlas.paper; ctx.fillRect(bx, by, bw, 4);
+          ctx.fillStyle = bar.walls ? WALLS_STONE : healthColor(f); ctx.fillRect(bx, by, bw * f, 4);
           ctx.strokeStyle = TOKEN_INK.atlas.ink; ctx.lineWidth = 0.8; ctx.strokeRect(bx, by, bw, 4);
+          if (bar.walls) {
+            // The banner's own Walls icon, not a second drawing of it (art review, PR 212).
+            const ic = tintedIcon('building-walls', TOKEN_INK.atlas.ink, Math.ceil(10 * dpr));
+            if (ic) ctx.drawImage(ic, bx - 11, by - 3, 10, 10);
+          }
         }
       }
       if (motion && motion.sx !== 1) ctx.restore();
@@ -1290,7 +1302,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     bannerHits: banners.map((b) => {
       const rect = b.far ? b.cover : bannerRect(look, b.spec, b.x, b.y, b.fs, dpr);
       // What is drawn: the plate, then the strip under it (meters, siege bar or HP bar), centred and no wider than they are.
-      const under = Math.max(b.meters.length ? bannerMetersSize(look, b.meters, dpr).w : 0, siege.has(b.c.id) ? Math.min(Math.max(rect.w - 8, 64), 128) : 0, cityHp(b.c) < b.c.max_hp ? Math.min(rect.w - 16, 72) : 0);
+      const under = Math.max(b.meters.length ? bannerMetersSize(look, b.meters, dpr).w : 0, siege.has(b.c.id) ? Math.min(Math.max(rect.w - 8, 64), 128) : 0, barHurt(b.c, cityHp(b.c)) ? Math.min(rect.w - 16, 72) : 0);
       const parts = b.far ? [b.cover] : [rect, { x: b.x - under / 2, y: rect.y + rect.h, w: under, h: b.cover.h - rect.h }];
       return { city: b.c, rect, cover: b.cover, parts, far: !!b.far };
     }),
@@ -1403,6 +1415,22 @@ function cityBanners(view: PlayerView, cam: Camera, w: number, h: number, dpr: n
   return items;
 }
 
+/**
+ * The bar a city's banner shows: its Walls bar while the Walls stand (hits land there first and it never
+ * heals), otherwise its health.
+ */
+export function bannerBarOf(c: CityView, hpNow: number): { value: number; max: number; walls: boolean } {
+  const max = c.walls_max_hp ?? 0, walls = c.walls_hp ?? 0;
+  if (max > 0 && walls > 0) return { value: walls, max, walls: true };
+  return { value: hpNow, max: c.max_hp, walls: false };
+}
+
+/** The banner shows a damage bar: its Walls bar or its health is below full. */
+function barHurt(c: CityView, hpNow: number): boolean {
+  const bar = bannerBarOf(c, hpNow);
+  return bar.value < bar.max;
+}
+
 /** A named banner's block (plate, meters, siege or damage bar) for a city centred at `p`, in screen px. */
 function bannerBlock(c: CityView, spec: BannerSpec, meters: BannerMeter[], p: { x: number; y: number }, hexPx: number, fs: number, look: LookId, dpr: number, siege: ReadonlyMap<number, SiegeLevel>) {
   const metersH = meters.length ? bannerMetersSize(look, meters, dpr).h + 1 : 0;
@@ -1410,7 +1438,7 @@ function bannerBlock(c: CityView, spec: BannerSpec, meters: BannerMeter[], p: { 
   // 17 px, so hung under the plate they covered the top of the town, most of it at small zoom.
   const y = p.y - hexPx * BANNER_BOTTOM - metersH;
   const rect = bannerRect(look, spec, p.x, y, fs, dpr);
-  return { y, cover: { ...rect, h: rect.h + (siege.has(c.id) ? SIEGE_BAR_H + SIEGE_BAR_GAP + 3 : c.visible && c.hp < c.max_hp ? 6 : 0) + metersH } };
+  return { y, cover: { ...rect, h: rect.h + (siege.has(c.id) ? SIEGE_BAR_H + SIEGE_BAR_GAP + 3 : c.visible && barHurt(c, c.hp) ? 6 : 0) + metersH } };
 }
 
 /**

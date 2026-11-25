@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { CounterDelta } from '../celebrate/MomentLane';
 import { useGame } from '../store';
-import { CALENDAR_NOTE, TECH_NAME, calendarLabel, decadenceRules } from '../data';
+import { CALENDAR_NOTE, TECH_NAME, effectiveTurnLimit, calendarLabel, decadenceRules } from '../data';
 import { effectiveResearchQueue, pendingResearchQueue } from '../orders';
 import { firstScienceForecast } from '../research';
 import { eraName, eraNumeral, queueSchedule } from './eraResearch';
@@ -99,9 +99,8 @@ export function TopBar() {
     <BreakdownTable b={e.bankruptcy.gold} title="Next turn Gold before bankruptcy" />
     <div className="bd-note">{FORECAST_ASSUMPTIONS}</div>
   </> : null;
-  const turnTip = `${view.turn_limit === null
-    ? 'No turn limit; play until victory.'
-    : `${Math.max(0, view.turn_limit - view.turn)} turns until the turn limit. At turn ${view.turn_limit} the highest VP wins.`} ${CALENDAR_NOTE}`;
+  const lastTurn = effectiveTurnLimit(view.turn_limit);
+  const turnTip = `${Math.max(0, lastTurn - view.turn)} turns until turn ${lastTurn}, when the team with the most VP wins. ${CALENDAR_NOTE}`;
   return (
     <header ref={bar} className="topbar" data-overlay-slot="top-bar">
       <div className="brand">
@@ -178,7 +177,7 @@ export function TopBar() {
         <Tip content={<>{turnTip}<TrainingTip /></>} className="turn">
           <span className="turn-label">Turn</span>
           <b data-testid="turn-number">{view.turn}</b>
-          {view.turn_limit !== null && view.turn_limit - view.turn <= FINAL_TURNS && <span className="turn-of" data-testid="turn-of">of {view.turn_limit}</span>}
+          {lastTurn - view.turn <= FINAL_TURNS && <span className="turn-of" data-testid="turn-of">of {lastTurn}</span>}
           <span className="turn-year" data-testid="turn-year">· {calendarLabel(view.turn)}</span>
           <TrainingLine />
         </Tip>

@@ -66,6 +66,7 @@
 .moment-card.legendary .moment-lore { font-size: 22px; }
 [data-celebration-counter] { position: relative; }
 .celebrate-delta { position: absolute; z-index: 2; left: 50%; top: 100%; transform: translateX(-50%); white-space: nowrap; padding: 2px 5px; color: var(--good); background: var(--panel); border: 1px solid var(--accent); font: 700 14px/1.2 var(--sans); animation: counter-land 260ms 720ms ease-out both; pointer-events: none; }
+.celebrate-delta.cost { color: var(--bad); }
 [data-celebration-counter]:has(.celebrate-delta:not(.reduced)) { animation: counter-pulse 320ms 720ms ease-out; }
 @keyframes moment-arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes crest-burst { from { opacity: 0; transform: scale(.6); } 45% { opacity: 1; } to { opacity: .8; transform: scale(1); } }
@@ -269,3 +270,14 @@
 @keyframes unlock-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes unlock-wash { from { opacity: .2; transform: translateY(8px); -webkit-mask-size: 0% 0%; mask-size: 0% 0%; } 30% { opacity: 1; } to { opacity: 1; transform: none; -webkit-mask-size: 260% 260%; mask-size: 260% 260%; } }
 .moment-lane.reduced .moment-card.unlock *, .moment-lane.reduced .moment-card.unlock *::after { animation: none !important; }
+/* A treaty taking effect: both empires' crests either side of the treaty emblem, which presses in like a seal. */
+.moment-treaty { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.moment-treaty-emblem { display: inline-grid; place-items: center; animation: treaty-seal 520ms 120ms ease-out both; }
+.moment-treaty-gold { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0 0; padding: 6px 10px; border: 1px solid var(--rule-2); background: var(--panel-2); font: 700 17px/1.2 var(--display); }
+.moment-treaty-gold.gain b { color: var(--good); }
+.moment-treaty-gold.cost b { color: var(--bad); }
+@keyframes treaty-seal { from { opacity: 0; transform: scale(1.25); } 60% { opacity: 1; } to { opacity: 1; transform: none; } }
+@media (max-height: 700px), (max-width: 700px) {
+  .moment-treaty .medallion { width: 30px !important; height: 30px !important; }
+  .moment-treaty-gold { font-size: 15px; padding: 4px 8px; }
+}

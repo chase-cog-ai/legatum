@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const dir = fileURLToPath(new URL('../assets/rewards/', import.meta.url));
-const KINDS = ['camp', 'hall', 'ruin', 'captured', 'founded', 'growth', 'milestone', 'greatwork', 'tech'];
+const KINDS = ['camp', 'hall', 'ruin', 'captured', 'founded', 'growth', 'milestone', 'greatwork', 'tech', 'tomb'];
 
 it('every emblem kind has an SVG that is one currentColor ink with prefixed ids', () => {
   const files = readdirSync(dir).filter((f) => f.endsWith('.svg')).sort();

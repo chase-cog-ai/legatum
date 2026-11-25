@@ -85,3 +85,29 @@ it('shows a connection notice right under the lede, above the seats, as an alert
   expect(notice.compareDocumentPosition(seats) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(host.querySelector('.setup-lede')!.nextElementSibling).toBe(notice);
 });
+
+it('focuses the join code box on a locked game and marks a refused code in the box, not above the seats', () => {
+  act(() => useGame.setState((s) => ({ net: { ...s.net!, locked: true } })));
+  const input = host.querySelector<HTMLInputElement>('#join-code-input')!;
+  expect(document.activeElement).toBe(input);
+
+  act(() => useGame.getState().setJoinCodeText('WOLF41'));
+  act(() => host.querySelector<HTMLButtonElement>('.join-seat')!.click());
+  const socket = Socket.all[0];
+  act(() => {
+    socket.open();
+    socket.push({ type: 'error', code: 'wrong_join_code', message: 'That join code is not right.' });
+  });
+  expect(useGame.getState()).toMatchObject({ busy: null, error: null, joinCodeRejected: 'WOLF41' });
+  expect(host.querySelector('.toast')).toBeNull();
+  expect(host.querySelector('.join-code')!.classList.contains('wrong')).toBe(true);
+  expect(input.getAttribute('aria-invalid')).toBe('true');
+  expect(host.querySelector('#join-code-hint')!.textContent!.trim()).toBe('Wrong code. Check it with the host and try again.');
+  expect(host.querySelector('#join-code-hint .ui-mark')).not.toBeNull();
+  expect(document.activeElement).toBe(input);
+
+  // Changing the code clears the warning.
+  act(() => useGame.getState().setJoinCodeText('WOLF42'));
+  expect(host.querySelector('.join-code')!.classList.contains('wrong')).toBe(false);
+  expect(host.querySelector('#join-code-hint')!.textContent).toBe('Now pick a seat.');
+});

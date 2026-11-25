@@ -1,14 +1,21 @@
 version: 2
+# Every update waits a week after its release (cooldown) before Dependabot proposes it. A hijacked package version
+# is usually found and pulled within days; the wait keeps one from reaching a merged update, and with it the
+# deploy jobs that hold the Cloudflare token.
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
   # One pull request a week per ecosystem, so dependency updates are one review, not many.
   - package-ecosystem: "npm"
     directories: ["/app", "/infra/relay", "/infra/games"]
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
       npm:
         patterns: ["*"]
@@ -16,6 +23,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
       cargo:
         patterns: ["*"]

@@ -1,0 +1,5 @@
+# "Turn 0" in the uploaded games means "under five turns" (2026-11-25)
+
+A game's record was captured at setup and then every fifth turn, so every game that stopped in its first four turns sat in the upload list as `turns: 0`. On the first day of public traffic about 70% of 1,004 games were in that bucket, and nothing in the data could say whether those players never ended a turn or left on turn 4. The record is now also captured after each of turns 1 to 4 (`isHistoryCheckpoint`, `app/src/platform/gameUpload.ts`). When reading drop-off from the upload list, a turn count is the last checkpoint, not the last turn played: after turn 5 it still rounds down to a multiple of five unless the game finished or was abandoned.
+
+Two more reading rules from the same data: an `in-progress` record may still be being played (compare its last `turn_times` entry with the time of the pull), and difficulty comparisons are not experiments, because the default level is whatever the lobby preselects and most players never change it.

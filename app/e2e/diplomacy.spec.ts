@@ -56,22 +56,18 @@ test('Diplomacy: an incoming Peace offer opens the inbox and resolves next turn'
 });
 
 for (const [width, height] of [[1000, 600], [1440, 900]] as const) {
-  test(`Diplomacy: an empire you haven't met can't be offered an Alliance; the row says why once (${width}×${height})`, async ({ page }) => {
+  test(`Diplomacy: an empire you haven't met is hidden, as in the rivals table: one line counts it (${width}×${height})`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await loadSave(page, diplomacyCoreSave(1, { strangers: true }), 1);
     await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
     const panel = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
-    const offer = panel.getByRole('button', { name: 'Offer Alliance', exact: true });
-    await expect(offer).toBeDisabled();
-    // Disabled looks disabled: a dashed outline and a not-allowed cursor.
-    await expect(offer).toHaveCSS('border-top-style', 'dashed');
-    await expect(offer).toHaveCSS('cursor', 'not-allowed');
-    const reason = panel.locator('.diplomacy-blocked-reason');
-    await expect(reason).toHaveCount(1);
-    await expect(reason).toContainText("You haven't met Switzerland yet");
-    await reason.scrollIntoViewIfNeeded();
-    // Declaring war needs no contact, so it stays available.
-    await expect(panel.getByRole('button', { name: 'Declare War', exact: true })).toBeEnabled();
+    // No row, name or offers for it: the panel gives away nobody you haven't met.
+    await expect(panel.locator('.empire-pick')).toHaveCount(0);
+    await expect(panel.getByRole('list', { name: 'Empires' })).not.toContainText('Switzerland');
+    await expect(panel.getByRole('button', { name: 'Offer Alliance', exact: true })).toHaveCount(0);
+    const line = panel.getByTestId('unmet-empires');
+    await expect(line).toHaveText('?1 empire not met yet. Explore to meet them: offers need contact first.');
+    await line.scrollIntoViewIfNeeded();
     if (process.env.LEGATUM_SHOTS) await page.screenshot({ path: `${process.env.LEGATUM_SHOTS}/unmet-offer-${width}x${height}.png` });
   });
 }

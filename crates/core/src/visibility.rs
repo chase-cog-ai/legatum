@@ -625,6 +625,7 @@ mod tests {
                 bought: None,
                 buildings: Default::default(),
                 walls_level: 0,
+                walls_damage: 0,
                 hp: crate::data::CITY_HP,
                 last_attacked_turn: None,
                 tiles_claimed: 0,

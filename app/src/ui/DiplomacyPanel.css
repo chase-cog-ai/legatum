@@ -222,3 +222,10 @@
 .empire-relation.open-borders { color: var(--ink); border: 0; padding: 0; margin-top: 3px; width: max-content; font-size: 11px; }
 .empire-pick-identity .empire-relation.open-borders { display: flex; }
 .relation-emblems { display: inline-flex; gap: 4px; }
+/* One diplomatic order per empire per turn: the note under a button that would replace a queued one. */
+.diplomacy-replaces { flex-basis: 100%; margin: 2px 0 0; font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 4px; }
+/* Our recent offer it turned down or let lapse, on the empire's row for a few turns. */
+.diplomacy-panel .offer-outcome { margin: 2px 0 0; padding-left: 40px; font-size: 12px; line-height: 1.35; color: var(--ink-2); }
+/* Empires not met yet: one quiet line, as the rivals table's "Unknown" rows (nothing to pick). */
+.empire-row.unmet-summary { display: flex; align-items: center; gap: 10px; padding: 8px 0 8px 4px; font-size: 13px; }
+.empire-row.unmet-summary .relations-unknown { width: 24px; height: 24px; flex: none; }

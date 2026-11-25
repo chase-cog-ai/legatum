@@ -65,5 +65,5 @@ Moved verbatim from `game-rules.md` on 2026-11-22, in the original order; the or
 | Future | Stealth Technology | 906 | Stealth Fighter (Jet Fighter upgrade, strike 7, guard 5), Stealth Bomber (Jet Bomber upgrade, strike 10, only Stealth Fighters intercept); both use Silicon; hangars hold 3 |
 | Future | Recursive AI (`RecursiveAi`) | 930 | Reveal the whole map to the team (not unit sight); +20% Production in every city |
 
-**Game length:** there is one pace and the data tables hold its real prices and turn counts (no game-speed setting, scale or `Quick`). No default turn limit (`None` = play until victory); an optional limit ends on
+**Game length:** there is one pace and the data tables hold its real prices and turn counts (no game-speed setting, scale or `Quick`). With no configured limit (`None`) the game ends at turn 500 (`data::DEFAULT_TURN_LIMIT`, rules 62); a configured limit (any turn, shorter or longer) ends on
 highest VP. The game's expected length is `data::EXPECTED_GAME_TURNS` = 300 (forecast horizon and AI pacing); `data::FIRST_THIRD_TURNS` = 100.

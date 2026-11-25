@@ -200,7 +200,7 @@ export function assaultSummary(a: CityAssaultForecast, cityName: string, garriso
 }
 
 /**
- * What the city's Walls do to this attack (core `WallsForecast`): halve its damage to the city's HP, unless the attacking unit
+ * What the city's Walls do to this attack (core `WallsForecast`): the Walls bar takes the hit first, at half damage unless the attacking unit
  * has Siege. An Industrial or later land unit has Siege built in at its own era tier. `siegeTier` is the viewer's own siege tier (core `data::siege_tier`), so the hint to buy Siege is shown only to a
  * player who knows Mathematics. Null when the target has no Walls.
  */
@@ -216,10 +216,13 @@ export function wallsLine(f: BattleForecast, cityName: string, _unitLabel: strin
   // Bought Siege still short of these Walls: name the tech that covers the next level.
   const nextTech = !w.built_in && w.covered < w.tier ? NEXT_SIEGE_TECH[w.covered] : undefined;
   const next = nextTech ? ` ${nextTech} covers level ${['', 'I', 'II', 'III'][w.covered + 1]}.` : '';
-  if (w.covered > 0) return { text: `Walls ${level}: ${w.built_in ? 'built-in ' : ''}${cover}, so ${damage} to ${cityName}.${next}`, tone: w.percent >= 100 ? 'good' : 'plain' };
+  // The Walls bar (breakable Walls): what this hit takes off it, and the chance it breaks them.
+  // The before → after sits in the defender's Walls row; this line keeps only the chance to break them.
+  const bar = (w.max_hp ?? 0) > 0 && (w.break_chance ?? 0) > 0 ? ` ${w.break_chance}% chance to break them.` : '';
+  if (w.covered > 0) return { text: `Walls ${level}: ${w.built_in ? 'built-in ' : ''}${cover}, so ${damage} to ${cityName}'s Walls.${bar}${next}`, tone: w.percent >= 100 ? 'good' : 'plain' };
   const withSiege = w.percent > 0 && w.percent < 100 && dealt > 0 ? Math.round((dealt * 100) / w.percent) : 0;
   return {
-    text: `Walls ${level} halve this attack on ${cityName}${siegeTier > 0 && withSiege > 0 ? `: ${dealt} health, or ${withSiege} with Siege` : ''}.`,
+    text: `Walls ${level} take this hit at half damage${siegeTier > 0 && withSiege > 0 ? `: ${dealt} damage, or ${withSiege} with Siege` : ''}.${bar}`,
     tone: 'plain',
   };
 }

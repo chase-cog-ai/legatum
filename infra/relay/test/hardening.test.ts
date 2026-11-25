@@ -15,7 +15,11 @@ import {
   REASON_TOO_MUCH_DATA,
   SocketRate,
   addressKey,
-  defaultName,
+  LISTED_ADJECTIVES,
+  LISTED_NOUNS,
+  buildOk,
+  listedName,
+  networkKey,
   ipHash,
   limitsFrom,
   msUntil,
@@ -72,18 +76,51 @@ describe("room names", () => {
     expect(sanitizeName("anything", [""])).toBe("anything");
   });
 
-  it("names a room with no usable name Game <id>", async () => {
+  it("lists only the build labels the game makes", () => {
+    for (const ok of ["Version 0.1.0 · web abc1234", "Version 0.1.0", "Version 0.1.0 (abc1234)", "Playtest 7a", "Playtest 9",
+      "Dev · after 9 (abc1234)", "Dev (abc1234)", "Dev build", "8.9.74", "playtest-9", "preview-12b"]) expect(buildOk(ok), ok).toBe(true);
+    for (const bad of ["Version 0.1.0 · web the dev is a loser", "Playtest loser", "Playtest 9 loser", "loser-1", "Dev build now",
+      "Version 1 (zzzzzzz)", "hello", "Sam", "Version 0.1.0 · web abc1234 extra", "Playtest " + "1".repeat(40)]) expect(buildOk(bad), bad).toBe(false);
+  });
+
+  it("lists every room under a name made from its id, never the name its host typed", async () => {
     const { name: _omitted, ...noName } = announce();
-    for (const body of [noName, announce(null), announce(""), announce("🎉🎉")]) {
+    for (const body of [noName, announce(null), announce(""), announce("🎉🎉"), announce("Sam is a loser"), announce("<script>x</script>")]) {
       const { r, j } = await create(body);
       expect(r.status).toBe(200);
-      expect(j.name).toBe(defaultName(j.room));
-      expect(j.name).toMatch(/^Game [A-Z0-9]{4}$/);
+      expect(j.name).toBe(listedName(j.room));
+      expect(j.name).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+ \d\d$/);
     }
-    const { room, host } = await hostedRoom("<script>x</script>  ok");
-    const row = (await lobbyRooms()).find((x) => x.room === room)!;
-    expect(row.name).toBe("scriptxscript ok");
+    const { room, host } = await hostedRoom("Anything the host typed");
+    const rows = await lobbyRooms();
+    expect(rows.find((x) => x.room === room)!.name).toBe(listedName(room));
+    expect(JSON.stringify(rows)).not.toContain("typed");
     host.ws.close(1000);
+  });
+
+  it("never lists a typed name or a loose build label kept by an older relay", async () => {
+    const { room, host } = await hostedRoom();
+    const loose = { name: "typed by an old page", build: "Visit some site for prizes", rules_version: 3, protocol: 1, locked: false };
+    await runInDurableObject(lobbyStub(), (_i, state: DurableObjectState) => {
+      state.storage.sql.exec("UPDATE rooms SET announce = ? WHERE room = ?", JSON.stringify({ ...loose, build: "8.9.74" }), room);
+    });
+    const row = (await lobbyRooms()).find((x) => x.room === room)!;
+    expect(row.name).toBe(listedName(room));
+    await runInDurableObject(lobbyStub(), (_i, state: DurableObjectState) => {
+      state.storage.sql.exec("UPDATE rooms SET announce = ? WHERE room = ?", JSON.stringify(loose), room);
+    });
+    expect((await lobbyRooms()).find((x) => x.room === room)).toBeUndefined();
+    host.ws.close(1000);
+  });
+
+  it("uses only its own words, for every room id", () => {
+    const alphabet = "abcdefghijkmnpqrstuvwxyz23456789";
+    for (const a of alphabet) for (const b of alphabet) {
+      const [adj, noun, tag] = listedName(`${a}${b}${a}${b}`).split(" ");
+      expect(LISTED_ADJECTIVES).toContain(adj);
+      expect(LISTED_NOUNS).toContain(noun);
+      expect(tag).toMatch(/^\d\d$/);
+    }
   });
 });
 
@@ -130,6 +167,22 @@ describe("token bucket and address hashing", () => {
     const line = (n: number) => `2001:db8:77:${net}::${n}`;
     for (let i = 1; i <= DEFAULT_LIMITS.MAX_ROOMS_PER_IP; i++) expect((await create(announce(`v6 ${i}`), line(i))).r.status).toBe(200);
     expect((await create(announce("v6 more"), line(99))).r.status).toBe(429);
+  });
+
+  it("groups addresses by network for the per-network cap: IPv4 /24, IPv6 /48", () => {
+    expect(networkKey("203.0.113.9")).toBe("203.0.113.0/24");
+    expect(networkKey("::ffff:203.0.113.9")).toBe("203.0.113.0/24");
+    expect(networkKey("2001:db8:aa:1::5")).toBe("2001:db8:aa::/48");
+    expect(networkKey("2001:db8:aa:ffff:1:2:3:4")).toBe(networkKey("2001:db8:aa::9"));
+    expect(networkKey("2001:db8:ab::1")).not.toBe(networkKey("2001:db8:aa::1"));
+  });
+
+  it("allows 8 live rooms per network, however many /64s it steps through", async () => {
+    const made: number[] = [];
+    for (let i = 0; i < 9; i++) made.push((await create(announce(), `2001:db8:515:${i + 1}::1`)).r.status);
+    expect(made.slice(0, 8)).toEqual(new Array(8).fill(200));
+    expect(made[8]).toBe(429);
+    expect((await create(announce(), "2001:db8:516:1::1")).r.status).toBe(200);
   });
 
   it("hashes an address with a salt and never keeps it in the clear", async () => {

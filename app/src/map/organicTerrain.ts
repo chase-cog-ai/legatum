@@ -14,6 +14,8 @@
 import type { Terrain } from '../types';
 import { HEX_SIZE, HEX_W, centerX, centerY, nearestTile, neighborIndex } from './grid';
 import { rnd } from './noise';
+import { clearOfTown, TOWN_GAP, type TownOval } from './cityArt';
+import { organicSide } from './terrainVariant';
 
 export type OrganicKind = 'Forest' | 'Hills' | 'Mountains';
 export const organicKind = (t: Terrain | null | undefined): OrganicKind | null =>
@@ -208,6 +210,8 @@ export interface PlanInput {
   tundraNear: (i: number) => boolean;
   /** Zoomed out: fewer, larger marks. */
   far: boolean;
+  /** The town's footprint about a city's hex centre: art beside a town keeps clear of it (`keepClearOfTowns`). Omitted, nothing moves. */
+  town?: TownOval;
 }
 
 /** Distance (world units) from point p inside tile i to its nearest edge shared with a tile outside the region; Infinity when none. */
@@ -469,6 +473,46 @@ function ranges(inp: PlanInput, out: OrganicElem[], covered: Uint8Array) {
   }
 }
 
+/** Half the painted mass of each kind's sprite (its alpha box, measured on the 256 px art), as a share of the sprite's side. */
+export const ORGANIC_MASS: Record<OrganicKind, { ha: number; hb: number; dy: number }> = {
+  // Peaks fill the box's width only at their foot: the oval stands inside the box, a little low.
+  Mountains: { ha: 0.4, hb: 0.42, dy: 0 },
+  Hills: { ha: 0.45, hb: 0.2, dy: 0.06 },
+  Forest: { ha: 0.42, hb: 0.38, dy: 0 },
+};
+
+/**
+ * Woods, hills and peaks beside a town step back and shrink a little so they never crowd it (UI review, PR 129: the
+ * mountain below Zürich ran into its star fort). Only art level with or in front of the town moves: the town is drawn
+ * over the land behind it, which reads as depth, not crowding. A scattered cluster (not a tile's own centred one) that
+ * cannot clear within the limits is left out; the tile's other clusters still say what it is.
+ */
+function keepClearOfTowns(inp: PlanInput, elems: OrganicElem[], town: TownOval): OrganicElem[] {
+  const { w, h } = inp.regions;
+  const towns: [number, number][] = [];
+  for (let i = 0; i < w * h; i++) if (inp.isCity(i)) towns.push([centerX(i, w), centerY(i, w)]);
+  if (!towns.length) return elems;
+  const side = organicSide(false);
+  const drop = new Set<OrganicElem>();
+  const reach = HEX_W * 1.6;
+  for (const e of elems) {
+    const m = ORGANIC_MASS[e.kind];
+    for (const [tx, ty] of towns) {
+      const dx = e.x - tx, dy = e.y + m.dy * side * e.scale - ty;
+      if (Math.abs(dx) > reach || Math.abs(dy) > reach || dy < -R * 0.75) continue;
+      const ha = m.ha * side * e.scale, hb = m.hb * side * e.scale;
+      const out = clearOfTown(dx, dy, ha, hb, town, { gap: TOWN_GAP, maxPush: R * 0.4, minScale: 0.72 });
+      if (out.scale === 1 && out.dx === dx && out.dy === dy) continue;
+      const centred = Math.hypot(e.x - centerX(e.tile, w), e.y - centerY(e.tile, w)) < 1;
+      if (!centred && (out.dx / (town.a + ha * out.scale)) ** 2 + ((out.dy - town.cy) / (town.b + hb * out.scale)) ** 2 < 1) { drop.add(e); continue; }
+      e.x = tx + out.dx;
+      e.y = ty + out.dy - m.dy * side * e.scale * out.scale;
+      e.scale *= out.scale;
+    }
+  }
+  return drop.size ? elems.filter((e) => !drop.has(e)) : elems;
+}
+
 /** Every sprite for the organic layer, in painter order. */
 export function planOrganic(inp: PlanInput): Plan {
   const n = inp.regions.w * inp.regions.h;
@@ -478,6 +522,10 @@ export function planOrganic(inp: PlanInput): Plan {
   scatter(inp, 'Forest', elems, covered);
   scatter(inp, 'Hills', elems, covered);
   ranges(inp, elems, covered);
+  if (inp.town && !inp.far) {
+    const kept = keepClearOfTowns(inp, elems, inp.town);
+    if (kept !== elems) elems.splice(0, elems.length, ...kept);
+  }
   // Painter order by the sprite's base (lower on screen draws later), then x for a stable tie-break.
   elems.sort((p, q) => p.y + p.scale * 10 - (q.y + q.scale * 10) || p.x - q.x);
   const byTile = new Map<number, number[]>();

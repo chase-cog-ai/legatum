@@ -229,7 +229,6 @@ for (const size of SIZES) testWithFailingRequests.describe(`online co-op ${size.
     const guestContext = await browser.newContext({ baseURL, viewport: { width: size.width, height: size.height } });
     let guest = await guestContext.newPage();
     expect(relay).toBeTruthy();
-    // The relay keeps rooms for a while after a run: a unique name finds this run's room.
     const hostName = `Ada ${String(Date.now()).slice(-5)}`;
     await noHints(host);
     await noHints(guest);

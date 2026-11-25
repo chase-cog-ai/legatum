@@ -451,6 +451,7 @@ fn tape_order(n: &[i32]) -> Order {
                 1 => TreatyKind::Alliance,
                 _ => panic!("invalid treaty kind"),
             },
+            gold: 0,
             terms: Default::default(),
         },
         11 => Order::RespondToProposal {
@@ -464,6 +465,7 @@ fn tape_order(n: &[i32]) -> Order {
                 serde_json::from_slice(&bytes).unwrap()
             }),
             counter: None,
+            counter_gold: 0,
         },
         12 => Order::WithdrawProposal {
             proposal: ProposalId(n[1] as u32),
@@ -485,6 +487,7 @@ fn numeric_diplomacy_rows_preserve_alliances_and_response_receipts() {
             Order::ProposeTreaty {
                 to: TeamId(3),
                 kind: TreatyKind::Alliance,
+                gold: 0,
                 terms: Default::default(),
             },
         ),
@@ -495,6 +498,7 @@ fn numeric_diplomacy_rows_preserve_alliances_and_response_receipts() {
                 accept: true,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             },
         ),
     ] {
@@ -518,6 +522,7 @@ fn numeric_diplomacy_rows_preserve_alliances_and_response_receipts() {
             accept: false,
             explanation: Some(explanation),
             counter: None,
+            counter_gold: 0,
         }
     );
 }

@@ -40,6 +40,7 @@ mod tests {
                 vec![Order::ProposeTreaty {
                     to: TeamId(1),
                     kind: TreatyKind::Peace,
+                    gold: 0,
                     terms: Default::default(),
                 }],
             )]),
@@ -82,6 +83,7 @@ mod alliance_terms_visibility {
             Order::ProposeTreaty {
                 to: TeamId(1),
                 kind: TreatyKind::Alliance,
+                gold: 0,
                 terms: Default::default(),
             },
         )
@@ -94,6 +96,7 @@ mod alliance_terms_visibility {
                 accept: true,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             },
         );
         for p in [PlayerId(0), PlayerId(1), PlayerId(2)] {
@@ -165,6 +168,7 @@ mod alliance_visibility {
             Order::ProposeTreaty {
                 to: TeamId(1),
                 kind: TreatyKind::Alliance,
+                gold: 0,
                 terms: Default::default(),
             },
         )
@@ -180,6 +184,7 @@ mod alliance_visibility {
                     reasons: vec!["Shared coalition target".into()],
                 }),
                 counter: None,
+                counter_gold: 0,
             },
         )
         .0;

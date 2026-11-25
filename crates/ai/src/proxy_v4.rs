@@ -830,21 +830,26 @@ impl Diplomat<'_> {
             if p.to != v.team || !self.alive(p.from) || handled.contains(&p.from) {
                 continue;
             }
-            let accept = match p.kind {
-                TreatyKind::Peace => self.wants_peace(p.from),
-                TreatyKind::Alliance => self.alliance_useful(p.from, reserve),
-            };
+            let accept = p.gold >= 0
+                && match p.kind {
+                    TreatyKind::Peace => self.wants_peace(p.from),
+                    TreatyKind::Alliance => self.alliance_useful(p.from, reserve),
+                    // Deals (rules 61): the proxies do not use them.
+                    TreatyKind::OpenBorders => false,
+                };
             let yes = Order::RespondToProposal {
                 proposal: p.id,
                 accept: true,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             };
             let order = Order::RespondToProposal {
                 proposal: p.id,
                 accept: accept && self.legal(&yes),
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             };
             if self.legal(&order) {
                 out.push(order);
@@ -862,6 +867,7 @@ impl Diplomat<'_> {
                 accept: true,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             };
             let join = self.legal(&yes)
                 && (self.progress(call.target) >= 80
@@ -871,6 +877,7 @@ impl Diplomat<'_> {
                 accept: join,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             };
             if self.legal(&order) {
                 out.push(order);
@@ -884,6 +891,7 @@ impl Diplomat<'_> {
             let alliance = Order::ProposeTreaty {
                 to: team,
                 kind: TreatyKind::Alliance,
+                gold: 0,
                 terms: Default::default(),
             };
             let order = if target == Some(team) {
@@ -895,6 +903,7 @@ impl Diplomat<'_> {
                 Order::ProposeTreaty {
                     to: team,
                     kind: TreatyKind::Peace,
+                    gold: 0,
                     terms: Default::default(),
                 }
             } else if leave_target == Some(team) {

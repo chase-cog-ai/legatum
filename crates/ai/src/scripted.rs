@@ -771,13 +771,14 @@ impl ScriptedBrain {
 }
 
 impl ScriptedBrain {
-    /// How this AI would answer, this turn, a Peace that `proposer` offers on `terms`
-    /// (`peace_deal`): the forecast the player sees before sending it. Works on a copy:
+    /// How this AI would answer, this turn, a Peace that `proposer` offers with `gold`
+    /// (positive pays this AI) and `terms` (`peace_deal`; Gold alone: `deals`): the forecast the player sees before sending it. Works on a copy:
     /// memory is untouched. The AI answers next turn, when the position may have changed.
     pub fn peace_forecast(
         &self,
         view: &PlayerView,
         proposer: legatum_core::PlayerId,
+        gold: i32,
         terms: &legatum_core::diplomacy::PeaceTerms,
         counter: bool,
     ) -> crate::peace_deal::PeaceVerdict {
@@ -787,19 +788,37 @@ impl ScriptedBrain {
         let plain = legatum_core::Order::ProposeTreaty {
             to: other,
             kind: legatum_core::diplomacy::TreatyKind::Peace,
+            gold: 0,
             terms: Default::default(),
         };
-        let base = if p.wants_peace(other) {
-            p.treaty_score(
-                other,
+        let score = p.treaty_score(
+            other,
+            legatum_core::diplomacy::TreatyKind::Peace,
+            &plain,
+            &crate::diplomacy::TreatyBudget::of(view),
+        );
+        if p.decisions.peace_terms == 0 || (terms.is_plain() && !counter) {
+            // Gold alone is answered as any deal is (`deals::deal_score`).
+            use crate::peace_deal::{PeaceAnswer, PeaceVerdict};
+            let total = p.deal_score(
                 legatum_core::diplomacy::TreatyKind::Peace,
-                &plain,
-                &crate::diplomacy::TreatyBudget::of(view),
-            )
-        } else {
-            None
-        };
-        p.peace_verdict(proposer, other, terms, base, counter)
+                gold,
+                other,
+                score,
+            );
+            let accept = terms.is_plain() && total.is_some_and(|s| s >= 0);
+            return PeaceVerdict {
+                answer: if accept {
+                    PeaceAnswer::Accept
+                } else {
+                    PeaceAnswer::Refuse
+                },
+                lines: Vec::new(),
+                never: None,
+            };
+        }
+        let base = if p.wants_peace(other) { score } else { None };
+        p.peace_verdict(proposer, other, gold, terms, base, counter)
     }
 
     /// Diagnostics: how this AI would answer a Peace with `against` this turn, as its
@@ -1087,10 +1106,11 @@ impl Brain for ScriptedBrain {
         &self,
         view: &PlayerView,
         proposer: legatum_core::PlayerId,
+        gold: i32,
         terms: &legatum_core::diplomacy::PeaceTerms,
     ) -> Option<crate::peace_deal::PeaceVerdict> {
         (self.planner_decisions().peace_terms > 0)
-            .then(|| ScriptedBrain::peace_forecast(self, view, proposer, terms, false))
+            .then(|| ScriptedBrain::peace_forecast(self, view, proposer, gold, terms, false))
     }
     fn blocked_expenses(&self) -> u32 {
         self.campaigns.plan.blocked_expenses

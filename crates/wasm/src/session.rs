@@ -242,11 +242,15 @@ impl Session {
         &self,
         proposer: PlayerId,
         to: PlayerId,
+        gold: i32,
         terms: &legatum_core::diplomacy::PeaceTerms,
     ) -> Option<legatum_ai::peace_deal::PeaceVerdict> {
+        if !self.state.setup.deals {
+            return None;
+        }
         let (_, brain) = self.brains.get(&to)?;
         let view = legatum_core::player_view(&self.state, to);
-        brain.peace_forecast(&view, proposer, terms)
+        brain.peace_forecast(&view, proposer, gold, terms)
     }
 
     /// This turn's AI orders, computed once and kept until the turn resolves.

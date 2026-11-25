@@ -1,19 +1,18 @@
-// Peace terms (core `diplomacy::PeaceTerms`, rules 61): what a Peace offer carries besides the
-// Peace itself, and the plain sentences that say it from the viewer's side. The core validates
+// Peace terms (core `diplomacy::PeaceTerms`, rules 62, deals only): what a Peace offer carries
+// besides the Peace and the deal's Gold (`deals.ts`), and the plain sentences that say it from the viewer's side. The core validates
 // and settles every term; nothing here decides a rule.
 import { empireOfPlayer, empireTitle } from './empires';
 import { RULES } from './data';
 import type { PeaceProposal, PeaceTerms, PlayerView, Relation, TeamId } from './types';
 
 export const TRUCE_CHOICES: number[] = RULES.treaty.truceChoices;
-export const PEACE_GOLD_MAX: number = RULES.treaty.peaceGoldMax;
 export const REPARATIONS_MAX: number = RULES.treaty.reparationsMax;
 
-export const isPlain = (t: PeaceTerms | undefined | null) => !t || !(t.gold || t.city != null || t.return_captured || t.truce || t.reparations);
+export const isPlain = (t: PeaceTerms | undefined | null) => !t || !(t.city != null || t.return_captured || t.truce || t.reparations);
 export const truceTurns = (t: PeaceTerms | undefined | null) => t?.truce || RULES.treaty.guaranteeTurns;
 
 /** The same deal written from the other side (core `PeaceTerms::mirrored`). */
-export const mirrored = (t: PeaceTerms): PeaceTerms => ({ ...t, ...(t.gold ? { gold: -t.gold } : {}), ...(t.reparations ? { reparations: -t.reparations } : {}) });
+export const mirrored = (t: PeaceTerms): PeaceTerms => ({ ...t, ...(t.reparations ? { reparations: -t.reparations } : {}) });
 
 export interface TermLine { tone: 'cost' | 'gain' | 'note'; text: string; icon?: string }
 
@@ -27,16 +26,17 @@ export function capturedBetween(view: PlayerView, a: TeamId, b: TeamId) {
 /**
  * The terms as the viewer's costs and gains. `proposer` is the team the terms are written from;
  * `other` the team that would accept. A viewer on neither team reads them as the proposer's.
+ * `gold` is the deal's Gold from the proposer's side, for a draft that states it with the terms.
  */
-export function termLines(view: PlayerView, terms: PeaceTerms | undefined | null, proposer: TeamId, other: TeamId): TermLine[] {
-  if (isPlain(terms)) return [];
-  const t = terms!;
+export function termLines(view: PlayerView, terms: PeaceTerms | undefined | null, proposer: TeamId, other: TeamId, gold = 0): TermLine[] {
+  if (isPlain(terms) && !gold) return [];
+  const t = terms ?? {};
   const mine = view.team === proposer;
   const them = empireTitle(view, mine ? other : proposer);
   const lines: TermLine[] = [];
-  if (t.gold) {
-    const pay = (t.gold > 0) === mine;
-    lines.push({ tone: pay ? 'cost' : 'gain', icon: 'yield-gold', text: pay ? `You pay ${them} ${Math.abs(t.gold)} Gold when Peace is signed` : `${them} pays you ${Math.abs(t.gold)} Gold when Peace is signed` });
+  if (gold) {
+    const pay = (gold > 0) === mine;
+    lines.push({ tone: pay ? 'cost' : 'gain', icon: 'yield-gold', text: pay ? `You pay ${them} ${Math.abs(gold)} Gold when Peace is signed` : `${them} pays you ${Math.abs(gold)} Gold when Peace is signed` });
   }
   if (t.city != null) {
     const c = view.cities.find((x) => x.id === t.city);

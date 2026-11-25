@@ -2165,6 +2165,7 @@ mod tests {
             &[Order::ProposeTreaty {
                 to: other.team,
                 kind: TreatyKind::Peace,
+                gold: 0,
                 terms: Default::default(),
             }],
             &[],
@@ -2513,6 +2514,7 @@ mod tests {
             consents: vec![enemy.team],
             needs: vec![view.team],
             required_teams: vec![enemy.team, view.team],
+            gold: 0,
             terms: Default::default(),
             city_from: None,
             counter: false,
@@ -2528,6 +2530,7 @@ mod tests {
             accept: false,
             explanation: None,
             counter: None,
+            counter_gold: 0,
         };
         let mut out = Vec::new();
         war_peace(&view, &[refusal], &[], &trace, &mut out);

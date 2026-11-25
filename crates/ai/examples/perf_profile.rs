@@ -162,6 +162,7 @@ fn decode(encoded: impl AsRef<[i32]>) -> Order {
                 1 => legatum_core::diplomacy::TreatyKind::Alliance,
                 _ => panic!("invalid treaty kind"),
             },
+            gold: 0,
             terms: Default::default(),
         },
         11 => Order::RespondToProposal {
@@ -175,6 +176,7 @@ fn decode(encoded: impl AsRef<[i32]>) -> Order {
                 serde_json::from_slice(&json).expect("response explanation")
             }),
             counter: None,
+            counter_gold: 0,
         },
         12 => Order::WithdrawProposal {
             proposal: legatum_core::diplomacy::ProposalId(a as u32),
@@ -516,6 +518,7 @@ mod codec_tests {
             let order = Order::ProposeTreaty {
                 to: TeamId(3),
                 kind,
+                gold: 0,
                 terms: Default::default(),
             };
             assert_round_trip(order);
@@ -541,6 +544,7 @@ mod codec_tests {
                     accept,
                     explanation,
                     counter: None,
+                    counter_gold: 0,
                 };
                 assert_round_trip(order);
             }

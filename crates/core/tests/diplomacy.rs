@@ -40,6 +40,7 @@ fn offer(to: u8) -> Order {
     Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Peace,
+        gold: 0,
         terms: Default::default(),
     }
 }
@@ -49,6 +50,7 @@ fn response(id: u32, accept: bool) -> Order {
         accept,
         explanation: None,
         counter: None,
+        counter_gold: 0,
     }
 }
 fn step(s: &GameState, orders: &[(u8, Vec<Order>)]) -> (GameState, Vec<Event>) {
@@ -842,6 +844,7 @@ fn ally_offer(to: u8) -> Order {
     Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Alliance,
+        gold: 0,
         terms: Default::default(),
     }
 }
@@ -1921,22 +1924,31 @@ fn a_heal_order_is_refused_in_closed_foreign_land_where_nothing_heals() {
     );
 }
 
-// Peace terms: Gold and one city on a Peace offer (rules 60).
+// Peace terms (rules 62): a city, captured cities, the truce, reparations and a counter-offer
+// on a Peace offer, beside the deal's Gold (`tests/deals.rs`).
 
+/// `game` with deals on: terms are part of deals.
+fn deals_game(teams: &[u8]) -> GameState {
+    let mut s = game(teams);
+    s.setup.deals = true;
+    s
+}
 fn terms(to: u8, gold: i32, city: Option<CityId>) -> Order {
-    deal(
-        to,
-        PeaceTerms {
-            gold,
+    Order::ProposeTreaty {
+        to: TeamId(to),
+        kind: TreatyKind::Peace,
+        gold,
+        terms: PeaceTerms {
             city,
             ..Default::default()
         },
-    )
+    }
 }
 fn deal(to: u8, terms: PeaceTerms) -> Order {
     Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Peace,
+        gold: 0,
         terms,
     }
 }
@@ -1966,45 +1978,8 @@ fn peaceful(s: &GameState) -> bool {
 }
 
 #[test]
-fn a_peace_offer_can_carry_gold_either_way_and_it_moves_only_when_signed() {
-    let war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
-    // The same turns with a plain Peace: the baseline for each treasury.
-    let (plain, _) = offer_and_answer(&war, offer(1), true);
-
-    // The proposer pays.
-    let (s, _) = step(&war, &[(0, vec![terms(1, 120, None)])]);
-    assert_eq!(proposal_to(&s, 1).terms.gold, 120);
-    assert_eq!(
-        (gold(&s, 0), gold(&s, 1)),
-        {
-            let (b, _) = step(&war, &[(0, vec![offer(1)])]);
-            (gold(&b, 0), gold(&b, 1))
-        },
-        "nothing moves while the offer waits"
-    );
-    let (s, events) = step(&s, &[(1, vec![response(1, true)])]);
-    assert!(peaceful(&s));
-    assert_eq!(gold(&s, 0), gold(&plain, 0) - 120);
-    assert_eq!(gold(&s, 1), gold(&plain, 1) + 120);
-    assert!(events.iter().any(|e| matches!(
-        e,
-        Event::PeaceGoldPaid { from, to, gold: 120, .. } if *from == PlayerId(0) && *to == PlayerId(1)
-    )));
-
-    // The proposer asks to be paid.
-    let (s, events) = offer_and_answer(&war, terms(1, -80, None), true);
-    assert!(peaceful(&s));
-    assert_eq!(gold(&s, 0), gold(&plain, 0) + 80);
-    assert_eq!(gold(&s, 1), gold(&plain, 1) - 80);
-    assert!(events.iter().any(|e| matches!(
-        e,
-        Event::PeaceGoldPaid { from, to, gold: 80, .. } if *from == PlayerId(1) && *to == PlayerId(0)
-    )));
-}
-
-#[test]
 fn refusing_or_ignoring_a_peace_with_terms_moves_nothing_and_the_war_goes_on() {
-    let mut war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    let mut war = fund(establish_war(&deals_game(&[0, 1])), &[500, 500]);
     city(&mut war, 0, h(3, 4));
     let town = city(&mut war, 1, h(8, 4));
     let (plain, _) = offer_and_answer(&war, offer(1), false);
@@ -2029,72 +2004,37 @@ fn refusing_or_ignoring_a_peace_with_terms_moves_nothing_and_the_war_goes_on() {
         expired |= events
             .iter()
             .any(|e| matches!(e, Event::ProposalExpired { .. }));
-        assert!(
-            !events
-                .iter()
-                .any(|e| matches!(e, Event::PeaceGoldPaid { .. }))
-        );
+        assert!(!events.iter().any(|e| matches!(e, Event::GoldGiven { .. })));
         s = next;
     }
     assert!(expired && !peaceful(&s));
 }
 
 #[test]
-fn peace_gold_must_be_affordable_when_offered_accepted_and_signed() {
-    let war = fund(establish_war(&game(&[0, 1])), &[100, 50]);
-    assert!(!validate_orders(&war, PlayerId(0), &[terms(1, 101, None)]).is_empty());
-    assert!(validate_orders(&war, PlayerId(0), &[terms(1, 100, None)]).is_empty());
-    assert!(
-        !validate_orders(
-            &war,
-            PlayerId(0),
-            &[terms(1, legatum_core::diplomacy::PEACE_GOLD_MAX + 1, None)]
-        )
-        .is_empty()
-    );
-    // An Alliance offer carries no terms.
-    assert!(
-        !validate_orders(
-            &war,
-            PlayerId(0),
-            &[Order::ProposeTreaty {
-                to: TeamId(1),
-                kind: TreatyKind::Alliance,
-                terms: PeaceTerms {
-                    gold: 10,
-                    ..Default::default()
-                },
-            }]
-        )
-        .is_empty()
-    );
-    // The other side cannot accept a price it cannot pay, but can always refuse it.
-    let (s, _) = step(&war, &[(0, vec![terms(1, -400, None)])]);
-    let s = fund(s, &[100, 50]);
-    let why = validate_orders(&s, PlayerId(1), &[response(1, true)]);
-    assert!(why[0].message.contains("Gold"), "{why:?}");
-    assert!(validate_orders(&s, PlayerId(1), &[response(1, false)]).is_empty());
-
-    // The payer spent the Gold before the signature: no Peace, no payment.
-    let (s, _) = step(&war, &[(0, vec![terms(1, 90, None)])]);
-    let mut s = fund(s, &[0, 50]);
-    s.players[0].gold = -500;
-    let (s, events) = step(&s, &[(1, vec![response(1, true)])]);
-    assert!(!peaceful(&s));
-    assert!(events.iter().any(|e| matches!(
-        e,
-        Event::ProposalInvalidated { reason, .. } if reason.contains("Gold")
-    )));
-    assert!(
-        !events
-            .iter()
-            .any(|e| matches!(e, Event::PeaceGoldPaid { .. }))
-    );
+fn only_a_peace_offer_carries_terms_and_only_in_a_game_with_deals() {
+    let mut war = fund(establish_war(&deals_game(&[0, 1])), &[100, 50]);
+    let town = city(&mut war, 1, h(8, 4));
+    assert!(validate_orders(&war, PlayerId(0), &[terms(1, 0, Some(town))]).is_empty());
+    let alliance = Order::ProposeTreaty {
+        to: TeamId(1),
+        kind: TreatyKind::Alliance,
+        gold: 0,
+        terms: PeaceTerms {
+            truce: 20,
+            ..Default::default()
+        },
+    };
+    assert!(!validate_orders(&war, PlayerId(0), &[alliance]).is_empty());
+    let mut off = war.clone();
+    off.setup.deals = false;
+    let why = validate_orders(&off, PlayerId(0), &[terms(1, 0, Some(town))]);
+    assert_eq!(why.len(), 1, "{why:?}");
+    assert!(validate_orders(&off, PlayerId(0), &[offer(1)]).is_empty());
 }
 
 #[test]
 fn a_peace_offer_can_name_one_city_to_hand_over_in_either_direction() {
-    let mut war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    let mut war = fund(establish_war(&deals_game(&[0, 1])), &[500, 500]);
     let mine = city(&mut war, 0, h(4, 4));
     let theirs = city(&mut war, 1, h(10, 4));
     war.cities.get_mut(&theirs).unwrap().population = 6;
@@ -2119,7 +2059,7 @@ fn a_peace_offer_can_name_one_city_to_hand_over_in_either_direction() {
     assert!(
         events
             .iter()
-            .any(|e| matches!(e, Event::PeaceGoldPaid { gold: 60, .. }))
+            .any(|e| matches!(e, Event::GoldGiven { amount: 60, .. }))
     );
 
     // The proposer gives up its own city.
@@ -2131,7 +2071,7 @@ fn a_peace_offer_can_name_one_city_to_hand_over_in_either_direction() {
 
 #[test]
 fn a_capital_or_a_third_empires_city_cannot_be_named_in_a_peace() {
-    let mut war = establish_war(&game(&[0, 1, 2]));
+    let mut war = establish_war(&deals_game(&[0, 1, 2]));
     let capital = city(&mut war, 1, h(10, 4));
     war.cities.get_mut(&capital).unwrap().is_capital = true;
     let other = city(&mut war, 2, h(13, 4));
@@ -2142,7 +2082,7 @@ fn a_capital_or_a_third_empires_city_cannot_be_named_in_a_peace() {
 
 #[test]
 fn a_named_city_that_changed_hands_before_the_signature_voids_the_peace() {
-    let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
+    let mut war = fund(establish_war(&deals_game(&[0, 1, 2])), &[500, 500, 0]);
     let town = city(&mut war, 1, h(10, 4));
     let (mut s, _) = step(&war, &[(0, vec![terms(1, -50, Some(town))])]);
     // A third empire took it meanwhile.
@@ -2163,7 +2103,7 @@ fn a_named_city_that_changed_hands_before_the_signature_voids_the_peace() {
 
 #[test]
 fn peace_terms_survive_a_save_and_stay_private_until_signed() {
-    let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
+    let mut war = fund(establish_war(&deals_game(&[0, 1, 2])), &[500, 500, 0]);
     let town = city(&mut war, 1, h(10, 4));
     let (s, _) = step(&war, &[(0, vec![terms(1, 75, Some(town))])]);
     let loaded: GameState = serde_json::from_str(&serde_json::to_string(&s).unwrap()).unwrap();
@@ -2171,7 +2111,7 @@ fn peace_terms_survive_a_save_and_stay_private_until_signed() {
     for p in [0, 1] {
         let seen = &player_view(&s, PlayerId(p)).diplomacy.proposals[0];
         assert_eq!(
-            (seen.terms.gold, seen.terms.city, seen.city_from),
+            (seen.gold, seen.terms.city, seen.city_from),
             (75, Some(town), Some(PlayerId(1)))
         );
     }
@@ -2182,10 +2122,11 @@ fn peace_terms_survive_a_save_and_stay_private_until_signed() {
         &player_view(&s, PlayerId(2)),
         &player_view(&after, PlayerId(2)),
     );
-    // Once signed, the terms are public like the Peace itself.
-    assert!(third.iter().any(|e| matches!(
+    // Once signed, the city is public like the Peace itself; a deal's Gold stays private to
+    // the two teams, as any Gold between empires does.
+    assert!(!third.iter().any(|e| matches!(
         e,
-        legatum_core::event_visibility::VisibleEvent::Complete(Event::PeaceGoldPaid { .. })
+        legatum_core::event_visibility::VisibleEvent::Complete(Event::GoldGiven { .. })
     )));
     assert!(third.iter().any(|e| matches!(
         e,
@@ -2195,7 +2136,7 @@ fn peace_terms_survive_a_save_and_stay_private_until_signed() {
 
 #[test]
 fn a_peace_can_return_every_captured_city_and_set_a_longer_truce() {
-    let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
+    let mut war = fund(establish_war(&deals_game(&[0, 1, 2])), &[500, 500, 0]);
     capital(&mut war, 0, h(2, 2));
     capital(&mut war, 1, h(13, 2));
     capital(&mut war, 2, h(13, 9));
@@ -2235,7 +2176,7 @@ fn a_peace_can_return_every_captured_city_and_set_a_longer_truce() {
     assert!(!validate_orders(&s, PlayerId(0), &[war_order()]).is_empty());
 
     // With nothing to return, or an unknown length, the offer is refused.
-    let none = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    let none = fund(establish_war(&deals_game(&[0, 1])), &[500, 500]);
     let bad = |terms| !validate_orders(&none, PlayerId(0), &[deal(1, terms)]).is_empty();
     assert!(bad(PeaceTerms {
         return_captured: true,
@@ -2252,7 +2193,7 @@ fn war_order() -> Order {
 
 #[test]
 fn reparations_are_a_named_gold_line_each_turn_of_the_truce() {
-    let mut war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    let mut war = fund(establish_war(&deals_game(&[0, 1])), &[500, 500]);
     city(&mut war, 0, h(3, 4));
     city(&mut war, 1, h(10, 4));
     let (plain, _) = offer_and_answer(&war, offer(1), true);
@@ -2306,7 +2247,7 @@ fn reparations_are_a_named_gold_line_each_turn_of_the_truce() {
 
 #[test]
 fn stopping_reparations_is_a_public_betrayal_that_frees_only_the_wronged_side() {
-    let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
+    let mut war = fund(establish_war(&deals_game(&[0, 1, 2])), &[500, 500, 0]);
     capital(&mut war, 0, h(3, 4));
     capital(&mut war, 1, h(10, 4));
     capital(&mut war, 2, h(13, 9));
@@ -2345,7 +2286,7 @@ fn stopping_reparations_is_a_public_betrayal_that_frees_only_the_wronged_side() 
 
 #[test]
 fn a_refusal_may_carry_one_counter_offer() {
-    let mut war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    let mut war = fund(establish_war(&deals_game(&[0, 1])), &[500, 500]);
     city(&mut war, 0, h(3, 4));
     city(&mut war, 1, h(10, 4));
     let (s, _) = step(&war, &[(0, vec![terms(1, -300, None)])]);
@@ -2353,10 +2294,8 @@ fn a_refusal_may_carry_one_counter_offer() {
         proposal: ProposalId(1),
         accept: false,
         explanation: None,
-        counter: Some(PeaceTerms {
-            gold,
-            ..Default::default()
-        }),
+        counter: Some(PeaceTerms::default()),
+        counter_gold: gold,
     };
     assert!(validate_orders(&s, PlayerId(1), &[counter(100)]).is_empty());
     assert!(!validate_orders(&s, PlayerId(1), &[counter(5_000)]).is_empty());
@@ -2368,13 +2307,14 @@ fn a_refusal_may_carry_one_counter_offer() {
     );
     let back = proposal_to(&s, 0);
     assert!(back.counter);
-    assert_eq!((back.proposer, back.terms.gold), (PlayerId(1), 100));
+    assert_eq!((back.proposer, back.gold), (PlayerId(1), 100));
     // No cooldown stands in the way of the answer, and a counter cannot be countered.
     let again = Order::RespondToProposal {
         proposal: back.id,
         accept: false,
         explanation: None,
         counter: Some(PeaceTerms::default()),
+        counter_gold: 0,
     };
     assert!(!validate_orders(&s, PlayerId(0), &[again]).is_empty());
     let before = (gold(&s, 0), gold(&s, 1));
@@ -2395,19 +2335,20 @@ fn capital(s: &mut GameState, p: u8, at: Hex) -> CityId {
 #[test]
 fn buying_peace_or_a_city_binds_the_buyer_for_the_whole_truce() {
     // Take a city as a Peace term with a short payment, then try to come back for the rest.
-    let mut at_war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    let mut at_war = fund(establish_war(&deals_game(&[0, 1])), &[500, 500]);
     capital(&mut at_war, 0, h(3, 4));
     capital(&mut at_war, 1, h(10, 4));
     let prize = city(&mut at_war, 1, h(8, 6));
-    let order = deal(
-        1,
-        PeaceTerms {
-            gold: 300,
+    let order = Order::ProposeTreaty {
+        to: TeamId(1),
+        kind: TreatyKind::Peace,
+        gold: 300,
+        terms: PeaceTerms {
             city: Some(prize),
             truce: 30,
             ..Default::default()
         },
-    );
+    };
     let (mut s, _) = offer_and_answer(&at_war, order, true);
     assert_eq!(s.cities[&prize].owner, PlayerId(0));
     let until = relation(&s).guarantee_until;

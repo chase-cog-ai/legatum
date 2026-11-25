@@ -458,6 +458,7 @@ mod tests {
             Order::ProposeTreaty {
                 to: TeamId(3),
                 kind: TreatyKind::Alliance,
+                gold: 0,
                 terms: Default::default(),
             },
             Order::RespondToProposal {
@@ -465,6 +466,7 @@ mod tests {
                 accept: true,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             },
             Order::WithdrawProposal {
                 proposal: ProposalId(5),

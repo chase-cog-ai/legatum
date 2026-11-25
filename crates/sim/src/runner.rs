@@ -91,6 +91,8 @@ pub struct RunOpts {
     pub rule_experiments: legatum_core::experiments::RuleExperiments,
     /// Barbarian camps (`GameSetup::barbarians`).
     pub barbarians: bool,
+    /// Deals (`GameSetup::deals`): Gold in offers, gifts, Open Borders and Peace terms.
+    pub deals: bool,
     pub safety_cap: Option<u32>,
     pub turn_limit: Option<u32>,
     pub brain: BrainMode,
@@ -250,6 +252,7 @@ fn setup_for_game(seed: u64, index: usize, opts: &RunOpts) -> GameSetup {
     }
     setup.rule_experiments = opts.rule_experiments;
     setup.barbarians = opts.barbarians;
+    setup.deals = opts.deals;
     setup.turn_limit = opts.turn_limit;
     setup
 }
@@ -1303,6 +1306,7 @@ mod tests {
             lobby: Default::default(),
             rule_experiments: Default::default(),
             barbarians: true,
+            deals: false,
             safety_cap: None,
             turn_limit: None,
             brain: super::BrainMode::Scripted,
@@ -1948,6 +1952,7 @@ mod tests {
             strategy_matchups: false,
             rule_experiments: Default::default(),
             barbarians: false,
+            deals: false,
             record: false,
             determinism: false,
             tuning: Tuning::default(),
@@ -1969,6 +1974,7 @@ mod tests {
             strategy_matchups: true,
             rule_experiments: Default::default(),
             barbarians: false,
+            deals: false,
             record: false,
             determinism: false,
             tuning: Tuning::default(),
@@ -2002,6 +2008,7 @@ mod tests {
             strategy_matchups: false,
             rule_experiments: Default::default(),
             barbarians: false,
+            deals: false,
             record: false,
             determinism: false,
             tuning: Tuning::default(),
@@ -2052,6 +2059,7 @@ mod tests {
             strategy_matchups: false,
             rule_experiments: Default::default(),
             barbarians: false,
+            deals: false,
             record: true,
             determinism: true,
             tuning: Tuning::default(),
@@ -2097,6 +2105,7 @@ mod tests {
                 lobby: Default::default(),
                 rule_experiments: Default::default(),
                 barbarians: false,
+                deals: false,
                 safety_cap: None,
                 turn_limit: Some(80),
                 brain: BrainMode::Scripted,
@@ -2134,6 +2143,7 @@ mod tests {
             lobby: Default::default(),
             rule_experiments: Default::default(),
             barbarians: false,
+            deals: false,
             safety_cap: None,
             turn_limit: Some(60),
             brain: BrainMode::Scripted,
@@ -2189,6 +2199,7 @@ mod tests {
             strategy_matchups: false,
             rule_experiments: Default::default(),
             barbarians: false,
+            deals: false,
             record: true,
             determinism: true,
             tuning: Tuning {
@@ -2243,6 +2254,7 @@ mod tests {
             strategy_matchups: false,
             rule_experiments: Default::default(),
             barbarians: false,
+            deals: false,
             record: true,
             determinism: true,
             tuning: Tuning::default(),
@@ -2278,6 +2290,7 @@ mod tests {
             let opts = RunOpts {
                 lobby: Default::default(),
                 barbarians: false,
+                deals: false,
                 safety_cap: None,
                 turn_limit: Some(30),
                 brain: BrainMode::Mixed,
@@ -2324,6 +2337,7 @@ mod tests {
             strategy_matchups: false,
             rule_experiments: Default::default(),
             barbarians: false,
+            deals: false,
             record: true,
             determinism: true,
             tuning: Tuning::default(),

@@ -106,6 +106,7 @@ fn siege_persistence_rejects_both_incoming_peace_and_our_own_offer() {
     let offer = Order::ProposeTreaty {
         to: v.team_of(ENEMY),
         kind: TreatyKind::Peace,
+        gold: 0,
         terms: Default::default(),
     };
     let accept = Order::RespondToProposal {
@@ -113,12 +114,14 @@ fn siege_persistence_rejects_both_incoming_peace_and_our_own_offer() {
         accept: true,
         explanation: None,
         counter: None,
+        counter_gold: 0,
     };
     let decline = Order::RespondToProposal {
         proposal: ProposalId(1),
         accept: false,
         explanation: None,
         counter: None,
+        counter_gold: 0,
     };
     v.diplomacy.actions = vec![
         legal(offer.clone()),
@@ -149,6 +152,7 @@ fn siege_persistence_rejects_both_incoming_peace_and_our_own_offer() {
         consents: Vec::new(),
         needs: vec![to],
         required_teams: Vec::new(),
+        gold: 0,
         terms: Default::default(),
         city_from: None,
         counter: false,

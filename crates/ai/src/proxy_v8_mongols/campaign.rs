@@ -190,6 +190,7 @@ impl Plan<'_> {
                     && (self.phase == Phase::Settle || self.stalled.contains(&p.from)),
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             };
             if self.legal(&order) {
                 self.orders.push(order);
@@ -199,6 +200,7 @@ impl Plan<'_> {
             let order = Order::ProposeTreaty {
                 to: p.team,
                 kind: TreatyKind::Peace,
+                gold: 0,
                 terms: Default::default(),
             };
             if p.alive

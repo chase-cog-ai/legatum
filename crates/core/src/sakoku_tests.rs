@@ -182,6 +182,7 @@ fn a_vow_cannot_ride_with_a_declaration_or_a_signature() {
     let ally = Order::ProposeTreaty {
         to: s.team_of(P1),
         kind: TreatyKind::Alliance,
+        gold: 0,
         terms: Default::default(),
     };
     assert_eq!(validate_actions(&s, P0, &[ally, close()]).len(), 1);
@@ -193,6 +194,7 @@ fn a_vow_cannot_ride_with_a_declaration_or_a_signature() {
         accept: true,
         explanation: None,
         counter: None,
+        counter_gold: 0,
     };
     assert!(validate_actions(&s, P0, &[accept, close()]).is_empty());
 }
@@ -207,6 +209,7 @@ fn a_closed_country_cannot_declare_war_or_ally_but_can_make_peace() {
     let ally = |to| Order::ProposeTreaty {
         to,
         kind: TreatyKind::Alliance,
+        gold: 0,
         terms: Default::default(),
     };
     // Open: both are legal.
@@ -226,6 +229,7 @@ fn a_closed_country_cannot_declare_war_or_ally_but_can_make_peace() {
     let peace = Order::ProposeTreaty {
         to: s.team_of(P1),
         kind: TreatyKind::Peace,
+        gold: 0,
         terms: Default::default(),
     };
     assert!(crate::diplomacy::check_order(&s, P0, &peace).is_ok());
@@ -244,6 +248,7 @@ fn a_pending_alliance_is_refused_once_the_country_is_closed() {
     let propose = Order::ProposeTreaty {
         to: s.team_of(P0),
         kind: TreatyKind::Alliance,
+        gold: 0,
         terms: Default::default(),
     };
     let mut orders = std::collections::BTreeMap::new();
@@ -256,6 +261,7 @@ fn a_pending_alliance_is_refused_once_the_country_is_closed() {
         accept: true,
         explanation: None,
         counter: None,
+        counter_gold: 0,
     };
     let err = crate::diplomacy::check_order(&s, P0, &accept).unwrap_err();
     assert!(err.contains("closed the country"), "{err}");
@@ -468,6 +474,7 @@ fn a_teammate_cannot_sign_an_alliance_on_the_turn_india_closes() {
         vec![Order::ProposeTreaty {
             to: s.team_of(P0),
             kind: TreatyKind::Alliance,
+            gold: 0,
             terms: Default::default(),
         }],
     );
@@ -482,6 +489,7 @@ fn a_teammate_cannot_sign_an_alliance_on_the_turn_india_closes() {
             accept: true,
             explanation: None,
             counter: None,
+            counter_gold: 0,
         }],
     );
     orders.insert(P0, vec![close()]);

@@ -71,6 +71,8 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
     ['a rival\'s turned', ev({ type: 'CompanyTurned', unit: 'Spearman', owner: 2, origin: 'Sparta', pos: { q: 3, r: 3 } }), 'neutral'],
   ],
   TreatyActivated: [['alliance', ev({ type: 'TreatyActivated', relation: relation({ state: 'Alliance', guarantee_until: 0, security: { id: 3, started_turn: 12, protected_until: 22 } }) }), 'neutral']],
+  BordersOpened: [['open borders', ev({ type: 'BordersOpened', a: 0, b: 2, effective_turn: 12 }), 'neutral']],
+  BordersClosed: [['borders closed', ev({ type: 'BordersClosed', a: 0, b: 2, effective_turn: 12, reason: 'They went to War' }), 'neutral']],
   TreatyEnded: [
     ['your ally left you', ev({ type: 'TreatyEnded', treaty_id: 3, a: 0, b: 2, effective_turn: 12, reason: 'P2 left the Alliance' }), 'bad'],
     ['you left', ev({ type: 'TreatyEnded', treaty_id: 3, a: 0, b: 2, effective_turn: 12, reason: 'P0 & P1 left the Alliance' }), 'neutral'],
@@ -158,10 +160,6 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
   CapitalSacked: [
     ['you sacked a capital', ev({ type: 'CapitalSacked', captor: 0, capital: 5, name: 'Rome' }), 'good'],
     ['a rival sacked a capital', ev({ type: 'CapitalSacked', captor: 2, capital: 5, name: 'Rome' }), 'neutral'],
-  ],
-  PeaceGoldPaid: [
-    ['you paid for Peace', ev({ type: 'PeaceGoldPaid', from: 0, to: 2, gold: 40, effective_turn: 6 }), 'neutral'],
-    ['you were paid for Peace', ev({ type: 'PeaceGoldPaid', from: 2, to: 0, gold: 40, effective_turn: 6 }), 'good'],
   ],
   CityCeded: [
     ['you handed a city over', ev({ type: 'CityCeded', city: 1, from: 0, to: 2, effective_turn: 6 }), 'bad'],

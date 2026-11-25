@@ -746,11 +746,14 @@ export interface Relation {
   war_id: number | null;
   declarers: TeamId[];
 }
-export type TreatyKind = 'Peace' | 'Alliance';
-/** What a Peace offer carries (core `diplomacy::PeaceTerms`), written from the proposer's side: positive Gold and reparations are paid by the proposer, negative by the side that accepts. */
-export interface PeaceTerms { gold?: number; city?: CityId | null; return_captured?: boolean; truce?: number; reparations?: number }
-/** How an AI empire would answer a Peace offer today (wasm `peace_forecast`). */
-export interface PeaceForecast { answer: 'Accept' | 'Refuse' | 'Counter'; counter?: PeaceTerms | null; reasons: string[] }
+/** `OpenBorders` exists only with deals on (core `GameSetup::deals`, rules 61). */
+export type TreatyKind = 'Peace' | 'Alliance' | 'OpenBorders';
+/** What `BreakTreaty` ends: `Security` an Alliance, `OpenBorders` Open Borders (deals). */
+export type Agreement = 'Security' | 'OpenBorders';
+/** What a Peace offer carries besides the deal's Gold (core `diplomacy::PeaceTerms`, deals only), written from the proposer's side: positive reparations are paid by the proposer, negative by the side that accepts. */
+export interface PeaceTerms { city?: CityId | null; return_captured?: boolean; truce?: number; reparations?: number }
+/** How an AI empire would answer a Peace offer today (wasm `peace_forecast`). The counter is written from the AI's side. */
+export interface PeaceForecast { answer: 'Accept' | 'Refuse' | 'Counter'; counter?: PeaceTerms | null; counter_gold?: number; reasons: string[] }
 /** The terms of an active Alliance. Leaving before `protected_until` costs Gold and is a betrayal. */
 interface SecurityTreaty { id: number; started_turn: number; protected_until: number }
 /** `by` left an Alliance with `against` inside its protected window, or declared war on it while allied. */
@@ -766,6 +769,8 @@ export interface PeaceProposal {
   created_turn: number;
   respond_by: number;
   relation_version: number;
+  /** Deals: Gold that changes hands when the treaty takes effect. Positive: the proposer pays it; negative: the accepting empire pays its absolute value. Omitted when 0. */
+  gold?: number;
   /** Peace only: what the offer carries besides the Peace. */
   terms?: PeaceTerms;
   /** A counter-offer: it can be accepted or declined, not countered again. */
@@ -790,7 +795,7 @@ interface SupersededOrder {
 export interface DiplomaticAction {
   order: Order;
   effective_turn: number;
-  /** One-off Gold from the ordering empire for leaving an Alliance early. */
+  /** One-off Gold from the ordering empire: leaving an Alliance early, or a deal's Gold it would pay. */
   cost: number;
   /** Gold per turn each empire on both teams pays while a signed Alliance lasts. */
   upkeep?: number;
@@ -832,6 +837,10 @@ export interface DiplomacyView {
   peace_cooldowns: { from: TeamId; to: TeamId; retry_turn: number; kind?: TreatyKind }[];
   /** Other teams this team has met (core `DiplomacyView::met`): an Alliance needs contact. */
   met?: TeamId[];
+  /** Public: every team pair (lower id first) with Open Borders. Omitted when none. */
+  open_borders?: [TeamId, TeamId][];
+  /** Deals are on in this game (core `GameSetup::deals`). Omitted when off. */
+  deals?: boolean;
   actions: DiplomaticAction[];
 }
 
@@ -1053,7 +1062,6 @@ export type Chronicle =
   | { kind: 'Founded'; turn: number; player: PlayerId; city: string }
   | { kind: 'Captured'; turn: number; by: PlayerId; from: PlayerId; city: string }
   | { kind: 'Ceded'; turn: number; by: PlayerId; to: PlayerId; city: string }
-  | { kind: 'PeaceGold'; turn: number; from: PlayerId; to: PlayerId; gold: number }
   | { kind: 'Defaulted'; turn: number; by: PlayerId; on: PlayerId }
   | { kind: 'Razed'; turn: number; by: PlayerId; from: PlayerId; city: string; ordered?: boolean }
   | { kind: 'War'; turn: number; a: TeamId; b: TeamId; by?: TeamId | null }
@@ -1077,9 +1085,11 @@ export type AirPick = 'strike' | 'rebase' | 'recon';
 export type Order =
   | { type: 'DeclareWar'; against: TeamId; breach?: boolean }
   /** Byzantium only, at War with `to`: pay the quoted price and begin an enforced Peace this turn. */
-  | { type: 'BreakTreaty'; with: TeamId; agreement: 'Security' }
-  | { type: 'ProposeTreaty'; to: TeamId; kind: TreatyKind; terms?: PeaceTerms }
-  | { type: 'RespondToProposal'; proposal: number; accept: boolean; counter?: PeaceTerms; explanation?: DecisionExplanation }
+  | { type: 'BreakTreaty'; with: TeamId; agreement: Agreement }
+  /** `gold` (deals only): positive, the proposer pays it; negative, the other team is asked to pay its absolute value (at most 999). Omitted when 0. `terms` (deals, Peace only): what else the Peace carries. */
+  | { type: 'ProposeTreaty'; to: TeamId; kind: TreatyKind; gold?: number; terms?: PeaceTerms }
+  /** `counter` with `counter_gold` (deals, with a refusal of a Peace): the offer the refuser sends back, written from its side. */
+  | { type: 'RespondToProposal'; proposal: number; accept: boolean; counter?: PeaceTerms; counter_gold?: number; explanation?: DecisionExplanation }
   | { type: 'WithdrawProposal'; proposal: number }
   | { type: 'SetAutomation'; unit: UnitId; automation: Automation | null; path?: Hex[]; stop_reason?: ExploreStopReason | null }
   | { type: 'SetAutoFire'; unit: UnitId; enabled: boolean; target?: Hex | null }
@@ -1185,6 +1195,8 @@ export type Event =
   | { type: 'CompanyTurned'; unit: UnitKind; owner: PlayerId; origin?: Faction | null; pos: Hex }
   | { type: 'TreatyActivated'; relation: Relation }
   | { type: 'TreatyEnded'; treaty_id: number; a: TeamId; b: TeamId; effective_turn: number; reason: string }
+  | { type: 'BordersOpened'; a: TeamId; b: TeamId; effective_turn: number }
+  | { type: 'BordersClosed'; a: TeamId; b: TeamId; effective_turn: number; reason: string }
   | { type: 'TreatyBreached'; treaty_id: number; by: TeamId; with: TeamId; player: PlayerId; cost: number; effective_turn: number }
   | { type: 'TreatyPayment'; player: PlayerId; gold: number; cause: string; treaty_id: number | null; effective_turn: number }
   | { type: 'AllianceBetrayed'; betrayal: Betrayal }
@@ -1235,7 +1247,7 @@ export type Event =
   | { type: 'CityStarved'; city: CityId; owner: PlayerId; population: number }
   | { type: 'CityCaptured'; city: CityId; from: PlayerId; to: PlayerId; bounty?: number }
   | { type: 'CityCeded'; city: CityId; from: PlayerId; to: PlayerId; effective_turn: number }
-  | { type: 'PeaceGoldPaid' | 'ReparationsStopped'; from: PlayerId; to: PlayerId; gold: number; effective_turn: number }
+  | { type: 'ReparationsStopped'; from: PlayerId; to: PlayerId; gold: number; effective_turn: number }
   | { type: 'AthensCityCaptured'; city: CityId; from: PlayerId; to: PlayerId }
   | { type: 'CapitalTaken'; captor: PlayerId; capital: CityId; name: string }
   | { type: 'CapitalSacked'; captor: PlayerId; capital: CityId; name: string }
@@ -1406,6 +1418,8 @@ export interface GameSetup {
   barbarians?: boolean;
   /** The teams with no human seat start in Alliances of two (core `GameSetup::ai_alliances`). Omitted when off. */
   ai_alliances?: boolean;
+  /** Deals (rules 61): Gold in offers, gifts to any met empire not at War, Open Borders. Omitted when off. */
+  deals?: boolean;
   /** Core rule experiments (only the switches the app reads); omitted when all default. */
   rule_experiments?: RuleSwitches;
 }

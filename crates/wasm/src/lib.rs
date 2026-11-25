@@ -740,31 +740,34 @@ impl Game {
     }
 
     /// The forecast a player sees before sending a Peace offer: how the AI empire `to` would
-    /// answer `terms_json` (`PeaceTerms`) today, as
-    /// `{"answer":"Accept"|"Refuse"|"Counter","counter":PeaceTerms?,"reasons":[..]}`, or
-    /// `null` when `to` is not an AI that prices terms.
+    /// answer `gold` (positive: the player pays) with `terms_json` (`PeaceTerms`) today, as
+    /// `{"answer":"Accept"|"Refuse"|"Counter","counter":PeaceTerms?,"counter_gold":n,"reasons":[..]}`
+    /// (the counter is written from the AI's side), or `null` when `to` is not an AI that
+    /// prices terms or the game has no deals.
     pub fn peace_forecast_json(
         &self,
         player: u8,
         to: u8,
+        gold: i32,
         terms_json: &str,
     ) -> Result<String, String> {
         let p = self.check_player(player)?;
         let to = self.check_player(to)?;
         let terms: legatum_core::diplomacy::PeaceTerms =
             serde_json::from_str(terms_json).map_err(|e| format!("invalid terms: {e}"))?;
-        let Some(verdict) = self.session.peace_forecast(p, to, &terms) else {
+        let Some(verdict) = self.session.peace_forecast(p, to, gold, &terms) else {
             return Ok("null".into());
         };
         use legatum_ai::peace_deal::PeaceAnswer;
-        let (answer, counter) = match &verdict.answer {
-            PeaceAnswer::Accept => ("Accept", None),
-            PeaceAnswer::Refuse => ("Refuse", None),
-            PeaceAnswer::Counter(terms) => ("Counter", Some(terms)),
+        let (answer, counter, counter_gold) = match &verdict.answer {
+            PeaceAnswer::Accept => ("Accept", None, 0),
+            PeaceAnswer::Refuse => ("Refuse", None, 0),
+            PeaceAnswer::Counter(gold, terms) => ("Counter", Some(terms), *gold),
         };
         to_json(&serde_json::json!({
             "answer": answer,
             "counter": counter,
+            "counter_gold": counter_gold,
             "reasons": verdict.reasons(),
         }))
     }
@@ -997,8 +1000,16 @@ impl Game {
     }
 
     /// Peace-offer forecast JSON (`peace_forecast_json`), or `null`.
-    pub fn peace_forecast(&self, player: u8, to: u8, terms_json: &str) -> Result<String, JsError> {
-        js(guard(|| self.peace_forecast_json(player, to, terms_json)))
+    pub fn peace_forecast(
+        &self,
+        player: u8,
+        to: u8,
+        gold: i32,
+        terms_json: &str,
+    ) -> Result<String, JsError> {
+        js(guard(|| {
+            self.peace_forecast_json(player, to, gold, terms_json)
+        }))
     }
 
     /// `CityAssaultForecast` JSON, or `null` when the target is not an enemy city.

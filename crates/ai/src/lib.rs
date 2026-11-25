@@ -47,6 +47,7 @@ pub use diplomacy::{
 pub use exploration::{EXPLORE_MIN_HP, explore_step};
 mod conquest;
 mod contest;
+mod deals;
 mod decision_trace;
 pub mod designer;
 mod development;
@@ -227,6 +228,7 @@ pub trait Brain: Send {
         &self,
         _view: &PlayerView,
         _proposer: legatum_core::PlayerId,
+        _gold: i32,
         _terms: &legatum_core::diplomacy::PeaceTerms,
     ) -> Option<peace_deal::PeaceVerdict> {
         None

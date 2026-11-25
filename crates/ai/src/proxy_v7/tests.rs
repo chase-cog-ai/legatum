@@ -65,6 +65,7 @@ fn at_peace(mut view: PlayerView) -> PlayerView {
             Order::ProposeTreaty {
                 to: against,
                 kind: TreatyKind::Peace,
+                gold: 0,
                 terms: Default::default(),
             },
         ] {
@@ -374,6 +375,7 @@ fn a_stalled_war_asks_for_peace_and_moves_the_army_to_another_front() {
         stalled.contains(&Order::ProposeTreaty {
             to: TeamId(2),
             kind: TreatyKind::Peace,
+            gold: 0,
             terms: Default::default(),
         }),
         "{stalled:?}"

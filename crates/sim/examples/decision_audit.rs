@@ -982,6 +982,7 @@ fn rival_options(
                 accept: !accept,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             };
             add("peace_response", 500, 2, orders);
         } else if matches!(order, Order::DeclareWar { .. }) {

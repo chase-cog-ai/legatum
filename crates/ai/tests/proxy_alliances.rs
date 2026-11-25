@@ -69,6 +69,7 @@ fn offer(s: &GameState, from: u8, to: u8, kind: TreatyKind) -> GameState {
             vec![Order::ProposeTreaty {
                 to: TeamId(to),
                 kind,
+                gold: 0,
                 terms: Default::default(),
             }],
         )]),
@@ -96,6 +97,7 @@ fn sign(s: &GameState, from: u8, to: u8, kind: TreatyKind) -> GameState {
                 accept: true,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             }],
         )]),
     );
@@ -119,6 +121,7 @@ fn useful_flank_alliance_is_accepted_and_old_proxy_stays_frozen() {
         accept: true,
         explanation: None,
         counter: None,
+        counter_gold: 0,
     };
     assert!(choices(&s).contains(&accept), "orders={:?}", choices(&s));
     let (s, events) = resolve_turn(&s, &BTreeMap::from([(ME, choices(&s))]));
@@ -147,6 +150,7 @@ fn an_alliance_does_not_protect_a_rival_about_to_win() {
         accept: false,
         explanation: None,
         counter: None,
+        counter_gold: 0,
     }));
 }
 

@@ -162,6 +162,10 @@ struct Cli {
     /// comparable with their barbarian-free calibration.
     #[arg(long)]
     barbarians: Option<bool>,
+    /// Deals on (`GameSetup::deals`): Gold in offers, gifts, Open Borders and Peace terms.
+    /// Default: off, as the pinned tapes and every earlier run played.
+    #[arg(long)]
+    deals: bool,
     /// Difficulty of the seven opponents in a Proxy benchmark, or of every seat otherwise.
     #[arg(long, default_value = "normal", value_parser = parse_difficulty)]
     difficulty: legatum_core::AiDifficulty,
@@ -619,6 +623,7 @@ fn run(cli: &Cli, threads: usize) -> Result<ExitCode, String> {
     let opts = RunOpts {
         lobby,
         barbarians: cli.barbarians.unwrap_or(cli.proxy.is_none()),
+        deals: cli.deals,
         safety_cap: cli.safety_cap,
         turn_limit: cli.turn_limit,
         brain: cli.brain,

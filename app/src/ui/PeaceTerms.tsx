@@ -1,24 +1,24 @@
-// Peace terms (core `diplomacy::PeaceTerms`, rules 61): the editor on a Peace offer and on a
+// Peace terms (core `diplomacy::PeaceTerms`, rules 62): the editor on a Peace offer and on a
 // counter-offer. Each term is one row; the forecast underneath says how an AI empire would answer
 // today and why (pillar 5). The core validates every term again when the order is queued.
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../store';
 import { empireTitle } from '../empires';
-import { PEACE_GOLD_MAX, REPARATIONS_MAX, TRUCE_CHOICES, capturedBetween, isPlain, termLines, truceTurns } from '../peaceTerms';
-import type { PeaceForecast, PeaceTerms, PlayerView, TeamId } from '../types';
+import { REPARATIONS_MAX, TRUCE_CHOICES, capturedBetween, isPlain, termLines, truceTurns } from '../peaceTerms';
+import { offerGoldForecast } from '../deals';
+import type { Order, PeaceForecast, PeaceTerms, PlayerView, TeamId } from '../types';
 import { Amounts } from './Amounts';
 
 /** The short rule, shown under the editor. */
 export const PEACE_TERMS_RULE = 'Nothing changes hands unless they accept. They can decline, or answer once with terms of their own.';
 
 type Side = 'pay' | 'ask';
-interface Draft { goldSide: Side; gold: string; city: string; back: boolean; truce: number; repSide: Side; rep: string }
+interface Draft { city: string; back: boolean; truce: number; repSide: Side; rep: string }
 
 const whole = (text: string) => (text.trim() === '' ? 0 : Number(text));
 
 function draftOf(t: PeaceTerms | undefined): Draft {
   return {
-    goldSide: (t?.gold ?? 0) < 0 ? 'ask' : 'pay', gold: t?.gold ? String(Math.abs(t.gold)) : '',
     city: t?.city != null ? String(t.city) : '', back: !!t?.return_captured, truce: truceTurns(t),
     repSide: (t?.reparations ?? 0) < 0 ? 'ask' : 'pay', rep: t?.reparations ? String(Math.abs(t.reparations)) : '',
   };
@@ -26,9 +26,8 @@ function draftOf(t: PeaceTerms | undefined): Draft {
 
 /** The draft as core terms, written from the viewer's side (the viewer proposes). */
 export function termsOf(d: Draft): PeaceTerms {
-  const gold = whole(d.gold), rep = whole(d.rep);
+  const rep = whole(d.rep);
   return {
-    ...(gold ? { gold: d.goldSide === 'pay' ? gold : -gold } : {}),
     ...(d.city !== '' ? { city: Number(d.city) } : {}),
     ...(d.back ? { return_captured: true } : {}),
     ...(d.truce !== TRUCE_CHOICES[0] ? { truce: d.truce } : {}),
@@ -38,9 +37,7 @@ export function termsOf(d: Draft): PeaceTerms {
 
 /** Why the draft cannot be sent, in the player's words; null when it can. */
 export function draftError(view: PlayerView, d: Draft): string | null {
-  const gold = whole(d.gold), rep = whole(d.rep);
-  if (!Number.isInteger(gold) || gold < 0 || gold > PEACE_GOLD_MAX) return `Gold is a whole number up to ${PEACE_GOLD_MAX}.`;
-  if (d.goldSide === 'pay' && gold > view.economy.gold) return `You have ${view.economy.gold} Gold.`;
+  const rep = whole(d.rep);
   if (!Number.isInteger(rep) || rep < 0 || rep > REPARATIONS_MAX) return `Gold each turn is a whole number up to ${REPARATIONS_MAX}.`;
   const income = view.economy.gold_per_turn.total;
   if (d.repSide === 'pay' && rep > Math.max(0, income)) return `Gold each turn comes out of your income: ${income} Gold a turn.`;
@@ -51,10 +48,12 @@ const ANSWER: Record<PeaceForecast['answer'], string> = { Accept: 'would accept 
 
 /**
  * The editor. `to` is the team the terms go to; `start` the terms it opens on (a counter-offer
- * opens on the offer it answers, seen from this side). `send` queues the order.
+ * opens on the offer it answers, seen from this side). `gold` is the deal's Gold from the viewer's
+ * side (the `DealGold` field): an offer shares the empire's field above it; a counter-offer has
+ * its own, passed as `goldField` and shown as the first row. `send` queues the order.
  */
-export function PeaceTermsEditor({ view, to, start, sendLabel, send, onlyWithTerms = false }: {
-  view: PlayerView; to: TeamId; start?: PeaceTerms; sendLabel: string; send: (terms: PeaceTerms) => void; onlyWithTerms?: boolean;
+export function PeaceTermsEditor({ view, to, start, gold, goldField, orders = [], sendLabel, send, onlyWithTerms = false }: {
+  view: PlayerView; to: TeamId; start?: PeaceTerms; gold: number; goldField?: ReactNode; orders?: Order[]; sendLabel: string; send: (terms: PeaceTerms) => void; onlyWithTerms?: boolean;
 }) {
   const client = useGame((s) => s.client);
   const [d, setD] = useState<Draft>(() => draftOf(start));
@@ -64,24 +63,18 @@ export function PeaceTermsEditor({ view, to, start, sendLabel, send, onlyWithTer
   const mine = view.cities.filter((c) => c.owner === view.me && !c.is_capital);
   const theirs = view.cities.filter((c) => teamOf(c.owner) === to && !c.is_capital);
   const captured = capturedBetween(view, view.team, to);
-  const error = draftError(view, d);
+  const error = offerGoldForecast(view, gold, orders)?.error ?? draftError(view, d);
   const terms = termsOf(d);
   const target = view.players.find((p) => p.team === to && p.alive)?.id;
   const key = JSON.stringify(terms);
   const forecast = useMemo((): PeaceForecast | null => {
     if (error || target === undefined || !client?.peaceForecast) return null;
-    try { return client.peaceForecast(view.me, target, JSON.parse(key)); } catch { return null; }
+    try { return client.peaceForecast(view.me, target, gold, JSON.parse(key)); } catch { return null; }
     // The forecast reads the game the client holds; a new turn brings a new view.
-  }, [client, error, target, key, view.me, view.turn]);
-  const lines = termLines(view, terms, view.team, to);
+  }, [client, error, target, gold, key, view.me, view.turn]);
+  const lines = termLines(view, terms, view.team, to, gold);
   return <div className="peace-terms" data-testid="peace-terms">
-    <div className="peace-term">
-      <label htmlFor={`pt-gold-${to}`}>Gold</label>
-      <select aria-label="Who pays the Gold" value={d.goldSide} onChange={(e) => set({ goldSide: e.target.value as Side })}>
-        <option value="pay">You pay</option><option value="ask">{them} pays</option>
-      </select>
-      <input id={`pt-gold-${to}`} type="number" inputMode="numeric" min={0} max={PEACE_GOLD_MAX} step={10} placeholder="0" value={d.gold} onChange={(e) => set({ gold: e.target.value })} />
-    </div>
+    {goldField}
     {(mine.length > 0 || theirs.length > 0) && <div className="peace-term">
       <label htmlFor={`pt-city-${to}`}>City</label>
       <select id={`pt-city-${to}`} value={d.city} onChange={(e) => set({ city: e.target.value })}>
@@ -111,10 +104,10 @@ export function PeaceTermsEditor({ view, to, start, sendLabel, send, onlyWithTer
     {forecast && <div className={`peace-forecast ${forecast.answer.toLowerCase()}`} role="status" data-testid="peace-forecast">
       <strong>{them} {ANSWER[forecast.answer]}.</strong>
       {forecast.reasons.length > 0 && <ul>{forecast.reasons.slice(0, 4).map((r) => <li key={r}><Amounts text={r} /></li>)}</ul>}
-      {forecast.answer === 'Counter' && forecast.counter && <p className="muted">Their terms: {termLines(view, forecast.counter, to, view.team).map((l) => l.text).join('. ') || 'a plain Peace'}.</p>}
+      {forecast.answer === 'Counter' && forecast.counter && <p className="muted">Their terms: {termLines(view, forecast.counter, to, view.team, forecast.counter_gold ?? 0).map((l) => l.text).join('. ') || 'a plain Peace'}.</p>}
       <p className="muted">They answer next turn; the war may look different to them by then.</p>
     </div>}
-    <button className="btn primary" type="button" disabled={!!error || (onlyWithTerms && isPlain(terms))} onClick={() => send(terms)} data-testid="peace-terms-send">{sendLabel}</button>
+    <button className="btn primary" type="button" disabled={!!error || (onlyWithTerms && isPlain(terms) && !gold)} onClick={() => send(terms)} data-testid="peace-terms-send">{sendLabel}</button>
     <p className="muted peace-terms-rule">{PEACE_TERMS_RULE}</p>
   </div>;
 }

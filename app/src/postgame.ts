@@ -266,9 +266,6 @@ function marker(c: Chronicle, view: PlayerView, nameOf: (id: PlayerId | null | u
   if (c.kind === 'Ceded') {
     return [{ turn: c.turn, lane: 'capture', icon: 'treaty-peace', text: `Turn ${c.turn}: ${nameOf(c.by)} handed ${c.city} over to ${nameOf(c.to)} under a Peace`, who: c.to, mine: team(c.by) === view.team || team(c.to) === view.team }];
   }
-  if (c.kind === 'PeaceGold') {
-    return [{ turn: c.turn, lane: 'war', icon: 'yield-gold', text: `Turn ${c.turn}: ${nameOf(c.from)} paid ${nameOf(c.to)} ${c.gold} Gold for Peace`, who: c.from, mine: team(c.from) === view.team || team(c.to) === view.team }];
-  }
   if (c.kind === 'Defaulted') {
     return [{ turn: c.turn, lane: 'war', icon: 'ui-alert', text: `Turn ${c.turn}: ${nameOf(c.by)} stopped the Gold it owed ${nameOf(c.on)} each turn`, who: c.by, mine: team(c.by) === view.team || team(c.on) === view.team }];
   }

@@ -909,6 +909,7 @@ mod tests {
                 Order::ProposeTreaty {
                     to: TeamId(1),
                     kind: TreatyKind::Peace,
+                    gold: 0,
                     terms: Default::default(),
                 },
             ),
@@ -919,6 +920,7 @@ mod tests {
                     accept: true,
                     explanation: None,
                     counter: None,
+                    counter_gold: 0,
                 },
             ),
         ];

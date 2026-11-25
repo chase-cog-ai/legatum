@@ -475,6 +475,7 @@ mod tests {
             ai_alliances: false,
             barbarians: false,
             rule_experiments: Default::default(),
+            deals: false,
         };
         let mut s = blank_game(&setup, Map::new(12, 10, Terrain::Grassland));
         for relation in &mut s.diplomacy.as_mut().unwrap().relations {

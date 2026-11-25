@@ -420,6 +420,7 @@ mod tests {
             Order::ProposeTreaty {
                 to: TeamId(2),
                 kind: legatum_core::diplomacy::TreatyKind::Alliance,
+                gold: 0,
                 terms: Default::default(),
             },
             Order::DeclareWar {
@@ -440,6 +441,7 @@ mod tests {
         let mut peace = vec![Order::ProposeTreaty {
             to: TeamId(2),
             kind: legatum_core::diplomacy::TreatyKind::Peace,
+            gold: 0,
             terms: Default::default(),
         }];
         crate::goal_actions::with_goal_actions(

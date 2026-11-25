@@ -65,13 +65,6 @@ pub enum Chronicle {
         to: PlayerId,
         city: String,
     },
-    /// Gold a signed Peace carried.
-    PeaceGold {
-        turn: u32,
-        from: PlayerId,
-        to: PlayerId,
-        gold: i32,
-    },
     /// The payer stopped the reparations a Peace set.
     Defaulted {
         turn: u32,
@@ -233,12 +226,6 @@ fn chronicle_entry(turn: u32, prev: &GameState, s: &GameState, event: &Event) ->
                 city: name.name.clone(),
             })
         }
-        Event::PeaceGoldPaid { from, to, gold, .. } => Some(Chronicle::PeaceGold {
-            turn,
-            from: *from,
-            to: *to,
-            gold: *gold,
-        }),
         Event::ReparationsStopped { from, to, .. } => Some(Chronicle::Defaulted {
             turn,
             by: *from,

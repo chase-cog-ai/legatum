@@ -31,6 +31,10 @@ pub enum TreatyKind {
     #[default]
     Peace,
     Alliance,
+    /// Deals (rules 61, `GameSetup::deals`): each team's units may enter the other's land at
+    /// Peace. No vision, no war duties, no upkeep; either side ends it for free
+    /// (`Agreement::OpenBorders`), and War or an Alliance ends it.
+    OpenBorders,
 }
 impl TreatyKind {
     /// Gold each empire pays per turn. An Alliance adds one per owned city;
@@ -38,13 +42,13 @@ impl TreatyKind {
     pub fn upkeep(self) -> i32 {
         match self {
             Self::Alliance => 1,
-            Self::Peace => 0,
+            Self::Peace | Self::OpenBorders => 0,
         }
     }
     pub fn upkeep_for_cities(self, cities: usize) -> i32 {
         match self {
             Self::Alliance => self.upkeep() * cities.max(1) as i32,
-            Self::Peace => 0,
+            Self::Peace | Self::OpenBorders => 0,
         }
     }
     /// Gold the leaving empire pays to break the treaty inside its protected window (0 for
@@ -52,14 +56,12 @@ impl TreatyKind {
     pub fn breach_cost(self) -> i32 {
         match self {
             Self::Alliance => 120,
-            Self::Peace => 0,
+            Self::Peace | Self::OpenBorders => 0,
         }
     }
 }
 /// Turns of guaranteed peace after a war ends in a Peace treaty.
 pub const PEACE_TRUCE_TURNS: u32 = 10;
-/// The most Gold a Peace offer may carry, either way.
-pub const PEACE_GOLD_MAX: i32 = 9_999;
 /// The truce lengths a Peace offer may name (the first is the default).
 pub const PEACE_TRUCE_CHOICES: [u32; 3] = [PEACE_TRUCE_TURNS, 20, 30];
 /// The most Gold per turn a Peace offer may carry as reparations, either way.
@@ -70,9 +72,6 @@ pub const PEACE_REPARATIONS_MAX: i32 = 99;
 /// refuse, or refuse with one counter-offer.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PeaceTerms {
-    /// Gold the proposer pays the empire that accepts; negative, the accepting empire pays.
-    #[serde(default, skip_serializing_if = "is_zero")]
-    pub gold: i32,
     /// One city handed over by whichever of the two empires owns it: the proposer's goes to
     /// the empire that accepts, the other side's to the proposer. Never a capital.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -107,7 +106,6 @@ impl PeaceTerms {
     /// The same deal written from the other side (for a counter-offer that changes one term).
     pub fn mirrored(&self) -> Self {
         Self {
-            gold: -self.gold,
             reparations: -self.reparations,
             ..self.clone()
         }
@@ -130,8 +128,16 @@ pub const BETRAYAL_TURNS: u32 = 20;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Agreement {
+    /// An Alliance.
     Security,
+    /// Open Borders (deals, rules 61).
+    OpenBorders,
 }
+
+/// Why a deal is refused in a game without them (`GameSetup::deals` off).
+pub const DEALS_OFF: &str = "Deals are off in this game";
+/// The most Gold one offer may carry either way.
+pub const MAX_DEAL_GOLD: i32 = 999;
 
 /// The terms of an active Alliance.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -292,6 +298,11 @@ pub struct PeaceProposal {
     /// This offer answers a refused one with changed terms; it cannot be countered again.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub counter: bool,
+    /// Deals (rules 61): Gold that changes hands when the treaty takes effect. Positive: the
+    /// proposing empire pays it to the other team's accepting empire; negative: the accepting
+    /// empire pays its absolute value to the proposer. Omitted when 0.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub gold: i32,
     /// Peace only: the teams that have agreed so far, the proposer first.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub consents: Vec<TeamId>,
@@ -371,6 +382,10 @@ pub struct DiplomacyState {
     /// Open calls to arms.
     #[serde(default)]
     pub calls: Vec<WarCall>,
+    /// Team pairs (lower id first) with Open Borders (deals, rules 61): each may enter the
+    /// other's land at Peace (`GameState::passage_allowed`).
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub open_borders: BTreeSet<(TeamId, TeamId)>,
 }
 
 /// Why a pending offer ended: one of the two teams declared War on the other.
@@ -412,6 +427,7 @@ impl DiplomacyState {
             peace_cooldowns: Vec::new(),
             contacts: Some(BTreeSet::new()),
             calls: Vec::new(),
+            open_borders: BTreeSet::new(),
         }
     }
 
@@ -460,6 +476,11 @@ impl DiplomacyState {
                 .contacts
                 .as_ref()
                 .is_none_or(|c| c.contains(&pair(a, b)))
+    }
+
+    /// Whether `a` and `b` have Open Borders (deals, rules 61).
+    pub fn borders_open(&self, a: TeamId, b: TeamId) -> bool {
+        a != b && self.open_borders.contains(&pair(a, b))
     }
 
     pub fn relation(&self, a: TeamId, b: TeamId) -> Option<&Relation> {
@@ -679,6 +700,13 @@ impl GameState {
             })
     }
 
+    /// Whether the two empires' teams have Open Borders (deals, rules 61).
+    pub fn borders_open(&self, a: PlayerId, b: PlayerId) -> bool {
+        self.diplomacy
+            .as_ref()
+            .is_some_and(|d| d.borders_open(self.team_of(a), self.team_of(b)))
+    }
+
     pub fn allied(&self, a: PlayerId, b: PlayerId) -> bool {
         self.diplomacy.as_ref().is_some_and(|d| {
             d.relation(self.team_of(a), self.team_of(b))
@@ -687,7 +715,8 @@ impl GameState {
     }
 
     /// Whether `mover`'s unit of `kind` may stand in land owned by `land_owner`: unowned land,
-    /// its own team's, an enemy's (War), an ally's, or land its faction crosses at Peace
+    /// its own team's, an enemy's (War), an ally's, an Open Borders partner's (deals), or land
+    /// its faction crosses at Peace
     /// or the
     /// land of a Yam Relay Station's holder, which is open to every empire's units, military
     /// included (`goals::holds_open_road`). This is the single passage rule.
@@ -705,6 +734,7 @@ impl GameState {
                 || (!mover.is_barbarian()
                     && !crate::goals::is_closed(self, o)
                     && (self.allied(mover, o)
+                        || self.borders_open(mover, o)
                         || crate::goals::holds_open_road(self, o)))
         })
     }
@@ -776,13 +806,16 @@ pub fn allied_teams(state: &GameState, team: TeamId) -> Vec<TeamId> {
 /// Alliance signatures were checked against an open country, so it may not be ordered with one
 /// (accepting Peace, or any other treaty, is fine).
 pub fn vow_conflict(state: &GameState, orders: &[Order]) -> Option<String> {
-    let alliance = |proposal: &crate::diplomacy::ProposalId| {
-        state.diplomacy.as_ref().is_some_and(|d| {
+    let kind_of = |proposal: &crate::diplomacy::ProposalId| {
+        state.diplomacy.as_ref().and_then(|d| {
             d.proposals
                 .iter()
-                .any(|p| p.id == *proposal && p.kind == TreatyKind::Alliance)
+                .find(|p| p.id == *proposal)
+                .map(|p| p.kind)
         })
     };
+    let borders =
+        "A closed country can't open its borders: close it on a turn without signing Open Borders";
     orders.iter().find_map(|o| match o {
         Order::DeclareWar { .. } => Some(
             "A closed country can't declare war: close it on a turn without a declaration"
@@ -795,21 +828,29 @@ pub fn vow_conflict(state: &GameState, orders: &[Order]) -> Option<String> {
             "A closed country can't join an Alliance: close it on a turn without signing one"
                 .to_string(),
         ),
+        Order::ProposeTreaty {
+            kind: TreatyKind::OpenBorders,
+            ..
+        } => Some(borders.to_string()),
         Order::RespondToProposal {
             proposal,
             accept: true,
             ..
-        } if alliance(proposal) => Some(
-            "A closed country can't join an Alliance: close it on a turn without signing one"
-                .to_string(),
-        ),
+        } => match kind_of(proposal) {
+            Some(TreatyKind::Alliance) => Some(
+                "A closed country can't join an Alliance: close it on a turn without signing one"
+                    .to_string(),
+            ),
+            Some(TreatyKind::OpenBorders) => Some(borders.to_string()),
+            _ => None,
+        },
         _ => None,
     })
 }
 
 /// Japan's Sakoku vow (`goals::GoalRule::Sakoku`) on a diplomatic order: a closed country can't
-/// declare war, and no Alliance can be proposed or signed by a team with a closed member, or
-/// with a team that has one. Peace, leaving an Alliance and the teammate's own war are not
+/// declare war, and no Alliance or Open Borders can be proposed or signed by a team with a
+/// closed member, or with a team that has one. Peace, leaving an Alliance and the teammate's own war are not
 /// touched: the vow binds the closed empire, and teams are not Alliances.
 fn closed_refusal(
     state: &GameState,
@@ -841,26 +882,25 @@ fn closed_refusal(
                     .to_string()
             });
         }
-        Order::ProposeTreaty { kind, .. } => *kind == TreatyKind::Alliance,
+        Order::ProposeTreaty { kind, .. } => Some(*kind),
         Order::RespondToProposal {
             proposal,
             accept: true,
             ..
-        } => proposals
-            .iter()
-            .find(|p| p.id == *proposal)
-            .is_some_and(|p| p.kind == TreatyKind::Alliance),
-        _ => false,
+        } => proposals.iter().find(|p| p.id == *proposal).map(|p| p.kind),
+        _ => None,
     };
-    if !alliance {
-        return None;
-    }
+    let what = match alliance {
+        Some(TreatyKind::Alliance) => "join an Alliance",
+        Some(TreatyKind::OpenBorders) => "open its borders",
+        _ => return None,
+    };
     [team, other]
         .into_iter()
         .find(|t| crate::goals::team_closed(state, *t))
         .map(|t| {
             format!(
-                "{} has closed the country (Sakoku): a closed country can't join an Alliance",
+                "{} has closed the country (Sakoku): a closed country can't {what}",
                 crate::scoring::team_label(state, t)
             )
         })
@@ -925,6 +965,17 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
                 && r.reparations
                     .as_ref()
                     .is_some_and(|p| state.team_of(p.from) == team && state.turn < p.until) => {}
+        Order::BreakTreaty {
+            agreement: Agreement::OpenBorders,
+            ..
+        } => {
+            if !state.setup.deals {
+                return Err(DEALS_OFF.into());
+            }
+            if !d.borders_open(team, other) {
+                return Err("No Open Borders to end".into());
+            }
+        }
         Order::BreakTreaty { .. } => {
             if r.state != RelationState::Alliance {
                 return Err("No Alliance to leave".into());
@@ -936,8 +987,24 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
                 "Breaking the Alliance",
             )?;
         }
-        Order::ProposeTreaty { kind, terms, .. } => {
-            check_kind(r, *kind)?;
+        Order::ProposeTreaty {
+            kind, gold, terms, ..
+        } => {
+            if (*gold != 0 || *kind == TreatyKind::OpenBorders || !terms.is_plain())
+                && !state.setup.deals
+            {
+                return Err(DEALS_OFF.into());
+            }
+            if gold.abs() > MAX_DEAL_GOLD {
+                return Err(format!("An offer can carry at most {MAX_DEAL_GOLD} Gold"));
+            }
+            check_kind_in(d, r, *kind)?;
+            if *gold > 0 {
+                afford(state, player, *gold, "This offer")?;
+            }
+            if *kind == TreatyKind::OpenBorders && !d.met(team, other) {
+                return Err(NOT_MET.into());
+            }
             if !terms.is_plain() && *kind != TreatyKind::Peace {
                 return Err("Only a Peace offer can carry terms".into());
             }
@@ -986,9 +1053,9 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
             if p.relation_version != rp.version {
                 return Err("Proposal no longer matches the relationship".into());
             }
-            check_kind(rp, p.kind)?;
-            if matches!(order, Order::RespondToProposal { accept: true, .. }) {
-                afford(state, player, -p.terms.gold, "Accepting this Peace")?;
+            check_kind_in(d, rp, p.kind)?;
+            let accept = matches!(order, Order::RespondToProposal { accept: true, .. });
+            if accept {
                 afford_each_turn(state, player, -p.terms.reparations)?;
                 if let Some(c) = p.terms.city.and_then(|c| state.cities.get(&c)) {
                     if c.owner != p.proposer && c.owner != player {
@@ -1005,13 +1072,16 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
                 }
             }
             if let Order::RespondToProposal {
-                accept,
                 counter: Some(terms),
+                counter_gold,
                 ..
             } = order
             {
-                if *accept {
+                if accept {
                     return Err("A counter-offer comes with a refusal".into());
+                }
+                if !state.setup.deals {
+                    return Err(DEALS_OFF.into());
                 }
                 if p.kind != TreatyKind::Peace {
                     return Err("Only a Peace offer can be countered".into());
@@ -1019,12 +1089,22 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
                 if p.counter {
                     return Err("A counter-offer can only be accepted or refused".into());
                 }
+                if counter_gold.abs() > MAX_DEAL_GOLD {
+                    return Err(format!("An offer can carry at most {MAX_DEAL_GOLD} Gold"));
+                }
+                if *counter_gold > 0 {
+                    afford(state, player, *counter_gold, "This offer")?;
+                }
                 check_terms(state, player, p.from, terms)?;
             }
-            if matches!(order, Order::RespondToProposal { accept: true, .. })
-                && p.kind == TreatyKind::Alliance
-            {
+            if accept && p.kind == TreatyKind::Alliance {
                 check_alliance(d, state, p.from, p.to, state.turn)?;
+            }
+            if accept && p.kind == TreatyKind::OpenBorders && !d.met(p.from, p.to) {
+                return Err(NOT_MET.into());
+            }
+            if accept && p.gold < 0 {
+                afford(state, player, -p.gold, "Accepting this offer")?;
             }
         }
         _ => return Err("Not a diplomatic order".into()),
@@ -1246,6 +1326,13 @@ pub struct DiplomacyView {
     /// Other teams this team has met (see `DiplomacyState::contacts`), ascending.
     #[serde(default)]
     pub met: Vec<TeamId>,
+    /// Public: every team pair (lower id first) with Open Borders (deals, rules 61).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub open_borders: Vec<(TeamId, TeamId)>,
+    /// Deals are on in this game (`GameSetup::deals`): Gold in offers, gifts to met empires not
+    /// at War, and Open Borders.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub deals: bool,
     pub actions: Vec<DiplomaticAction>,
 }
 
@@ -1278,6 +1365,8 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
             superseded: Vec::new(),
             peace_cooldowns: Vec::new(),
             met: Vec::new(),
+            open_borders: Vec::new(),
+            deals: false,
             actions: Vec::new(),
         };
     };
@@ -1317,7 +1406,21 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
             orders.push(Order::ProposeTreaty {
                 to: other,
                 kind,
+                gold: 0,
                 terms: Default::default(),
+            });
+        }
+        // Deals: listed only in games with them, so other games' views are unchanged.
+        if state.setup.deals {
+            orders.push(Order::ProposeTreaty {
+                to: other,
+                kind: TreatyKind::OpenBorders,
+                gold: 0,
+                terms: Default::default(),
+            });
+            orders.push(Order::BreakTreaty {
+                with: other,
+                agreement: Agreement::OpenBorders,
             });
         }
     }
@@ -1329,6 +1432,7 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
                     accept,
                     explanation: None,
                     counter: None,
+                    counter_gold: 0,
                 });
             }
         } else if p.from == team {
@@ -1343,6 +1447,7 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
                 accept,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             });
         }
     }
@@ -1425,6 +1530,8 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
             .into_iter()
             .filter(|t| *t != team && d.met(team, *t))
             .collect(),
+        open_borders: d.open_borders.iter().copied().collect(),
+        deals: state.setup.deals,
         actions,
     }
 }
@@ -1488,6 +1595,7 @@ fn action_effects(
                             .filter(|t| *t != team && alive(*t))
                             .collect(),
                     ),
+                    TreatyKind::OpenBorders => (Vec::new(), Vec::new(), Vec::new()),
                 },
             )
         }
@@ -1585,6 +1693,7 @@ pub fn declare_surprise_wars(
         }
     }
     end_warring_alliances(&mut d, state, turn, events);
+    close_lapsed_borders(&mut d, state, turn, events);
     state.diplomacy = Some(d);
     declarations.into_keys().collect()
 }
@@ -1903,8 +2012,11 @@ pub fn resolve_boundary(
                 let counter = match &order {
                     Order::RespondToProposal {
                         counter: Some(terms),
+                        counter_gold,
                         ..
-                    } if p.kind == TreatyKind::Peace && !p.counter => Some(terms.clone()),
+                    } if p.kind == TreatyKind::Peace && !p.counter => {
+                        Some((terms.clone(), *counter_gold))
+                    }
                     _ => None,
                 };
                 if counter.is_none() {
@@ -1916,7 +2028,7 @@ pub fn resolve_boundary(
                     effective_turn,
                 });
                 // A refusal with a counter-offer: the refuser's terms go back as its own offer.
-                if let Some(terms) = counter {
+                if let Some((terms, gold)) = counter {
                     d.next_proposal_id += 1;
                     let city_from = terms
                         .city
@@ -1932,6 +2044,7 @@ pub fn resolve_boundary(
                         created_turn: effective_turn,
                         respond_by: before.turn + 3,
                         relation_version: version,
+                        gold,
                         terms,
                         city_from,
                         counter: true,
@@ -2007,7 +2120,14 @@ pub fn resolve_boundary(
         events.push(Event::AllianceBetrayed { betrayal: b });
     }
     for (player, team, other, o) in &valid {
-        if !matches!(o, Order::DeclareWar { .. } | Order::BreakTreaty { .. }) {
+        if !matches!(
+            o,
+            Order::DeclareWar { .. }
+                | Order::BreakTreaty {
+                    agreement: Agreement::Security,
+                    ..
+                }
+        ) {
             continue;
         }
         let Some(relation) = exit_relations
@@ -2081,6 +2201,23 @@ pub fn resolve_boundary(
     }
     for (player, team, other, order) in valid {
         match order {
+            Order::BreakTreaty {
+                agreement: Agreement::OpenBorders,
+                ..
+            } => {
+                let (a, b) = pair(team, other);
+                if d.open_borders.remove(&(a, b)) {
+                    events.push(Event::BordersClosed {
+                        a,
+                        b,
+                        effective_turn,
+                        reason: format!(
+                            "{} closed the borders",
+                            crate::scoring::team_label(after, team)
+                        ),
+                    });
+                }
+            }
             Order::BreakTreaty { .. } => {} // Ended with the exits above.
             Order::DeclareWar { breach, .. } => {
                 if failed_exits.contains(&(team, other)) {
@@ -2210,9 +2347,19 @@ pub fn resolve_boundary(
                     Some(format!("{} was eliminated", after.player(p.proposer).name))
                 } else if p.kind == TreatyKind::Alliance {
                     check_alliance(&d, after, p.from, p.to, effective_turn).err()
+                } else if p.kind == TreatyKind::OpenBorders {
+                    check_kind_in(&d, r, p.kind).err()
                 } else {
                     None
                 };
+                // Deals: the payer must still have the Gold after this turn's purchases. A Peace
+                // pays only when it is made, below.
+                let deal = deal_payment(&p, player);
+                let reason = reason.or_else(|| {
+                    (p.kind != TreatyKind::Peace)
+                        .then(|| deal_short(after, deal))
+                        .flatten()
+                });
                 if let Some(reason) = reason {
                     d.proposals.remove(i);
                     events.push(Event::ProposalInvalidated {
@@ -2236,12 +2383,6 @@ pub fn resolve_boundary(
                     // The terms settle with the signature or the Peace is not signed:
                     // purchases and captures this turn may have changed what the offer counted on.
                     let terms = p.terms.clone();
-                    let (payer, payee) = if terms.gold >= 0 {
-                        (p.proposer, player)
-                    } else {
-                        (player, p.proposer)
-                    };
-                    let amount = terms.gold.abs();
                     let cession = terms.city.map(|c| {
                         let to = if p.city_from == Some(p.proposer) {
                             player
@@ -2255,16 +2396,11 @@ pub fn resolve_boundary(
                         });
                         (c, to, ok)
                     });
-                    let broken = if after.player(payer).gold < amount {
-                        Some(format!(
-                            "{} no longer has the {amount} Gold this Peace costs",
-                            after.player(payer).name
-                        ))
-                    } else if cession.is_some_and(|(_, _, ok)| !ok) {
-                        Some("The city this Peace names can no longer be handed over".into())
-                    } else {
-                        None
-                    };
+                    let broken = deal_short(after, deal).or_else(|| {
+                        cession.is_some_and(|(_, _, ok)| !ok).then(|| {
+                            "The city this Peace names can no longer be handed over".into()
+                        })
+                    });
                     if let Some(reason) = broken {
                         events.push(Event::ProposalInvalidated {
                             reason,
@@ -2294,17 +2430,7 @@ pub fn resolve_boundary(
                         proposal: p,
                         effective_turn,
                     });
-                    if amount > 0 {
-                        after.player_mut(payer).gold -= amount;
-                        after.player_mut(payee).gold =
-                            crate::validation::credit_gold(after.player(payee).gold, amount);
-                        events.push(Event::PeaceGoldPaid {
-                            from: payer,
-                            to: payee,
-                            gold: amount,
-                            effective_turn,
-                        });
-                    }
+                    move_deal_gold(after, deal, events);
                     let mut handed: Vec<_> = cession.iter().map(|(c, to, _)| (*c, *to)).collect();
                     if terms.return_captured {
                         for back in captured_between(after, p_from, p_to) {
@@ -2329,6 +2455,21 @@ pub fn resolve_boundary(
                     continue;
                 }
                 d.proposals.remove(i);
+                if p.kind == TreatyKind::OpenBorders {
+                    let (a, b) = pair(p.from, p.to);
+                    d.open_borders.insert((a, b));
+                    events.push(Event::ProposalAccepted {
+                        proposal: p,
+                        effective_turn,
+                    });
+                    move_deal_gold(after, deal, events);
+                    events.push(Event::BordersOpened {
+                        a,
+                        b,
+                        effective_turn,
+                    });
+                    continue;
+                }
                 d.next_treaty_id += 1;
                 let treaty_id = d.next_treaty_id;
                 let security = SecurityTreaty {
@@ -2355,10 +2496,13 @@ pub fn resolve_boundary(
                     proposal: p,
                     effective_turn,
                 });
+                move_deal_gold(after, deal, events);
                 events.push(Event::TreatyActivated { relation });
                 signed.push((p_from, p_to));
             }
-            Order::ProposeTreaty { kind, terms, .. } => {
+            Order::ProposeTreaty {
+                kind, gold, terms, ..
+            } => {
                 let terms = if kind == TreatyKind::Peace {
                     terms
                 } else {
@@ -2380,7 +2524,7 @@ pub fn resolve_boundary(
                     continue;
                 }
                 let r = d.relation(team, other).expect("validated pair");
-                if check_kind(r, kind).is_err() || unilateral.contains(&pair(team, other)) {
+                if check_kind_in(&d, r, kind).is_err() || unilateral.contains(&pair(team, other)) {
                     events.push(Event::OrderFailed {
                         player,
                         reason: "Relationship changed before proposal creation".into(),
@@ -2399,6 +2543,7 @@ pub fn resolve_boundary(
                     created_turn: effective_turn,
                     respond_by: before.turn + 3,
                     relation_version: version,
+                    gold,
                     terms,
                     city_from,
                     counter: false,
@@ -2436,6 +2581,7 @@ pub fn resolve_boundary(
         alliance_effects(&mut d, after, effective_turn, effective_turn, a, b, events);
     }
     end_warring_alliances(&mut d, after, effective_turn, events);
+    close_lapsed_borders(&mut d, after, effective_turn, events);
     // Every offer between two teams whose relation changed this turn is withdrawn: a war
     // declaration (surprise or at the boundary), an Alliance left or bought peace ends them all,
     // so an answered or overtaken offer never waits in the inbox (playtest 8.9.2 alliance loop).
@@ -2522,6 +2668,77 @@ pub fn resolve_boundary(
     after.diplomacy = Some(d);
 }
 
+/// Deals: who pays whom how much Gold when `p` takes effect, accepted by `accepter` (payer,
+/// receiver, amount), or `None` when the offer carries no Gold.
+fn deal_payment(p: &PeaceProposal, accepter: PlayerId) -> Option<(PlayerId, PlayerId, i32)> {
+    match p.gold {
+        0 => None,
+        g if g > 0 => Some((p.proposer, accepter, g)),
+        g => Some((accepter, p.proposer, -g)),
+    }
+}
+
+/// Why a deal's Gold can't be paid now: "<Empire> could not pay N Gold".
+fn deal_short(state: &GameState, deal: Option<(PlayerId, PlayerId, i32)>) -> Option<String> {
+    let (payer, _, n) = deal?;
+    let p = state.player(payer);
+    (!p.alive || p.gold < n).then(|| {
+        format!(
+            "{} could not pay {n} Gold",
+            crate::data::faction_name(p.faction)
+        )
+    })
+}
+
+/// Move a deal's Gold (already checked by `deal_short`) and report it as a `GoldGiven`.
+fn move_deal_gold(
+    state: &mut GameState,
+    deal: Option<(PlayerId, PlayerId, i32)>,
+    events: &mut Vec<Event>,
+) {
+    let Some((from, to, amount)) = deal else {
+        return;
+    };
+    state.player_mut(from).gold -= amount;
+    state.player_mut(to).gold += amount;
+    events.push(Event::GoldGiven { from, to, amount });
+}
+
+/// Open Borders end when the pair goes to War, signs an Alliance (which includes passage), or a
+/// team is eliminated. Run after every change of relation at a boundary.
+fn close_lapsed_borders(
+    d: &mut DiplomacyState,
+    state: &GameState,
+    turn: u32,
+    events: &mut Vec<Event>,
+) {
+    let open = std::mem::take(&mut d.open_borders);
+    for (a, b) in open {
+        let reason = if !state.team_alive(a) || !state.team_alive(b) {
+            Some("Team eliminated")
+        } else {
+            match d.relation(a, b).map(|r| r.state) {
+                Some(RelationState::War) | None => Some("They went to War"),
+                Some(RelationState::Alliance) => {
+                    Some("They signed an Alliance, which includes passage")
+                }
+                Some(RelationState::Peace) => None,
+            }
+        };
+        match reason {
+            Some(reason) => events.push(Event::BordersClosed {
+                a,
+                b,
+                effective_turn: turn,
+                reason: reason.into(),
+            }),
+            None => {
+                d.open_borders.insert((a, b));
+            }
+        }
+    }
+}
+
 fn cooldown(d: &mut DiplomacyState, p: &PeaceProposal, turn: u32) {
     d.peace_cooldowns
         .retain(|c| (c.from, c.to, c.kind) != (p.from, p.to, p.kind));
@@ -2542,12 +2759,6 @@ fn check_terms(
     other: TeamId,
     terms: &PeaceTerms,
 ) -> Result<(), String> {
-    if terms.gold.abs() > PEACE_GOLD_MAX {
-        return Err(format!(
-            "A Peace offer carries at most {PEACE_GOLD_MAX} Gold"
-        ));
-    }
-    afford(state, player, terms.gold, "This Peace offer")?;
     if terms.reparations.abs() > PEACE_REPARATIONS_MAX {
         return Err(format!(
             "Reparations are at most {PEACE_REPARATIONS_MAX} Gold a turn"
@@ -2667,7 +2878,10 @@ pub fn leave_cost(r: &Relation, effective: u32) -> i32 {
 /// protected window, or declaring war on the ally at any time.
 pub fn betrays(d: &DiplomacyState, team: TeamId, o: &Order, effective: u32) -> bool {
     let other = match o {
-        Order::BreakTreaty { with, .. } => *with,
+        Order::BreakTreaty {
+            with,
+            agreement: Agreement::Security,
+        } => *with,
         Order::DeclareWar { against, .. } => *against,
         _ => return false,
     };
@@ -2754,9 +2968,25 @@ fn check_kind(r: &Relation, kind: TreatyKind) -> Result<(), String> {
             Err("You are already allied with them".into())
         }
         (TreatyKind::Peace, _) => Err("Peace offers require War".into()),
+        (TreatyKind::OpenBorders, RelationState::Peace) => Ok(()),
+        (TreatyKind::OpenBorders, RelationState::War) => {
+            Err("You are at War with them: make peace before Open Borders".into())
+        }
+        (TreatyKind::OpenBorders, RelationState::Alliance) => {
+            Err("You are allied with them: an Alliance already lets your units pass".into())
+        }
     }
 }
-/// The Gold an order costs the ordering empire: breaking an Alliance inside its protected window.
+/// `check_kind`, plus Open Borders that are already open.
+fn check_kind_in(d: &DiplomacyState, r: &Relation, kind: TreatyKind) -> Result<(), String> {
+    check_kind(r, kind)?;
+    if kind == TreatyKind::OpenBorders && d.borders_open(r.a, r.b) {
+        return Err("You already have Open Borders with them".into());
+    }
+    Ok(())
+}
+/// The Gold an order costs the ordering empire: breaking an Alliance inside its protected window,
+/// or the Gold a deal makes it pay (offering Gold, or accepting an offer that asks for Gold).
 pub fn order_cost(
     _state: &GameState,
     d: &DiplomacyState,
@@ -2765,7 +2995,10 @@ pub fn order_cost(
     effective: u32,
 ) -> i32 {
     match o {
-        Order::BreakTreaty { with, .. }
+        Order::BreakTreaty {
+            with,
+            agreement: Agreement::Security,
+        }
         | Order::DeclareWar {
             against: with,
             breach: true,
@@ -2773,6 +3006,16 @@ pub fn order_cost(
             .relation(team, *with)
             .filter(|r| r.state == RelationState::Alliance)
             .map_or(0, |r| leave_cost(r, effective)),
+        Order::ProposeTreaty { gold, .. } => (*gold).max(0),
+        Order::RespondToProposal {
+            proposal,
+            accept: true,
+            ..
+        } => d
+            .proposals
+            .iter()
+            .find(|p| p.id == *proposal)
+            .map_or(0, |p| (-p.gold).max(0)),
         _ => 0,
     }
 }

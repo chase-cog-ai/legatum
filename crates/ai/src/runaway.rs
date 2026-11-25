@@ -1285,6 +1285,7 @@ mod tests {
         let order = Order::ProposeTreaty {
             to: third,
             kind: TreatyKind::Alliance,
+            gold: 0,
             terms: Default::default(),
         };
         let budget = crate::diplomacy::TreatyBudget::of(&v);

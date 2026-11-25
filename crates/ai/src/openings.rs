@@ -2299,6 +2299,7 @@ mod tests {
             accept: true,
             explanation: None,
             counter: None,
+            counter_gold: 0,
         };
         v.diplomacy.actions.push(DiplomaticAction {
             new_wars: Vec::new(),
@@ -2325,6 +2326,7 @@ mod tests {
             consents: Vec::new(),
             needs: vec![to],
             required_teams: Vec::new(),
+            gold: 0,
             terms: Default::default(),
             city_from: None,
             counter: false,

@@ -73,6 +73,7 @@ fn setup_for(view: &PlayerView, seed: u64) -> GameSetup {
         ai_alliances: false,
         // Lobby settings aren't in the view; barbarian camps are on in every current game.
         barbarians: !view.diplomacy.legacy,
+        deals: false,
     }
 }
 

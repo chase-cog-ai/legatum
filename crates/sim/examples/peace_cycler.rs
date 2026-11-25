@@ -134,6 +134,7 @@ impl Cycler {
                 accept: true,
                 explanation: None,
                 counter: None,
+                counter_gold: 0,
             });
         }
         let mut have_war = false;
@@ -155,6 +156,7 @@ impl Cycler {
                         extra.push(Order::ProposeTreaty {
                             to: team,
                             kind: TreatyKind::Peace,
+                            gold: 0,
                             terms: Default::default(),
                         });
                     }

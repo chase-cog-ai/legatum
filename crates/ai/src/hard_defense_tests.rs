@@ -957,6 +957,7 @@ fn dispatch_maintains_containment_but_allows_peace_when_home_is_overrun() {
     let peace = Order::ProposeTreaty {
         to: TeamId(2),
         kind: TreatyKind::Peace,
+        gold: 0,
         terms: Default::default(),
     };
     action(&mut view, peace.clone());

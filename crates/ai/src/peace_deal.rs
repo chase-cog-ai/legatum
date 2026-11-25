@@ -13,7 +13,7 @@
 use crate::diplomacy::{TREATY_GOLD_PER_POINT, strength};
 use crate::scripted::Planner;
 use legatum_core::diplomacy::{
-    PEACE_GOLD_MAX, PEACE_REPARATIONS_MAX, PEACE_TRUCE_TURNS, PeaceTerms, RelationState,
+    MAX_DEAL_GOLD, PEACE_REPARATIONS_MAX, PEACE_TRUCE_TURNS, PeaceTerms, RelationState,
 };
 use legatum_core::view::CityView;
 use legatum_core::{PlayerId, TeamId};
@@ -22,8 +22,8 @@ use legatum_core::{PlayerId, TeamId};
 pub enum PeaceAnswer {
     Accept,
     Refuse,
-    /// Refuse, and send these terms back (written from our side).
-    Counter(PeaceTerms),
+    /// Refuse, and send this Gold and these terms back (written from our side).
+    Counter(i32, PeaceTerms),
 }
 
 /// The answer to a Peace offer with the lines that priced it, in Gold (positive: good for us).
@@ -116,19 +116,20 @@ impl Planner<'_> {
         }
     }
 
-    /// Our answer to a Peace `proposer` (of team `other`) offers on `terms`, written from the
-    /// proposer's side. `base` is the plain Peace's score, `None` when the plan refuses any
+    /// Our answer to a Peace `proposer` (of team `other`) offers with `gold` (the deal's Gold:
+    /// positive pays us) and `terms`, both written from the proposer's side. `base` is the plain Peace's score, `None` when the plan refuses any
     /// Peace with them now. `counter`: the offer already answers one of ours, so it can only
     /// be accepted or refused.
     pub fn peace_verdict(
         &self,
         proposer: PlayerId,
         other: TeamId,
+        gold: i32,
         terms: &PeaceTerms,
         base: Option<i32>,
         counter: bool,
     ) -> PeaceVerdict {
-        let mut verdict = self.price_peace(proposer, other, terms, base);
+        let mut verdict = self.price_peace(proposer, other, gold, terms, base);
         if verdict.answer != PeaceAnswer::Refuse || counter || base.is_none() {
             return verdict;
         }
@@ -139,8 +140,12 @@ impl Planner<'_> {
                 .iter()
                 .any(|city| city.id == *c && city.owner == v.me)
         };
-        let mut kept = PeaceTerms {
-            gold: terms.gold.max(0),
+        // A war we are winning has a price (`deals::tribute`); the counter names it.
+        let mut kept_gold = gold.max(0);
+        if self.winning_war(other) {
+            kept_gold = kept_gold.max(self.tribute(other));
+        }
+        let kept = PeaceTerms {
             city: terms.city.filter(|c| !ours(c)),
             return_captured: terms.return_captured
                 && self.returned_value(other).is_some_and(|(net, _)| net >= 0),
@@ -156,17 +161,19 @@ impl Planner<'_> {
                 terms.reparations.max(0)
             },
         };
-        let short = -self.price_peace(proposer, other, &kept, base).total();
+        let short = -self
+            .price_peace(proposer, other, kept_gold, &kept, base)
+            .total();
         if short > 0 {
             // Round the ask up to a round figure.
-            kept.gold += (short + 9) / 10 * 10;
+            kept_gold += (short + 9) / 10 * 10;
         }
-        if kept.gold > PEACE_GOLD_MAX || kept == *terms {
+        if kept_gold > MAX_DEAL_GOLD || (kept_gold == gold && kept == *terms) {
             return verdict;
         }
-        let again = self.price_peace(proposer, other, &kept, base);
+        let again = self.price_peace(proposer, other, kept_gold, &kept, base);
         if again.answer == PeaceAnswer::Accept {
-            verdict.answer = PeaceAnswer::Counter(kept.mirrored());
+            verdict.answer = PeaceAnswer::Counter(-kept_gold, kept.mirrored());
         }
         verdict
     }
@@ -207,6 +214,7 @@ impl Planner<'_> {
         &self,
         proposer: PlayerId,
         other: TeamId,
+        gold: i32,
         terms: &PeaceTerms,
         base: Option<i32>,
     ) -> PeaceVerdict {
@@ -236,14 +244,20 @@ impl Planner<'_> {
                 never.get_or_insert(format!("We are in no danger that is worth {what}"));
             }
         };
-        if terms.gold != 0 {
-            lines.push(("Gold".into(), terms.gold));
-            if terms.gold < 0 {
+        if gold != 0 {
+            lines.push(("Gold".into(), gold));
+            if gold < 0 {
                 give("Gold".into(), &mut never);
-                if v.economy.gold / 2 < -terms.gold {
-                    never.get_or_insert("That is more than half our treasury".into());
+                // The same ceiling a plain deal has (`deals::truce_cap`).
+                if !(self.losing_war(other) && -gold <= self.truce_cap()) {
+                    never.get_or_insert("That is more Gold than this Peace is worth to us".into());
                 }
             }
+        }
+        // A war we are winning costs its price whatever else is offered (`deals::tribute`).
+        let price = self.tribute(other);
+        if price > 0 && self.winning_war(other) && gold * 2 < price {
+            never.get_or_insert(format!("We are winning this war: Peace costs {price} Gold"));
         }
         if terms.reparations != 0 {
             let turns = terms.truce_turns() as i32;
@@ -318,46 +332,24 @@ impl Planner<'_> {
         }
     }
 
-    /// Gene `peace_terms`: the Gold we add to our own Peace offer. Only for a war we declared
-    /// that now endangers a city of ours; a quarter of the treasury, 200 at most.
-    pub(crate) fn peace_sweetener(&self, to: TeamId) -> i32 {
-        let v = self.view();
-        if self.decisions.peace_terms == 0
-            || self.declared_on_us(to)
-            || !(self.endangered_by(to) || self.collapsing())
-        {
-            return 0;
-        }
-        let gold = (v.economy.gold / 4).min(20 * TREATY_GOLD_PER_POINT) / 10 * 10;
-        if gold >= 20 { gold } else { 0 }
-    }
-    /// Gene `peace_terms`: the terms on our own Peace offer. A war we declared that now
-    /// endangers us offers Gold (`peace_sweetener`) and the cities we took from them back; a
-    /// war nobody fights offers a 20-turn truce unless ours is the stronger army.
-    pub(crate) fn peace_offer(&self, to: TeamId) -> PeaceTerms {
+    /// Gene `peace_terms`: the terms on our own Peace offer, beside the deal's Gold
+    /// (`deals::offer_gold`). A war we declared that we now pay to end also offers the cities
+    /// we took from them back; a war nobody fights offers a 20-turn truce unless ours is the
+    /// stronger army. Plain in a game without deals.
+    pub(crate) fn peace_offer(&self, to: TeamId, gold: i32) -> PeaceTerms {
         let mut terms = PeaceTerms::default();
-        if self.decisions.peace_terms == 0 {
+        if self.decisions.peace_terms == 0 || !self.deals_on() {
             return terms;
         }
-        terms.gold = self.peace_sweetener(to);
-        if terms.gold > 0 {
+        if gold > 0 && !self.declared_on_us(to) {
             let v = self.view();
-            let (ours, theirs) = v
-                .cities
-                .iter()
-                .filter(|c| !c.is_capital)
-                .filter_map(|c| Some((v.team_of(c.owner), v.team_of(c.occupied_from?))))
-                .fold((0, 0), |(ours, theirs), pair| {
-                    if pair == (v.team, to) {
-                        (ours + 1, theirs)
-                    } else if pair == (to, v.team) {
-                        (ours, theirs + 1)
-                    } else {
-                        (ours, theirs)
-                    }
-                });
-            terms.return_captured = ours > 0 || theirs > 0;
-        } else if self.dead_war(to).is_some() && self.peace_advantage(to) <= 0 {
+            terms.return_captured = v.cities.iter().filter(|c| !c.is_capital).any(|c| {
+                c.occupied_from.is_some_and(|home| {
+                    let pair = (v.team_of(c.owner), v.team_of(home));
+                    pair == (v.team, to) || pair == (to, v.team)
+                })
+            });
+        } else if gold == 0 && self.dead_war(to).is_some() && self.peace_advantage(to) <= 0 {
             terms.truce = 20;
         }
         terms

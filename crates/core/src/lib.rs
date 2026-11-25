@@ -57,8 +57,9 @@ pub mod rules;
 /// 58: Walls levels replace Castle and Star Fort; upgrades are capped by era and Siege covers levels by tier. A rules-57 save is refused like any other; `wasm::json::upgrade_from_49` converts an older state for analysis tooling.
 /// 59: Egypt's Chariot Archer replaces its Archer (Sam, 2026-11-25): 3 moves, a shot 40% stronger against the melee line, and Forest or Hills without a road take its whole turn to enter. The Medjay is retired, so Egypt's Spearman is plain (no extra sight). The save shape is unchanged.
 /// 60: The tech tree's research goal: `Order::SetResearchGoal` and `Player::research_goal` (fills an empty research queue toward a later technology). No existing order resolves differently.
-/// 61: Peace terms: a Peace proposal may carry Gold, one city, captured cities back, a truce of 10, 20 or 30 turns, reparations and one counter-offer (`PeaceTerms`, `Relation::reparations`). A plain Peace resolves as before.
-pub const RULES_VERSION: u32 = 61;
+/// 61: Deals (Sam, 2026-11-25), behind GameSetup::deals: Gold in Peace, Alliance and Open Borders offers either way, Gold gifts to any met empire not at War, and Open Borders as a third treaty. The save shape gains optional fields; off, nothing changes.
+/// 62: Peace terms, part of deals (`GameSetup::deals`): a Peace offer may also name one city, return captured cities, set a truce of 10, 20 or 30 turns and carry reparations, and a refusal may carry one counter-offer (`PeaceTerms`, `Relation::reparations`). Off, nothing changes.
+pub const RULES_VERSION: u32 = 62;
 pub mod scenario;
 pub mod scoring;
 pub mod settlement;

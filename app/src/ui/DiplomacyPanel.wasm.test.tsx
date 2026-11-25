@@ -60,7 +60,7 @@ describe.skipIf(!available)('diplomacy controls on the Rust engine', () => {
     expect(client.validate(0, useGame.getState().orders[0])).toEqual([]);
     const result = client.endTurn({ 0: useGame.getState().orders[0] });
     refresh(client);
-    expect(container.querySelector('.vhc-rel')?.getAttribute('data-relation')).toBe('War');
+    expect(container.querySelector('.rv-rel')?.getAttribute('data-relation')).toBe('War');
     const lines = formatEvents(result.events, contextFromViews(null, client.view(0)));
     expect(result.events.find((e) => e.type === 'WarDeclared')).toMatchObject({ relation: { effective_turn: 1 } });
     expect(lines.some((l) => l.category === 'diplomacy' && l.text.includes('started this turn'))).toBe(true);
@@ -120,7 +120,7 @@ describe.skipIf(!available)('diplomacy controls on the Rust engine', () => {
     expect(container.querySelector('.offer-for-you')!.textContent).toContain(`Upkeep ${upkeep} Gold/turn`);
     click('Accept Alliance');
     client.endTurn({ 1: useGame.getState().orders[1] }); refresh(client);
-    expect(container.querySelector('.vhc-rel')?.getAttribute('data-relation')).toBe('Alliance');
+    expect(container.querySelector('.rv-rel')?.getAttribute('data-relation')).toBe('Alliance');
     expect(container.textContent).toMatch(/Protected until turn \d+/);
     expect(client.view(0).economy.gold_per_turn.parts.some(([label]) => label.startsWith('Treaty upkeep'))).toBe(true);
     const leave = [...container.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.getAttribute('aria-label') === 'Leave the Alliance')!;

@@ -1,5 +1,4 @@
 import { test, expect } from './fixtures';
-import { revealSidebar } from './sidebarAssertions';
 
 test.use({ viewport: { width: 1000, height: 600 } });
 
@@ -24,9 +23,9 @@ test('an 8.9.11 Hard profile starts a game with every AI on Hard', async ({ page
     return s.views[s.seat].players.filter((player) => !player.is_human).map((player) => player.difficulty);
   });
   expect(difficulties).toEqual(['Hard', 'Hard', 'Hard']);
-  await revealSidebar(page, 'standings');
-  await expect(page.locator('.vp-ai-level')).toHaveCount(3);
-  await expect(page.locator('.vp-ai-level').first()).toHaveText('AI · Hard');
+  // Each rival's row in the rivals table names its level (a met rival's row is a button whose title says it).
+  await expect(page.locator('.rivals .rv-row:not(.mine)')).toHaveCount(3);
+  for (const row of await page.locator('.rivals button.rv-row').all()) await expect(row).toHaveAttribute('title', /^AI · Hard\. Open Diplomacy$/);
   await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
   await expect(page.locator('.empire-pick-level')).toHaveCount(3);
   await expect(page.locator('.empire-pick-level').first()).toHaveText('AI · Hard');

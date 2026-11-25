@@ -16,10 +16,11 @@ import { unitMiniatureUrl } from '../unitArt';
 import { buildingArtSlug, slugUrl } from '../unlockArt';
 import { resourceArtUrl } from '../icons';
 import { RewardEmblem } from './RewardEmblem';
-import { DURATION, momentsForTurn, planMoments, type Counter, type Emblem, type Moment } from './moments';
+import { DURATION, heldMoment, momentsForTurn, planMoments, type Counter, type Emblem, type Moment } from './moments';
 import { UnlockMomentCard, activateUnlock } from './UnlockMoment';
 import { EraUpTakeover, activateEraUp } from './EraUpTakeover';
 import { ScoreCheck } from './ScoreCheck';
+import { MeetingTakeover } from './MeetingTakeover';
 import { settleResearch } from './researchSettled';
 import { effectiveResearchQueue } from '../orders';
 import './celebrate.css';
@@ -41,6 +42,9 @@ function vignetteFor(card: Moment): string | null {
  * A moment card's one primary (Return): the decision the event leaves (a lost wonder race: choose
  * what the city builds), else the place it happened, else Continue. The turn report is one key away (L).
  */
+/** Past the last card: the story is over. */
+const END = Number.MAX_SAFE_INTEGER;
+
 export function momentPrimary(card: Moment): { label: string; act(): void } {
   const s = useGame.getState();
   if (card.choose !== undefined) {
@@ -125,16 +129,16 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
     if (useGame.getState().unlockReopen || useGame.getState().eraReopen) {
       // A reopened Age plays its era-up and score check in turn, then ends.
       if (playRef.current && playRef.current.index + 1 < shownCount.current) { setPlay((p) => p ? { ...p, index: p.index + 1, started: performance.now(), released: true } : p); return; }
-      useGame.getState().set({ unlockReopen: null, eraReopen: null }); setPlay((p) => p ? { ...p, index: 3, released: true } : p); return;
+      useGame.getState().set({ unlockReopen: null, eraReopen: null }); setPlay((p) => p ? { ...p, index: END, released: true } : p); return;
     }
     setPlay((p) => p ? { ...p, index: p.index + 1, started: performance.now(), released: true } : p);
   }, []);
   // A card held for the player ignores stray gestures (map pans, taps, an opened report): only its own controls close it.
-  const interrupt = useCallback(() => { if (unlockUp.current) return; cancelCelebrationFeedback(); setPlay((p) => p ? { ...p, index: 3 } : p); }, []);
-  unlockUp.current = !!(active?.unlock || active?.eraUp || active?.scoreCheck);
+  const interrupt = useCallback(() => { if (unlockUp.current) return; cancelCelebrationFeedback(); setPlay((p) => p ? { ...p, index: END } : p); }, []);
+  unlockUp.current = heldMoment(active);
   useEffect(() => {
     // An unlock card waits for the player: only its own controls, Return and Esc close it.
-    if (!active || active.unlock || active.eraUp || active.scoreCheck) return;
+    if (!active || heldMoment(active)) return;
     const timer = setTimeout(dismiss, DURATION[active.tier]);
     return () => clearTimeout(timer);
   }, [active, dismiss]);
@@ -142,7 +146,7 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
     if (!active) return;
     // A card held for the player ignores pointers entirely (a map pan or a click on End Turn leaves it up);
     // only its own buttons, Return and Esc act, and never while a dialog covers the screen.
-    if (active.unlock || active.eraUp || active.scoreCheck) {
+    if (heldMoment(active)) {
       const card = active.unlock;
       const eraUp = active.eraUp;
       const held = (e: KeyboardEvent) => {
@@ -198,7 +202,7 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
   };
   // Derive the initial hold before the playback effect runs, avoiding a one-frame report flash.
   const holding = alarmUp || (current ? !!active && play.index === 0 && !play.released : batch.shown.length > 0);
-  return <CelebrationContext.Provider value={{ active, deferred: !!(active?.unlock || active?.eraUp || active?.scoreCheck) && dialogOpen, started: play?.started ?? 0, reduced, collapsed: active ? batch.collapsed.length : 0, holding, dismiss, interrupt, more }}>{children}</CelebrationContext.Provider>;
+  return <CelebrationContext.Provider value={{ active, deferred: heldMoment(active) && dialogOpen, started: play?.started ?? 0, reduced, collapsed: active ? batch.collapsed.length : 0, holding, dismiss, interrupt, more }}>{children}</CelebrationContext.Provider>;
 }
 
 export function CounterDelta({ counter }: { counter: Counter }) {
@@ -213,7 +217,7 @@ export function MomentLane() {
   const lane = useRef<HTMLDivElement>(null);
   const card = active && active.tier !== 'minor' ? active : null;
   const picture = card ? card.art ?? (card.resource ? resourceArtUrl(card.resource, 256) : null) ?? (card.unit ? unitMiniatureUrl(card.unit.kind, card.unit.faction) : null) ?? (card.artSlug ? slugUrl(card.artSlug, 256) : null) ?? (card.building ? slugUrl(buildingArtSlug(card.building, card.faction), 256) ?? slugUrl(buildingArtSlug(card.building), 256) : null) : null;
-  const vignette = card && !card.unlock && !card.eraUp && !card.scoreCheck ? vignetteFor(card) : null;
+  const vignette = card && !heldMoment(card) ? vignetteFor(card) : null;
   // Global layout owns the reservations; publish the actual card + overflow-chip height so
   // reports and phone selection panels can share the screen without guessing text/font sizes.
   useLayoutEffect(() => {
@@ -230,7 +234,8 @@ export function MomentLane() {
       {card?.unlock && !deferred && <UnlockMomentCard moment={card} dismiss={dismiss} />}
       {card?.eraUp && !deferred && <EraUpTakeover moment={card} dismiss={dismiss} />}
       {card?.scoreCheck && !deferred && <ScoreCheck moment={card} dismiss={dismiss} />}
-      {card && !card.unlock && !card.eraUp && !card.scoreCheck && <article key={card.id} className={`moment-card ${card.tier} ${card.partner ? 'partner' : ''} ${card.loss ? 'loss' : ''}`} data-tier={card.tier} aria-label={card.title} onClick={(e) => { if (!(e.target as Element).closest('button')) dismiss(); }}>
+      {card?.meeting && !deferred && <MeetingTakeover moment={card} dismiss={dismiss} />}
+      {card && !heldMoment(card) && <article key={card.id} className={`moment-card ${card.tier} ${card.partner ? 'partner' : ''} ${card.loss ? 'loss' : ''}`} data-tier={card.tier} aria-label={card.title} onClick={(e) => { if (!(e.target as Element).closest('button')) dismiss(); }}>
         <button className="moment-dismiss" aria-label="Dismiss celebration" onClick={dismiss}><Icon name="ui-cross" size={14} /></button>
         {(card.kicker ?? (card.partner ? 'From your ally' : null)) && <div className="moment-kicker">{card.kicker ?? 'From your ally'}</div>}
         <div className="moment-body">

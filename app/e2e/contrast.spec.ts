@@ -189,7 +189,6 @@ test(`${look}: game screen controls keep AA label contrast in every state`, asyn
   readings.push(...await auditContrast(page, 'research chosen'));
   await page.getByRole('button', { name: 'Close research', exact: true }).click();
   // The diplomacy inbox (no AI offers alliances this early; its actions still show).
-  await revealSidebar(page, 'standings');
   await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
   const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
   await expect(inbox).toBeVisible();

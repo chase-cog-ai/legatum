@@ -1929,7 +1929,7 @@ mod tests {
         // Peaceful contests (rules 51, 2026-11-22: the stronger side takes a contested tile between empires not at War) give four cities at T50, five at T62, no VP at T100 and no win.
         // The Mongols never having Walls (rules 57, 2026-11-22) leaves the Mongol rival open, and the seat wins by elimination at T164.
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege move the win to T170.
-        // Flanking (rules 60) keeps the city counts and the seat no longer wins on this tape.
+        // Flanking (rules 61) keeps the city counts and the seat no longer wins on this tape.
         assert_eq!(
             first_map_game(true),
             json!({

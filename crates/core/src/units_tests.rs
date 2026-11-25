@@ -683,14 +683,11 @@ fn a_citys_lines_ride_the_same_curve() {
     let strength =
         |era| combat::city_defense_with_fort(Faction::India, 4, true, 2, data::CITY_HP, era).total;
     assert!(strength(0) < strength(3) && strength(3) < strength(5));
-    // Era 0 is the design numbers: 10 + 2 * 4 + 10 + 5 + 5.
-    assert_eq!(strength(0), 38);
+    // Era 0 is the design numbers: 10 + 2 * 4 + 10 (Walls levels add to the Walls bar).
+    assert_eq!(strength(0), 28);
     assert_eq!(
         strength(5),
-        data::era_scaled(10, 5)
-            + data::era_scaled(8, 5)
-            + data::era_scaled(10, 5)
-            + data::era_scaled(5, 5) * 2
+        data::era_scaled(10, 5) + data::era_scaled(8, 5) + data::era_scaled(10, 5)
     );
 }
 

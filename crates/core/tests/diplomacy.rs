@@ -98,6 +98,7 @@ fn city(s: &mut GameState, p: u8, at: Hex) -> CityId {
             last_purchase_turn: None,
             buildings: Default::default(),
             walls_level: 0,
+            walls_damage: 0,
             hp: data::CITY_HP,
             grown_tiles: Vec::new(),
             tiles_claimed: 0,
@@ -1924,7 +1925,7 @@ fn a_heal_order_is_refused_in_closed_foreign_land_where_nothing_heals() {
     );
 }
 
-// Peace terms (rules 62): a city, captured cities, the truce, reparations and a counter-offer
+// Peace terms (rules 63): a city, captured cities, the truce, reparations and a counter-offer
 // on a Peace offer, beside the deal's Gold (`tests/deals.rs`).
 
 /// `game` with deals on: terms are part of deals.

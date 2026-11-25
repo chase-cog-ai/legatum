@@ -148,7 +148,7 @@ enum CombatProjection {
         distance: i32,
     },
     CityFireOutcome {
-        forecast: legatum_core::forecast::BattleForecast,
+        forecast: Box<legatum_core::forecast::BattleForecast>,
         faction: Option<Faction>,
         kind: legatum_core::UnitKind,
     },

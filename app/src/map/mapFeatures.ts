@@ -8,6 +8,9 @@ let onLoad: (() => void) | null = null;
 
 export type MapFeature = 'camp' | 'ruin';
 
+/** The ruin painting's painted mass as a share of half its side (its alpha box spans about 92% of the canvas): what keeps clear of a town beside it. */
+export const RUIN_MASS = { ha: 0.84, hb: 0.8 };
+
 export function onMapFeatureLoad(cb: () => void) {
   onLoad = cb;
 }

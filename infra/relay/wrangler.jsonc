@@ -6,8 +6,8 @@
   "compatibility_date": "2026-10-01",
   // The public address. A custom domain puts the Worker behind the zone's rate-limiting rule (README "Edge rule").
   "routes": [{ "pattern": "relay.playlegatum.com", "custom_domain": true }],
-  // The workers.dev address stays on for builds published before the domain; it is outside the edge rule.
-  "workers_dev": true,
+  // No workers.dev address: it would sit outside the edge rule, and no kept build calls it.
+  "workers_dev": false,
   "durable_objects": {
     "bindings": [
       { "name": "LOBBY", "class_name": "Lobby" },
@@ -21,8 +21,9 @@
   // Tunables (README "Limits and kill switch"). Strings, as Worker vars are; a bad value falls back to the default.
   "vars": {
     "LOBBY_OPEN": "1", // "0" refuses new rooms with 503; running rooms carry on
-    "MAX_ROOMS": "64", // rooms on the whole relay
+    "MAX_ROOMS": "256", // rooms on the whole relay
     "MAX_ROOMS_PER_IP": "2", // live rooms per client address
+    "MAX_ROOMS_PER_NET": "8", // live rooms per network (IPv4 /24, IPv6 /48)
     "ROOM_CREATES_PER_10_MIN": "6", // room creations per client address in any 10 minutes
     "MAX_GUESTS_PER_IP": "4" // guest sockets per client address in one room
   },

@@ -15,7 +15,7 @@ periods, trust and call commitments were removed; Call to Arms was removed 2026-
 | Breaking inside the protected window | 120 | first 10 turns (`ALLIANCE_PROTECTED_TURNS`, `leave_cost`) |
 | Peace (ending a war) | free, plus any terms both sides agree (below) | 10 turns of guaranteed Peace (`PEACE_TRUCE_TURNS`), or 20 or 30 by agreement; if Peace begins on turn T, no War may take effect through T+9, and War is possible from T+10. |
 
-**Peace terms (rules 62, `diplomacy::PeaceTerms`, deals only).** In a game with deals on (`GameSetup::deals`, below), a Peace offer (`Order::ProposeTreaty { kind: Peace, gold, terms }`) may carry terms beside the deal's Gold; an Alliance or Open Borders offer may not, and without deals any terms are refused. Nothing here is forced: the other team accepts, refuses or lets the offer lapse like any offer, and every term settles only when the Peace is signed at the boundary (`resolve_boundary`). This is not the removed Byzantium tribute (`not-in-game.md`): that forced Peace on the payee.
+**Peace terms (rules 63, `diplomacy::PeaceTerms`, deals only).** In a game with deals on (`GameSetup::deals`, below), a Peace offer (`Order::ProposeTreaty { kind: Peace, gold, terms }`) may carry terms beside the deal's Gold; an Alliance or Open Borders offer may not, and without deals any terms are refused. Nothing here is forced: the other team accepts, refuses or lets the offer lapse like any offer, and every term settles only when the Peace is signed at the boundary (`resolve_boundary`). This is not the removed Byzantium tribute (`not-in-game.md`): that forced Peace on the payee.
 
 | Term | Field | Rule |
 |---|---|---|

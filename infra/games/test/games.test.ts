@@ -1,8 +1,8 @@
 import { env as workerEnv, exports } from "cloudflare:workers";
 import { runInDurableObject } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import worker, { checkRecord, originAllowed, tokenMatches, type Env } from "../src/index";
-import { addressKey, capFrom, ipHash } from "../src/quota";
+import worker, { MAX_GZIP_BYTES, checkRecord, originAllowed, tokenMatches, type Env } from "../src/index";
+import { MAX_NEW_GAMES_PER_NETWORK_PER_DAY, addressKey, capFrom, ipHash, networkKey } from "../src/quota";
 
 const env = workerEnv as unknown as Env;
 
@@ -17,7 +17,7 @@ const record = (seats = [
   { player: 0, name: "Player 1", faction: "Athens", difficulty: "Normal", human: true },
   { player: 1, name: "AI 2", faction: "Celts", difficulty: "Hard", human: false },
 ]) => ({
-  metadata: { schema_version: 1, game_id: ID, created_at: "2026-11-22T01:23:46Z", outcome: "abandoned", turn_count: 145, engine_commit: "abc", seats, winner: null },
+  metadata: { schema_version: 1, game_id: ID, created_at: "2026-11-22T01:23:46Z", outcome: "abandoned", turn_count: 145, engine_commit: "0123456789abcdef0123456789abcdef01234567", seats, winner: null },
   tape: { version: 1, turns: [] },
 });
 
@@ -78,6 +78,8 @@ describe("game uploads", () => {
     expect((await put(fine)).status).toBe(200);
     expect((await put(record(), "https://evil.example")).status).toBe(403);
     expect((await put(record(), ORIGIN, "web-1-x")).status).toBe(404);
+    const big = new Uint8Array(MAX_GZIP_BYTES + 1);
+    expect((await call(`/v1/games/${ID}`, { method: "PUT", headers: { Origin: ORIGIN }, body: big })).status).toBe(413);
     const plain = await call(`/v1/games/${ID}`, { method: "PUT", headers: { Origin: ORIGIN }, body: JSON.stringify(record()) });
     expect(plain.status).toBe(400);
     const get = await call(`/v1/games/${ID}`, { headers: { Origin: ORIGIN } });
@@ -223,6 +225,39 @@ describe("new games per address per day", () => {
     expect(days).toEqual(["2031-01-06"]);
   });
 
+  it("refuses every address once all of them together reach the daily total", async () => {
+    const stub = env.QUOTA.getByName("quota");
+    const now = Date.UTC(2032, 2, 1, 12, 0, 0);
+    expect(await stub.take("192.0.2.1", 50, now, 2)).toEqual({ ok: true });
+    expect(await stub.take("192.0.2.2", 50, now, 2)).toEqual({ ok: true });
+    expect(await stub.take("192.0.2.3", 50, now, 2)).toEqual({ ok: false, retryAfter: 43_200 });
+    expect(await stub.take("192.0.2.3", 50, now + 43_200_000, 2)).toEqual({ ok: true });
+    expect(capFrom(undefined, 50000)).toBe(50000);
+    expect(capFrom("x", 50000)).toBe(50000);
+  });
+
+  it("counts a wider network on its own, so one host with many /64s cannot spend the total", async () => {
+    const stub = env.QUOTA.getByName("quota");
+    const now = Date.UTC(2033, 4, 1, 0, 0, 0);
+    let ok = 0;
+    for (let i = 0; i < 205; i++) if ((await stub.take(`2001:db8:77:${i.toString(16)}::1`, 50, now)).ok) ok++;
+    expect(ok).toBe(MAX_NEW_GAMES_PER_NETWORK_PER_DAY);
+    expect((await stub.take("2001:db8:78::1", 50, now)).ok).toBe(true);
+    expect(networkKey("203.0.113.9")).toBe("203.0.113.0/24");
+    expect(networkKey("2001:db8:12:34:aaaa::1")).toBe("2001:db8:12::/48");
+    expect(networkKey("::ffff:203.0.113.9")).toBe("203.0.113.0/24");
+  });
+
+  it("stores a game under the month of its id, whatever created_at says", async () => {
+    const id = "web-1795310626072-0000000000000005-0000000000000006";
+    const r = record();
+    r.metadata.game_id = id;
+    r.metadata.created_at = "2026-10-30T09:00:00Z";
+    const res = await put(r, ORIGIN, id);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ stored: `games/2026-11/${id}.json.gz` });
+  });
+
   it("cuts addresses as the relay does", () => {
     expect(addressKey("203.0.113.9")).toBe("203.0.113.9");
     expect(addressKey("::ffff:203.0.113.9")).toBe("203.0.113.9");
@@ -263,6 +298,31 @@ describe("record check", () => {
     expect(checkRecord(ID, swapped)).toBe("seat names must be the defaults");
     expect(checkRecord("web-other", record())).toBe("game id does not match the address");
     expect(typeof checkRecord(ID, record())).toBe("object");
+  });
+
+  it("refuses engines, factions, difficulties and start times the game never writes", () => {
+    const NOW = Date.UTC(2026, 10, 25);
+    const edit = (f: (m: ReturnType<typeof record>["metadata"]) => void, id = ID) => {
+      const r = record();
+      r.metadata.game_id = id;
+      f(r.metadata);
+      return checkRecord(id, r, NOW);
+    };
+    expect(typeof edit(() => {})).toBe("object");
+    expect(edit((m) => { m.engine_commit = "PENTESTPROBE"; })).toBe("unknown engine");
+    expect(edit((m) => { m.engine_commit = "seedtest"; })).toBe("unknown engine");
+    expect(edit((m) => { m.engine_commit = "0123456789ABCDEF0123456789ABCDEF01234567"; })).toBe("unknown engine");
+    expect(edit((m) => { m.seats[1]!.faction = "Carthage"; })).toBe("bad faction or difficulty");
+    expect(edit((m) => { m.seats[1]!.difficulty = "Deity"; })).toBe("bad faction or difficulty");
+    // A start before launch, a start in the future, or a created_at that disagrees with the id's start time.
+    const old = "web-1111111111111-deadbeefdeadbeef-c0ffee00c0ffee00";
+    expect(edit((m) => { m.created_at = "2005-03-18T01:58:31Z"; }, old)).toBe("bad start time");
+    const later = `web-${NOW + 2 * 86_400_000}-0000000000000001-0000000000000002`;
+    expect(edit((m) => { m.created_at = new Date(NOW + 2 * 86_400_000).toISOString(); }, later)).toBe("bad start time");
+    expect(edit((m) => { m.created_at = "2026-12-22T01:23:46Z"; })).toBe("bad start time");
+    expect(edit((m) => { m.created_at = "2026-11-22T20:00:00Z"; })).not.toBe("bad start time");
+    // A save loaded from a file gets a new id but keeps its older created_at (History::fork).
+    expect(typeof edit((m) => { m.created_at = "2026-11-02T09:00:00Z"; })).toBe("object");
   });
 });
 

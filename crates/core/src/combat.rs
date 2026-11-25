@@ -435,13 +435,13 @@ pub fn damage(own: i32, other: i32, roll_pct: i32) -> i32 {
     (base_damage(own, other) * roll_pct / 100).max(1)
 }
 
-/// Percent of its normal damage an attack deals to a walled city's HP (user, 2026-10-18: walls
+/// Percent of its normal damage an attack deals to a walled city's Walls bar (user, 2026-10-18: walls
 /// make a city slower and costlier to take, never impossible). `wall_tier` is the city's
 /// (`data::wall_tier`); `covered` is the siege tier of Siege of the attacker,
 /// 0 when none does. A covered attacker whose Siege unit reaches the city's highest tier fights as
 /// if there were no Walls: full damage. A lower tier takes back only part of it, and an
-/// uncovered attacker deals half. Aircraft strikes are not halved. Only a hit aimed at city HP is
-/// reduced; direct hits on a 0-HP city's garrison are not.
+/// uncovered attacker deals half. Aircraft strikes are not halved. Since rules 62 the percent applies to
+/// the Walls bar only ([`city_hit`]): what breaks through hits city HP in full, and garrisons are never reduced.
 pub fn wall_damage_percent(wall_tier: u8, covered: u8, air: bool) -> i32 {
     if wall_tier == 0 || air || covered >= wall_tier {
         100
@@ -452,18 +452,96 @@ pub fn wall_damage_percent(wall_tier: u8, covered: u8, air: bool) -> i32 {
     }
 }
 
-/// Percent of its normal damage an attack by `kind` deals to a city's HP: the Walls
-/// (`wall_damage_percent`) times the kind's own share (`data::city_hp_damage_percent`, half for a
-/// Biplane).
-pub fn city_damage_percent(kind: UnitKind, wall_tier: u8, covered: u8) -> i32 {
-    wall_damage_percent(wall_tier, covered, data::is_aircraft(kind))
-        * data::city_hp_damage_percent(kind)
-        / 100
+/// Percent of its normal damage an attack by `kind` deals to a city: the kind's own share
+/// (`data::city_hp_damage_percent`, half for a Biplane). Walls take a further cut
+/// (`wall_damage_percent`, applied by [`city_hit`]); city HP behind them takes this in full.
+pub fn city_damage_percent(kind: UnitKind) -> i32 {
+    data::city_hp_damage_percent(kind)
 }
 
-/// Damage to a walled city's HP from an attack with `normal_damage` (`wall_damage_percent`).
+/// Damage to a city from an attack with `normal_damage` (`city_damage_percent`).
 pub fn damage_to_city_hp(percent: i32, normal_damage: i32) -> i32 {
     normal_damage * percent / 100
+}
+
+/// The Walls bar of a city at Walls `level` (breakable Walls, 2026-11-25): 100 for level I and
+/// +50 for each level above it, 0 without Walls. Hits on a walled city land on this bar first.
+pub fn walls_max_hp(level: u8) -> i32 {
+    if level == 0 {
+        0
+    } else {
+        WALLS_BASE_HP + WALLS_HP_PER_LEVEL * (i32::from(level) - 1)
+    }
+}
+
+/// The Walls bar of a city at `level` that has taken `damage` (`City::walls_damage`).
+pub fn walls_hp(level: u8, damage: i32) -> i32 {
+    (walls_max_hp(level) - damage).max(0)
+}
+
+/// A city's whole front against an attacker whose hits take `wall_percent` off its Walls bar: the
+/// full-rate damage it takes to empty both the bar and the HP (`city_hit`). The AI's planning
+/// estimates use it; resolution applies `city_hit` hit by hit.
+pub fn city_front(hp: i32, walls_hp: i32, wall_percent: i32) -> i32 {
+    hp.max(0) + walls_hp.max(0) * 100 / wall_percent.max(1)
+}
+
+/// `damage` at full rate expressed in the city's HP: the share of its front (`city_front`) the
+/// hit removes, times its HP. Unchanged without Walls. For estimates that compare against HP.
+pub fn front_damage_as_hp(damage: i32, hp: i32, walls_hp: i32, wall_percent: i32) -> i32 {
+    let front = city_front(hp, walls_hp, wall_percent);
+    if front <= 0 {
+        return 0;
+    }
+    (i64::from(damage.clamp(0, front)) * i64::from(hp.max(0)) / i64::from(front)) as i32
+}
+
+/// Walls bar of level I.
+pub const WALLS_BASE_HP: i32 = 100;
+/// Walls bar added by each Upgrade Walls.
+pub const WALLS_HP_PER_LEVEL: i32 = 50;
+
+/// Where one hit on a city lands ([`city_hit`]).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct CityHit {
+    /// Taken off the Walls bar.
+    pub walls: i32,
+    /// Taken off the city's HP.
+    pub hp: i32,
+    /// The part of the hit (in city-HP damage) left after both: carries on to the garrison.
+    pub past: i32,
+}
+
+/// One hit of `damage` (`damage_to_city_hp`, full rate) on a city with `walls_hp` and `hp` left.
+/// The Walls bar takes it first at `wall_percent` (`wall_damage_percent`); the share of the hit
+/// that breaks the bar carries on into the city's HP at full rate, and what is left past the
+/// HP is `past`. Resolution (`rules::battle`), the assault forecast and the AI use this one
+/// function.
+pub fn city_hit(walls_hp: i32, hp: i32, damage: i32, wall_percent: i32) -> CityHit {
+    let damage = damage.max(0);
+    let mut rest = damage;
+    let mut walls = 0;
+    if walls_hp > 0 && damage > 0 {
+        let pct = wall_percent.max(1);
+        let full = damage * pct / 100;
+        if full < walls_hp {
+            return CityHit {
+                walls: full,
+                hp: 0,
+                past: 0,
+            };
+        }
+        walls = walls_hp;
+        // The share of the hit the bar used up, rounded up so a breaking hit never gains.
+        let used = (walls_hp * 100 + pct - 1) / pct;
+        rest = (damage - used).max(0);
+    }
+    let hp_taken = rest.min(hp.max(0));
+    CityHit {
+        walls,
+        hp: hp_taken,
+        past: rest - hp_taken,
+    }
 }
 
 /// Walls halve the damage of an attack the attacker has no Siege to cancel.
@@ -913,25 +991,7 @@ pub fn city_defense_covered_rules(
             ),
         );
     }
-    // Upgrade levels past Siege cover share one row ("Walls III–VI"), each adding the same
-    // era-scaled amount.
-    let first = covered.saturating_add(1).max(2);
-    if wall_tier >= first {
-        let walls = data::building_name_for(faction, BuildingKind::Walls);
-        let label = if first == wall_tier {
-            format!("{walls} {}", data::wall_level_label(first))
-        } else {
-            format!(
-                "{walls} {}–{}",
-                data::wall_level_label(first),
-                data::wall_level_label(wall_tier)
-            )
-        };
-        b.add(
-            label,
-            i32::from(wall_tier - first + 1) * data::era_scaled(5, era),
-        );
-    }
+    // Upgrade levels add to the Walls bar (`walls_max_hp`), not to strength.
     wounded(&mut b, hp, CITY_HP, 20);
     b
 }

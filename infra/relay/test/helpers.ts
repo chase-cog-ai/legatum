@@ -12,7 +12,8 @@ let ipCounter = 0;
 /** A fresh client address, so tests that do not care about per-address limits never meet them. */
 export const freshIp = (): string => {
   ipCounter++;
-  return `198.51.${(ipCounter >> 8) & 255}.${ipCounter & 255}`;
+  // A new /24 each time, so the per-network room cap (IPv4 /24) never links two tests' rooms.
+  return `198.${(ipCounter >> 8) & 255}.${ipCounter & 255}.7`;
 };
 
 type Init = RequestInit & { ip?: string };

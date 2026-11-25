@@ -294,3 +294,41 @@ export function cityArtFootprint(world: number, drop: number): { x0: number; x1:
   const half = (CITY_GROUND.x1 - CITY_GROUND.x0) / 2 * k;
   return { x0: -half, x1: half, y0: drop - (CITY_GROUND.middle - 190) * k, y1: drop + (CITY_GROUND.bottom - CITY_GROUND.middle) * k };
 }
+
+/** A town's footprint (`cityArtFootprint`) as an oval about its hex centre, in world units: what painted neighbours keep clear of. */
+export interface TownOval { cy: number; a: number; b: number }
+/** The clear ground (world units, about 5 px at z1.1) between a town's footprint and a painting beside it: wall towers and bastions stand a little past the ground oval, and a touching neighbour still reads as crowding (UI review, PR 205). */
+export const TOWN_GAP = 5;
+export function townOval(world: number, drop: number): TownOval {
+  const f = cityArtFootprint(world, drop);
+  return { cy: (f.y0 + f.y1) / 2, a: (f.x1 - f.x0) / 2, b: (f.y1 - f.y0) / 2 };
+}
+
+/**
+ * Where a painting beside a town goes so it keeps clear of the town (a mountain, a wood or ruins on the next hex): `dx, dy`
+ * is the painting's centre from the town's hex centre and `ha, hb` the half size of its painted mass at full scale (world
+ * units). Left alone when it already clears the oval by `gap`; otherwise it steps straight away from the town by up to
+ * `maxPush` and shrinks to no less than `minScale`, taking the least change of the two that clears (each counted against
+ * its limit). When nothing within the limits clears, it takes both limits.
+ */
+export function clearOfTown(dx: number, dy: number, ha: number, hb: number, oval: TownOval, opts: { gap: number; maxPush: number; minScale: number }): { dx: number; dy: number; scale: number } {
+  const { gap, maxPush, minScale } = opts;
+  const clear = (x: number, y: number, s: number) => (x / (oval.a + ha * s + gap)) ** 2 + ((y - oval.cy) / (oval.b + hb * s + gap)) ** 2 >= 1;
+  if (clear(dx, dy, 1)) return { dx, dy, scale: 1 };
+  const len = Math.hypot(dx, dy - oval.cy);
+  // Straight away from the oval's middle (a painting right on the middle goes down, in front of the town).
+  const ux = len > 1e-6 ? dx / len : 0, uy = len > 1e-6 ? (dy - oval.cy) / len : 1;
+  let best: { dx: number; dy: number; scale: number } | null = null, cost = Infinity;
+  const steps = 10;
+  for (let i = 0; i <= steps; i++) {
+    const s = 1 - (1 - minScale) * i / steps;
+    for (let p = 0; p <= maxPush + 1e-9; p += Math.max(0.5, maxPush / 24)) {
+      const x = dx + ux * p, y = dy + uy * p;
+      if (!clear(x, y, s)) continue;
+      const c = p / Math.max(1e-6, maxPush) + i / steps;
+      if (c < cost) { cost = c; best = { dx: x, dy: y, scale: s }; }
+      break;
+    }
+  }
+  return best ?? { dx: dx + ux * maxPush, dy: dy + uy * maxPush, scale: minScale };
+}

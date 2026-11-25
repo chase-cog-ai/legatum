@@ -1,4 +1,4 @@
-// Peace terms (core `diplomacy::PeaceTerms`, rules 62): the editor on a Peace offer and on a
+// Peace terms (core `diplomacy::PeaceTerms`, rules 63): the editor on a Peace offer and on a
 // counter-offer. Each term is one row; the forecast underneath says how an AI empire would answer
 // today and why (pillar 5). The core validates every term again when the order is queued.
 import { useMemo, useState, type ReactNode } from 'react';

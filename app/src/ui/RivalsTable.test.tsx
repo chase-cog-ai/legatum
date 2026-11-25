@@ -6,7 +6,8 @@ import { FixtureClient } from '../test/fixtureEngine';
 import { VpTrack } from './VpTrack';
 import { useGame } from '../store';
 import type { PlayerView, VpSource } from '../types';
-import { STRONG_ARMY_RATIO, shortNumber } from './RivalsTable';
+import { MAX_CRESTS, RivalsTable, STRONG_ARMY_RATIO, shortNumber } from './RivalsTable';
+import { buildVpModel } from '../vpModel';
 import { withV2 } from '../test/vpV2Fixture';
 import { decadenceCurveText, decadencePercent } from '../data';
 
@@ -195,4 +196,20 @@ it('after the game ends the race shows final standings without countdowns, rival
 
 it('table numbers group thousands and shorten from 10,000 up', () => {
   expect([999, 1396, 9999, 10_000, 23_456, -12_400].map(shortNumber)).toEqual(['999', '1,396', '9,999', '10k', '23k', '-12k']);
+});
+
+it('a big team folds its portraits into one crest and a "+N" roundel, so its name keeps its width', () => {
+  const model = buildVpModel(view);
+  const mine = model.rows.find((r) => r.isMine)!;
+  const everyone = model.rows.flatMap((r) => r.members);
+  const big = { ...model, rows: [{ ...mine, members: everyone }] };
+  act(() => root.render(<RivalsTable view={view} model={big} relationOf={() => null} onOpen={() => {}} />));
+  const row = host.querySelector<HTMLElement>('.rv-row.mine')!;
+  expect(everyone.length).toBeGreaterThan(MAX_CRESTS);
+  expect(row.querySelectorAll('.rv-crests > :not(.rv-more)')).toHaveLength(MAX_CRESTS - 1);
+  expect(row.querySelector('.rv-more')!.textContent).toBe(`+${everyone.length - MAX_CRESTS + 1}`);
+  // A team of two still shows both portraits.
+  act(() => root.render(<RivalsTable view={view} model={{ ...model, rows: [{ ...mine, members: everyone.slice(0, 2) }] }} relationOf={() => null} onOpen={() => {}} />));
+  expect(host.querySelectorAll('.rv-row.mine .rv-crests > *')).toHaveLength(2);
+  expect(host.querySelector('.rv-more')).toBeNull();
 });

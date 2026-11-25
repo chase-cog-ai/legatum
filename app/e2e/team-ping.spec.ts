@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
+import { listedGameName } from './listedName';
 
 // Team pings in an online game: the Ping control shows with a human teammate, a click on the map pings that
 // tile, and the teammate's browser shows the ring with a way to it. Hot seat is gone (2026-11-23), so the host
@@ -20,7 +21,7 @@ async function startOnline(host: Page, guest: Page) {
   await guest.goto('/?client=wasm');
   await guest.getByRole('button', { name: /^Multiplayer/ }).click();
   await guest.getByRole('button', { name: /^Join Game/ }).click();
-  const row = guest.locator('.online-room').filter({ hasText: 'Ada' });
+  const row = guest.locator('.online-room').filter({ hasText: await listedGameName(host) });
   await expect(row).toHaveCount(1, { timeout: 20_000 });
   await row.getByRole('button', { name: /^Join/ }).click();
   await guest.getByRole('row').nth(2).getByRole('button', { name: 'Take seat', exact: true }).click();

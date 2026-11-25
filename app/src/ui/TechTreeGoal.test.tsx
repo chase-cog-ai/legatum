@@ -25,7 +25,12 @@ it('a goal past the last turn at today’s Science says so instead of naming a t
   tree(far);
   expect(screen.getByTestId('tree-goal').textContent).toContain('The game ends before you get there at your current Science.');
   cleanup();
+  // A game with no configured limit still ends at the default turn (rules 62).
   view.turn_limit = null;
+  tree(far);
+  expect(screen.getByTestId('tree-goal').textContent).toContain('The game ends before you get there at your current Science.');
+  cleanup();
+  view.turn_limit = 1_000_000;
   tree(far);
   expect(screen.getByTestId('tree-goal').textContent).toMatch(/About turn \d+/);
 });

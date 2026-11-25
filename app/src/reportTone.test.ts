@@ -153,6 +153,11 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
     ['your city rewarded a rival', ev({ type: 'AthensCityCaptured', city: 1, from: 0, to: 2 }), 'bad'],
     ['you earned a free technology', ev({ type: 'AthensCityCaptured', city: 1, from: 2, to: 0 }), 'good'],
   ],
+  WallsBreached: [
+    ['your Walls fell', ev({ type: 'WallsBreached', city: 1, owner: 0, by: 2 }), 'bad'],
+    ['you broke their Walls', ev({ type: 'WallsBreached', city: 1, owner: 2, by: 0 }), 'good'],
+    ['rivals fought', ev({ type: 'WallsBreached', city: 1, owner: 2, by: 3 }), 'neutral'],
+  ],
   CapitalTaken: [
     ['your held point', ev({ type: 'CapitalTaken', captor: 0, capital: 5, name: 'Rome' }), 'good'],
     ['rival held point', ev({ type: 'CapitalTaken', captor: 2, capital: 5, name: 'Rome' }), 'neutral'],

@@ -1,4 +1,4 @@
-// Peace terms (core `diplomacy::PeaceTerms`, rules 62, deals only): what a Peace offer carries
+// Peace terms (core `diplomacy::PeaceTerms`, rules 63, deals only): what a Peace offer carries
 // besides the Peace and the deal's Gold (`deals.ts`), and the plain sentences that say it from the viewer's side. The core validates
 // and settles every term; nothing here decides a rule.
 import { empireOfPlayer, empireTitle } from './empires';

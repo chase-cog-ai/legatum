@@ -58,8 +58,8 @@ pub mod rules;
 /// 59: Egypt's Chariot Archer replaces its Archer (Sam, 2026-11-25): 3 moves, a shot 40% stronger against the melee line, and Forest or Hills without a road take its whole turn to enter. The Medjay is retired, so Egypt's Spearman is plain (no extra sight). The save shape is unchanged.
 /// 60: The tech tree's research goal: `Order::SetResearchGoal` and `Player::research_goal` (fills an empty research queue toward a later technology). No existing order resolves differently.
 /// 61: Deals (Sam, 2026-11-25), behind GameSetup::deals: Gold in Peace, Alliance and Open Borders offers either way, Gold gifts to any met empire not at War, and Open Borders as a third treaty. The save shape gains optional fields; off, nothing changes.
-/// 62: Peace terms, part of deals (`GameSetup::deals`): a Peace offer may also name one city, return captured cities, set a truce of 10, 20 or 30 turns and carry reparations, and a refusal may carry one counter-offer (`PeaceTerms`, `Relation::reparations`). Off, nothing changes.
-pub const RULES_VERSION: u32 = 62;
+/// 63: Peace terms, part of deals (`GameSetup::deals`): a Peace offer may also name one city, return captured cities, set a truce of 10, 20 or 30 turns and carry reparations, and a refusal may carry one counter-offer (`PeaceTerms`, `Relation::reparations`). Off, nothing changes.
+pub const RULES_VERSION: u32 = 63;
 pub mod scenario;
 pub mod scoring;
 pub mod settlement;
@@ -104,6 +104,8 @@ mod projects_tests;
 mod recon_tests;
 #[cfg(test)]
 mod units_tests;
+#[cfg(test)]
+mod walls_tests;
 pub use types::*;
 pub use view::{
     PlayerView, PublicView, ViewDetail, player_view, player_view_cached, player_view_detail,

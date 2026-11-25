@@ -710,6 +710,8 @@ it('reads the supply events: found, short and restored', () => {
   const here = { q: 3, r: 4 };
   const short = formatEvent({ type: 'SupplyShortage', player: 0, resource: 'Iron', idle: 2, supplied: 6, used: 8 }, { ...ctx, idleSupplyAt: () => here });
   expect(short).toMatchObject({ text: 'Short of Iron: 2 buildings or units are idle. You have 6 Iron and need 8. Bring another Iron deposit inside your borders, or build a Mine on one for +1 Iron.', tone: 'bad', category: 'economy', icon: 'resource-iron', at: here });
+  expect(formatEvent({ type: 'SupplyShortage', player: 0, resource: 'Iron', idle: 2, supplied: 0, used: 2 }, { ...ctx, cutSupply: () => 3 }).text)
+    .toBe('Short of Iron: 2 buildings or units are idle. You have no Iron and need 2. An enemy unit cuts 3 Iron: kill it or drive it off to get it back.');
   expect(formatEvent({ type: 'SupplyShortage', player: 0, resource: 'Coal', idle: 1, supplied: 2, used: 3 }, ctx).text).toBe('Short of Coal: 1 building or unit is idle. You have 2 Coal and need 3. Bring another Coal deposit inside your borders, or build a Mine on one for +1 Coal.');
   expect(formatEvent({ type: 'SupplyShortage', player: 0, resource: 'Coal', idle: 1, supplied: 0, used: 1 }, ctx).text).toContain('You have no Coal and need 1. Bring a Coal deposit inside your borders');
   expect(formatEvent({ type: 'SupplyShortage', player: 0, resource: 'Iron', idle: 0, supplied: 8, used: 8 }, ctx)).toMatchObject({ text: 'Iron supply restored: every building and unit works again', tone: 'good' });

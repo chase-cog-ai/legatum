@@ -1227,6 +1227,11 @@ fn a_cut_deposit_idles_its_users_and_reports_the_cut_and_the_return() {
     }));
     assert!(s.player(P0).supply.iter().all(|r| r.idle));
     assert_eq!(iron_view(&s).idle.len(), 3);
+    // A new Iron user is refused with the cut as the reason, not "bring a deposit".
+    assert_eq!(
+        start_blocker(&s, &s.cities[&city], PIKEMAN).unwrap(),
+        "Needs 1 Iron: an enemy unit cuts your Iron supply. Kill it or drive it off to get 3 Iron back."
+    );
     // Only the deposit's owner is told.
     let rival = crate::event_visibility::event_visibility_view(&s, P1);
     let cut_only: Vec<Event> = events

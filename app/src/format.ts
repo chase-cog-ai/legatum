@@ -153,6 +153,8 @@ export interface ReportContext {
   idleSupplyAt?(resource: Resource): Hex | null;
   /** Names of the idle users, including aircraft in hangars, for the shortage report. */
   idleSupplyNames?(resource: Resource): string[];
+  /** Supply of `resource` the viewer is without while enemy units stand on its deposits. */
+  cutSupply?(resource: Resource): number;
   /** What a city's new population unlocked ("Settler"), from the post-turn view's forecasts. */
   growthUnlocks?(city: number, population: number): string | null;
   /** A claimed border tile's terrain and yields as its owner works it, when the viewer knows it. */
@@ -218,6 +220,9 @@ export function contextFromViews(before: PlayerView | null, after: PlayerView): 
       const supply = after.supply?.find((x) => x.resource === resource);
       return supply ? idleEntries(after, supply).map((x) => x.label) : [];
     },
+    cutSupply: (resource) => (after.supply_cuts ?? [])
+      .filter((c) => c.owner === after.me && c.resource === resource)
+      .reduce((n, c) => n + c.supply, 0),
     growthUnlocks: (city, population) => growthUnlocks(after, city, population),
     claimedTile: (tile, owner) => claimedTile(after, tile, players.get(owner)?.faction),
   };
@@ -1483,9 +1488,13 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
       const users = idleNames.length > 0
         ? ` Idle: ${idleNames.slice(0, 3).join(', ')}${idleNames.length > 3 ? `, and ${idleNames.length - 3} more` : ''}.`
         : '';
+      const cut = mine(e.player) ? ctx.cutSupply?.(e.resource) ?? 0 : 0;
+      const fix = cut > 0
+        ? `An enemy unit cuts ${cut} ${name}: kill it or drive it off to get it back.`
+        : fixClause(e.resource, e.supplied > 0, ctx.playerFaction?.(e.player));
       return e.idle === 0
         ? line('economy', `${name} supply restored: every building and unit works again`, { players: [e.player], weight: mine(e.player) ? 2 : 0, tone: toneFor(e.player) })
-        : line('economy', `Short of ${name}: ${idleCountText(e.idle)}.${users} You have ${e.supplied > 0 ? `${e.supplied} ${name}` : `no ${name}`} and need ${e.used}. ${fixClause(e.resource, e.supplied > 0, ctx.playerFaction?.(e.player))}`, {
+        : line('economy', `Short of ${name}: ${idleCountText(e.idle)}.${users} You have ${e.supplied > 0 ? `${e.supplied} ${name}` : `no ${name}`} and need ${e.used}. ${fix}`, {
           at: ctx.idleSupplyAt?.(e.resource) ?? null, players: [e.player], weight: mine(e.player) ? 2 : 0, tone: toneFor(e.player, false),
         });
     }

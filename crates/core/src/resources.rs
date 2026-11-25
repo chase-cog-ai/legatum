@@ -1000,6 +1000,16 @@ fn shortage_text(
     let r = name(resource);
     let supply =
         view_supply.map_or_else(|| supplied(state, p, resource), |s| s.supplied(p, resource));
+    let cut: i32 = deposits(state, p)
+        .iter()
+        .filter(|d| d.resource == resource && d.cut.is_some())
+        .map(|d| full_supply(state, p, d.mined))
+        .sum();
+    if supply == 0 && cut > 0 {
+        return format!(
+            "Needs 1 {r}: an enemy unit cuts your {r} supply. Kill it or drive it off to get {cut} {r} back."
+        );
+    }
     if supply == 0 {
         return format!(
             "Needs 1 {r}: you have none yet. {}",
@@ -1034,6 +1044,12 @@ fn shortage_text(
         ));
     }
     text.push(' ');
+    if cut > 0 {
+        text.push_str(&format!(
+            "An enemy unit cuts {cut} {r}: kill it or drive it off to get it back."
+        ));
+        return text;
+    }
     text.push_str(&fix_clause(
         resource,
         true,

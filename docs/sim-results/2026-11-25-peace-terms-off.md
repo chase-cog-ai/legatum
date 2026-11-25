@@ -1,58 +1,58 @@
-# Simulation: terms-off (2026-11-25)
+# Simulation: deals-terms-off (2026-11-25)
 
-1000 games, first seed 9311003, brain `scripted`, turn limit off, safety cap 1200, 6 threads, started 2026-11-25T07:16:46Z. Wall time 1168.2s.
+1000 games, first seed 9311003, brain `scripted`, turn limit off, safety cap 1200, 8 threads, started 2026-11-25T10:36:22Z. Wall time 873.3s.
 
-Source checkout at run start: `7f15d6d23a680769e3d2fb1e24a5de58de621254`; dirty: no. Map 48×32, 8 initial seats. `first_setup` and exact binary argv are recorded in JSON. Ordinary games use seed + i (wrapping); the strategy tournament schedule is specified below. All games use a deterministic shuffle of the full faction pool, taking eight distinct factions, with any Proxy rotation described below.
+Source checkout at run start: `f1c592a44ea99ddf050062ca3339c6ec98145894`; dirty: no. Map 48×32, 8 initial seats. `first_setup` and exact binary argv are recorded in JSON. Ordinary games use seed + i (wrapping); the strategy tournament schedule is specified below. All games use a deterministic shuffle of the full faction pool, taking eight distinct factions, with any Proxy rotation described below.
 
-Command argv: `["./sim","--players","8","--difficulty","hard","--games","1000","--seed","9311003","--ai-params","off.json","--label","terms-off","--out-dir","out","--threads","6"]`
+Command argv: `["./sim","--players","8","--difficulty","hard","--games","1000","--seed","9311003","--out-dir","out","--threads","8","--deals","--ai-params","off.json","--label","deals-terms-off"]`
 
 ## Overview
 
 | Metric | Value |
 | --- | --- |
 | Games (non-panic) | 1000 of 1000 |
-| Game length, turns (mean / median / min-max) | 220.4 / 215 / 136-497 |
-| Win reason mix | VP hold 98.8%, Capitals 1.2% |
-| Median end turn | 215 |
-| Ending shares of played games (capitals / VP hold / turn limit / other) | 1.2% / 98.8% / 0.0% / 0.0% |
-| Games reaching the World War era (any empire) | 991 of 1000 (99.1%) |
+| Game length, turns (mean / median / min-max) | 220.9 / 216 / 143-525 |
+| Win reason mix | VP hold 98.5%, Capitals 1.5% |
+| Median end turn | 216 |
+| Ending shares of played games (capitals / VP hold / turn limit / other) | 1.5% / 98.5% / 0.0% / 0.0% |
+| Games reaching the World War era (any empire) | 992 of 1000 (99.2%) |
 | VP hold length | 10 turn ends (the reaching turn counts) |
-| Holds started / broken / completed / unfinished | 1496 / 390 / 994 / 112 |
-| Hold break rate | 26.1% of started; 28.2% of resolved (broken / (broken + completed)) |
-| Hold wins | 988 |
-| First reach to win, turns (mean / median / min-max) | 10.9 / 9 / 9-109 |
+| Holds started / broken / completed / unfinished | 1506 / 398 / 992 / 116 |
+| Hold break rate | 26.4% of started; 28.6% of resolved (broken / (broken + completed)) |
+| Hold wins | 985 |
+| First reach to win, turns (mean / median / min-max) | 11.7 / 9 / 9-170 |
 | Final hold start to win, turns | 9.0 / 9 / 9-9 |
-| Comebacks (winner broke an earlier hold of its own) | 108 |
-| Wins by a team another team beat to its target | 84 |
+| Comebacks (winner broke an earlier hold of its own) | 129 |
+| Wins by a team another team beat to its target | 71 |
 
 Game length by how the game ended (turns resolved; a stall is a safety-cap stop, never a win):
 
 | Ended by | Games | Length mean / median / min-max |
 | --- | --- | --- |
-| VP hold | 988 | 220.2 / 215 / 136-497 |
-| Capitals | 12 | 240.0 / 241 / 209-279 |
+| VP hold | 985 | 220.4 / 215 / 143-525 |
+| Capitals | 15 | 252.7 / 249 / 207-303 |
 
 Winner share by faction (wins of that faction's seats / all winning seats):
 
 | Faction | Wins | Share of wins |
 | --- | --- | --- |
-| Switzerland | 92 | 9.2% |
-| India | 76 | 7.6% |
-| Byzantium | 71 | 7.1% |
-| Germany | 145 | 14.5% |
-| Celts | 142 | 14.2% |
-| Mongols | 72 | 7.2% |
-| Sparta | 116 | 11.6% |
-| Athens | 160 | 16.0% |
-| Aztecs | 126 | 12.6% |
+| Switzerland | 82 | 8.2% |
+| India | 78 | 7.8% |
+| Byzantium | 85 | 8.5% |
+| Germany | 134 | 13.4% |
+| Celts | 151 | 15.1% |
+| Mongols | 80 | 8.0% |
+| Sparta | 111 | 11.1% |
+| Athens | 155 | 15.5% |
+| Aztecs | 124 | 12.4% |
 
 ## Outcomes
 
 | Outcome | Games | Share |
 | --- | --- | --- |
-| VP hold | 988 | 98.8% |
+| VP hold | 985 | 98.5% |
 | Conquest | 0 | 0.0% |
-| Capitals | 12 | 1.2% |
+| Capitals | 15 | 1.5% |
 | Turn limit | 0 | 0.0% |
 | Draw | 0 | 0.0% |
 | Stalled (safety cap) | 0 | 0.0% |
@@ -64,15 +64,15 @@ Per seat: wins / seats of that faction. With 8 single-empire teams, an even game
 
 | Faction | Seats | Wins | Win rate |
 | --- | --- | --- | --- |
-| Switzerland | 879 | 92 | 10.5% |
-| India | 905 | 76 | 8.4% |
-| Byzantium | 885 | 71 | 8.0% |
-| Germany | 900 | 145 | 16.1% |
-| Celts | 880 | 142 | 16.1% |
-| Mongols | 878 | 72 | 8.2% |
-| Sparta | 901 | 116 | 12.9% |
-| Athens | 900 | 160 | 17.8% |
-| Aztecs | 872 | 126 | 14.4% |
+| Switzerland | 879 | 82 | 9.3% |
+| India | 905 | 78 | 8.6% |
+| Byzantium | 885 | 85 | 9.6% |
+| Germany | 900 | 134 | 14.9% |
+| Celts | 880 | 151 | 17.2% |
+| Mongols | 878 | 80 | 9.1% |
+| Sparta | 901 | 111 | 12.3% |
+| Athens | 900 | 155 | 17.2% |
+| Aztecs | 872 | 124 | 14.2% |
 
 ## Win rate by difficulty
 
@@ -86,15 +86,15 @@ All initial seats in non-panicked games, including eliminated empires and cap st
 
 | Faction | Difficulty | Seats | Wins | Win rate |
 | --- | --- | --- | --- | --- |
-| Switzerland | Hard | 879 | 92 | 10.5% |
-| India | Hard | 905 | 76 | 8.4% |
-| Byzantium | Hard | 885 | 71 | 8.0% |
-| Germany | Hard | 900 | 145 | 16.1% |
-| Celts | Hard | 880 | 142 | 16.1% |
-| Mongols | Hard | 878 | 72 | 8.2% |
-| Sparta | Hard | 901 | 116 | 12.9% |
-| Athens | Hard | 900 | 160 | 17.8% |
-| Aztecs | Hard | 872 | 126 | 14.4% |
+| Switzerland | Hard | 879 | 82 | 9.3% |
+| India | Hard | 905 | 78 | 8.6% |
+| Byzantium | Hard | 885 | 85 | 9.6% |
+| Germany | Hard | 900 | 134 | 14.9% |
+| Celts | Hard | 880 | 151 | 17.2% |
+| Mongols | Hard | 878 | 80 | 9.1% |
+| Sparta | Hard | 901 | 111 | 12.3% |
+| Athens | Hard | 900 | 155 | 17.2% |
+| Aztecs | Hard | 872 | 124 | 14.2% |
 
 ## Faction goal progress
 
@@ -102,26 +102,26 @@ Per seat: how often the faction's permanent goal was reached before the game end
 
 | Faction | Seats | Reached | Goal rate | Min | P10 | Median turn | P90 | Max |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Switzerland | 879 | 201 | 22.9% | 115 | 139 | 170 | 230 | 317 |
-| India | 905 | 515 | 56.9% | 45 | 87 | 123 | 195 | 281 |
-| Byzantium | 885 | 712 | 80.5% | 69 | 83 | 106 | 146 | 259 |
-| Germany | 900 | 337 | 37.4% | 85 | 122 | 150 | 194 | 291 |
-| Celts | 880 | 551 | 62.6% | 35 | 162 | 210 | 210 | 293 |
-| Mongols | 878 | 147 | 16.7% | 113 | 148 | 189 | 229 | 385 |
-| Sparta | 901 | 137 | 15.2% | 131 | 147 | 198 | 254 | 342 |
-| Athens | 900 | 280 | 31.1% | 119 | 154 | 225 | 255 | 255 |
-| Aztecs | 872 | 304 | 34.9% | 120 | 163 | 225 | 234 | 296 |
+| Switzerland | 879 | 177 | 20.1% | 119 | 138 | 159 | 222 | 272 |
+| India | 905 | 508 | 56.1% | 44 | 87 | 126 | 194 | 322 |
+| Byzantium | 885 | 714 | 80.7% | 69 | 83 | 107 | 148 | 270 |
+| Germany | 900 | 347 | 38.6% | 84 | 124 | 148 | 202 | 285 |
+| Celts | 880 | 527 | 59.9% | 35 | 161 | 210 | 210 | 246 |
+| Mongols | 878 | 153 | 17.4% | 105 | 148 | 187 | 240 | 319 |
+| Sparta | 901 | 117 | 13.0% | 138 | 157 | 191 | 256 | 327 |
+| Athens | 900 | 264 | 29.3% | 124 | 162 | 217 | 255 | 255 |
+| Aztecs | 872 | 306 | 35.1% | 128 | 165 | 225 | 235 | 285 |
 
 ## Distributions
 
 | Metric | Min | P10 | Median | P90 | Max |
 | --- | --- | --- | --- | --- | --- |
-| Observed game length (turns, including cap stops) | 136 | 177 | 215 | 266 | 497 |
-| Winning team VP | 3 | 10 | 11 | 13 | 18 |
-| First Soldier completed (turn, per empire) | 6 | 8 | 36 | 71 | 262 |
-| First Settler completed (turn, per empire) | 6 | 12 | 14 | 25 | 129 |
+| Observed game length (turns, including cap stops) | 143 | 181 | 216 | 268 | 525 |
+| Winning team VP | 4 | 10 | 11 | 13 | 19 |
+| First Soldier completed (turn, per empire) | 6 | 8 | 36 | 71 | 288 |
+| First Settler completed (turn, per empire) | 6 | 12 | 14 | 25 | 225 |
 | First city founded (turn, per empire) | 1 | 1 | 1 | 1 | 1 |
-| Second city founded (turn, per empire) | 10 | 16 | 19 | 39 | 214 |
+| Second city founded (turn, per empire) | 10 | 16 | 19 | 39 | 235 |
 
 Safety-cap stops are censored observations, not completed game lengths.
 
@@ -129,56 +129,56 @@ Openings: 8000 observed empires in 1000 first plays; 0 games without opening tel
 
 | Opening milestone | Reached empires | Never empires |
 | --- | --- | --- |
-| First Soldier completed | 7906 | 94 |
-| First Settler completed | 7980 | 20 |
+| First Soldier completed | 7907 | 93 |
+| First Settler completed | 7984 | 16 |
 | First city founded | 8000 | 0 |
-| Second city founded | 7910 | 90 |
+| Second city founded | 7915 | 85 |
 
 Final VP per empire (all seats):
 
 | VP | Empires |
 | --- | --- |
-| 0 | 1530 |
-| 1 | 1284 |
-| 2 | 1124 |
+| 0 | 1571 |
+| 1 | 1280 |
+| 2 | 1094 |
 | 3 | 779 |
-| 4 | 630 |
-| 5 | 525 |
-| 6 | 389 |
-| 7 | 294 |
-| 8 | 174 |
-| 9 | 162 |
-| 10 | 464 |
-| 11 | 329 |
-| 12 | 170 |
-| 13 | 81 |
+| 4 | 615 |
+| 5 | 505 |
+| 6 | 403 |
+| 7 | 274 |
+| 8 | 214 |
+| 9 | 153 |
+| 10 | 505 |
+| 11 | 320 |
+| 12 | 153 |
+| 13 | 70 |
 | 14 | 38 |
-| 15 | 15 |
-| 16 | 8 |
-| 17 | 3 |
-| 18 | 1 |
+| 15 | 18 |
+| 16 | 6 |
+| 17 | 1 |
+| 19 | 1 |
 
 ## End state
 
-- Average game length: 220.4 turns
-- Average cities per empire: 4.69
-- Average techs per empire: 32.56
-- Average eliminations per game: 1.66
+- Average game length: 220.9 turns
+- Average cities per empire: 4.70
+- Average techs per empire: 32.57
+- Average eliminations per game: 1.64
 
 ## Strategy diversity: observed behavior (classifier v2)
 
-1000 finished games; 8000 player seats; 1000 winning seats. Excluded 0 unfinished/panicked games and 0 games with missing labels. Winner entropy: **0.3077** (normalized over 6 categories, including zero-win categories).
+1000 finished games; 8000 player seats; 1000 winning seats. Excluded 0 unfinished/panicked games and 0 games with missing labels. Winner entropy: **0.3019** (normalized over 6 categories, including zero-win categories).
 
 Thresholds, biases and denominators: [strategy-diversity.md](../strategy-diversity.md).
 
 | Archetype | Players | Wins | Win rate | All-player frequency | Winner frequency |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Rush | 1728 | 58 | 3.4% | 21.6% | 5.8% |
-| Wide | 3809 | 846 | 22.2% | 47.6% | 84.6% |
+| Rush | 1755 | 63 | 3.6% | 21.9% | 6.3% |
+| Wide | 3770 | 850 | 22.5% | 47.1% | 85.0% |
 | Science | 0 | 0 | n/a | 0.0% | 0.0% |
-| Turtle/Wonder | 23 | 0 | 0.0% | 0.3% | 0.0% |
-| Economic | 1212 | 91 | 7.5% | 15.2% | 9.1% |
-| Generalist | 1228 | 5 | 0.4% | 15.3% | 0.5% |
+| Turtle/Wonder | 22 | 0 | 0.0% | 0.3% | 0.0% |
+| Economic | 1179 | 83 | 7.0% | 14.7% | 8.3% |
+| Generalist | 1274 | 4 | 0.3% | 15.9% | 0.4% |
 
 ### Matchup matrix
 
@@ -186,12 +186,12 @@ Cell = strict ahead % / tied % (co-occurrence games). Each game has equal weight
 
 | Row vs column | Rush | Wide | Science | Turtle/Wonder | Economic | Generalist |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Rush | — | 16.3% / 4.3% (853) | n/a / n/a (0) | 25.6% / 13.3% (15) | 17.4% / 8.8% (614) | 56.8% / 7.7% (625) |
-| Wide | 79.5% / 4.3% (853) | — | n/a / n/a (0) | 81.1% / 6.7% (22) | 57.4% / 6.5% (744) | 87.9% / 3.0% (756) |
+| Rush | — | 16.4% / 4.7% (833) | n/a / n/a (0) | 29.8% / 7.0% (19) | 18.6% / 9.5% (577) | 59.2% / 8.3% (637) |
+| Wide | 78.9% / 4.7% (833) | — | n/a / n/a (0) | 72.0% / 4.9% (22) | 59.3% / 6.5% (718) | 87.1% / 3.4% (780) |
 | Science | n/a / n/a (0) | n/a / n/a (0) | — | n/a / n/a (0) | n/a / n/a (0) | n/a / n/a (0) |
-| Turtle/Wonder | 61.1% / 13.3% (15) | 12.1% / 6.7% (22) | n/a / n/a (0) | — | 35.6% / 18.9% (15) | 94.4% / 0.0% (15) |
-| Economic | 73.8% / 8.8% (614) | 36.0% / 6.5% (744) | n/a / n/a (0) | 45.6% / 18.9% (15) | — | 87.4% / 6.3% (547) |
-| Generalist | 35.5% / 7.7% (625) | 9.2% / 3.0% (756) | n/a / n/a (0) | 5.6% / 0.0% (15) | 6.3% / 6.3% (547) | — |
+| Turtle/Wonder | 63.2% / 7.0% (19) | 23.1% / 4.9% (22) | n/a / n/a (0) | — | 41.7% / 8.3% (12) | 74.6% / 6.3% (21) |
+| Economic | 71.8% / 9.5% (577) | 34.2% / 6.5% (718) | n/a / n/a (0) | 50.0% / 8.3% (12) | — | 85.4% / 5.8% (545) |
+| Generalist | 32.5% / 8.3% (637) | 9.4% / 3.4% (780) | n/a / n/a (0) | 19.0% / 6.3% (21) | 8.8% / 5.8% (545) | — |
 
 ### Faction wins by archetype
 
@@ -199,19 +199,19 @@ Cell = wins / seats; win rate in JSON.
 
 | Faction | Rush | Wide | Science | Turtle/Wonder | Economic | Generalist |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Switzerland | 0 / 93 | 86 / 443 | 0 / 0 | 0 / 0 | 6 / 205 | 0 / 138 |
-| India | 1 / 199 | 75 / 584 | 0 / 0 | 0 / 0 | 0 / 23 | 0 / 99 |
-| Byzantium | 0 / 7 | 68 / 490 | 0 / 0 | 0 / 2 | 3 / 151 | 0 / 235 |
-| Germany | 3 / 139 | 136 / 464 | 0 / 0 | 0 / 4 | 6 / 113 | 0 / 180 |
-| Celts | 2 / 112 | 129 / 531 | 0 / 0 | 0 / 0 | 11 / 142 | 0 / 95 |
-| Mongols | 20 / 556 | 48 / 206 | 0 / 0 | 0 / 0 | 4 / 41 | 0 / 75 |
-| Sparta | 26 / 430 | 55 / 182 | 0 / 0 | 0 / 15 | 31 / 173 | 4 / 101 |
-| Athens | 4 / 90 | 137 / 451 | 0 / 0 | 0 / 0 | 18 / 189 | 1 / 170 |
-| Aztecs | 2 / 102 | 112 / 458 | 0 / 0 | 0 / 2 | 12 / 175 | 0 / 135 |
+| Switzerland | 0 / 88 | 76 / 429 | 0 / 0 | 0 / 1 | 6 / 242 | 0 / 119 |
+| India | 8 / 217 | 70 / 569 | 0 / 0 | 0 / 0 | 0 / 14 | 0 / 105 |
+| Byzantium | 0 / 7 | 77 / 492 | 0 / 0 | 0 / 3 | 8 / 136 | 0 / 247 |
+| Germany | 4 / 146 | 127 / 468 | 0 / 0 | 0 / 5 | 3 / 85 | 0 / 196 |
+| Celts | 0 / 91 | 147 / 531 | 0 / 0 | 0 / 0 | 4 / 144 | 0 / 114 |
+| Mongols | 23 / 540 | 54 / 207 | 0 / 0 | 0 / 0 | 3 / 49 | 0 / 82 |
+| Sparta | 21 / 437 | 62 / 179 | 0 / 0 | 0 / 13 | 25 / 158 | 3 / 114 |
+| Athens | 2 / 96 | 134 / 454 | 0 / 0 | 0 / 0 | 18 / 167 | 1 / 183 |
+| Aztecs | 5 / 133 | 103 / 441 | 0 / 0 | 0 / 0 | 16 / 184 | 0 / 114 |
 
-Guardrail: **Fail**. Entropy minimum 0.80; at least 20 games per strategy pair. Dominant by observed score: none. Without an observed counter (all pairs covered): none. Sampled but never won: Turtle/Wonder. Unobserved: Science. Under-sampled pairs: 8.
+Guardrail: **Fail**. Entropy minimum 0.80; at least 20 games per strategy pair. Dominant by observed score: none. Without an observed counter (all pairs covered): none. Sampled but never won: Turtle/Wonder. Unobserved: Science. Under-sampled pairs: 7.
 
-- insufficient evidence: 8 under-sampled matchups; 1000 winning seats
+- insufficient evidence: 7 under-sampled matchups; 1000 winning seats
 
 - winner entropy below 0.80
 
@@ -221,13 +221,13 @@ Guardrail: **Fail**. Entropy minimum 0.80; at least 20 games per strategy pair. 
 
 | Event | Total / observed games | Mean per game | Games with event / observed games |
 | --- | --- | --- | --- |
-| War declarations | 14610/1000 | 14.610 | 1000/1000 (100.0%) |
-| Peace offers | 86689/1000 | 86.689 | 1000/1000 (100.0%) |
-| Peace agreements | 12616/1000 | 12.616 | 1000/1000 (100.0%) |
-| Battles | 992803/1000 | 992.803 | 1000/1000 (100.0%) |
-| City captures | 20911/1000 | 20.911 | 1000/1000 (100.0%) |
-| Settler captures | 5060/1000 | 5.060 | 980/1000 (98.0%) |
-| Eliminations | 1662/1000 | 1.662 | 870/1000 (87.0%) |
+| War declarations | 14640/1000 | 14.640 | 1000/1000 (100.0%) |
+| Peace offers | 86814/1000 | 86.814 | 1000/1000 (100.0%) |
+| Peace agreements | 12530/1000 | 12.530 | 1000/1000 (100.0%) |
+| Battles | 995546/1000 | 995.546 | 1000/1000 (100.0%) |
+| City captures | 21045/1000 | 21.045 | 1000/1000 (100.0%) |
+| Settler captures | 5006/1000 | 5.006 | 981/1000 (98.1%) |
+| Eliminations | 1638/1000 | 1.638 | 849/1000 (84.9%) |
 
 ## Terminal VP sources
 
@@ -235,11 +235,11 @@ Guardrail: **Fail**. Entropy minimum 0.80; at least 20 games per strategy pair. 
 
 | Source | All players | All teams | Winning teams |
 | --- | --- | --- | --- |
-| Held Great Works | 7542/8000 | 7542/8000 | 3004/1000 |
-| Faction goals | 5122/8000 | 5122/8000 | 2130/1000 |
-| Era objectives | 15306/8000 | 15306/8000 | 4465/1000 |
-| Capitals taken | 2592/8000 | 2592/8000 | 1534/1000 |
-| Total VP | 30562/8000 | 30562/8000 | 11133/1000 |
+| Held Great Works | 7630/8000 | 7630/8000 | 3006/1000 |
+| Faction goals | 5016/8000 | 5016/8000 | 2050/1000 |
+| Era objectives | 15334/8000 | 15334/8000 | 4508/1000 |
+| Capitals taken | 2485/8000 | 2485/8000 | 1455/1000 |
+| Total VP | 30465/8000 | 30465/8000 | 11019/1000 |
 
 Reconciliation failures: 0 player observations, 0 team observations.
 
@@ -247,9 +247,9 @@ Reconciliation failures: 0 player observations, 0 team observations.
 
 | Cohort | Eventual leader-set wins / eligible games | Draws (included) |
 | --- | --- | --- |
-| Unique leader | 67/391 (17.1%) | 0 |
-| Tied leaders (winner in set) | 604/609 (99.2%) | 0 |
-| Any leader set | 671/1000 (67.1%) | 0 |
+| Unique leader | 68/396 (17.2%) | 0 |
+| Tied leaders (winner in set) | 600/604 (99.3%) | 0 |
+| Any leader set | 668/1000 (66.8%) | 0 |
 
 Excluded: 0 games ended before turn 50, 0 unfinished games, 0 snapshots without teams, 0 records without telemetry.
 
@@ -259,14 +259,14 @@ Resolved turn each empire entered each era. `Winner vs median` is the winning te
 
 | Era | Entered / seats | Fastest | p10 | Median | p90 | Slowest | Winner vs median (mean, n) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Classical | 7903/8000 | 5 | 20 | 28 | 32 | 59 | -2.2 (1000) |
-| Medieval | 7820/8000 | 35 | 56 | 60 | 63 | 124 | -1.6 (1000) |
-| Renaissance | 7774/8000 | 62 | 81 | 86 | 93 | 186 | -2.6 (1000) |
-| Industrial | 7587/8000 | 86 | 107 | 114 | 126 | 286 | -4.3 (1000) |
-| Machine Age | 7050/8000 | 111 | 136 | 145 | 160 | 256 | -6.5 (1000) |
-| World War | 5670/8000 | 134 | 160 | 173 | 191 | 300 | -9.1 (983) |
-| Modern | 3446/8000 | 152 | 184 | 202 | 225 | 349 | -8.9 (830) |
-| Future | 1462/8000 | 179 | 207 | 233 | 256 | 444 | -7.0 (472) |
+| Classical | 7902/8000 | 5 | 20 | 28 | 32 | 59 | -2.6 (1000) |
+| Medieval | 7821/8000 | 35 | 56 | 60 | 63 | 129 | -1.7 (1000) |
+| Renaissance | 7770/8000 | 63 | 81 | 86 | 93 | 186 | -2.7 (1000) |
+| Industrial | 7586/8000 | 87 | 107 | 114 | 126 | 212 | -4.5 (1000) |
+| Machine Age | 7006/8000 | 113 | 135 | 145 | 160 | 292 | -6.7 (1000) |
+| World War | 5681/8000 | 130 | 160 | 173 | 192 | 322 | -9.3 (987) |
+| Modern | 3539/8000 | 150 | 183 | 202 | 225 | 295 | -9.3 (846) |
+| Future | 1428/8000 | 172 | 208 | 232 | 256 | 337 | -8.3 (463) |
 
 Research idle turns (techs left, no research set): 4, of which stalled (two or more in a row): 0.
 
@@ -279,48 +279,48 @@ Median resolved turn each technology was learned, the display year of that turn 
 | Ancient | Irrigation | 8000/8000 | 9 | 3173 BC | 6000 BC |
 | Ancient | Bronze Working | 7984/8000 | 17 | 2345 BC | 3300 BC |
 | Ancient | Masonry | 7998/8000 | 12 | 2863 BC | 3000 BC |
-| Ancient | Currency | 7929/8000 | 27 | 1311 BC | 600 BC |
-| Ancient | Writing | 7940/8000 | 25 | 1518 BC | 3200 BC |
-| Classical | Mathematics | 7840/8000 | 43 | 351 BC | 300 BC |
-| Classical | Engineering | 7831/8000 | 49 | 51 BC | n/a |
-| Classical | Iron Working | 7857/8000 | 37 | 651 BC | 1200 BC |
-| Classical | Code of Laws | 7825/8000 | 57 | 350 AD | 1754 BC |
-| Classical | Philosophy | 7821/8000 | 58 | 400 AD | 500 BC |
-| Medieval | Feudalism | 7803/8000 | 73 | 890 AD | n/a |
-| Medieval | Machinery | 7815/8000 | 67 | 710 AD | n/a |
-| Medieval | Chivalry | 6928/8000 | 77 | 1010 AD | n/a |
-| Medieval | Education | 7784/8000 | 82 | 1160 AD | 1088 AD |
-| Medieval | Crop Rotation | 7774/8000 | 85 | 1250 AD | n/a |
-| Renaissance | Gunpowder | 7754/8000 | 92 | 1420 AD | n/a |
-| Renaissance | Metallurgy | 7705/8000 | 102 | 1520 AD | n/a |
-| Renaissance | Military Engineering | 7722/8000 | 100 | 1500 AD | n/a |
-| Renaissance | Banking | 7630/8000 | 111 | 1610 AD | 1397 AD |
-| Renaissance | Printing Press | 7601/8000 | 113 | 1630 AD | 1440 AD |
-| Industrial | Rifling | 7251/8000 | 135 | 1787 AD | n/a |
-| Industrial | Military Science | 7397/8000 | 128 | 1761 AD | n/a |
-| Industrial | Ballistics | 7300/8000 | 137 | 1794 AD | n/a |
-| Industrial | Industrialization | 7488/8000 | 122 | 1720 AD | 1769 AD |
-| Industrial | Railways | 7056/8000 | 145 | 1824 AD | 1825 AD |
-| Machine Age | Replaceable Parts | 6512/8000 | 159 | 1876 AD | 1800 AD |
-| Machine Age | Combustion | 6803/8000 | 153 | 1854 AD | 1876 AD |
-| Machine Age | Steel | 6488/8000 | 158 | 1872 AD | 1856 AD |
-| Machine Age | Flight | 5974/8000 | 167 | 1887 AD | 1903 AD |
-| Machine Age | Electricity | 5736/8000 | 173 | 1894 AD | 1879 AD |
-| World War | Mass Mobilisation | 4558/8000 | 188 | 1911 AD | n/a |
-| World War | Rocketry | 4241/8000 | 192 | 1916 AD | 1926 AD |
-| World War | Armoured Warfare | 3924/8000 | 197 | 1924 AD | 1916 AD |
-| World War | Air Power | 3692/8000 | 200 | 1928 AD | n/a |
-| World War | Electronics | 5168/8000 | 180 | 1902 AD | n/a |
-| Modern | Mechanised Warfare | 2298/8000 | 217 | 1954 AD | n/a |
-| Modern | Composite Armour | 1965/8000 | 221 | 1964 AD | n/a |
-| Modern | Guided Missiles | 1793/8000 | 227 | 1978 AD | n/a |
-| Modern | Jet Engines | 1731/8000 | 228 | 1981 AD | 1939 AD |
-| Modern | Green Revolution | 2847/8000 | 210 | 1942 AD | n/a |
-| Future | Autonomous Systems | 840/8000 | 251 | 2027 AD | n/a |
-| Future | Robotics | 642/8000 | 256 | 2032 AD | n/a |
-| Future | Fusion Power | 685/8000 | 256 | 2032 AD | n/a |
-| Future | Stealth Technology | 1058/8000 | 243 | 2014 AD | n/a |
-| Future | Recursive AI | 605/8000 | 256 | 2032 AD | n/a |
+| Ancient | Currency | 7928/8000 | 27 | 1311 BC | 600 BC |
+| Ancient | Writing | 7939/8000 | 25 | 1518 BC | 3200 BC |
+| Classical | Mathematics | 7838/8000 | 43 | 351 BC | 300 BC |
+| Classical | Engineering | 7829/8000 | 49 | 51 BC | n/a |
+| Classical | Iron Working | 7853/8000 | 37 | 651 BC | 1200 BC |
+| Classical | Code of Laws | 7823/8000 | 57 | 350 AD | 1754 BC |
+| Classical | Philosophy | 7822/8000 | 58 | 400 AD | 500 BC |
+| Medieval | Feudalism | 7799/8000 | 73 | 890 AD | n/a |
+| Medieval | Machinery | 7812/8000 | 67 | 710 AD | n/a |
+| Medieval | Chivalry | 6923/8000 | 77 | 1010 AD | n/a |
+| Medieval | Education | 7777/8000 | 82 | 1160 AD | 1088 AD |
+| Medieval | Crop Rotation | 7771/8000 | 85 | 1250 AD | n/a |
+| Renaissance | Gunpowder | 7738/8000 | 92 | 1420 AD | n/a |
+| Renaissance | Metallurgy | 7700/8000 | 102 | 1520 AD | n/a |
+| Renaissance | Military Engineering | 7707/8000 | 100 | 1500 AD | n/a |
+| Renaissance | Banking | 7624/8000 | 111 | 1610 AD | 1397 AD |
+| Renaissance | Printing Press | 7594/8000 | 112 | 1620 AD | 1440 AD |
+| Industrial | Rifling | 7234/8000 | 135 | 1787 AD | n/a |
+| Industrial | Military Science | 7397/8000 | 127 | 1757 AD | n/a |
+| Industrial | Ballistics | 7281/8000 | 137 | 1794 AD | n/a |
+| Industrial | Industrialization | 7480/8000 | 122 | 1720 AD | 1769 AD |
+| Industrial | Railways | 7012/8000 | 145 | 1824 AD | 1825 AD |
+| Machine Age | Replaceable Parts | 6471/8000 | 159 | 1876 AD | 1800 AD |
+| Machine Age | Combustion | 6748/8000 | 153 | 1854 AD | 1876 AD |
+| Machine Age | Steel | 6465/8000 | 158 | 1872 AD | 1856 AD |
+| Machine Age | Flight | 6036/8000 | 167 | 1887 AD | 1903 AD |
+| Machine Age | Electricity | 5726/8000 | 173 | 1894 AD | 1879 AD |
+| World War | Mass Mobilisation | 4604/8000 | 187 | 1910 AD | n/a |
+| World War | Rocketry | 4308/8000 | 191 | 1915 AD | 1926 AD |
+| World War | Armoured Warfare | 3997/8000 | 196 | 1922 AD | 1916 AD |
+| World War | Air Power | 3786/8000 | 199 | 1926 AD | n/a |
+| World War | Electronics | 5257/8000 | 179 | 1901 AD | n/a |
+| Modern | Mechanised Warfare | 2292/8000 | 216 | 1952 AD | n/a |
+| Modern | Composite Armour | 1971/8000 | 221 | 1964 AD | n/a |
+| Modern | Guided Missiles | 1825/8000 | 226 | 1976 AD | n/a |
+| Modern | Jet Engines | 1748/8000 | 227 | 1978 AD | 1939 AD |
+| Modern | Green Revolution | 2899/8000 | 210 | 1942 AD | n/a |
+| Future | Autonomous Systems | 822/8000 | 245 | 2018 AD | n/a |
+| Future | Robotics | 638/8000 | 252 | 2028 AD | n/a |
+| Future | Fusion Power | 636/8000 | 255 | 2031 AD | n/a |
+| Future | Stealth Technology | 1027/8000 | 240 | 2010 AD | n/a |
+| Future | Recursive AI | 577/8000 | 256 | 2032 AD | n/a |
 
 ## Metric definitions
 
@@ -348,12 +348,12 @@ Definitions reuse [balance-probe-1](../analysis/balance-probe-1.md) and [the pro
 
 | Level | Promotions / game | Final units / game |
 | --- | --- | --- |
-| 0 | 0.00 | 74.90 |
-| 1 | 57.40 | 16.62 |
-| 2 | 18.14 | 4.95 |
-| 3 | 4.32 | 1.24 |
-| 4 | 0.79 | 0.26 |
-| 5 | 0.18 | 0.07 |
+| 0 | 0.00 | 75.63 |
+| 1 | 57.35 | 16.00 |
+| 2 | 18.21 | 4.93 |
+| 3 | 4.38 | 1.33 |
+| 4 | 0.78 | 0.23 |
+| 5 | 0.15 | 0.07 |
 
 ## Per-game events
 
@@ -361,1011 +361,1011 @@ Each row is one observed first play; unavailable telemetry is shown as n/a. Full
 
 | Game | Seed | Resolved turns | Battles | City captures | Settler captures | Eliminations |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 9311003 | 247 | 1077 | 30 | 7 | 1 |
-| 1 | 9311004 | 205 | 718 | 19 | 8 | 1 |
-| 2 | 9311005 | 248 | 1090 | 28 | 5 | 2 |
-| 3 | 9311006 | 285 | 1516 | 33 | 7 | 0 |
-| 4 | 9311007 | 206 | 884 | 24 | 6 | 3 |
-| 5 | 9311008 | 256 | 1495 | 30 | 3 | 2 |
-| 6 | 9311009 | 228 | 1210 | 22 | 5 | 0 |
-| 7 | 9311010 | 196 | 840 | 25 | 6 | 2 |
-| 8 | 9311011 | 194 | 644 | 13 | 5 | 1 |
-| 9 | 9311012 | 259 | 1262 | 28 | 5 | 4 |
-| 10 | 9311013 | 203 | 1139 | 25 | 12 | 2 |
-| 11 | 9311014 | 246 | 1163 | 35 | 7 | 5 |
-| 12 | 9311015 | 185 | 724 | 11 | 8 | 1 |
-| 13 | 9311016 | 237 | 1190 | 35 | 6 | 1 |
-| 14 | 9311017 | 219 | 1026 | 19 | 3 | 2 |
-| 15 | 9311018 | 169 | 491 | 9 | 8 | 0 |
-| 16 | 9311019 | 251 | 1086 | 15 | 6 | 2 |
-| 17 | 9311020 | 177 | 737 | 9 | 8 | 0 |
-| 18 | 9311021 | 190 | 929 | 14 | 10 | 2 |
-| 19 | 9311022 | 161 | 573 | 8 | 2 | 0 |
-| 20 | 9311023 | 297 | 1632 | 27 | 11 | 1 |
-| 21 | 9311024 | 319 | 1616 | 35 | 1 | 4 |
-| 22 | 9311025 | 222 | 1099 | 22 | 15 | 1 |
-| 23 | 9311026 | 222 | 1056 | 18 | 0 | 3 |
-| 24 | 9311027 | 416 | 1966 | 23 | 3 | 1 |
-| 25 | 9311028 | 193 | 950 | 28 | 5 | 0 |
-| 26 | 9311029 | 159 | 453 | 9 | 10 | 1 |
-| 27 | 9311030 | 204 | 697 | 21 | 3 | 2 |
-| 28 | 9311031 | 198 | 987 | 19 | 6 | 1 |
-| 29 | 9311032 | 231 | 1273 | 25 | 6 | 0 |
-| 30 | 9311033 | 221 | 1030 | 21 | 8 | 3 |
-| 31 | 9311034 | 256 | 1456 | 19 | 4 | 1 |
-| 32 | 9311035 | 193 | 905 | 27 | 8 | 2 |
-| 33 | 9311036 | 175 | 699 | 12 | 11 | 0 |
-| 34 | 9311037 | 195 | 910 | 20 | 4 | 1 |
-| 35 | 9311038 | 201 | 982 | 20 | 4 | 1 |
-| 36 | 9311039 | 186 | 886 | 32 | 4 | 1 |
-| 37 | 9311040 | 177 | 811 | 10 | 2 | 0 |
-| 38 | 9311041 | 261 | 1156 | 24 | 4 | 2 |
-| 39 | 9311042 | 228 | 1003 | 21 | 3 | 1 |
-| 40 | 9311043 | 233 | 1056 | 31 | 3 | 4 |
-| 41 | 9311044 | 168 | 693 | 10 | 5 | 1 |
-| 42 | 9311045 | 222 | 1081 | 23 | 3 | 2 |
-| 43 | 9311046 | 197 | 881 | 14 | 3 | 3 |
-| 44 | 9311047 | 206 | 1091 | 19 | 5 | 2 |
-| 45 | 9311048 | 198 | 760 | 8 | 15 | 2 |
-| 46 | 9311049 | 221 | 1092 | 22 | 5 | 2 |
-| 47 | 9311050 | 243 | 1113 | 28 | 5 | 2 |
-| 48 | 9311051 | 223 | 1031 | 8 | 6 | 2 |
-| 49 | 9311052 | 220 | 1062 | 13 | 6 | 1 |
-| 50 | 9311053 | 219 | 933 | 25 | 3 | 0 |
-| 51 | 9311054 | 242 | 893 | 20 | 5 | 3 |
-| 52 | 9311055 | 170 | 718 | 10 | 5 | 1 |
-| 53 | 9311056 | 203 | 1088 | 15 | 2 | 2 |
-| 54 | 9311057 | 240 | 1032 | 19 | 7 | 2 |
-| 55 | 9311058 | 256 | 1395 | 24 | 10 | 3 |
-| 56 | 9311059 | 215 | 999 | 21 | 4 | 3 |
-| 57 | 9311060 | 274 | 1229 | 16 | 5 | 1 |
-| 58 | 9311061 | 186 | 811 | 15 | 2 | 1 |
-| 59 | 9311062 | 185 | 896 | 20 | 3 | 0 |
-| 60 | 9311063 | 157 | 642 | 10 | 4 | 0 |
-| 61 | 9311064 | 220 | 1031 | 17 | 4 | 4 |
-| 62 | 9311065 | 231 | 1154 | 28 | 4 | 2 |
-| 63 | 9311066 | 289 | 1637 | 21 | 3 | 1 |
-| 64 | 9311067 | 198 | 946 | 19 | 6 | 2 |
-| 65 | 9311068 | 191 | 705 | 21 | 6 | 2 |
-| 66 | 9311069 | 255 | 1236 | 34 | 3 | 3 |
-| 67 | 9311070 | 189 | 946 | 18 | 3 | 1 |
-| 68 | 9311071 | 137 | 504 | 10 | 1 | 2 |
-| 69 | 9311072 | 180 | 795 | 19 | 3 | 2 |
-| 70 | 9311073 | 245 | 1268 | 18 | 3 | 1 |
-| 71 | 9311074 | 273 | 1313 | 38 | 13 | 2 |
-| 72 | 9311075 | 204 | 908 | 25 | 10 | 1 |
-| 73 | 9311076 | 262 | 1124 | 30 | 0 | 2 |
-| 74 | 9311077 | 204 | 1053 | 28 | 6 | 2 |
-| 75 | 9311078 | 197 | 726 | 14 | 3 | 2 |
-| 76 | 9311079 | 221 | 948 | 19 | 2 | 1 |
-| 77 | 9311080 | 210 | 824 | 12 | 5 | 1 |
-| 78 | 9311081 | 216 | 853 | 21 | 6 | 2 |
-| 79 | 9311082 | 283 | 1668 | 28 | 8 | 2 |
-| 80 | 9311083 | 259 | 916 | 15 | 11 | 1 |
-| 81 | 9311084 | 250 | 1071 | 24 | 8 | 3 |
-| 82 | 9311085 | 201 | 921 | 22 | 5 | 2 |
-| 83 | 9311086 | 167 | 618 | 11 | 6 | 0 |
-| 84 | 9311087 | 181 | 616 | 14 | 7 | 1 |
-| 85 | 9311088 | 303 | 1607 | 43 | 3 | 2 |
-| 86 | 9311089 | 206 | 807 | 24 | 2 | 3 |
-| 87 | 9311090 | 208 | 978 | 21 | 10 | 2 |
-| 88 | 9311091 | 246 | 1251 | 33 | 10 | 3 |
-| 89 | 9311092 | 198 | 960 | 17 | 7 | 0 |
-| 90 | 9311093 | 274 | 1139 | 30 | 17 | 1 |
-| 91 | 9311094 | 185 | 717 | 29 | 6 | 1 |
-| 92 | 9311095 | 273 | 1581 | 27 | 4 | 1 |
-| 93 | 9311096 | 221 | 1059 | 31 | 2 | 1 |
-| 94 | 9311097 | 224 | 1132 | 31 | 1 | 3 |
-| 95 | 9311098 | 177 | 766 | 12 | 7 | 1 |
-| 96 | 9311099 | 189 | 853 | 35 | 1 | 0 |
-| 97 | 9311100 | 198 | 772 | 20 | 5 | 1 |
-| 98 | 9311101 | 198 | 870 | 21 | 2 | 0 |
-| 99 | 9311102 | 193 | 905 | 18 | 8 | 0 |
-| 100 | 9311103 | 210 | 767 | 10 | 5 | 2 |
-| 101 | 9311104 | 185 | 960 | 24 | 1 | 1 |
-| 102 | 9311105 | 209 | 1211 | 43 | 6 | 3 |
-| 103 | 9311106 | 175 | 464 | 12 | 1 | 0 |
-| 104 | 9311107 | 209 | 896 | 23 | 2 | 1 |
-| 105 | 9311108 | 198 | 548 | 12 | 5 | 2 |
-| 106 | 9311109 | 217 | 939 | 20 | 3 | 1 |
-| 107 | 9311110 | 163 | 691 | 13 | 7 | 1 |
-| 108 | 9311111 | 181 | 690 | 16 | 4 | 2 |
-| 109 | 9311112 | 178 | 724 | 18 | 2 | 0 |
-| 110 | 9311113 | 253 | 1430 | 19 | 4 | 1 |
-| 111 | 9311114 | 295 | 1176 | 39 | 12 | 3 |
-| 112 | 9311115 | 176 | 717 | 14 | 2 | 0 |
-| 113 | 9311116 | 214 | 1099 | 26 | 4 | 2 |
-| 114 | 9311117 | 199 | 660 | 18 | 3 | 2 |
-| 115 | 9311118 | 291 | 1362 | 19 | 2 | 3 |
-| 116 | 9311119 | 254 | 1086 | 22 | 3 | 1 |
-| 117 | 9311120 | 188 | 776 | 17 | 9 | 0 |
-| 118 | 9311121 | 245 | 1013 | 19 | 3 | 3 |
-| 119 | 9311122 | 172 | 780 | 24 | 6 | 2 |
-| 120 | 9311123 | 208 | 990 | 21 | 3 | 3 |
-| 121 | 9311124 | 238 | 961 | 22 | 6 | 2 |
-| 122 | 9311125 | 238 | 688 | 15 | 2 | 3 |
-| 123 | 9311126 | 209 | 768 | 16 | 11 | 1 |
-| 124 | 9311127 | 246 | 1146 | 33 | 6 | 2 |
-| 125 | 9311128 | 213 | 943 | 16 | 12 | 1 |
-| 126 | 9311129 | 213 | 932 | 16 | 2 | 1 |
-| 127 | 9311130 | 246 | 1156 | 11 | 6 | 1 |
-| 128 | 9311131 | 175 | 920 | 15 | 6 | 0 |
-| 129 | 9311132 | 185 | 704 | 13 | 3 | 3 |
-| 130 | 9311133 | 156 | 626 | 10 | 3 | 1 |
-| 131 | 9311134 | 210 | 716 | 17 | 7 | 1 |
-| 132 | 9311135 | 157 | 637 | 12 | 2 | 1 |
-| 133 | 9311136 | 231 | 1029 | 21 | 5 | 1 |
-| 134 | 9311137 | 228 | 902 | 20 | 9 | 2 |
-| 135 | 9311138 | 181 | 761 | 17 | 7 | 1 |
-| 136 | 9311139 | 194 | 715 | 21 | 7 | 1 |
-| 137 | 9311140 | 227 | 1010 | 24 | 3 | 1 |
-| 138 | 9311141 | 173 | 699 | 9 | 3 | 0 |
-| 139 | 9311142 | 193 | 874 | 16 | 4 | 0 |
-| 140 | 9311143 | 245 | 1101 | 13 | 2 | 3 |
-| 141 | 9311144 | 200 | 715 | 16 | 5 | 1 |
-| 142 | 9311145 | 199 | 777 | 13 | 6 | 1 |
-| 143 | 9311146 | 238 | 1238 | 28 | 6 | 2 |
-| 144 | 9311147 | 372 | 2036 | 50 | 5 | 2 |
-| 145 | 9311148 | 257 | 1001 | 34 | 1 | 3 |
-| 146 | 9311149 | 190 | 930 | 15 | 8 | 4 |
-| 147 | 9311150 | 237 | 947 | 23 | 7 | 3 |
-| 148 | 9311151 | 231 | 1014 | 30 | 5 | 1 |
-| 149 | 9311152 | 234 | 1099 | 25 | 7 | 2 |
-| 150 | 9311153 | 165 | 685 | 10 | 4 | 1 |
-| 151 | 9311154 | 222 | 1137 | 30 | 6 | 2 |
-| 152 | 9311155 | 262 | 1361 | 21 | 5 | 2 |
-| 153 | 9311156 | 253 | 1164 | 25 | 5 | 1 |
-| 154 | 9311157 | 241 | 1344 | 26 | 5 | 0 |
-| 155 | 9311158 | 198 | 986 | 16 | 4 | 3 |
-| 156 | 9311159 | 298 | 1541 | 20 | 5 | 1 |
-| 157 | 9311160 | 191 | 660 | 13 | 9 | 1 |
-| 158 | 9311161 | 203 | 692 | 18 | 6 | 1 |
-| 159 | 9311162 | 239 | 1161 | 25 | 7 | 1 |
-| 160 | 9311163 | 222 | 886 | 28 | 7 | 1 |
-| 161 | 9311164 | 209 | 936 | 31 | 0 | 3 |
-| 162 | 9311165 | 224 | 844 | 23 | 6 | 3 |
-| 163 | 9311166 | 206 | 754 | 9 | 6 | 4 |
-| 164 | 9311167 | 168 | 535 | 12 | 2 | 1 |
-| 165 | 9311168 | 237 | 1126 | 18 | 7 | 3 |
-| 166 | 9311169 | 228 | 996 | 18 | 5 | 1 |
-| 167 | 9311170 | 204 | 887 | 21 | 4 | 3 |
-| 168 | 9311171 | 209 | 885 | 20 | 6 | 1 |
-| 169 | 9311172 | 215 | 903 | 13 | 4 | 2 |
-| 170 | 9311173 | 182 | 953 | 11 | 4 | 1 |
-| 171 | 9311174 | 213 | 932 | 21 | 4 | 4 |
-| 172 | 9311175 | 215 | 703 | 12 | 1 | 0 |
-| 173 | 9311176 | 248 | 1195 | 27 | 4 | 1 |
-| 174 | 9311177 | 158 | 623 | 15 | 0 | 3 |
-| 175 | 9311178 | 255 | 1519 | 34 | 7 | 0 |
-| 176 | 9311179 | 207 | 912 | 15 | 7 | 2 |
-| 177 | 9311180 | 207 | 896 | 22 | 1 | 3 |
-| 178 | 9311181 | 238 | 904 | 27 | 4 | 1 |
-| 179 | 9311182 | 191 | 843 | 13 | 2 | 0 |
-| 180 | 9311183 | 173 | 659 | 11 | 8 | 2 |
-| 181 | 9311184 | 192 | 798 | 24 | 4 | 3 |
-| 182 | 9311185 | 190 | 799 | 28 | 5 | 3 |
-| 183 | 9311186 | 256 | 1249 | 29 | 10 | 2 |
-| 184 | 9311187 | 242 | 992 | 15 | 9 | 1 |
-| 185 | 9311188 | 242 | 1128 | 24 | 9 | 2 |
-| 186 | 9311189 | 209 | 979 | 12 | 8 | 1 |
-| 187 | 9311190 | 229 | 1054 | 25 | 4 | 0 |
-| 188 | 9311191 | 205 | 862 | 26 | 3 | 1 |
-| 189 | 9311192 | 178 | 622 | 15 | 2 | 2 |
-| 190 | 9311193 | 195 | 757 | 19 | 1 | 1 |
-| 191 | 9311194 | 203 | 990 | 15 | 4 | 3 |
-| 192 | 9311195 | 175 | 794 | 21 | 4 | 2 |
-| 193 | 9311196 | 227 | 842 | 27 | 2 | 3 |
-| 194 | 9311197 | 285 | 1603 | 27 | 8 | 3 |
-| 195 | 9311198 | 245 | 1112 | 24 | 14 | 3 |
-| 196 | 9311199 | 251 | 1217 | 27 | 8 | 3 |
-| 197 | 9311200 | 232 | 1125 | 17 | 3 | 0 |
-| 198 | 9311201 | 181 | 628 | 8 | 5 | 1 |
-| 199 | 9311202 | 315 | 1665 | 23 | 7 | 2 |
-| 200 | 9311203 | 204 | 897 | 10 | 4 | 1 |
-| 201 | 9311204 | 246 | 1251 | 22 | 12 | 4 |
-| 202 | 9311205 | 262 | 1325 | 38 | 4 | 2 |
-| 203 | 9311206 | 202 | 808 | 19 | 7 | 2 |
-| 204 | 9311207 | 263 | 1374 | 24 | 8 | 3 |
-| 205 | 9311208 | 211 | 1020 | 27 | 7 | 2 |
-| 206 | 9311209 | 202 | 851 | 15 | 4 | 1 |
-| 207 | 9311210 | 267 | 1536 | 16 | 11 | 3 |
-| 208 | 9311211 | 242 | 1237 | 24 | 3 | 2 |
-| 209 | 9311212 | 168 | 566 | 18 | 3 | 1 |
-| 210 | 9311213 | 316 | 1680 | 32 | 2 | 1 |
-| 211 | 9311214 | 180 | 754 | 14 | 8 | 3 |
-| 212 | 9311215 | 214 | 1148 | 13 | 3 | 0 |
-| 213 | 9311216 | 215 | 815 | 26 | 2 | 1 |
-| 214 | 9311217 | 204 | 929 | 18 | 5 | 1 |
-| 215 | 9311218 | 224 | 907 | 20 | 5 | 2 |
-| 216 | 9311219 | 250 | 1466 | 29 | 1 | 1 |
-| 217 | 9311220 | 206 | 701 | 26 | 6 | 2 |
-| 218 | 9311221 | 233 | 823 | 26 | 9 | 1 |
-| 219 | 9311222 | 203 | 989 | 26 | 4 | 3 |
-| 220 | 9311223 | 254 | 1222 | 36 | 5 | 3 |
-| 221 | 9311224 | 279 | 1599 | 26 | 14 | 2 |
-| 222 | 9311225 | 275 | 1663 | 30 | 6 | 2 |
-| 223 | 9311226 | 225 | 1109 | 37 | 4 | 2 |
-| 224 | 9311227 | 201 | 668 | 15 | 7 | 3 |
-| 225 | 9311228 | 279 | 1413 | 27 | 6 | 3 |
-| 226 | 9311229 | 232 | 1157 | 10 | 2 | 1 |
-| 227 | 9311230 | 201 | 758 | 10 | 3 | 1 |
-| 228 | 9311231 | 279 | 1109 | 34 | 2 | 2 |
-| 229 | 9311232 | 287 | 1535 | 39 | 5 | 3 |
-| 230 | 9311233 | 202 | 876 | 13 | 3 | 1 |
-| 231 | 9311234 | 297 | 1326 | 44 | 5 | 5 |
-| 232 | 9311235 | 242 | 1172 | 33 | 3 | 3 |
-| 233 | 9311236 | 234 | 1143 | 22 | 3 | 1 |
-| 234 | 9311237 | 274 | 1886 | 25 | 1 | 1 |
-| 235 | 9311238 | 175 | 608 | 15 | 2 | 2 |
-| 236 | 9311239 | 221 | 786 | 33 | 5 | 3 |
-| 237 | 9311240 | 193 | 811 | 23 | 4 | 3 |
-| 238 | 9311241 | 183 | 785 | 18 | 7 | 2 |
-| 239 | 9311242 | 266 | 1255 | 18 | 5 | 0 |
-| 240 | 9311243 | 203 | 641 | 21 | 5 | 2 |
-| 241 | 9311244 | 233 | 1245 | 17 | 7 | 4 |
-| 242 | 9311245 | 154 | 482 | 9 | 3 | 2 |
-| 243 | 9311246 | 179 | 832 | 22 | 5 | 2 |
-| 244 | 9311247 | 187 | 886 | 14 | 12 | 3 |
-| 245 | 9311248 | 220 | 965 | 23 | 9 | 1 |
-| 246 | 9311249 | 169 | 572 | 18 | 4 | 0 |
-| 247 | 9311250 | 184 | 597 | 15 | 7 | 0 |
-| 248 | 9311251 | 179 | 686 | 18 | 8 | 2 |
-| 249 | 9311252 | 235 | 865 | 27 | 9 | 4 |
-| 250 | 9311253 | 191 | 765 | 11 | 8 | 0 |
-| 251 | 9311254 | 254 | 1256 | 25 | 5 | 3 |
-| 252 | 9311255 | 185 | 1085 | 19 | 4 | 1 |
-| 253 | 9311256 | 216 | 1214 | 16 | 4 | 0 |
-| 254 | 9311257 | 165 | 652 | 18 | 5 | 1 |
-| 255 | 9311258 | 210 | 790 | 18 | 4 | 3 |
-| 256 | 9311259 | 282 | 1200 | 23 | 1 | 2 |
-| 257 | 9311260 | 230 | 876 | 6 | 5 | 2 |
-| 258 | 9311261 | 258 | 1661 | 33 | 4 | 1 |
-| 259 | 9311262 | 206 | 867 | 16 | 2 | 3 |
-| 260 | 9311263 | 286 | 1487 | 27 | 6 | 2 |
-| 261 | 9311264 | 218 | 854 | 23 | 3 | 1 |
-| 262 | 9311265 | 216 | 919 | 23 | 4 | 1 |
-| 263 | 9311266 | 194 | 842 | 9 | 4 | 2 |
-| 264 | 9311267 | 283 | 1291 | 33 | 8 | 1 |
-| 265 | 9311268 | 234 | 1152 | 14 | 3 | 0 |
-| 266 | 9311269 | 223 | 951 | 22 | 4 | 3 |
-| 267 | 9311270 | 248 | 1276 | 13 | 10 | 1 |
-| 268 | 9311271 | 265 | 808 | 12 | 8 | 3 |
-| 269 | 9311272 | 215 | 858 | 20 | 14 | 1 |
-| 270 | 9311273 | 211 | 1040 | 16 | 4 | 0 |
-| 271 | 9311274 | 293 | 1298 | 38 | 8 | 2 |
-| 272 | 9311275 | 273 | 857 | 28 | 15 | 4 |
-| 273 | 9311276 | 167 | 657 | 11 | 5 | 0 |
-| 274 | 9311277 | 222 | 1017 | 9 | 2 | 0 |
-| 275 | 9311278 | 201 | 879 | 12 | 6 | 1 |
-| 276 | 9311279 | 289 | 1249 | 30 | 3 | 1 |
-| 277 | 9311280 | 213 | 899 | 24 | 4 | 2 |
-| 278 | 9311281 | 237 | 846 | 18 | 1 | 3 |
-| 279 | 9311282 | 226 | 901 | 13 | 5 | 1 |
-| 280 | 9311283 | 169 | 672 | 9 | 0 | 2 |
-| 281 | 9311284 | 177 | 522 | 15 | 3 | 2 |
-| 282 | 9311285 | 214 | 1071 | 26 | 4 | 1 |
-| 283 | 9311286 | 206 | 960 | 18 | 4 | 1 |
-| 284 | 9311287 | 242 | 1175 | 22 | 3 | 2 |
-| 285 | 9311288 | 227 | 949 | 15 | 7 | 0 |
-| 286 | 9311289 | 248 | 1400 | 38 | 4 | 2 |
-| 287 | 9311290 | 197 | 729 | 15 | 1 | 0 |
-| 288 | 9311291 | 216 | 909 | 20 | 2 | 2 |
-| 289 | 9311292 | 210 | 946 | 20 | 1 | 3 |
-| 290 | 9311293 | 201 | 1053 | 22 | 6 | 1 |
-| 291 | 9311294 | 156 | 571 | 6 | 5 | 2 |
-| 292 | 9311295 | 232 | 1019 | 16 | 7 | 2 |
-| 293 | 9311296 | 246 | 830 | 17 | 9 | 4 |
-| 294 | 9311297 | 191 | 763 | 22 | 4 | 2 |
-| 295 | 9311298 | 187 | 788 | 18 | 5 | 1 |
-| 296 | 9311299 | 176 | 766 | 15 | 7 | 2 |
-| 297 | 9311300 | 231 | 986 | 22 | 11 | 1 |
-| 298 | 9311301 | 176 | 686 | 9 | 5 | 1 |
-| 299 | 9311302 | 210 | 888 | 23 | 4 | 2 |
-| 300 | 9311303 | 247 | 1074 | 15 | 6 | 2 |
-| 301 | 9311304 | 168 | 489 | 9 | 2 | 1 |
-| 302 | 9311305 | 215 | 792 | 18 | 3 | 1 |
-| 303 | 9311306 | 177 | 613 | 12 | 4 | 1 |
-| 304 | 9311307 | 230 | 1091 | 20 | 4 | 1 |
-| 305 | 9311308 | 229 | 1032 | 22 | 8 | 3 |
-| 306 | 9311309 | 231 | 1039 | 19 | 7 | 2 |
-| 307 | 9311310 | 201 | 1014 | 18 | 0 | 1 |
-| 308 | 9311311 | 165 | 787 | 12 | 6 | 1 |
-| 309 | 9311312 | 181 | 900 | 19 | 8 | 3 |
-| 310 | 9311313 | 266 | 1088 | 22 | 11 | 4 |
-| 311 | 9311314 | 247 | 1160 | 27 | 7 | 1 |
-| 312 | 9311315 | 214 | 1027 | 24 | 3 | 1 |
-| 313 | 9311316 | 248 | 1003 | 27 | 1 | 2 |
-| 314 | 9311317 | 205 | 887 | 17 | 2 | 1 |
-| 315 | 9311318 | 256 | 1347 | 27 | 8 | 3 |
-| 316 | 9311319 | 210 | 920 | 23 | 7 | 3 |
-| 317 | 9311320 | 205 | 1045 | 24 | 6 | 1 |
-| 318 | 9311321 | 180 | 676 | 14 | 5 | 1 |
-| 319 | 9311322 | 229 | 1017 | 17 | 14 | 1 |
-| 320 | 9311323 | 197 | 890 | 24 | 4 | 1 |
-| 321 | 9311324 | 223 | 923 | 26 | 6 | 3 |
-| 322 | 9311325 | 312 | 1561 | 21 | 6 | 1 |
-| 323 | 9311326 | 247 | 1371 | 20 | 7 | 2 |
-| 324 | 9311327 | 213 | 878 | 24 | 2 | 1 |
-| 325 | 9311328 | 244 | 1117 | 25 | 12 | 1 |
-| 326 | 9311329 | 193 | 601 | 16 | 3 | 2 |
-| 327 | 9311330 | 188 | 803 | 20 | 8 | 2 |
-| 328 | 9311331 | 220 | 1071 | 23 | 2 | 1 |
-| 329 | 9311332 | 201 | 712 | 16 | 3 | 1 |
-| 330 | 9311333 | 194 | 849 | 23 | 6 | 2 |
-| 331 | 9311334 | 165 | 482 | 18 | 1 | 2 |
-| 332 | 9311335 | 194 | 904 | 14 | 6 | 1 |
-| 333 | 9311336 | 224 | 1257 | 23 | 5 | 2 |
-| 334 | 9311337 | 179 | 781 | 15 | 4 | 1 |
-| 335 | 9311338 | 194 | 941 | 18 | 6 | 2 |
-| 336 | 9311339 | 263 | 1172 | 31 | 13 | 4 |
-| 337 | 9311340 | 185 | 698 | 14 | 5 | 2 |
-| 338 | 9311341 | 253 | 1111 | 28 | 4 | 2 |
-| 339 | 9311342 | 205 | 633 | 16 | 0 | 1 |
-| 340 | 9311343 | 222 | 1180 | 20 | 14 | 1 |
-| 341 | 9311344 | 206 | 511 | 9 | 11 | 1 |
-| 342 | 9311345 | 229 | 1325 | 29 | 5 | 1 |
-| 343 | 9311346 | 270 | 1470 | 34 | 15 | 2 |
-| 344 | 9311347 | 237 | 1028 | 21 | 4 | 2 |
-| 345 | 9311348 | 199 | 788 | 20 | 6 | 1 |
-| 346 | 9311349 | 236 | 912 | 15 | 9 | 0 |
-| 347 | 9311350 | 296 | 1469 | 27 | 2 | 1 |
-| 348 | 9311351 | 264 | 1092 | 18 | 1 | 3 |
-| 349 | 9311352 | 218 | 730 | 19 | 9 | 1 |
-| 350 | 9311353 | 245 | 1437 | 23 | 1 | 1 |
-| 351 | 9311354 | 215 | 1030 | 27 | 6 | 1 |
-| 352 | 9311355 | 185 | 858 | 12 | 2 | 1 |
-| 353 | 9311356 | 258 | 1329 | 27 | 9 | 2 |
-| 354 | 9311357 | 204 | 999 | 28 | 8 | 2 |
-| 355 | 9311358 | 185 | 645 | 20 | 6 | 2 |
-| 356 | 9311359 | 175 | 635 | 7 | 5 | 1 |
-| 357 | 9311360 | 194 | 809 | 15 | 6 | 1 |
-| 358 | 9311361 | 200 | 941 | 14 | 3 | 1 |
-| 359 | 9311362 | 227 | 1033 | 25 | 9 | 2 |
-| 360 | 9311363 | 218 | 980 | 16 | 6 | 0 |
-| 361 | 9311364 | 239 | 999 | 20 | 8 | 2 |
-| 362 | 9311365 | 251 | 1148 | 26 | 17 | 2 |
-| 363 | 9311366 | 255 | 1215 | 29 | 7 | 2 |
-| 364 | 9311367 | 215 | 901 | 15 | 4 | 2 |
-| 365 | 9311368 | 228 | 1165 | 21 | 2 | 2 |
-| 366 | 9311369 | 208 | 909 | 16 | 8 | 0 |
-| 367 | 9311370 | 235 | 905 | 19 | 3 | 2 |
-| 368 | 9311371 | 203 | 803 | 13 | 9 | 2 |
-| 369 | 9311372 | 214 | 988 | 23 | 3 | 2 |
-| 370 | 9311373 | 263 | 931 | 27 | 4 | 3 |
-| 371 | 9311374 | 281 | 1344 | 29 | 7 | 2 |
-| 372 | 9311375 | 210 | 834 | 23 | 6 | 2 |
-| 373 | 9311376 | 202 | 849 | 15 | 1 | 3 |
-| 374 | 9311377 | 178 | 783 | 16 | 3 | 0 |
-| 375 | 9311378 | 252 | 1108 | 25 | 3 | 2 |
-| 376 | 9311379 | 247 | 993 | 15 | 2 | 1 |
-| 377 | 9311380 | 225 | 968 | 21 | 0 | 1 |
-| 378 | 9311381 | 239 | 1116 | 21 | 3 | 2 |
-| 379 | 9311382 | 327 | 1714 | 42 | 8 | 5 |
-| 380 | 9311383 | 314 | 1614 | 21 | 1 | 2 |
-| 381 | 9311384 | 168 | 757 | 11 | 6 | 0 |
-| 382 | 9311385 | 267 | 1008 | 18 | 12 | 1 |
-| 383 | 9311386 | 151 | 458 | 11 | 2 | 1 |
-| 384 | 9311387 | 177 | 857 | 5 | 9 | 2 |
-| 385 | 9311388 | 171 | 652 | 7 | 7 | 2 |
-| 386 | 9311389 | 215 | 812 | 17 | 8 | 1 |
-| 387 | 9311390 | 219 | 979 | 21 | 2 | 2 |
-| 388 | 9311391 | 247 | 1057 | 20 | 5 | 2 |
-| 389 | 9311392 | 187 | 783 | 29 | 3 | 1 |
-| 390 | 9311393 | 159 | 586 | 13 | 3 | 0 |
-| 391 | 9311394 | 194 | 792 | 13 | 7 | 1 |
-| 392 | 9311395 | 169 | 633 | 18 | 7 | 2 |
-| 393 | 9311396 | 306 | 1272 | 35 | 4 | 1 |
-| 394 | 9311397 | 169 | 744 | 15 | 7 | 1 |
-| 395 | 9311398 | 155 | 692 | 16 | 1 | 0 |
-| 396 | 9311399 | 240 | 1193 | 19 | 2 | 1 |
-| 397 | 9311400 | 271 | 1047 | 11 | 4 | 1 |
-| 398 | 9311401 | 363 | 2216 | 32 | 7 | 3 |
-| 399 | 9311402 | 216 | 962 | 29 | 8 | 3 |
-| 400 | 9311403 | 205 | 939 | 20 | 2 | 1 |
-| 401 | 9311404 | 252 | 1115 | 17 | 3 | 0 |
-| 402 | 9311405 | 201 | 868 | 21 | 2 | 2 |
-| 403 | 9311406 | 210 | 794 | 10 | 7 | 1 |
-| 404 | 9311407 | 192 | 618 | 18 | 3 | 2 |
-| 405 | 9311408 | 226 | 1176 | 20 | 2 | 2 |
-| 406 | 9311409 | 297 | 1936 | 26 | 8 | 1 |
-| 407 | 9311410 | 187 | 731 | 16 | 9 | 2 |
-| 408 | 9311411 | 204 | 568 | 16 | 3 | 1 |
-| 409 | 9311412 | 219 | 1101 | 25 | 5 | 5 |
-| 410 | 9311413 | 251 | 1006 | 22 | 5 | 2 |
-| 411 | 9311414 | 176 | 843 | 13 | 5 | 1 |
-| 412 | 9311415 | 206 | 932 | 18 | 8 | 2 |
-| 413 | 9311416 | 226 | 1117 | 26 | 4 | 1 |
-| 414 | 9311417 | 191 | 871 | 16 | 5 | 1 |
-| 415 | 9311418 | 180 | 769 | 20 | 5 | 1 |
-| 416 | 9311419 | 232 | 976 | 24 | 5 | 2 |
-| 417 | 9311420 | 231 | 1096 | 46 | 10 | 3 |
-| 418 | 9311421 | 247 | 978 | 20 | 1 | 3 |
-| 419 | 9311422 | 201 | 638 | 14 | 5 | 0 |
-| 420 | 9311423 | 326 | 2211 | 42 | 1 | 2 |
-| 421 | 9311424 | 239 | 1203 | 19 | 6 | 2 |
-| 422 | 9311425 | 258 | 792 | 13 | 8 | 0 |
-| 423 | 9311426 | 190 | 707 | 22 | 4 | 1 |
-| 424 | 9311427 | 223 | 996 | 19 | 7 | 3 |
-| 425 | 9311428 | 151 | 612 | 12 | 4 | 2 |
-| 426 | 9311429 | 237 | 961 | 31 | 6 | 1 |
-| 427 | 9311430 | 179 | 744 | 19 | 1 | 0 |
-| 428 | 9311431 | 175 | 748 | 12 | 3 | 3 |
-| 429 | 9311432 | 203 | 960 | 26 | 3 | 3 |
-| 430 | 9311433 | 199 | 533 | 11 | 3 | 1 |
-| 431 | 9311434 | 178 | 786 | 21 | 6 | 2 |
-| 432 | 9311435 | 226 | 939 | 20 | 5 | 0 |
-| 433 | 9311436 | 185 | 882 | 16 | 7 | 2 |
-| 434 | 9311437 | 281 | 1176 | 29 | 6 | 2 |
-| 435 | 9311438 | 173 | 667 | 15 | 5 | 4 |
-| 436 | 9311439 | 211 | 1107 | 13 | 4 | 1 |
-| 437 | 9311440 | 228 | 850 | 18 | 8 | 2 |
-| 438 | 9311441 | 156 | 595 | 6 | 6 | 0 |
-| 439 | 9311442 | 217 | 1061 | 13 | 3 | 1 |
-| 440 | 9311443 | 189 | 979 | 15 | 4 | 0 |
-| 441 | 9311444 | 176 | 726 | 10 | 3 | 0 |
-| 442 | 9311445 | 222 | 1125 | 14 | 6 | 1 |
-| 443 | 9311446 | 214 | 968 | 22 | 2 | 2 |
-| 444 | 9311447 | 221 | 912 | 13 | 3 | 0 |
-| 445 | 9311448 | 226 | 1219 | 29 | 5 | 2 |
-| 446 | 9311449 | 225 | 1095 | 17 | 2 | 1 |
-| 447 | 9311450 | 244 | 1228 | 22 | 5 | 2 |
-| 448 | 9311451 | 205 | 1055 | 23 | 2 | 1 |
-| 449 | 9311452 | 226 | 1138 | 37 | 7 | 0 |
-| 450 | 9311453 | 175 | 643 | 7 | 4 | 2 |
-| 451 | 9311454 | 256 | 1237 | 27 | 5 | 2 |
-| 452 | 9311455 | 224 | 985 | 19 | 4 | 1 |
-| 453 | 9311456 | 208 | 882 | 20 | 3 | 2 |
-| 454 | 9311457 | 245 | 1190 | 25 | 7 | 2 |
-| 455 | 9311458 | 234 | 920 | 29 | 7 | 3 |
-| 456 | 9311459 | 236 | 830 | 12 | 15 | 3 |
-| 457 | 9311460 | 210 | 1044 | 23 | 3 | 0 |
-| 458 | 9311461 | 280 | 1200 | 27 | 4 | 2 |
-| 459 | 9311462 | 248 | 1183 | 35 | 9 | 4 |
-| 460 | 9311463 | 212 | 934 | 21 | 6 | 3 |
-| 461 | 9311464 | 188 | 907 | 26 | 5 | 0 |
-| 462 | 9311465 | 166 | 726 | 14 | 2 | 1 |
-| 463 | 9311466 | 209 | 931 | 20 | 4 | 2 |
-| 464 | 9311467 | 157 | 452 | 8 | 5 | 2 |
-| 465 | 9311468 | 172 | 729 | 24 | 2 | 2 |
-| 466 | 9311469 | 197 | 864 | 18 | 2 | 2 |
-| 467 | 9311470 | 196 | 861 | 8 | 12 | 0 |
-| 468 | 9311471 | 214 | 1213 | 21 | 6 | 1 |
-| 469 | 9311472 | 221 | 1118 | 21 | 9 | 2 |
-| 470 | 9311473 | 205 | 793 | 19 | 3 | 2 |
-| 471 | 9311474 | 238 | 983 | 20 | 3 | 1 |
-| 472 | 9311475 | 183 | 585 | 12 | 5 | 3 |
-| 473 | 9311476 | 183 | 716 | 13 | 4 | 0 |
-| 474 | 9311477 | 257 | 1131 | 17 | 6 | 2 |
-| 475 | 9311478 | 191 | 952 | 15 | 5 | 1 |
-| 476 | 9311479 | 215 | 902 | 17 | 6 | 1 |
-| 477 | 9311480 | 192 | 713 | 21 | 0 | 3 |
-| 478 | 9311481 | 249 | 736 | 21 | 2 | 3 |
-| 479 | 9311482 | 176 | 639 | 12 | 2 | 3 |
-| 480 | 9311483 | 238 | 1373 | 16 | 4 | 0 |
-| 481 | 9311484 | 173 | 620 | 8 | 2 | 1 |
-| 482 | 9311485 | 238 | 1069 | 23 | 2 | 2 |
-| 483 | 9311486 | 186 | 768 | 20 | 6 | 0 |
-| 484 | 9311487 | 169 | 505 | 11 | 2 | 0 |
-| 485 | 9311488 | 227 | 956 | 15 | 10 | 2 |
-| 486 | 9311489 | 215 | 840 | 15 | 12 | 1 |
-| 487 | 9311490 | 256 | 1176 | 22 | 3 | 0 |
-| 488 | 9311491 | 235 | 1036 | 27 | 9 | 3 |
-| 489 | 9311492 | 221 | 958 | 22 | 4 | 2 |
-| 490 | 9311493 | 214 | 1038 | 16 | 3 | 1 |
-| 491 | 9311494 | 168 | 701 | 11 | 5 | 1 |
-| 492 | 9311495 | 199 | 873 | 21 | 6 | 1 |
-| 493 | 9311496 | 272 | 1222 | 28 | 6 | 2 |
-| 494 | 9311497 | 202 | 737 | 18 | 1 | 1 |
-| 495 | 9311498 | 225 | 1136 | 18 | 2 | 4 |
-| 496 | 9311499 | 188 | 839 | 22 | 8 | 2 |
-| 497 | 9311500 | 196 | 820 | 24 | 7 | 1 |
-| 498 | 9311501 | 243 | 956 | 28 | 8 | 2 |
-| 499 | 9311502 | 209 | 754 | 17 | 0 | 2 |
-| 500 | 9311503 | 222 | 1027 | 13 | 7 | 1 |
-| 501 | 9311504 | 198 | 804 | 18 | 5 | 1 |
-| 502 | 9311505 | 186 | 1011 | 13 | 1 | 3 |
-| 503 | 9311506 | 194 | 874 | 22 | 8 | 2 |
-| 504 | 9311507 | 259 | 1204 | 23 | 5 | 3 |
-| 505 | 9311508 | 175 | 728 | 8 | 0 | 1 |
-| 506 | 9311509 | 287 | 1600 | 36 | 4 | 3 |
-| 507 | 9311510 | 225 | 1262 | 28 | 1 | 2 |
-| 508 | 9311511 | 216 | 731 | 19 | 8 | 2 |
-| 509 | 9311512 | 203 | 903 | 15 | 7 | 4 |
-| 510 | 9311513 | 207 | 699 | 11 | 5 | 2 |
-| 511 | 9311514 | 193 | 583 | 14 | 3 | 0 |
-| 512 | 9311515 | 212 | 907 | 18 | 7 | 2 |
-| 513 | 9311516 | 224 | 953 | 19 | 3 | 1 |
-| 514 | 9311517 | 231 | 1095 | 15 | 10 | 2 |
-| 515 | 9311518 | 219 | 1128 | 16 | 6 | 2 |
-| 516 | 9311519 | 188 | 806 | 17 | 13 | 1 |
-| 517 | 9311520 | 369 | 1911 | 31 | 14 | 2 |
-| 518 | 9311521 | 180 | 471 | 12 | 7 | 1 |
-| 519 | 9311522 | 177 | 761 | 17 | 5 | 1 |
-| 520 | 9311523 | 189 | 884 | 12 | 4 | 1 |
-| 521 | 9311524 | 241 | 963 | 29 | 4 | 1 |
-| 522 | 9311525 | 187 | 808 | 7 | 5 | 1 |
-| 523 | 9311526 | 290 | 1568 | 18 | 4 | 2 |
-| 524 | 9311527 | 206 | 1101 | 16 | 9 | 2 |
-| 525 | 9311528 | 210 | 923 | 13 | 4 | 2 |
-| 526 | 9311529 | 340 | 1888 | 38 | 6 | 2 |
-| 527 | 9311530 | 189 | 765 | 7 | 7 | 2 |
-| 528 | 9311531 | 204 | 934 | 12 | 3 | 1 |
-| 529 | 9311532 | 162 | 674 | 15 | 4 | 1 |
-| 530 | 9311533 | 334 | 1664 | 21 | 2 | 3 |
-| 531 | 9311534 | 252 | 1073 | 17 | 1 | 1 |
-| 532 | 9311535 | 219 | 1054 | 30 | 5 | 2 |
-| 533 | 9311536 | 194 | 801 | 19 | 4 | 4 |
-| 534 | 9311537 | 218 | 1029 | 25 | 1 | 2 |
-| 535 | 9311538 | 316 | 1746 | 16 | 2 | 2 |
-| 536 | 9311539 | 226 | 1172 | 34 | 4 | 4 |
-| 537 | 9311540 | 253 | 1315 | 29 | 4 | 1 |
-| 538 | 9311541 | 269 | 1379 | 20 | 10 | 3 |
-| 539 | 9311542 | 228 | 861 | 18 | 7 | 2 |
-| 540 | 9311543 | 184 | 632 | 13 | 6 | 0 |
-| 541 | 9311544 | 235 | 1136 | 21 | 3 | 1 |
-| 542 | 9311545 | 218 | 966 | 13 | 6 | 2 |
-| 543 | 9311546 | 207 | 783 | 23 | 4 | 3 |
-| 544 | 9311547 | 190 | 731 | 18 | 0 | 1 |
-| 545 | 9311548 | 183 | 775 | 11 | 4 | 1 |
-| 546 | 9311549 | 273 | 1478 | 24 | 10 | 1 |
-| 547 | 9311550 | 237 | 1105 | 18 | 9 | 5 |
-| 548 | 9311551 | 225 | 897 | 17 | 5 | 0 |
-| 549 | 9311552 | 280 | 1489 | 27 | 4 | 2 |
-| 550 | 9311553 | 197 | 972 | 29 | 4 | 1 |
-| 551 | 9311554 | 192 | 804 | 22 | 6 | 4 |
-| 552 | 9311555 | 251 | 1191 | 16 | 6 | 2 |
-| 553 | 9311556 | 221 | 887 | 11 | 9 | 1 |
-| 554 | 9311557 | 204 | 572 | 18 | 5 | 3 |
-| 555 | 9311558 | 210 | 805 | 17 | 4 | 2 |
-| 556 | 9311559 | 245 | 1287 | 47 | 9 | 2 |
-| 557 | 9311560 | 178 | 671 | 18 | 5 | 2 |
-| 558 | 9311561 | 225 | 976 | 22 | 4 | 2 |
-| 559 | 9311562 | 280 | 1725 | 32 | 4 | 0 |
-| 560 | 9311563 | 230 | 996 | 24 | 5 | 2 |
-| 561 | 9311564 | 232 | 1159 | 25 | 5 | 2 |
-| 562 | 9311565 | 157 | 442 | 6 | 7 | 0 |
-| 563 | 9311566 | 298 | 1643 | 31 | 5 | 2 |
-| 564 | 9311567 | 182 | 731 | 10 | 1 | 1 |
-| 565 | 9311568 | 265 | 1004 | 15 | 7 | 3 |
-| 566 | 9311569 | 255 | 1234 | 24 | 2 | 2 |
-| 567 | 9311570 | 170 | 628 | 18 | 2 | 1 |
-| 568 | 9311571 | 243 | 1233 | 20 | 6 | 2 |
-| 569 | 9311572 | 280 | 1194 | 29 | 2 | 2 |
-| 570 | 9311573 | 237 | 1124 | 25 | 3 | 2 |
-| 571 | 9311574 | 206 | 871 | 22 | 8 | 2 |
-| 572 | 9311575 | 206 | 1037 | 25 | 1 | 2 |
-| 573 | 9311576 | 260 | 1431 | 22 | 8 | 2 |
-| 574 | 9311577 | 271 | 1290 | 28 | 5 | 2 |
-| 575 | 9311578 | 249 | 1287 | 28 | 3 | 2 |
-| 576 | 9311579 | 211 | 1038 | 26 | 6 | 1 |
-| 577 | 9311580 | 254 | 1450 | 23 | 5 | 1 |
-| 578 | 9311581 | 222 | 1036 | 16 | 3 | 1 |
-| 579 | 9311582 | 234 | 996 | 24 | 3 | 1 |
-| 580 | 9311583 | 227 | 1087 | 32 | 6 | 2 |
-| 581 | 9311584 | 213 | 973 | 19 | 6 | 2 |
-| 582 | 9311585 | 269 | 1720 | 44 | 3 | 1 |
-| 583 | 9311586 | 183 | 613 | 16 | 4 | 2 |
-| 584 | 9311587 | 210 | 871 | 23 | 5 | 0 |
-| 585 | 9311588 | 317 | 1708 | 35 | 3 | 3 |
-| 586 | 9311589 | 323 | 1828 | 32 | 2 | 1 |
-| 587 | 9311590 | 211 | 912 | 19 | 2 | 2 |
-| 588 | 9311591 | 166 | 440 | 8 | 7 | 1 |
-| 589 | 9311592 | 299 | 1373 | 27 | 7 | 3 |
-| 590 | 9311593 | 165 | 520 | 4 | 3 | 2 |
-| 591 | 9311594 | 205 | 958 | 16 | 5 | 2 |
-| 592 | 9311595 | 306 | 1626 | 30 | 7 | 3 |
-| 593 | 9311596 | 216 | 929 | 14 | 5 | 1 |
-| 594 | 9311597 | 178 | 721 | 21 | 6 | 3 |
-| 595 | 9311598 | 497 | 2738 | 59 | 6 | 3 |
-| 596 | 9311599 | 217 | 1048 | 29 | 8 | 1 |
-| 597 | 9311600 | 260 | 1198 | 22 | 14 | 2 |
-| 598 | 9311601 | 211 | 1010 | 20 | 3 | 2 |
-| 599 | 9311602 | 194 | 785 | 16 | 4 | 3 |
-| 600 | 9311603 | 216 | 830 | 13 | 9 | 1 |
-| 601 | 9311604 | 249 | 1129 | 26 | 0 | 3 |
-| 602 | 9311605 | 284 | 1382 | 24 | 8 | 1 |
-| 603 | 9311606 | 214 | 948 | 22 | 7 | 0 |
-| 604 | 9311607 | 192 | 821 | 17 | 7 | 4 |
-| 605 | 9311608 | 269 | 878 | 20 | 8 | 1 |
-| 606 | 9311609 | 271 | 1292 | 27 | 6 | 0 |
-| 607 | 9311610 | 180 | 801 | 18 | 2 | 1 |
-| 608 | 9311611 | 180 | 733 | 15 | 7 | 2 |
-| 609 | 9311612 | 218 | 1075 | 15 | 3 | 0 |
-| 610 | 9311613 | 198 | 945 | 30 | 2 | 2 |
-| 611 | 9311614 | 238 | 1111 | 30 | 2 | 1 |
-| 612 | 9311615 | 216 | 971 | 26 | 4 | 1 |
-| 613 | 9311616 | 259 | 1119 | 23 | 4 | 2 |
-| 614 | 9311617 | 200 | 997 | 15 | 6 | 1 |
-| 615 | 9311618 | 195 | 821 | 11 | 3 | 2 |
-| 616 | 9311619 | 264 | 1209 | 22 | 5 | 3 |
-| 617 | 9311620 | 168 | 693 | 18 | 1 | 1 |
-| 618 | 9311621 | 188 | 842 | 28 | 2 | 2 |
-| 619 | 9311622 | 180 | 861 | 21 | 5 | 1 |
-| 620 | 9311623 | 237 | 1367 | 27 | 3 | 3 |
-| 621 | 9311624 | 210 | 1019 | 20 | 2 | 0 |
-| 622 | 9311625 | 197 | 900 | 12 | 3 | 0 |
-| 623 | 9311626 | 287 | 1408 | 30 | 11 | 2 |
-| 624 | 9311627 | 219 | 923 | 28 | 5 | 3 |
-| 625 | 9311628 | 185 | 941 | 16 | 1 | 3 |
-| 626 | 9311629 | 224 | 1031 | 19 | 2 | 2 |
-| 627 | 9311630 | 293 | 1398 | 17 | 5 | 2 |
-| 628 | 9311631 | 242 | 1111 | 22 | 8 | 3 |
-| 629 | 9311632 | 267 | 1196 | 34 | 11 | 2 |
-| 630 | 9311633 | 254 | 1208 | 22 | 2 | 3 |
-| 631 | 9311634 | 175 | 573 | 11 | 12 | 0 |
-| 632 | 9311635 | 259 | 1269 | 45 | 7 | 1 |
-| 633 | 9311636 | 203 | 1028 | 21 | 10 | 3 |
-| 634 | 9311637 | 212 | 1004 | 22 | 2 | 2 |
-| 635 | 9311638 | 256 | 1198 | 24 | 2 | 2 |
-| 636 | 9311639 | 152 | 582 | 8 | 7 | 1 |
-| 637 | 9311640 | 198 | 779 | 22 | 6 | 3 |
-| 638 | 9311641 | 273 | 1572 | 28 | 1 | 2 |
-| 639 | 9311642 | 243 | 1290 | 31 | 4 | 2 |
-| 640 | 9311643 | 212 | 1165 | 15 | 2 | 1 |
-| 641 | 9311644 | 256 | 1367 | 19 | 13 | 1 |
-| 642 | 9311645 | 208 | 780 | 16 | 4 | 0 |
-| 643 | 9311646 | 212 | 838 | 13 | 6 | 1 |
-| 644 | 9311647 | 210 | 1005 | 12 | 4 | 0 |
-| 645 | 9311648 | 249 | 1302 | 25 | 8 | 1 |
-| 646 | 9311649 | 255 | 1253 | 36 | 8 | 1 |
-| 647 | 9311650 | 193 | 733 | 16 | 1 | 2 |
-| 648 | 9311651 | 259 | 1402 | 34 | 5 | 1 |
-| 649 | 9311652 | 177 | 708 | 10 | 1 | 1 |
-| 650 | 9311653 | 225 | 1098 | 26 | 6 | 3 |
-| 651 | 9311654 | 382 | 1847 | 41 | 6 | 1 |
-| 652 | 9311655 | 225 | 1033 | 22 | 4 | 3 |
-| 653 | 9311656 | 231 | 946 | 30 | 5 | 3 |
-| 654 | 9311657 | 196 | 864 | 19 | 3 | 0 |
-| 655 | 9311658 | 210 | 933 | 15 | 4 | 3 |
-| 656 | 9311659 | 201 | 953 | 23 | 5 | 2 |
-| 657 | 9311660 | 176 | 740 | 12 | 10 | 0 |
-| 658 | 9311661 | 280 | 1020 | 19 | 11 | 2 |
-| 659 | 9311662 | 196 | 838 | 17 | 8 | 2 |
-| 660 | 9311663 | 182 | 698 | 16 | 4 | 1 |
-| 661 | 9311664 | 241 | 1066 | 20 | 4 | 1 |
-| 662 | 9311665 | 206 | 870 | 23 | 2 | 2 |
-| 663 | 9311666 | 294 | 1676 | 23 | 8 | 3 |
-| 664 | 9311667 | 215 | 1075 | 23 | 7 | 0 |
-| 665 | 9311668 | 263 | 1204 | 17 | 3 | 2 |
-| 666 | 9311669 | 162 | 796 | 29 | 1 | 2 |
-| 667 | 9311670 | 231 | 1255 | 28 | 2 | 2 |
-| 668 | 9311671 | 234 | 946 | 33 | 4 | 2 |
-| 669 | 9311672 | 229 | 853 | 22 | 4 | 1 |
-| 670 | 9311673 | 157 | 431 | 14 | 3 | 2 |
-| 671 | 9311674 | 220 | 1004 | 30 | 2 | 2 |
-| 672 | 9311675 | 189 | 643 | 16 | 4 | 0 |
-| 673 | 9311676 | 248 | 1263 | 28 | 4 | 1 |
-| 674 | 9311677 | 192 | 598 | 14 | 2 | 1 |
-| 675 | 9311678 | 204 | 1003 | 23 | 1 | 2 |
-| 676 | 9311679 | 216 | 878 | 24 | 6 | 3 |
-| 677 | 9311680 | 226 | 1101 | 34 | 6 | 1 |
-| 678 | 9311681 | 169 | 677 | 16 | 5 | 0 |
+| 0 | 9311003 | 208 | 921 | 23 | 5 | 1 |
+| 1 | 9311004 | 229 | 729 | 13 | 3 | 0 |
+| 2 | 9311005 | 228 | 1110 | 26 | 8 | 3 |
+| 3 | 9311006 | 227 | 1162 | 16 | 7 | 0 |
+| 4 | 9311007 | 215 | 1064 | 24 | 5 | 0 |
+| 5 | 9311008 | 245 | 1141 | 26 | 5 | 3 |
+| 6 | 9311009 | 197 | 1084 | 24 | 5 | 0 |
+| 7 | 9311010 | 197 | 869 | 31 | 7 | 2 |
+| 8 | 9311011 | 257 | 900 | 10 | 10 | 3 |
+| 9 | 9311012 | 201 | 1012 | 22 | 4 | 2 |
+| 10 | 9311013 | 238 | 1275 | 35 | 15 | 3 |
+| 11 | 9311014 | 316 | 1822 | 38 | 6 | 2 |
+| 12 | 9311015 | 207 | 693 | 12 | 7 | 2 |
+| 13 | 9311016 | 241 | 1284 | 20 | 10 | 0 |
+| 14 | 9311017 | 208 | 971 | 27 | 5 | 2 |
+| 15 | 9311018 | 163 | 500 | 12 | 10 | 0 |
+| 16 | 9311019 | 284 | 1221 | 24 | 9 | 1 |
+| 17 | 9311020 | 228 | 776 | 14 | 11 | 0 |
+| 18 | 9311021 | 206 | 893 | 17 | 11 | 3 |
+| 19 | 9311022 | 186 | 730 | 9 | 2 | 0 |
+| 20 | 9311023 | 222 | 1061 | 17 | 5 | 0 |
+| 21 | 9311024 | 244 | 1084 | 29 | 4 | 5 |
+| 22 | 9311025 | 251 | 1249 | 20 | 12 | 1 |
+| 23 | 9311026 | 228 | 1221 | 34 | 2 | 3 |
+| 24 | 9311027 | 262 | 1124 | 17 | 3 | 2 |
+| 25 | 9311028 | 272 | 1230 | 28 | 6 | 2 |
+| 26 | 9311029 | 164 | 550 | 11 | 10 | 0 |
+| 27 | 9311030 | 194 | 676 | 15 | 6 | 1 |
+| 28 | 9311031 | 201 | 807 | 12 | 11 | 0 |
+| 29 | 9311032 | 227 | 1063 | 27 | 5 | 1 |
+| 30 | 9311033 | 192 | 743 | 20 | 3 | 1 |
+| 31 | 9311034 | 245 | 1328 | 33 | 5 | 0 |
+| 32 | 9311035 | 172 | 766 | 17 | 3 | 0 |
+| 33 | 9311036 | 271 | 1235 | 18 | 8 | 1 |
+| 34 | 9311037 | 193 | 820 | 11 | 3 | 1 |
+| 35 | 9311038 | 252 | 1138 | 18 | 1 | 0 |
+| 36 | 9311039 | 195 | 1015 | 27 | 4 | 2 |
+| 37 | 9311040 | 203 | 1066 | 24 | 3 | 0 |
+| 38 | 9311041 | 190 | 908 | 17 | 8 | 1 |
+| 39 | 9311042 | 226 | 861 | 29 | 8 | 1 |
+| 40 | 9311043 | 237 | 1059 | 20 | 2 | 2 |
+| 41 | 9311044 | 186 | 777 | 21 | 4 | 3 |
+| 42 | 9311045 | 184 | 859 | 11 | 3 | 2 |
+| 43 | 9311046 | 235 | 1009 | 16 | 5 | 1 |
+| 44 | 9311047 | 241 | 1247 | 26 | 8 | 2 |
+| 45 | 9311048 | 183 | 755 | 11 | 13 | 1 |
+| 46 | 9311049 | 401 | 2685 | 32 | 3 | 1 |
+| 47 | 9311050 | 244 | 1077 | 25 | 4 | 2 |
+| 48 | 9311051 | 213 | 1080 | 24 | 5 | 2 |
+| 49 | 9311052 | 181 | 852 | 12 | 6 | 0 |
+| 50 | 9311053 | 170 | 835 | 20 | 6 | 0 |
+| 51 | 9311054 | 208 | 717 | 12 | 5 | 2 |
+| 52 | 9311055 | 183 | 799 | 9 | 7 | 2 |
+| 53 | 9311056 | 258 | 1421 | 31 | 3 | 0 |
+| 54 | 9311057 | 235 | 1343 | 25 | 7 | 2 |
+| 55 | 9311058 | 174 | 678 | 13 | 7 | 2 |
+| 56 | 9311059 | 190 | 707 | 10 | 2 | 1 |
+| 57 | 9311060 | 293 | 1406 | 27 | 6 | 0 |
+| 58 | 9311061 | 181 | 776 | 14 | 1 | 1 |
+| 59 | 9311062 | 225 | 1134 | 22 | 3 | 2 |
+| 60 | 9311063 | 197 | 680 | 17 | 5 | 2 |
+| 61 | 9311064 | 331 | 1670 | 30 | 5 | 4 |
+| 62 | 9311065 | 209 | 1082 | 20 | 4 | 1 |
+| 63 | 9311066 | 230 | 1198 | 24 | 6 | 2 |
+| 64 | 9311067 | 190 | 817 | 16 | 3 | 0 |
+| 65 | 9311068 | 193 | 870 | 21 | 8 | 0 |
+| 66 | 9311069 | 193 | 703 | 20 | 3 | 0 |
+| 67 | 9311070 | 216 | 966 | 21 | 3 | 3 |
+| 68 | 9311071 | 228 | 1168 | 32 | 0 | 2 |
+| 69 | 9311072 | 206 | 892 | 22 | 9 | 3 |
+| 70 | 9311073 | 229 | 959 | 19 | 9 | 2 |
+| 71 | 9311074 | 217 | 857 | 26 | 8 | 2 |
+| 72 | 9311075 | 221 | 1145 | 24 | 12 | 2 |
+| 73 | 9311076 | 221 | 977 | 21 | 2 | 2 |
+| 74 | 9311077 | 195 | 901 | 19 | 7 | 0 |
+| 75 | 9311078 | 249 | 964 | 14 | 3 | 2 |
+| 76 | 9311079 | 228 | 1078 | 15 | 6 | 2 |
+| 77 | 9311080 | 310 | 1397 | 10 | 4 | 1 |
+| 78 | 9311081 | 185 | 726 | 19 | 6 | 1 |
+| 79 | 9311082 | 213 | 924 | 22 | 9 | 2 |
+| 80 | 9311083 | 203 | 768 | 21 | 7 | 2 |
+| 81 | 9311084 | 179 | 792 | 14 | 6 | 2 |
+| 82 | 9311085 | 266 | 1537 | 26 | 2 | 1 |
+| 83 | 9311086 | 215 | 975 | 23 | 4 | 2 |
+| 84 | 9311087 | 200 | 827 | 17 | 8 | 1 |
+| 85 | 9311088 | 191 | 780 | 19 | 3 | 1 |
+| 86 | 9311089 | 187 | 767 | 21 | 3 | 1 |
+| 87 | 9311090 | 201 | 913 | 18 | 6 | 2 |
+| 88 | 9311091 | 228 | 1078 | 28 | 4 | 2 |
+| 89 | 9311092 | 272 | 1661 | 31 | 12 | 0 |
+| 90 | 9311093 | 215 | 992 | 16 | 8 | 2 |
+| 91 | 9311094 | 212 | 967 | 26 | 4 | 0 |
+| 92 | 9311095 | 277 | 1475 | 28 | 4 | 1 |
+| 93 | 9311096 | 178 | 804 | 17 | 3 | 0 |
+| 94 | 9311097 | 173 | 748 | 17 | 0 | 1 |
+| 95 | 9311098 | 188 | 727 | 18 | 8 | 1 |
+| 96 | 9311099 | 209 | 1043 | 20 | 1 | 0 |
+| 97 | 9311100 | 238 | 1050 | 25 | 8 | 3 |
+| 98 | 9311101 | 226 | 927 | 18 | 2 | 0 |
+| 99 | 9311102 | 223 | 972 | 23 | 8 | 4 |
+| 100 | 9311103 | 232 | 852 | 15 | 7 | 2 |
+| 101 | 9311104 | 258 | 1312 | 17 | 4 | 2 |
+| 102 | 9311105 | 194 | 902 | 26 | 3 | 0 |
+| 103 | 9311106 | 237 | 1016 | 22 | 2 | 2 |
+| 104 | 9311107 | 213 | 1179 | 26 | 3 | 1 |
+| 105 | 9311108 | 160 | 569 | 12 | 4 | 1 |
+| 106 | 9311109 | 201 | 787 | 18 | 3 | 2 |
+| 107 | 9311110 | 191 | 758 | 23 | 5 | 1 |
+| 108 | 9311111 | 237 | 1063 | 29 | 5 | 3 |
+| 109 | 9311112 | 220 | 938 | 22 | 4 | 1 |
+| 110 | 9311113 | 250 | 1168 | 21 | 4 | 1 |
+| 111 | 9311114 | 299 | 1307 | 27 | 2 | 3 |
+| 112 | 9311115 | 206 | 877 | 14 | 5 | 2 |
+| 113 | 9311116 | 274 | 1450 | 41 | 2 | 2 |
+| 114 | 9311117 | 200 | 953 | 11 | 2 | 0 |
+| 115 | 9311118 | 235 | 1154 | 13 | 5 | 3 |
+| 116 | 9311119 | 285 | 1185 | 26 | 4 | 1 |
+| 117 | 9311120 | 224 | 1012 | 18 | 9 | 0 |
+| 118 | 9311121 | 211 | 971 | 17 | 1 | 4 |
+| 119 | 9311122 | 255 | 1225 | 25 | 5 | 2 |
+| 120 | 9311123 | 281 | 1341 | 28 | 1 | 2 |
+| 121 | 9311124 | 240 | 1107 | 20 | 4 | 1 |
+| 122 | 9311125 | 232 | 686 | 13 | 5 | 1 |
+| 123 | 9311126 | 204 | 764 | 14 | 10 | 1 |
+| 124 | 9311127 | 260 | 1273 | 29 | 3 | 2 |
+| 125 | 9311128 | 184 | 723 | 12 | 6 | 1 |
+| 126 | 9311129 | 217 | 899 | 22 | 3 | 2 |
+| 127 | 9311130 | 209 | 901 | 10 | 5 | 0 |
+| 128 | 9311131 | 203 | 858 | 14 | 9 | 0 |
+| 129 | 9311132 | 166 | 616 | 10 | 4 | 1 |
+| 130 | 9311133 | 172 | 739 | 19 | 3 | 0 |
+| 131 | 9311134 | 207 | 990 | 14 | 5 | 2 |
+| 132 | 9311135 | 154 | 631 | 10 | 3 | 1 |
+| 133 | 9311136 | 312 | 1661 | 49 | 7 | 5 |
+| 134 | 9311137 | 230 | 835 | 18 | 2 | 1 |
+| 135 | 9311138 | 249 | 1214 | 26 | 3 | 0 |
+| 136 | 9311139 | 212 | 787 | 16 | 7 | 1 |
+| 137 | 9311140 | 281 | 1362 | 30 | 8 | 3 |
+| 138 | 9311141 | 223 | 822 | 20 | 3 | 1 |
+| 139 | 9311142 | 199 | 868 | 22 | 5 | 2 |
+| 140 | 9311143 | 246 | 1190 | 23 | 2 | 3 |
+| 141 | 9311144 | 190 | 950 | 13 | 6 | 0 |
+| 142 | 9311145 | 209 | 706 | 20 | 4 | 3 |
+| 143 | 9311146 | 225 | 870 | 29 | 6 | 2 |
+| 144 | 9311147 | 218 | 1116 | 25 | 5 | 2 |
+| 145 | 9311148 | 255 | 889 | 25 | 1 | 3 |
+| 146 | 9311149 | 190 | 851 | 7 | 6 | 2 |
+| 147 | 9311150 | 188 | 781 | 22 | 5 | 2 |
+| 148 | 9311151 | 236 | 1193 | 31 | 10 | 3 |
+| 149 | 9311152 | 191 | 856 | 22 | 4 | 3 |
+| 150 | 9311153 | 191 | 959 | 17 | 4 | 3 |
+| 151 | 9311154 | 193 | 928 | 20 | 6 | 2 |
+| 152 | 9311155 | 221 | 1162 | 23 | 5 | 2 |
+| 153 | 9311156 | 208 | 1025 | 24 | 4 | 0 |
+| 154 | 9311157 | 203 | 806 | 9 | 5 | 1 |
+| 155 | 9311158 | 213 | 1067 | 18 | 4 | 3 |
+| 156 | 9311159 | 254 | 1252 | 25 | 11 | 3 |
+| 157 | 9311160 | 206 | 1000 | 30 | 6 | 1 |
+| 158 | 9311161 | 209 | 1085 | 28 | 1 | 1 |
+| 159 | 9311162 | 188 | 755 | 14 | 7 | 0 |
+| 160 | 9311163 | 204 | 946 | 26 | 3 | 1 |
+| 161 | 9311164 | 224 | 1189 | 32 | 0 | 3 |
+| 162 | 9311165 | 206 | 1049 | 25 | 10 | 1 |
+| 163 | 9311166 | 242 | 930 | 21 | 7 | 4 |
+| 164 | 9311167 | 220 | 1014 | 29 | 5 | 3 |
+| 165 | 9311168 | 245 | 1335 | 31 | 5 | 3 |
+| 166 | 9311169 | 237 | 1046 | 32 | 9 | 3 |
+| 167 | 9311170 | 208 | 916 | 16 | 4 | 2 |
+| 168 | 9311171 | 254 | 1352 | 27 | 7 | 2 |
+| 169 | 9311172 | 287 | 800 | 10 | 4 | 4 |
+| 170 | 9311173 | 241 | 1156 | 20 | 5 | 2 |
+| 171 | 9311174 | 248 | 1173 | 26 | 3 | 3 |
+| 172 | 9311175 | 257 | 911 | 12 | 2 | 1 |
+| 173 | 9311176 | 205 | 869 | 17 | 5 | 2 |
+| 174 | 9311177 | 171 | 675 | 16 | 0 | 3 |
+| 175 | 9311178 | 185 | 773 | 18 | 2 | 1 |
+| 176 | 9311179 | 233 | 1062 | 20 | 7 | 3 |
+| 177 | 9311180 | 259 | 1089 | 34 | 2 | 3 |
+| 178 | 9311181 | 251 | 1121 | 23 | 3 | 1 |
+| 179 | 9311182 | 184 | 914 | 29 | 2 | 2 |
+| 180 | 9311183 | 215 | 992 | 22 | 9 | 1 |
+| 181 | 9311184 | 197 | 911 | 26 | 5 | 4 |
+| 182 | 9311185 | 222 | 855 | 22 | 6 | 2 |
+| 183 | 9311186 | 193 | 749 | 21 | 5 | 2 |
+| 184 | 9311187 | 221 | 973 | 31 | 3 | 3 |
+| 185 | 9311188 | 281 | 1219 | 15 | 8 | 3 |
+| 186 | 9311189 | 163 | 673 | 6 | 6 | 1 |
+| 187 | 9311190 | 181 | 653 | 11 | 8 | 0 |
+| 188 | 9311191 | 245 | 1168 | 27 | 4 | 1 |
+| 189 | 9311192 | 201 | 803 | 22 | 3 | 0 |
+| 190 | 9311193 | 183 | 859 | 12 | 3 | 1 |
+| 191 | 9311194 | 211 | 1035 | 13 | 6 | 2 |
+| 192 | 9311195 | 216 | 996 | 23 | 5 | 2 |
+| 193 | 9311196 | 219 | 913 | 19 | 2 | 2 |
+| 194 | 9311197 | 224 | 1293 | 17 | 11 | 2 |
+| 195 | 9311198 | 207 | 847 | 22 | 16 | 2 |
+| 196 | 9311199 | 221 | 944 | 20 | 1 | 1 |
+| 197 | 9311200 | 223 | 901 | 26 | 3 | 2 |
+| 198 | 9311201 | 242 | 1198 | 31 | 8 | 1 |
+| 199 | 9311202 | 187 | 957 | 14 | 3 | 1 |
+| 200 | 9311203 | 235 | 1071 | 16 | 11 | 3 |
+| 201 | 9311204 | 182 | 747 | 21 | 6 | 2 |
+| 202 | 9311205 | 279 | 1438 | 41 | 1 | 3 |
+| 203 | 9311206 | 242 | 947 | 25 | 6 | 3 |
+| 204 | 9311207 | 228 | 1194 | 17 | 6 | 2 |
+| 205 | 9311208 | 202 | 841 | 14 | 5 | 1 |
+| 206 | 9311209 | 192 | 881 | 18 | 3 | 3 |
+| 207 | 9311210 | 216 | 1042 | 18 | 1 | 1 |
+| 208 | 9311211 | 208 | 1108 | 27 | 4 | 2 |
+| 209 | 9311212 | 183 | 555 | 15 | 2 | 2 |
+| 210 | 9311213 | 357 | 1825 | 45 | 4 | 2 |
+| 211 | 9311214 | 179 | 665 | 16 | 5 | 2 |
+| 212 | 9311215 | 362 | 2155 | 40 | 7 | 4 |
+| 213 | 9311216 | 206 | 969 | 21 | 1 | 1 |
+| 214 | 9311217 | 227 | 1152 | 22 | 12 | 1 |
+| 215 | 9311218 | 155 | 464 | 12 | 3 | 1 |
+| 216 | 9311219 | 213 | 1013 | 25 | 2 | 2 |
+| 217 | 9311220 | 191 | 808 | 12 | 6 | 1 |
+| 218 | 9311221 | 185 | 952 | 22 | 7 | 2 |
+| 219 | 9311222 | 182 | 840 | 15 | 3 | 1 |
+| 220 | 9311223 | 219 | 1153 | 23 | 4 | 0 |
+| 221 | 9311224 | 274 | 1444 | 25 | 4 | 4 |
+| 222 | 9311225 | 237 | 1165 | 33 | 5 | 0 |
+| 223 | 9311226 | 248 | 1030 | 24 | 6 | 2 |
+| 224 | 9311227 | 237 | 1062 | 23 | 5 | 1 |
+| 225 | 9311228 | 221 | 1073 | 23 | 4 | 1 |
+| 226 | 9311229 | 197 | 950 | 19 | 3 | 1 |
+| 227 | 9311230 | 177 | 681 | 16 | 5 | 3 |
+| 228 | 9311231 | 179 | 816 | 19 | 4 | 2 |
+| 229 | 9311232 | 243 | 1355 | 33 | 4 | 1 |
+| 230 | 9311233 | 267 | 1330 | 38 | 4 | 4 |
+| 231 | 9311234 | 228 | 923 | 24 | 5 | 1 |
+| 232 | 9311235 | 206 | 1063 | 23 | 3 | 1 |
+| 233 | 9311236 | 244 | 1253 | 18 | 5 | 2 |
+| 234 | 9311237 | 269 | 1498 | 18 | 3 | 2 |
+| 235 | 9311238 | 251 | 863 | 25 | 3 | 3 |
+| 236 | 9311239 | 218 | 855 | 16 | 3 | 1 |
+| 237 | 9311240 | 210 | 1050 | 25 | 2 | 1 |
+| 238 | 9311241 | 215 | 935 | 25 | 6 | 1 |
+| 239 | 9311242 | 396 | 2297 | 35 | 8 | 3 |
+| 240 | 9311243 | 180 | 670 | 23 | 2 | 2 |
+| 241 | 9311244 | 243 | 1063 | 19 | 14 | 4 |
+| 242 | 9311245 | 159 | 614 | 16 | 6 | 3 |
+| 243 | 9311246 | 211 | 1053 | 25 | 6 | 1 |
+| 244 | 9311247 | 220 | 1179 | 21 | 10 | 1 |
+| 245 | 9311248 | 193 | 589 | 14 | 6 | 1 |
+| 246 | 9311249 | 179 | 780 | 26 | 5 | 2 |
+| 247 | 9311250 | 203 | 784 | 23 | 10 | 2 |
+| 248 | 9311251 | 178 | 774 | 10 | 8 | 1 |
+| 249 | 9311252 | 230 | 869 | 14 | 10 | 2 |
+| 250 | 9311253 | 182 | 712 | 10 | 2 | 0 |
+| 251 | 9311254 | 220 | 1025 | 22 | 6 | 2 |
+| 252 | 9311255 | 272 | 1350 | 34 | 4 | 2 |
+| 253 | 9311256 | 243 | 1160 | 24 | 3 | 2 |
+| 254 | 9311257 | 153 | 578 | 14 | 5 | 2 |
+| 255 | 9311258 | 212 | 858 | 18 | 6 | 2 |
+| 256 | 9311259 | 211 | 916 | 17 | 3 | 0 |
+| 257 | 9311260 | 275 | 883 | 9 | 7 | 2 |
+| 258 | 9311261 | 267 | 1672 | 26 | 1 | 2 |
+| 259 | 9311262 | 198 | 760 | 14 | 3 | 2 |
+| 260 | 9311263 | 253 | 1214 | 20 | 7 | 1 |
+| 261 | 9311264 | 211 | 835 | 24 | 5 | 2 |
+| 262 | 9311265 | 205 | 978 | 18 | 7 | 2 |
+| 263 | 9311266 | 209 | 815 | 13 | 3 | 0 |
+| 264 | 9311267 | 199 | 943 | 21 | 6 | 2 |
+| 265 | 9311268 | 199 | 852 | 7 | 5 | 0 |
+| 266 | 9311269 | 197 | 799 | 21 | 4 | 1 |
+| 267 | 9311270 | 234 | 1264 | 18 | 4 | 0 |
+| 268 | 9311271 | 209 | 658 | 17 | 5 | 1 |
+| 269 | 9311272 | 283 | 1436 | 19 | 11 | 1 |
+| 270 | 9311273 | 190 | 865 | 18 | 6 | 1 |
+| 271 | 9311274 | 248 | 1064 | 26 | 3 | 1 |
+| 272 | 9311275 | 280 | 905 | 37 | 13 | 3 |
+| 273 | 9311276 | 251 | 1146 | 23 | 4 | 2 |
+| 274 | 9311277 | 274 | 1430 | 22 | 4 | 2 |
+| 275 | 9311278 | 241 | 1403 | 22 | 8 | 2 |
+| 276 | 9311279 | 193 | 703 | 15 | 5 | 1 |
+| 277 | 9311280 | 248 | 1247 | 34 | 4 | 1 |
+| 278 | 9311281 | 215 | 813 | 19 | 1 | 2 |
+| 279 | 9311282 | 183 | 671 | 18 | 4 | 1 |
+| 280 | 9311283 | 219 | 765 | 9 | 3 | 0 |
+| 281 | 9311284 | 156 | 453 | 12 | 3 | 2 |
+| 282 | 9311285 | 184 | 949 | 10 | 5 | 0 |
+| 283 | 9311286 | 186 | 898 | 22 | 3 | 1 |
+| 284 | 9311287 | 214 | 1087 | 17 | 2 | 1 |
+| 285 | 9311288 | 233 | 1172 | 27 | 6 | 2 |
+| 286 | 9311289 | 294 | 1703 | 32 | 9 | 1 |
+| 287 | 9311290 | 220 | 1108 | 23 | 2 | 1 |
+| 288 | 9311291 | 250 | 1045 | 36 | 9 | 5 |
+| 289 | 9311292 | 225 | 1172 | 22 | 1 | 3 |
+| 290 | 9311293 | 231 | 1105 | 40 | 11 | 4 |
+| 291 | 9311294 | 230 | 947 | 14 | 6 | 1 |
+| 292 | 9311295 | 215 | 917 | 10 | 9 | 3 |
+| 293 | 9311296 | 272 | 884 | 24 | 7 | 1 |
+| 294 | 9311297 | 194 | 808 | 19 | 1 | 1 |
+| 295 | 9311298 | 199 | 622 | 15 | 3 | 0 |
+| 296 | 9311299 | 239 | 925 | 22 | 10 | 2 |
+| 297 | 9311300 | 249 | 831 | 30 | 6 | 3 |
+| 298 | 9311301 | 195 | 809 | 17 | 6 | 1 |
+| 299 | 9311302 | 229 | 1033 | 21 | 4 | 1 |
+| 300 | 9311303 | 242 | 1107 | 16 | 7 | 1 |
+| 301 | 9311304 | 184 | 589 | 12 | 4 | 1 |
+| 302 | 9311305 | 220 | 1046 | 19 | 5 | 2 |
+| 303 | 9311306 | 269 | 1035 | 20 | 1 | 1 |
+| 304 | 9311307 | 209 | 835 | 23 | 5 | 2 |
+| 305 | 9311308 | 284 | 1276 | 20 | 10 | 2 |
+| 306 | 9311309 | 167 | 716 | 12 | 6 | 0 |
+| 307 | 9311310 | 185 | 941 | 13 | 0 | 1 |
+| 308 | 9311311 | 192 | 825 | 18 | 2 | 1 |
+| 309 | 9311312 | 190 | 916 | 16 | 5 | 1 |
+| 310 | 9311313 | 200 | 1027 | 18 | 10 | 3 |
+| 311 | 9311314 | 250 | 1025 | 26 | 7 | 0 |
+| 312 | 9311315 | 232 | 854 | 18 | 1 | 0 |
+| 313 | 9311316 | 195 | 860 | 24 | 0 | 3 |
+| 314 | 9311317 | 180 | 608 | 10 | 2 | 0 |
+| 315 | 9311318 | 234 | 1341 | 31 | 7 | 1 |
+| 316 | 9311319 | 234 | 1004 | 27 | 6 | 3 |
+| 317 | 9311320 | 238 | 1249 | 28 | 8 | 3 |
+| 318 | 9311321 | 198 | 822 | 13 | 4 | 2 |
+| 319 | 9311322 | 185 | 713 | 10 | 12 | 1 |
+| 320 | 9311323 | 181 | 828 | 11 | 5 | 1 |
+| 321 | 9311324 | 174 | 773 | 10 | 5 | 1 |
+| 322 | 9311325 | 211 | 944 | 14 | 3 | 1 |
+| 323 | 9311326 | 200 | 946 | 10 | 6 | 0 |
+| 324 | 9311327 | 192 | 827 | 25 | 7 | 1 |
+| 325 | 9311328 | 231 | 1144 | 24 | 7 | 1 |
+| 326 | 9311329 | 203 | 562 | 13 | 2 | 0 |
+| 327 | 9311330 | 184 | 819 | 19 | 8 | 2 |
+| 328 | 9311331 | 258 | 1334 | 23 | 7 | 1 |
+| 329 | 9311332 | 196 | 601 | 13 | 3 | 1 |
+| 330 | 9311333 | 219 | 891 | 14 | 8 | 1 |
+| 331 | 9311334 | 148 | 394 | 14 | 1 | 2 |
+| 332 | 9311335 | 215 | 929 | 21 | 7 | 2 |
+| 333 | 9311336 | 202 | 1005 | 7 | 6 | 2 |
+| 334 | 9311337 | 181 | 716 | 16 | 5 | 1 |
+| 335 | 9311338 | 259 | 1508 | 39 | 2 | 2 |
+| 336 | 9311339 | 244 | 1234 | 23 | 6 | 1 |
+| 337 | 9311340 | 228 | 1215 | 30 | 9 | 2 |
+| 338 | 9311341 | 207 | 820 | 25 | 6 | 3 |
+| 339 | 9311342 | 244 | 1069 | 20 | 3 | 0 |
+| 340 | 9311343 | 252 | 1012 | 20 | 3 | 1 |
+| 341 | 9311344 | 201 | 632 | 12 | 10 | 2 |
+| 342 | 9311345 | 208 | 1135 | 22 | 3 | 1 |
+| 343 | 9311346 | 241 | 1177 | 14 | 6 | 2 |
+| 344 | 9311347 | 225 | 1006 | 23 | 5 | 2 |
+| 345 | 9311348 | 205 | 958 | 20 | 4 | 2 |
+| 346 | 9311349 | 208 | 829 | 20 | 6 | 1 |
+| 347 | 9311350 | 190 | 852 | 10 | 2 | 1 |
+| 348 | 9311351 | 219 | 860 | 24 | 2 | 3 |
+| 349 | 9311352 | 237 | 845 | 27 | 15 | 3 |
+| 350 | 9311353 | 230 | 1204 | 26 | 5 | 0 |
+| 351 | 9311354 | 233 | 840 | 20 | 3 | 0 |
+| 352 | 9311355 | 198 | 973 | 16 | 3 | 2 |
+| 353 | 9311356 | 223 | 1250 | 19 | 10 | 0 |
+| 354 | 9311357 | 285 | 1519 | 40 | 6 | 2 |
+| 355 | 9311358 | 184 | 700 | 19 | 5 | 1 |
+| 356 | 9311359 | 211 | 777 | 14 | 0 | 4 |
+| 357 | 9311360 | 178 | 658 | 10 | 5 | 0 |
+| 358 | 9311361 | 261 | 1360 | 20 | 3 | 1 |
+| 359 | 9311362 | 282 | 1462 | 26 | 11 | 1 |
+| 360 | 9311363 | 269 | 1619 | 20 | 10 | 1 |
+| 361 | 9311364 | 205 | 867 | 18 | 5 | 0 |
+| 362 | 9311365 | 182 | 710 | 15 | 9 | 1 |
+| 363 | 9311366 | 310 | 1244 | 39 | 10 | 1 |
+| 364 | 9311367 | 204 | 879 | 13 | 8 | 3 |
+| 365 | 9311368 | 235 | 1134 | 22 | 1 | 2 |
+| 366 | 9311369 | 197 | 888 | 14 | 8 | 0 |
+| 367 | 9311370 | 347 | 1396 | 33 | 5 | 3 |
+| 368 | 9311371 | 187 | 895 | 16 | 4 | 1 |
+| 369 | 9311372 | 212 | 879 | 19 | 2 | 2 |
+| 370 | 9311373 | 190 | 678 | 12 | 2 | 1 |
+| 371 | 9311374 | 201 | 884 | 25 | 5 | 3 |
+| 372 | 9311375 | 203 | 804 | 16 | 7 | 1 |
+| 373 | 9311376 | 198 | 901 | 20 | 2 | 3 |
+| 374 | 9311377 | 230 | 1018 | 30 | 4 | 2 |
+| 375 | 9311378 | 232 | 1231 | 19 | 5 | 2 |
+| 376 | 9311379 | 208 | 832 | 18 | 2 | 1 |
+| 377 | 9311380 | 262 | 1182 | 24 | 0 | 2 |
+| 378 | 9311381 | 236 | 1130 | 18 | 7 | 3 |
+| 379 | 9311382 | 291 | 1495 | 27 | 7 | 3 |
+| 380 | 9311383 | 197 | 609 | 10 | 1 | 1 |
+| 381 | 9311384 | 173 | 817 | 15 | 6 | 0 |
+| 382 | 9311385 | 196 | 751 | 14 | 2 | 0 |
+| 383 | 9311386 | 196 | 735 | 15 | 2 | 1 |
+| 384 | 9311387 | 233 | 1015 | 37 | 7 | 2 |
+| 385 | 9311388 | 243 | 1038 | 17 | 8 | 1 |
+| 386 | 9311389 | 233 | 1016 | 18 | 4 | 1 |
+| 387 | 9311390 | 212 | 914 | 22 | 5 | 1 |
+| 388 | 9311391 | 183 | 790 | 14 | 4 | 1 |
+| 389 | 9311392 | 234 | 784 | 20 | 5 | 2 |
+| 390 | 9311393 | 185 | 653 | 17 | 3 | 0 |
+| 391 | 9311394 | 194 | 712 | 7 | 8 | 2 |
+| 392 | 9311395 | 194 | 727 | 17 | 5 | 1 |
+| 393 | 9311396 | 221 | 947 | 24 | 4 | 3 |
+| 394 | 9311397 | 202 | 1011 | 31 | 5 | 3 |
+| 395 | 9311398 | 176 | 714 | 18 | 1 | 0 |
+| 396 | 9311399 | 256 | 1442 | 31 | 3 | 2 |
+| 397 | 9311400 | 174 | 735 | 10 | 4 | 3 |
+| 398 | 9311401 | 199 | 952 | 16 | 5 | 4 |
+| 399 | 9311402 | 231 | 1022 | 27 | 7 | 1 |
+| 400 | 9311403 | 257 | 1278 | 24 | 4 | 0 |
+| 401 | 9311404 | 207 | 955 | 12 | 1 | 0 |
+| 402 | 9311405 | 250 | 1024 | 25 | 2 | 2 |
+| 403 | 9311406 | 240 | 1055 | 19 | 5 | 2 |
+| 404 | 9311407 | 169 | 558 | 11 | 6 | 0 |
+| 405 | 9311408 | 196 | 947 | 20 | 3 | 3 |
+| 406 | 9311409 | 259 | 1515 | 25 | 5 | 1 |
+| 407 | 9311410 | 173 | 632 | 15 | 13 | 0 |
+| 408 | 9311411 | 174 | 571 | 12 | 3 | 1 |
+| 409 | 9311412 | 201 | 938 | 13 | 4 | 2 |
+| 410 | 9311413 | 203 | 761 | 22 | 1 | 2 |
+| 411 | 9311414 | 168 | 572 | 12 | 6 | 1 |
+| 412 | 9311415 | 202 | 744 | 17 | 5 | 2 |
+| 413 | 9311416 | 189 | 825 | 19 | 7 | 2 |
+| 414 | 9311417 | 261 | 1399 | 32 | 2 | 0 |
+| 415 | 9311418 | 221 | 1219 | 36 | 7 | 2 |
+| 416 | 9311419 | 272 | 1451 | 12 | 5 | 2 |
+| 417 | 9311420 | 244 | 1286 | 28 | 12 | 3 |
+| 418 | 9311421 | 233 | 1067 | 24 | 7 | 0 |
+| 419 | 9311422 | 192 | 723 | 16 | 6 | 3 |
+| 420 | 9311423 | 276 | 1322 | 30 | 2 | 2 |
+| 421 | 9311424 | 325 | 1850 | 15 | 5 | 1 |
+| 422 | 9311425 | 211 | 590 | 11 | 3 | 0 |
+| 423 | 9311426 | 189 | 755 | 20 | 2 | 1 |
+| 424 | 9311427 | 175 | 747 | 10 | 2 | 1 |
+| 425 | 9311428 | 178 | 609 | 14 | 4 | 1 |
+| 426 | 9311429 | 206 | 694 | 26 | 9 | 3 |
+| 427 | 9311430 | 240 | 947 | 21 | 1 | 0 |
+| 428 | 9311431 | 192 | 739 | 2 | 7 | 1 |
+| 429 | 9311432 | 192 | 1043 | 24 | 3 | 2 |
+| 430 | 9311433 | 224 | 1015 | 19 | 5 | 3 |
+| 431 | 9311434 | 298 | 1666 | 49 | 5 | 2 |
+| 432 | 9311435 | 227 | 987 | 28 | 8 | 3 |
+| 433 | 9311436 | 181 | 872 | 17 | 7 | 0 |
+| 434 | 9311437 | 253 | 1134 | 25 | 5 | 3 |
+| 435 | 9311438 | 218 | 815 | 15 | 3 | 1 |
+| 436 | 9311439 | 290 | 1616 | 27 | 7 | 1 |
+| 437 | 9311440 | 189 | 697 | 11 | 4 | 1 |
+| 438 | 9311441 | 191 | 646 | 25 | 8 | 1 |
+| 439 | 9311442 | 207 | 929 | 26 | 6 | 3 |
+| 440 | 9311443 | 245 | 1134 | 23 | 3 | 3 |
+| 441 | 9311444 | 230 | 1167 | 25 | 8 | 1 |
+| 442 | 9311445 | 160 | 748 | 11 | 9 | 4 |
+| 443 | 9311446 | 202 | 930 | 23 | 5 | 0 |
+| 444 | 9311447 | 221 | 1101 | 15 | 3 | 2 |
+| 445 | 9311448 | 280 | 1374 | 23 | 6 | 3 |
+| 446 | 9311449 | 226 | 1231 | 19 | 2 | 2 |
+| 447 | 9311450 | 186 | 705 | 15 | 5 | 1 |
+| 448 | 9311451 | 169 | 762 | 19 | 4 | 2 |
+| 449 | 9311452 | 185 | 908 | 21 | 5 | 1 |
+| 450 | 9311453 | 196 | 768 | 8 | 5 | 1 |
+| 451 | 9311454 | 177 | 798 | 13 | 4 | 2 |
+| 452 | 9311455 | 204 | 888 | 15 | 3 | 3 |
+| 453 | 9311456 | 180 | 753 | 17 | 3 | 0 |
+| 454 | 9311457 | 264 | 1397 | 28 | 4 | 3 |
+| 455 | 9311458 | 185 | 735 | 21 | 7 | 3 |
+| 456 | 9311459 | 224 | 911 | 24 | 8 | 2 |
+| 457 | 9311460 | 242 | 1251 | 24 | 6 | 1 |
+| 458 | 9311461 | 224 | 955 | 20 | 1 | 0 |
+| 459 | 9311462 | 232 | 1272 | 22 | 4 | 0 |
+| 460 | 9311463 | 281 | 1365 | 34 | 11 | 1 |
+| 461 | 9311464 | 205 | 946 | 26 | 4 | 0 |
+| 462 | 9311465 | 216 | 1120 | 24 | 1 | 2 |
+| 463 | 9311466 | 197 | 924 | 23 | 6 | 1 |
+| 464 | 9311467 | 263 | 1265 | 24 | 2 | 2 |
+| 465 | 9311468 | 169 | 647 | 15 | 3 | 2 |
+| 466 | 9311469 | 218 | 890 | 19 | 3 | 1 |
+| 467 | 9311470 | 243 | 1248 | 30 | 5 | 2 |
+| 468 | 9311471 | 210 | 1128 | 17 | 4 | 0 |
+| 469 | 9311472 | 261 | 1363 | 32 | 8 | 3 |
+| 470 | 9311473 | 237 | 989 | 27 | 5 | 3 |
+| 471 | 9311474 | 247 | 1095 | 30 | 2 | 2 |
+| 472 | 9311475 | 224 | 863 | 21 | 3 | 2 |
+| 473 | 9311476 | 207 | 811 | 19 | 5 | 2 |
+| 474 | 9311477 | 176 | 896 | 17 | 6 | 2 |
+| 475 | 9311478 | 236 | 1201 | 28 | 6 | 1 |
+| 476 | 9311479 | 161 | 535 | 12 | 4 | 1 |
+| 477 | 9311480 | 197 | 767 | 18 | 0 | 2 |
+| 478 | 9311481 | 252 | 814 | 17 | 4 | 2 |
+| 479 | 9311482 | 229 | 974 | 18 | 4 | 4 |
+| 480 | 9311483 | 168 | 790 | 11 | 2 | 1 |
+| 481 | 9311484 | 252 | 1238 | 15 | 3 | 1 |
+| 482 | 9311485 | 162 | 619 | 24 | 3 | 0 |
+| 483 | 9311486 | 216 | 823 | 12 | 4 | 3 |
+| 484 | 9311487 | 209 | 972 | 19 | 3 | 2 |
+| 485 | 9311488 | 196 | 890 | 8 | 5 | 0 |
+| 486 | 9311489 | 228 | 859 | 14 | 12 | 1 |
+| 487 | 9311490 | 220 | 1134 | 29 | 3 | 1 |
+| 488 | 9311491 | 263 | 1306 | 25 | 8 | 1 |
+| 489 | 9311492 | 201 | 879 | 30 | 2 | 1 |
+| 490 | 9311493 | 247 | 1358 | 27 | 3 | 1 |
+| 491 | 9311494 | 203 | 933 | 21 | 9 | 1 |
+| 492 | 9311495 | 240 | 971 | 21 | 7 | 1 |
+| 493 | 9311496 | 274 | 1099 | 32 | 5 | 2 |
+| 494 | 9311497 | 164 | 654 | 23 | 1 | 2 |
+| 495 | 9311498 | 210 | 1094 | 21 | 3 | 2 |
+| 496 | 9311499 | 221 | 891 | 12 | 8 | 3 |
+| 497 | 9311500 | 185 | 795 | 18 | 4 | 2 |
+| 498 | 9311501 | 211 | 590 | 13 | 6 | 2 |
+| 499 | 9311502 | 204 | 916 | 20 | 0 | 3 |
+| 500 | 9311503 | 230 | 931 | 5 | 10 | 3 |
+| 501 | 9311504 | 180 | 698 | 13 | 3 | 1 |
+| 502 | 9311505 | 223 | 1180 | 19 | 1 | 1 |
+| 503 | 9311506 | 189 | 924 | 22 | 4 | 2 |
+| 504 | 9311507 | 206 | 1084 | 27 | 5 | 4 |
+| 505 | 9311508 | 190 | 821 | 10 | 3 | 2 |
+| 506 | 9311509 | 185 | 649 | 8 | 4 | 0 |
+| 507 | 9311510 | 237 | 1277 | 27 | 5 | 1 |
+| 508 | 9311511 | 252 | 1054 | 26 | 12 | 2 |
+| 509 | 9311512 | 391 | 2020 | 32 | 7 | 3 |
+| 510 | 9311513 | 172 | 585 | 5 | 3 | 1 |
+| 511 | 9311514 | 184 | 662 | 20 | 5 | 1 |
+| 512 | 9311515 | 165 | 549 | 8 | 6 | 2 |
+| 513 | 9311516 | 216 | 911 | 26 | 3 | 0 |
+| 514 | 9311517 | 239 | 1034 | 14 | 10 | 2 |
+| 515 | 9311518 | 219 | 964 | 13 | 5 | 2 |
+| 516 | 9311519 | 249 | 1122 | 25 | 15 | 3 |
+| 517 | 9311520 | 211 | 784 | 23 | 4 | 3 |
+| 518 | 9311521 | 172 | 407 | 8 | 6 | 2 |
+| 519 | 9311522 | 164 | 717 | 20 | 3 | 1 |
+| 520 | 9311523 | 176 | 837 | 12 | 3 | 0 |
+| 521 | 9311524 | 263 | 1106 | 45 | 3 | 1 |
+| 522 | 9311525 | 207 | 921 | 14 | 4 | 2 |
+| 523 | 9311526 | 195 | 644 | 6 | 6 | 3 |
+| 524 | 9311527 | 183 | 845 | 14 | 5 | 2 |
+| 525 | 9311528 | 239 | 1302 | 16 | 3 | 2 |
+| 526 | 9311529 | 231 | 1089 | 22 | 7 | 1 |
+| 527 | 9311530 | 209 | 1063 | 14 | 10 | 1 |
+| 528 | 9311531 | 247 | 1336 | 17 | 3 | 2 |
+| 529 | 9311532 | 181 | 749 | 18 | 8 | 0 |
+| 530 | 9311533 | 230 | 917 | 16 | 9 | 2 |
+| 531 | 9311534 | 193 | 714 | 14 | 1 | 2 |
+| 532 | 9311535 | 242 | 1076 | 33 | 3 | 2 |
+| 533 | 9311536 | 297 | 1377 | 22 | 4 | 4 |
+| 534 | 9311537 | 178 | 720 | 18 | 4 | 0 |
+| 535 | 9311538 | 208 | 891 | 26 | 4 | 1 |
+| 536 | 9311539 | 171 | 800 | 19 | 3 | 2 |
+| 537 | 9311540 | 190 | 650 | 18 | 4 | 1 |
+| 538 | 9311541 | 192 | 832 | 10 | 3 | 1 |
+| 539 | 9311542 | 233 | 950 | 19 | 0 | 1 |
+| 540 | 9311543 | 226 | 959 | 20 | 8 | 2 |
+| 541 | 9311544 | 243 | 1160 | 29 | 3 | 0 |
+| 542 | 9311545 | 193 | 629 | 9 | 3 | 2 |
+| 543 | 9311546 | 191 | 651 | 19 | 3 | 1 |
+| 544 | 9311547 | 303 | 1597 | 59 | 6 | 3 |
+| 545 | 9311548 | 188 | 722 | 8 | 5 | 1 |
+| 546 | 9311549 | 217 | 1079 | 29 | 8 | 4 |
+| 547 | 9311550 | 188 | 940 | 10 | 7 | 2 |
+| 548 | 9311551 | 236 | 781 | 29 | 5 | 4 |
+| 549 | 9311552 | 208 | 1005 | 34 | 5 | 2 |
+| 550 | 9311553 | 187 | 884 | 23 | 2 | 0 |
+| 551 | 9311554 | 203 | 828 | 22 | 5 | 4 |
+| 552 | 9311555 | 217 | 1218 | 32 | 7 | 3 |
+| 553 | 9311556 | 235 | 1015 | 17 | 10 | 4 |
+| 554 | 9311557 | 233 | 783 | 18 | 6 | 3 |
+| 555 | 9311558 | 237 | 948 | 26 | 5 | 3 |
+| 556 | 9311559 | 241 | 1147 | 29 | 8 | 1 |
+| 557 | 9311560 | 193 | 797 | 18 | 3 | 2 |
+| 558 | 9311561 | 274 | 1513 | 40 | 5 | 2 |
+| 559 | 9311562 | 194 | 983 | 21 | 3 | 0 |
+| 560 | 9311563 | 245 | 1115 | 27 | 4 | 3 |
+| 561 | 9311564 | 268 | 1411 | 35 | 8 | 2 |
+| 562 | 9311565 | 164 | 640 | 9 | 10 | 1 |
+| 563 | 9311566 | 216 | 889 | 21 | 4 | 2 |
+| 564 | 9311567 | 192 | 847 | 27 | 1 | 2 |
+| 565 | 9311568 | 233 | 995 | 16 | 5 | 3 |
+| 566 | 9311569 | 240 | 1101 | 21 | 2 | 2 |
+| 567 | 9311570 | 181 | 723 | 22 | 3 | 2 |
+| 568 | 9311571 | 251 | 1197 | 17 | 7 | 3 |
+| 569 | 9311572 | 243 | 1037 | 27 | 7 | 0 |
+| 570 | 9311573 | 213 | 850 | 19 | 5 | 2 |
+| 571 | 9311574 | 255 | 1254 | 37 | 5 | 1 |
+| 572 | 9311575 | 200 | 901 | 23 | 2 | 3 |
+| 573 | 9311576 | 272 | 1344 | 34 | 6 | 3 |
+| 574 | 9311577 | 244 | 1115 | 34 | 5 | 2 |
+| 575 | 9311578 | 229 | 1143 | 30 | 1 | 1 |
+| 576 | 9311579 | 180 | 786 | 19 | 6 | 0 |
+| 577 | 9311580 | 255 | 1297 | 18 | 8 | 1 |
+| 578 | 9311581 | 198 | 899 | 22 | 0 | 0 |
+| 579 | 9311582 | 209 | 985 | 15 | 3 | 1 |
+| 580 | 9311583 | 186 | 933 | 18 | 4 | 1 |
+| 581 | 9311584 | 253 | 1164 | 26 | 8 | 1 |
+| 582 | 9311585 | 216 | 1228 | 20 | 3 | 1 |
+| 583 | 9311586 | 202 | 611 | 15 | 6 | 2 |
+| 584 | 9311587 | 203 | 907 | 20 | 7 | 1 |
+| 585 | 9311588 | 252 | 1331 | 28 | 5 | 4 |
+| 586 | 9311589 | 227 | 904 | 12 | 1 | 1 |
+| 587 | 9311590 | 223 | 723 | 18 | 2 | 2 |
+| 588 | 9311591 | 220 | 1036 | 38 | 7 | 5 |
+| 589 | 9311592 | 194 | 764 | 12 | 9 | 2 |
+| 590 | 9311593 | 199 | 716 | 15 | 5 | 4 |
+| 591 | 9311594 | 244 | 1074 | 19 | 6 | 2 |
+| 592 | 9311595 | 228 | 1201 | 27 | 8 | 2 |
+| 593 | 9311596 | 209 | 734 | 10 | 5 | 2 |
+| 594 | 9311597 | 207 | 784 | 17 | 5 | 3 |
+| 595 | 9311598 | 210 | 798 | 16 | 4 | 1 |
+| 596 | 9311599 | 199 | 781 | 23 | 7 | 1 |
+| 597 | 9311600 | 250 | 1119 | 23 | 5 | 2 |
+| 598 | 9311601 | 149 | 539 | 6 | 5 | 2 |
+| 599 | 9311602 | 175 | 642 | 10 | 3 | 2 |
+| 600 | 9311603 | 183 | 692 | 9 | 9 | 1 |
+| 601 | 9311604 | 231 | 1039 | 29 | 5 | 3 |
+| 602 | 9311605 | 258 | 1293 | 22 | 4 | 1 |
+| 603 | 9311606 | 189 | 960 | 13 | 5 | 1 |
+| 604 | 9311607 | 195 | 893 | 13 | 9 | 3 |
+| 605 | 9311608 | 242 | 662 | 15 | 20 | 1 |
+| 606 | 9311609 | 270 | 1347 | 18 | 7 | 1 |
+| 607 | 9311610 | 262 | 1245 | 24 | 12 | 1 |
+| 608 | 9311611 | 198 | 743 | 22 | 10 | 3 |
+| 609 | 9311612 | 269 | 1475 | 27 | 3 | 3 |
+| 610 | 9311613 | 240 | 1171 | 40 | 3 | 0 |
+| 611 | 9311614 | 218 | 1243 | 33 | 3 | 2 |
+| 612 | 9311615 | 207 | 826 | 15 | 4 | 2 |
+| 613 | 9311616 | 176 | 578 | 11 | 3 | 1 |
+| 614 | 9311617 | 251 | 1353 | 16 | 3 | 1 |
+| 615 | 9311618 | 177 | 669 | 16 | 3 | 2 |
+| 616 | 9311619 | 200 | 616 | 16 | 6 | 0 |
+| 617 | 9311620 | 192 | 765 | 13 | 4 | 1 |
+| 618 | 9311621 | 247 | 1293 | 32 | 4 | 1 |
+| 619 | 9311622 | 233 | 1283 | 21 | 4 | 0 |
+| 620 | 9311623 | 204 | 1007 | 35 | 8 | 2 |
+| 621 | 9311624 | 190 | 647 | 12 | 2 | 1 |
+| 622 | 9311625 | 175 | 700 | 18 | 3 | 0 |
+| 623 | 9311626 | 223 | 934 | 17 | 8 | 1 |
+| 624 | 9311627 | 193 | 763 | 18 | 5 | 3 |
+| 625 | 9311628 | 241 | 1077 | 18 | 3 | 3 |
+| 626 | 9311629 | 217 | 1150 | 36 | 4 | 1 |
+| 627 | 9311630 | 182 | 788 | 6 | 4 | 1 |
+| 628 | 9311631 | 257 | 1265 | 23 | 6 | 6 |
+| 629 | 9311632 | 223 | 1075 | 19 | 11 | 1 |
+| 630 | 9311633 | 276 | 1522 | 36 | 4 | 1 |
+| 631 | 9311634 | 215 | 901 | 14 | 16 | 2 |
+| 632 | 9311635 | 209 | 1016 | 25 | 6 | 2 |
+| 633 | 9311636 | 277 | 1520 | 27 | 8 | 3 |
+| 634 | 9311637 | 188 | 802 | 19 | 1 | 2 |
+| 635 | 9311638 | 246 | 1119 | 18 | 1 | 1 |
+| 636 | 9311639 | 178 | 822 | 19 | 5 | 0 |
+| 637 | 9311640 | 216 | 954 | 24 | 6 | 4 |
+| 638 | 9311641 | 229 | 1029 | 19 | 1 | 0 |
+| 639 | 9311642 | 268 | 1454 | 27 | 6 | 2 |
+| 640 | 9311643 | 197 | 956 | 10 | 5 | 1 |
+| 641 | 9311644 | 255 | 1342 | 20 | 9 | 2 |
+| 642 | 9311645 | 168 | 558 | 9 | 2 | 0 |
+| 643 | 9311646 | 222 | 997 | 14 | 5 | 2 |
+| 644 | 9311647 | 230 | 1334 | 21 | 4 | 1 |
+| 645 | 9311648 | 295 | 1376 | 33 | 8 | 0 |
+| 646 | 9311649 | 234 | 1087 | 27 | 0 | 0 |
+| 647 | 9311650 | 193 | 660 | 22 | 3 | 2 |
+| 648 | 9311651 | 296 | 1620 | 33 | 6 | 1 |
+| 649 | 9311652 | 196 | 882 | 13 | 3 | 3 |
+| 650 | 9311653 | 208 | 1044 | 25 | 8 | 3 |
+| 651 | 9311654 | 262 | 909 | 20 | 6 | 2 |
+| 652 | 9311655 | 162 | 609 | 14 | 4 | 3 |
+| 653 | 9311656 | 204 | 890 | 28 | 5 | 1 |
+| 654 | 9311657 | 200 | 891 | 24 | 3 | 2 |
+| 655 | 9311658 | 231 | 1199 | 26 | 5 | 0 |
+| 656 | 9311659 | 188 | 832 | 21 | 2 | 1 |
+| 657 | 9311660 | 160 | 657 | 11 | 5 | 1 |
+| 658 | 9311661 | 208 | 782 | 21 | 6 | 3 |
+| 659 | 9311662 | 181 | 883 | 13 | 4 | 0 |
+| 660 | 9311663 | 183 | 700 | 21 | 12 | 2 |
+| 661 | 9311664 | 225 | 1042 | 23 | 3 | 3 |
+| 662 | 9311665 | 275 | 1449 | 37 | 4 | 1 |
+| 663 | 9311666 | 269 | 1282 | 28 | 4 | 0 |
+| 664 | 9311667 | 244 | 1067 | 40 | 7 | 4 |
+| 665 | 9311668 | 216 | 1147 | 26 | 4 | 2 |
+| 666 | 9311669 | 196 | 928 | 17 | 7 | 2 |
+| 667 | 9311670 | 229 | 1063 | 18 | 2 | 0 |
+| 668 | 9311671 | 212 | 754 | 19 | 4 | 2 |
+| 669 | 9311672 | 208 | 834 | 23 | 7 | 2 |
+| 670 | 9311673 | 256 | 1203 | 32 | 7 | 3 |
+| 671 | 9311674 | 182 | 909 | 16 | 5 | 1 |
+| 672 | 9311675 | 163 | 494 | 11 | 4 | 0 |
+| 673 | 9311676 | 320 | 2181 | 37 | 7 | 4 |
+| 674 | 9311677 | 215 | 947 | 28 | 2 | 1 |
+| 675 | 9311678 | 193 | 845 | 19 | 2 | 1 |
+| 676 | 9311679 | 204 | 921 | 18 | 2 | 1 |
+| 677 | 9311680 | 177 | 825 | 28 | 2 | 2 |
+| 678 | 9311681 | 188 | 797 | 9 | 5 | 1 |
 | 679 | 9311682 | 180 | 488 | 16 | 5 | 2 |
-| 680 | 9311683 | 155 | 533 | 11 | 2 | 0 |
-| 681 | 9311684 | 216 | 1030 | 25 | 2 | 1 |
-| 682 | 9311685 | 246 | 1211 | 18 | 4 | 1 |
-| 683 | 9311686 | 220 | 891 | 27 | 4 | 2 |
-| 684 | 9311687 | 252 | 1000 | 24 | 16 | 2 |
-| 685 | 9311688 | 178 | 570 | 10 | 3 | 1 |
-| 686 | 9311689 | 227 | 1076 | 18 | 7 | 2 |
-| 687 | 9311690 | 192 | 796 | 22 | 3 | 2 |
-| 688 | 9311691 | 183 | 782 | 22 | 8 | 2 |
-| 689 | 9311692 | 244 | 1050 | 19 | 8 | 1 |
-| 690 | 9311693 | 179 | 760 | 14 | 4 | 1 |
-| 691 | 9311694 | 198 | 822 | 25 | 2 | 3 |
-| 692 | 9311695 | 208 | 1252 | 26 | 5 | 2 |
-| 693 | 9311696 | 173 | 656 | 12 | 1 | 0 |
-| 694 | 9311697 | 214 | 906 | 29 | 7 | 1 |
-| 695 | 9311698 | 228 | 809 | 16 | 4 | 0 |
-| 696 | 9311699 | 201 | 926 | 22 | 2 | 1 |
-| 697 | 9311700 | 183 | 671 | 14 | 0 | 0 |
-| 698 | 9311701 | 193 | 591 | 11 | 8 | 1 |
-| 699 | 9311702 | 182 | 940 | 17 | 6 | 1 |
-| 700 | 9311703 | 378 | 1912 | 33 | 6 | 1 |
-| 701 | 9311704 | 188 | 701 | 14 | 10 | 0 |
-| 702 | 9311705 | 175 | 963 | 24 | 10 | 1 |
-| 703 | 9311706 | 291 | 1304 | 26 | 9 | 3 |
-| 704 | 9311707 | 184 | 673 | 23 | 6 | 0 |
-| 705 | 9311708 | 231 | 982 | 31 | 10 | 3 |
-| 706 | 9311709 | 211 | 857 | 17 | 9 | 3 |
-| 707 | 9311710 | 230 | 1051 | 18 | 6 | 3 |
-| 708 | 9311711 | 267 | 1460 | 32 | 5 | 3 |
-| 709 | 9311712 | 202 | 793 | 14 | 7 | 1 |
-| 710 | 9311713 | 246 | 1007 | 28 | 5 | 4 |
-| 711 | 9311714 | 208 | 1158 | 27 | 3 | 2 |
-| 712 | 9311715 | 241 | 1310 | 37 | 3 | 2 |
-| 713 | 9311716 | 184 | 707 | 17 | 2 | 0 |
-| 714 | 9311717 | 259 | 1380 | 21 | 7 | 3 |
-| 715 | 9311718 | 219 | 1049 | 36 | 5 | 1 |
-| 716 | 9311719 | 258 | 1198 | 36 | 7 | 1 |
-| 717 | 9311720 | 219 | 790 | 18 | 4 | 3 |
-| 718 | 9311721 | 189 | 541 | 7 | 4 | 0 |
-| 719 | 9311722 | 241 | 1248 | 28 | 9 | 4 |
-| 720 | 9311723 | 194 | 948 | 25 | 4 | 2 |
-| 721 | 9311724 | 198 | 807 | 22 | 7 | 1 |
-| 722 | 9311725 | 173 | 734 | 9 | 2 | 1 |
-| 723 | 9311726 | 194 | 776 | 18 | 5 | 2 |
-| 724 | 9311727 | 257 | 1371 | 24 | 6 | 3 |
-| 725 | 9311728 | 205 | 1019 | 24 | 7 | 2 |
-| 726 | 9311729 | 225 | 912 | 17 | 4 | 0 |
-| 727 | 9311730 | 191 | 601 | 17 | 5 | 1 |
-| 728 | 9311731 | 192 | 842 | 23 | 2 | 1 |
-| 729 | 9311732 | 205 | 725 | 11 | 4 | 1 |
-| 730 | 9311733 | 218 | 1113 | 24 | 6 | 1 |
-| 731 | 9311734 | 274 | 1236 | 31 | 2 | 2 |
-| 732 | 9311735 | 207 | 678 | 17 | 14 | 2 |
-| 733 | 9311736 | 233 | 1195 | 27 | 7 | 1 |
-| 734 | 9311737 | 295 | 1494 | 33 | 4 | 1 |
-| 735 | 9311738 | 231 | 1005 | 29 | 6 | 3 |
-| 736 | 9311739 | 219 | 1028 | 34 | 2 | 2 |
-| 737 | 9311740 | 212 | 1150 | 19 | 3 | 2 |
-| 738 | 9311741 | 221 | 1066 | 25 | 9 | 1 |
-| 739 | 9311742 | 177 | 815 | 19 | 2 | 0 |
-| 740 | 9311743 | 266 | 1818 | 18 | 6 | 2 |
-| 741 | 9311744 | 202 | 957 | 22 | 2 | 2 |
-| 742 | 9311745 | 190 | 855 | 17 | 2 | 0 |
-| 743 | 9311746 | 311 | 1579 | 24 | 9 | 2 |
-| 744 | 9311747 | 204 | 1171 | 27 | 4 | 3 |
-| 745 | 9311748 | 189 | 909 | 28 | 3 | 3 |
-| 746 | 9311749 | 176 | 818 | 17 | 4 | 0 |
-| 747 | 9311750 | 243 | 1127 | 23 | 2 | 1 |
-| 748 | 9311751 | 228 | 899 | 19 | 11 | 1 |
-| 749 | 9311752 | 201 | 1040 | 20 | 5 | 1 |
-| 750 | 9311753 | 208 | 1082 | 30 | 6 | 3 |
-| 751 | 9311754 | 233 | 1059 | 22 | 5 | 3 |
-| 752 | 9311755 | 172 | 574 | 24 | 3 | 4 |
-| 753 | 9311756 | 216 | 892 | 31 | 8 | 4 |
-| 754 | 9311757 | 219 | 931 | 15 | 5 | 1 |
-| 755 | 9311758 | 191 | 707 | 24 | 2 | 1 |
-| 756 | 9311759 | 242 | 1052 | 20 | 4 | 2 |
-| 757 | 9311760 | 229 | 904 | 25 | 5 | 2 |
-| 758 | 9311761 | 196 | 979 | 27 | 8 | 1 |
-| 759 | 9311762 | 274 | 1591 | 25 | 3 | 1 |
-| 760 | 9311763 | 180 | 886 | 9 | 1 | 2 |
-| 761 | 9311764 | 254 | 975 | 28 | 7 | 4 |
-| 762 | 9311765 | 180 | 818 | 7 | 3 | 4 |
-| 763 | 9311766 | 162 | 507 | 15 | 4 | 1 |
-| 764 | 9311767 | 203 | 780 | 19 | 4 | 1 |
-| 765 | 9311768 | 136 | 408 | 6 | 10 | 1 |
-| 766 | 9311769 | 210 | 850 | 18 | 5 | 2 |
-| 767 | 9311770 | 273 | 1417 | 40 | 8 | 2 |
-| 768 | 9311771 | 224 | 805 | 8 | 5 | 1 |
-| 769 | 9311772 | 181 | 738 | 23 | 6 | 1 |
-| 770 | 9311773 | 199 | 971 | 17 | 4 | 1 |
-| 771 | 9311774 | 263 | 1184 | 41 | 5 | 4 |
-| 772 | 9311775 | 308 | 1620 | 37 | 10 | 1 |
-| 773 | 9311776 | 260 | 1225 | 22 | 11 | 1 |
-| 774 | 9311777 | 365 | 2031 | 47 | 1 | 2 |
-| 775 | 9311778 | 228 | 710 | 12 | 8 | 0 |
-| 776 | 9311779 | 202 | 992 | 27 | 1 | 3 |
-| 777 | 9311780 | 234 | 1144 | 14 | 7 | 3 |
-| 778 | 9311781 | 214 | 783 | 9 | 12 | 2 |
-| 779 | 9311782 | 168 | 676 | 13 | 1 | 2 |
-| 780 | 9311783 | 201 | 702 | 10 | 3 | 0 |
-| 781 | 9311784 | 152 | 571 | 10 | 3 | 0 |
-| 782 | 9311785 | 220 | 1030 | 23 | 3 | 1 |
-| 783 | 9311786 | 264 | 1201 | 29 | 4 | 0 |
-| 784 | 9311787 | 189 | 700 | 15 | 1 | 2 |
-| 785 | 9311788 | 224 | 951 | 32 | 3 | 3 |
-| 786 | 9311789 | 192 | 659 | 13 | 4 | 1 |
-| 787 | 9311790 | 261 | 1311 | 18 | 6 | 1 |
-| 788 | 9311791 | 241 | 1040 | 6 | 5 | 0 |
-| 789 | 9311792 | 215 | 1125 | 21 | 7 | 2 |
-| 790 | 9311793 | 211 | 786 | 25 | 8 | 5 |
-| 791 | 9311794 | 235 | 1064 | 31 | 2 | 3 |
-| 792 | 9311795 | 281 | 1488 | 18 | 3 | 3 |
-| 793 | 9311796 | 221 | 1213 | 24 | 4 | 1 |
-| 794 | 9311797 | 193 | 672 | 23 | 4 | 4 |
-| 795 | 9311798 | 210 | 1074 | 16 | 3 | 0 |
-| 796 | 9311799 | 244 | 1056 | 20 | 6 | 2 |
-| 797 | 9311800 | 260 | 931 | 30 | 8 | 4 |
-| 798 | 9311801 | 248 | 1149 | 23 | 7 | 1 |
-| 799 | 9311802 | 234 | 1319 | 19 | 4 | 3 |
-| 800 | 9311803 | 214 | 1104 | 24 | 5 | 2 |
-| 801 | 9311804 | 302 | 1754 | 29 | 3 | 1 |
-| 802 | 9311805 | 169 | 601 | 5 | 4 | 0 |
-| 803 | 9311806 | 259 | 1634 | 31 | 5 | 2 |
-| 804 | 9311807 | 252 | 1236 | 34 | 4 | 1 |
-| 805 | 9311808 | 206 | 1007 | 16 | 7 | 3 |
-| 806 | 9311809 | 260 | 1291 | 23 | 12 | 1 |
-| 807 | 9311810 | 205 | 933 | 24 | 12 | 2 |
-| 808 | 9311811 | 172 | 639 | 10 | 2 | 0 |
-| 809 | 9311812 | 213 | 757 | 17 | 9 | 2 |
-| 810 | 9311813 | 208 | 841 | 12 | 3 | 2 |
-| 811 | 9311814 | 278 | 1138 | 24 | 5 | 2 |
-| 812 | 9311815 | 232 | 1250 | 31 | 2 | 2 |
-| 813 | 9311816 | 265 | 1414 | 31 | 2 | 3 |
-| 814 | 9311817 | 146 | 503 | 9 | 2 | 0 |
-| 815 | 9311818 | 205 | 832 | 13 | 4 | 1 |
-| 816 | 9311819 | 366 | 2217 | 45 | 3 | 1 |
-| 817 | 9311820 | 223 | 822 | 12 | 4 | 2 |
-| 818 | 9311821 | 208 | 843 | 11 | 4 | 1 |
-| 819 | 9311822 | 258 | 1110 | 27 | 7 | 1 |
-| 820 | 9311823 | 230 | 1472 | 29 | 10 | 0 |
-| 821 | 9311824 | 212 | 727 | 17 | 3 | 1 |
-| 822 | 9311825 | 175 | 819 | 15 | 3 | 1 |
-| 823 | 9311826 | 224 | 1264 | 33 | 1 | 2 |
-| 824 | 9311827 | 229 | 1110 | 31 | 8 | 2 |
-| 825 | 9311828 | 208 | 812 | 27 | 3 | 2 |
-| 826 | 9311829 | 190 | 666 | 7 | 6 | 2 |
-| 827 | 9311830 | 233 | 1275 | 29 | 1 | 1 |
-| 828 | 9311831 | 193 | 841 | 18 | 5 | 1 |
-| 829 | 9311832 | 172 | 652 | 13 | 4 | 1 |
-| 830 | 9311833 | 241 | 1055 | 31 | 4 | 2 |
-| 831 | 9311834 | 196 | 782 | 22 | 5 | 3 |
-| 832 | 9311835 | 257 | 1139 | 28 | 4 | 2 |
-| 833 | 9311836 | 217 | 954 | 17 | 1 | 2 |
-| 834 | 9311837 | 222 | 971 | 26 | 6 | 3 |
-| 835 | 9311838 | 169 | 745 | 15 | 8 | 1 |
-| 836 | 9311839 | 223 | 1077 | 31 | 3 | 2 |
-| 837 | 9311840 | 256 | 1392 | 31 | 8 | 3 |
-| 838 | 9311841 | 232 | 988 | 11 | 13 | 0 |
-| 839 | 9311842 | 225 | 1231 | 30 | 1 | 3 |
-| 840 | 9311843 | 226 | 1042 | 37 | 5 | 4 |
-| 841 | 9311844 | 222 | 1047 | 22 | 2 | 2 |
-| 842 | 9311845 | 233 | 1187 | 26 | 6 | 3 |
-| 843 | 9311846 | 209 | 899 | 16 | 4 | 4 |
-| 844 | 9311847 | 223 | 1185 | 17 | 3 | 4 |
-| 845 | 9311848 | 323 | 1840 | 43 | 1 | 1 |
-| 846 | 9311849 | 221 | 949 | 33 | 4 | 6 |
-| 847 | 9311850 | 187 | 761 | 9 | 2 | 1 |
-| 848 | 9311851 | 183 | 818 | 18 | 3 | 2 |
-| 849 | 9311852 | 218 | 902 | 19 | 3 | 0 |
-| 850 | 9311853 | 204 | 798 | 17 | 2 | 3 |
-| 851 | 9311854 | 268 | 1332 | 36 | 6 | 1 |
-| 852 | 9311855 | 237 | 982 | 13 | 5 | 1 |
-| 853 | 9311856 | 240 | 1054 | 22 | 3 | 2 |
-| 854 | 9311857 | 218 | 957 | 18 | 0 | 2 |
-| 855 | 9311858 | 200 | 710 | 13 | 8 | 4 |
-| 856 | 9311859 | 230 | 1003 | 15 | 2 | 2 |
-| 857 | 9311860 | 245 | 1313 | 26 | 9 | 0 |
-| 858 | 9311861 | 272 | 1373 | 30 | 7 | 1 |
-| 859 | 9311862 | 324 | 1617 | 33 | 7 | 2 |
-| 860 | 9311863 | 184 | 699 | 18 | 7 | 1 |
-| 861 | 9311864 | 253 | 1311 | 23 | 3 | 0 |
-| 862 | 9311865 | 203 | 765 | 16 | 3 | 1 |
-| 863 | 9311866 | 235 | 1188 | 14 | 4 | 1 |
-| 864 | 9311867 | 178 | 737 | 10 | 0 | 2 |
-| 865 | 9311868 | 241 | 1161 | 30 | 5 | 2 |
-| 866 | 9311869 | 207 | 810 | 20 | 3 | 1 |
-| 867 | 9311870 | 180 | 542 | 17 | 11 | 3 |
-| 868 | 9311871 | 215 | 1002 | 15 | 3 | 1 |
-| 869 | 9311872 | 317 | 1818 | 34 | 6 | 2 |
-| 870 | 9311873 | 224 | 1392 | 26 | 4 | 1 |
-| 871 | 9311874 | 196 | 830 | 20 | 1 | 2 |
-| 872 | 9311875 | 279 | 1315 | 33 | 10 | 3 |
-| 873 | 9311876 | 214 | 826 | 20 | 4 | 2 |
-| 874 | 9311877 | 254 | 1371 | 32 | 1 | 3 |
-| 875 | 9311878 | 240 | 1229 | 27 | 4 | 2 |
-| 876 | 9311879 | 207 | 971 | 25 | 2 | 1 |
-| 877 | 9311880 | 253 | 1122 | 18 | 3 | 2 |
-| 878 | 9311881 | 208 | 802 | 23 | 5 | 2 |
-| 879 | 9311882 | 216 | 929 | 31 | 1 | 3 |
-| 880 | 9311883 | 241 | 884 | 19 | 4 | 2 |
-| 881 | 9311884 | 199 | 787 | 19 | 5 | 1 |
-| 882 | 9311885 | 206 | 986 | 32 | 6 | 2 |
-| 883 | 9311886 | 244 | 1180 | 24 | 10 | 1 |
-| 884 | 9311887 | 209 | 920 | 15 | 5 | 1 |
-| 885 | 9311888 | 191 | 715 | 19 | 2 | 2 |
-| 886 | 9311889 | 186 | 796 | 20 | 5 | 3 |
-| 887 | 9311890 | 209 | 907 | 26 | 2 | 3 |
-| 888 | 9311891 | 258 | 1336 | 21 | 8 | 2 |
-| 889 | 9311892 | 222 | 971 | 19 | 6 | 3 |
-| 890 | 9311893 | 205 | 1174 | 33 | 2 | 1 |
-| 891 | 9311894 | 199 | 596 | 17 | 5 | 2 |
-| 892 | 9311895 | 205 | 896 | 21 | 4 | 2 |
-| 893 | 9311896 | 204 | 1016 | 15 | 4 | 0 |
-| 894 | 9311897 | 198 | 893 | 17 | 6 | 2 |
-| 895 | 9311898 | 197 | 607 | 17 | 3 | 2 |
-| 896 | 9311899 | 206 | 891 | 18 | 7 | 2 |
-| 897 | 9311900 | 205 | 953 | 28 | 10 | 2 |
-| 898 | 9311901 | 224 | 978 | 17 | 5 | 0 |
-| 899 | 9311902 | 342 | 1804 | 36 | 7 | 3 |
-| 900 | 9311903 | 241 | 1341 | 28 | 2 | 2 |
-| 901 | 9311904 | 232 | 1053 | 20 | 3 | 2 |
-| 902 | 9311905 | 397 | 2165 | 32 | 1 | 3 |
-| 903 | 9311906 | 233 | 1163 | 28 | 3 | 2 |
-| 904 | 9311907 | 155 | 505 | 11 | 6 | 1 |
-| 905 | 9311908 | 237 | 1396 | 13 | 3 | 1 |
-| 906 | 9311909 | 190 | 971 | 14 | 0 | 0 |
-| 907 | 9311910 | 200 | 745 | 16 | 3 | 2 |
-| 908 | 9311911 | 229 | 1149 | 20 | 6 | 1 |
-| 909 | 9311912 | 220 | 988 | 26 | 6 | 3 |
-| 910 | 9311913 | 230 | 1116 | 32 | 9 | 2 |
-| 911 | 9311914 | 239 | 1062 | 19 | 7 | 2 |
-| 912 | 9311915 | 175 | 816 | 19 | 3 | 2 |
-| 913 | 9311916 | 194 | 886 | 16 | 2 | 1 |
-| 914 | 9311917 | 212 | 821 | 19 | 0 | 3 |
-| 915 | 9311918 | 243 | 884 | 23 | 1 | 2 |
-| 916 | 9311919 | 184 | 634 | 29 | 6 | 2 |
-| 917 | 9311920 | 185 | 805 | 27 | 1 | 3 |
-| 918 | 9311921 | 212 | 1139 | 26 | 6 | 1 |
-| 919 | 9311922 | 210 | 983 | 22 | 8 | 1 |
-| 920 | 9311923 | 191 | 1043 | 26 | 5 | 1 |
-| 921 | 9311924 | 194 | 738 | 13 | 4 | 1 |
-| 922 | 9311925 | 219 | 730 | 21 | 13 | 2 |
-| 923 | 9311926 | 250 | 1001 | 17 | 7 | 3 |
-| 924 | 9311927 | 264 | 1547 | 29 | 3 | 0 |
-| 925 | 9311928 | 187 | 932 | 13 | 5 | 0 |
-| 926 | 9311929 | 237 | 1185 | 25 | 6 | 3 |
-| 927 | 9311930 | 229 | 1207 | 18 | 7 | 3 |
-| 928 | 9311931 | 169 | 498 | 8 | 8 | 1 |
-| 929 | 9311932 | 265 | 1197 | 32 | 4 | 2 |
-| 930 | 9311933 | 169 | 597 | 6 | 0 | 1 |
-| 931 | 9311934 | 197 | 796 | 16 | 3 | 2 |
-| 932 | 9311935 | 236 | 1150 | 28 | 6 | 1 |
-| 933 | 9311936 | 196 | 762 | 15 | 2 | 1 |
-| 934 | 9311937 | 185 | 792 | 10 | 3 | 1 |
-| 935 | 9311938 | 203 | 859 | 15 | 1 | 0 |
-| 936 | 9311939 | 207 | 1000 | 24 | 6 | 1 |
-| 937 | 9311940 | 200 | 904 | 27 | 2 | 2 |
-| 938 | 9311941 | 185 | 978 | 20 | 6 | 0 |
-| 939 | 9311942 | 198 | 931 | 14 | 6 | 1 |
-| 940 | 9311943 | 247 | 1065 | 33 | 7 | 1 |
-| 941 | 9311944 | 221 | 1067 | 22 | 10 | 1 |
-| 942 | 9311945 | 213 | 875 | 22 | 3 | 3 |
-| 943 | 9311946 | 166 | 569 | 17 | 6 | 1 |
-| 944 | 9311947 | 203 | 849 | 16 | 6 | 0 |
-| 945 | 9311948 | 233 | 724 | 16 | 7 | 2 |
-| 946 | 9311949 | 252 | 1429 | 16 | 7 | 2 |
-| 947 | 9311950 | 230 | 740 | 17 | 3 | 4 |
-| 948 | 9311951 | 234 | 1194 | 14 | 3 | 3 |
-| 949 | 9311952 | 213 | 893 | 20 | 4 | 0 |
-| 950 | 9311953 | 234 | 1203 | 21 | 10 | 2 |
-| 951 | 9311954 | 228 | 1089 | 20 | 14 | 3 |
-| 952 | 9311955 | 191 | 990 | 22 | 3 | 0 |
-| 953 | 9311956 | 218 | 695 | 19 | 5 | 3 |
-| 954 | 9311957 | 197 | 973 | 26 | 3 | 2 |
-| 955 | 9311958 | 187 | 930 | 16 | 3 | 1 |
-| 956 | 9311959 | 205 | 750 | 17 | 8 | 1 |
-| 957 | 9311960 | 239 | 1072 | 30 | 4 | 2 |
-| 958 | 9311961 | 182 | 758 | 27 | 2 | 3 |
-| 959 | 9311962 | 286 | 1283 | 34 | 8 | 2 |
-| 960 | 9311963 | 195 | 859 | 22 | 4 | 3 |
-| 961 | 9311964 | 216 | 832 | 26 | 1 | 1 |
-| 962 | 9311965 | 211 | 882 | 27 | 2 | 3 |
-| 963 | 9311966 | 255 | 1202 | 31 | 2 | 2 |
-| 964 | 9311967 | 160 | 529 | 5 | 10 | 2 |
-| 965 | 9311968 | 169 | 669 | 12 | 8 | 3 |
-| 966 | 9311969 | 163 | 621 | 9 | 3 | 0 |
-| 967 | 9311970 | 252 | 1170 | 32 | 3 | 3 |
-| 968 | 9311971 | 224 | 942 | 26 | 8 | 2 |
-| 969 | 9311972 | 230 | 973 | 14 | 4 | 2 |
-| 970 | 9311973 | 196 | 636 | 12 | 6 | 2 |
-| 971 | 9311974 | 147 | 659 | 8 | 2 | 0 |
-| 972 | 9311975 | 199 | 676 | 16 | 4 | 1 |
-| 973 | 9311976 | 260 | 1103 | 32 | 3 | 2 |
-| 974 | 9311977 | 262 | 1086 | 22 | 7 | 1 |
-| 975 | 9311978 | 241 | 1115 | 22 | 7 | 2 |
-| 976 | 9311979 | 232 | 1112 | 26 | 2 | 1 |
-| 977 | 9311980 | 187 | 1024 | 16 | 5 | 0 |
-| 978 | 9311981 | 203 | 879 | 20 | 1 | 2 |
-| 979 | 9311982 | 194 | 806 | 19 | 4 | 2 |
-| 980 | 9311983 | 248 | 1447 | 17 | 4 | 1 |
-| 981 | 9311984 | 216 | 928 | 13 | 5 | 2 |
-| 982 | 9311985 | 222 | 947 | 28 | 2 | 3 |
-| 983 | 9311986 | 218 | 926 | 35 | 7 | 3 |
-| 984 | 9311987 | 210 | 1072 | 16 | 4 | 3 |
-| 985 | 9311988 | 189 | 988 | 16 | 2 | 0 |
-| 986 | 9311989 | 215 | 951 | 21 | 4 | 0 |
-| 987 | 9311990 | 245 | 1228 | 27 | 4 | 3 |
-| 988 | 9311991 | 231 | 1099 | 28 | 5 | 2 |
-| 989 | 9311992 | 189 | 899 | 17 | 2 | 0 |
-| 990 | 9311993 | 225 | 1058 | 18 | 6 | 1 |
-| 991 | 9311994 | 222 | 1065 | 31 | 5 | 1 |
-| 992 | 9311995 | 231 | 1144 | 11 | 4 | 0 |
-| 993 | 9311996 | 184 | 824 | 11 | 6 | 1 |
-| 994 | 9311997 | 264 | 1258 | 25 | 8 | 2 |
-| 995 | 9311998 | 173 | 726 | 19 | 7 | 1 |
-| 996 | 9311999 | 202 | 779 | 19 | 4 | 1 |
-| 997 | 9312000 | 183 | 674 | 19 | 8 | 2 |
-| 998 | 9312001 | 228 | 1066 | 26 | 6 | 0 |
-| 999 | 9312002 | 183 | 826 | 18 | 0 | 1 |
+| 680 | 9311683 | 199 | 830 | 23 | 3 | 1 |
+| 681 | 9311684 | 211 | 1023 | 20 | 2 | 2 |
+| 682 | 9311685 | 199 | 910 | 22 | 6 | 1 |
+| 683 | 9311686 | 236 | 881 | 21 | 5 | 3 |
+| 684 | 9311687 | 167 | 556 | 17 | 8 | 3 |
+| 685 | 9311688 | 200 | 646 | 5 | 2 | 2 |
+| 686 | 9311689 | 222 | 925 | 22 | 3 | 4 |
+| 687 | 9311690 | 191 | 814 | 22 | 6 | 2 |
+| 688 | 9311691 | 196 | 887 | 23 | 6 | 1 |
+| 689 | 9311692 | 310 | 1522 | 22 | 10 | 2 |
+| 690 | 9311693 | 281 | 1683 | 17 | 2 | 1 |
+| 691 | 9311694 | 199 | 763 | 23 | 1 | 2 |
+| 692 | 9311695 | 175 | 903 | 19 | 4 | 1 |
+| 693 | 9311696 | 203 | 697 | 13 | 2 | 0 |
+| 694 | 9311697 | 286 | 1257 | 36 | 5 | 2 |
+| 695 | 9311698 | 205 | 914 | 17 | 2 | 1 |
+| 696 | 9311699 | 181 | 937 | 14 | 1 | 2 |
+| 697 | 9311700 | 225 | 1024 | 31 | 3 | 0 |
+| 698 | 9311701 | 182 | 587 | 13 | 9 | 1 |
+| 699 | 9311702 | 192 | 798 | 11 | 7 | 1 |
+| 700 | 9311703 | 198 | 663 | 17 | 3 | 2 |
+| 701 | 9311704 | 219 | 825 | 22 | 4 | 0 |
+| 702 | 9311705 | 209 | 1222 | 33 | 4 | 4 |
+| 703 | 9311706 | 246 | 1024 | 23 | 4 | 2 |
+| 704 | 9311707 | 214 | 844 | 37 | 7 | 1 |
+| 705 | 9311708 | 202 | 869 | 22 | 18 | 0 |
+| 706 | 9311709 | 224 | 1093 | 21 | 4 | 2 |
+| 707 | 9311710 | 231 | 1040 | 20 | 6 | 2 |
+| 708 | 9311711 | 227 | 1071 | 23 | 2 | 2 |
+| 709 | 9311712 | 201 | 861 | 18 | 6 | 3 |
+| 710 | 9311713 | 242 | 1010 | 24 | 3 | 3 |
+| 711 | 9311714 | 232 | 1301 | 25 | 5 | 1 |
+| 712 | 9311715 | 228 | 1040 | 16 | 4 | 1 |
+| 713 | 9311716 | 217 | 1039 | 14 | 9 | 2 |
+| 714 | 9311717 | 190 | 729 | 11 | 7 | 1 |
+| 715 | 9311718 | 192 | 836 | 23 | 4 | 0 |
+| 716 | 9311719 | 236 | 1079 | 27 | 6 | 1 |
+| 717 | 9311720 | 201 | 726 | 17 | 4 | 1 |
+| 718 | 9311721 | 201 | 829 | 17 | 6 | 1 |
+| 719 | 9311722 | 205 | 954 | 23 | 7 | 1 |
+| 720 | 9311723 | 163 | 573 | 11 | 2 | 0 |
+| 721 | 9311724 | 250 | 1122 | 18 | 8 | 3 |
+| 722 | 9311725 | 203 | 1005 | 8 | 2 | 3 |
+| 723 | 9311726 | 209 | 1059 | 17 | 6 | 2 |
+| 724 | 9311727 | 227 | 1145 | 37 | 2 | 1 |
+| 725 | 9311728 | 218 | 1204 | 31 | 1 | 2 |
+| 726 | 9311729 | 243 | 1377 | 29 | 4 | 1 |
+| 727 | 9311730 | 198 | 872 | 26 | 8 | 0 |
+| 728 | 9311731 | 313 | 1490 | 35 | 3 | 2 |
+| 729 | 9311732 | 256 | 833 | 20 | 4 | 2 |
+| 730 | 9311733 | 220 | 1282 | 37 | 6 | 1 |
+| 731 | 9311734 | 204 | 944 | 28 | 2 | 3 |
+| 732 | 9311735 | 217 | 971 | 26 | 13 | 2 |
+| 733 | 9311736 | 219 | 864 | 16 | 6 | 1 |
+| 734 | 9311737 | 250 | 1129 | 21 | 7 | 3 |
+| 735 | 9311738 | 211 | 985 | 22 | 4 | 2 |
+| 736 | 9311739 | 204 | 960 | 33 | 3 | 1 |
+| 737 | 9311740 | 240 | 1147 | 23 | 3 | 1 |
+| 738 | 9311741 | 275 | 1251 | 31 | 7 | 5 |
+| 739 | 9311742 | 184 | 771 | 21 | 1 | 1 |
+| 740 | 9311743 | 199 | 1044 | 12 | 5 | 0 |
+| 741 | 9311744 | 248 | 1099 | 27 | 3 | 1 |
+| 742 | 9311745 | 199 | 920 | 24 | 1 | 1 |
+| 743 | 9311746 | 310 | 1671 | 27 | 8 | 3 |
+| 744 | 9311747 | 258 | 1574 | 35 | 7 | 1 |
+| 745 | 9311748 | 210 | 1069 | 28 | 5 | 3 |
+| 746 | 9311749 | 189 | 956 | 20 | 4 | 1 |
+| 747 | 9311750 | 227 | 837 | 24 | 1 | 2 |
+| 748 | 9311751 | 190 | 597 | 13 | 8 | 1 |
+| 749 | 9311752 | 303 | 1691 | 30 | 1 | 1 |
+| 750 | 9311753 | 228 | 1140 | 33 | 8 | 3 |
+| 751 | 9311754 | 221 | 1042 | 26 | 3 | 0 |
+| 752 | 9311755 | 237 | 886 | 18 | 3 | 1 |
+| 753 | 9311756 | 270 | 1185 | 28 | 5 | 3 |
+| 754 | 9311757 | 268 | 1205 | 11 | 5 | 2 |
+| 755 | 9311758 | 189 | 746 | 17 | 7 | 1 |
+| 756 | 9311759 | 192 | 689 | 23 | 3 | 2 |
+| 757 | 9311760 | 218 | 897 | 17 | 3 | 1 |
+| 758 | 9311761 | 240 | 1155 | 25 | 8 | 1 |
+| 759 | 9311762 | 249 | 1273 | 25 | 3 | 2 |
+| 760 | 9311763 | 241 | 1311 | 26 | 0 | 1 |
+| 761 | 9311764 | 217 | 889 | 24 | 7 | 2 |
+| 762 | 9311765 | 255 | 1240 | 9 | 2 | 3 |
+| 763 | 9311766 | 259 | 1160 | 28 | 13 | 2 |
+| 764 | 9311767 | 193 | 836 | 17 | 5 | 2 |
+| 765 | 9311768 | 143 | 504 | 11 | 8 | 0 |
+| 766 | 9311769 | 255 | 1112 | 25 | 6 | 4 |
+| 767 | 9311770 | 223 | 1103 | 25 | 4 | 1 |
+| 768 | 9311771 | 244 | 950 | 17 | 5 | 2 |
+| 769 | 9311772 | 223 | 961 | 23 | 6 | 2 |
+| 770 | 9311773 | 169 | 760 | 10 | 3 | 1 |
+| 771 | 9311774 | 266 | 1211 | 34 | 6 | 3 |
+| 772 | 9311775 | 228 | 1177 | 26 | 4 | 2 |
+| 773 | 9311776 | 301 | 1329 | 23 | 10 | 2 |
+| 774 | 9311777 | 278 | 1657 | 31 | 1 | 1 |
+| 775 | 9311778 | 171 | 674 | 12 | 8 | 0 |
+| 776 | 9311779 | 168 | 653 | 12 | 2 | 0 |
+| 777 | 9311780 | 241 | 1176 | 15 | 6 | 2 |
+| 778 | 9311781 | 235 | 999 | 18 | 17 | 4 |
+| 779 | 9311782 | 184 | 795 | 11 | 5 | 1 |
+| 780 | 9311783 | 259 | 1201 | 16 | 4 | 2 |
+| 781 | 9311784 | 287 | 1474 | 27 | 9 | 0 |
+| 782 | 9311785 | 214 | 1000 | 20 | 2 | 2 |
+| 783 | 9311786 | 210 | 1090 | 12 | 2 | 1 |
+| 784 | 9311787 | 391 | 2062 | 41 | 7 | 4 |
+| 785 | 9311788 | 199 | 848 | 19 | 0 | 1 |
+| 786 | 9311789 | 182 | 686 | 14 | 4 | 1 |
+| 787 | 9311790 | 196 | 947 | 14 | 3 | 1 |
+| 788 | 9311791 | 190 | 823 | 6 | 7 | 2 |
+| 789 | 9311792 | 261 | 1220 | 29 | 6 | 2 |
+| 790 | 9311793 | 192 | 898 | 21 | 4 | 2 |
+| 791 | 9311794 | 231 | 1040 | 22 | 7 | 0 |
+| 792 | 9311795 | 270 | 1147 | 28 | 17 | 3 |
+| 793 | 9311796 | 231 | 1331 | 20 | 7 | 2 |
+| 794 | 9311797 | 190 | 620 | 20 | 4 | 2 |
+| 795 | 9311798 | 257 | 1280 | 17 | 6 | 3 |
+| 796 | 9311799 | 231 | 1013 | 18 | 2 | 1 |
+| 797 | 9311800 | 224 | 810 | 23 | 6 | 1 |
+| 798 | 9311801 | 240 | 727 | 16 | 5 | 1 |
+| 799 | 9311802 | 230 | 1035 | 20 | 2 | 2 |
+| 800 | 9311803 | 192 | 949 | 20 | 6 | 1 |
+| 801 | 9311804 | 194 | 721 | 12 | 6 | 1 |
+| 802 | 9311805 | 236 | 978 | 17 | 4 | 2 |
+| 803 | 9311806 | 265 | 1432 | 31 | 6 | 3 |
+| 804 | 9311807 | 244 | 1333 | 36 | 5 | 2 |
+| 805 | 9311808 | 228 | 1122 | 18 | 6 | 2 |
+| 806 | 9311809 | 237 | 944 | 23 | 11 | 0 |
+| 807 | 9311810 | 180 | 813 | 20 | 11 | 3 |
+| 808 | 9311811 | 162 | 651 | 8 | 2 | 0 |
+| 809 | 9311812 | 210 | 732 | 16 | 5 | 3 |
+| 810 | 9311813 | 194 | 810 | 18 | 2 | 2 |
+| 811 | 9311814 | 276 | 1182 | 26 | 5 | 2 |
+| 812 | 9311815 | 213 | 1112 | 31 | 3 | 2 |
+| 813 | 9311816 | 214 | 945 | 23 | 4 | 2 |
+| 814 | 9311817 | 205 | 957 | 25 | 2 | 3 |
+| 815 | 9311818 | 240 | 1114 | 21 | 2 | 0 |
+| 816 | 9311819 | 279 | 1422 | 26 | 6 | 2 |
+| 817 | 9311820 | 167 | 543 | 6 | 3 | 0 |
+| 818 | 9311821 | 286 | 1215 | 17 | 6 | 4 |
+| 819 | 9311822 | 210 | 850 | 22 | 8 | 2 |
+| 820 | 9311823 | 206 | 1032 | 31 | 9 | 2 |
+| 821 | 9311824 | 274 | 1239 | 21 | 9 | 0 |
+| 822 | 9311825 | 236 | 1295 | 30 | 3 | 1 |
+| 823 | 9311826 | 220 | 896 | 18 | 4 | 0 |
+| 824 | 9311827 | 242 | 1231 | 31 | 15 | 1 |
+| 825 | 9311828 | 270 | 1009 | 17 | 3 | 2 |
+| 826 | 9311829 | 189 | 600 | 11 | 6 | 2 |
+| 827 | 9311830 | 242 | 1348 | 29 | 3 | 3 |
+| 828 | 9311831 | 215 | 1032 | 22 | 6 | 1 |
+| 829 | 9311832 | 238 | 1048 | 31 | 4 | 4 |
+| 830 | 9311833 | 188 | 688 | 17 | 3 | 1 |
+| 831 | 9311834 | 222 | 979 | 24 | 2 | 2 |
+| 832 | 9311835 | 201 | 813 | 8 | 5 | 2 |
+| 833 | 9311836 | 206 | 912 | 23 | 3 | 3 |
+| 834 | 9311837 | 246 | 1080 | 19 | 7 | 3 |
+| 835 | 9311838 | 161 | 695 | 13 | 5 | 2 |
+| 836 | 9311839 | 204 | 886 | 21 | 3 | 1 |
+| 837 | 9311840 | 197 | 1014 | 23 | 5 | 0 |
+| 838 | 9311841 | 246 | 1172 | 22 | 11 | 1 |
+| 839 | 9311842 | 260 | 1230 | 44 | 5 | 3 |
+| 840 | 9311843 | 225 | 1065 | 26 | 2 | 2 |
+| 841 | 9311844 | 200 | 1007 | 15 | 0 | 1 |
+| 842 | 9311845 | 208 | 1059 | 15 | 6 | 4 |
+| 843 | 9311846 | 247 | 1169 | 14 | 1 | 2 |
+| 844 | 9311847 | 212 | 903 | 11 | 4 | 1 |
+| 845 | 9311848 | 210 | 1120 | 17 | 1 | 1 |
+| 846 | 9311849 | 233 | 1107 | 32 | 5 | 5 |
+| 847 | 9311850 | 274 | 1241 | 15 | 2 | 4 |
+| 848 | 9311851 | 175 | 746 | 12 | 3 | 2 |
+| 849 | 9311852 | 218 | 980 | 21 | 4 | 2 |
+| 850 | 9311853 | 217 | 1095 | 25 | 0 | 1 |
+| 851 | 9311854 | 232 | 1151 | 29 | 5 | 0 |
+| 852 | 9311855 | 236 | 930 | 15 | 5 | 1 |
+| 853 | 9311856 | 187 | 680 | 17 | 3 | 1 |
+| 854 | 9311857 | 166 | 718 | 11 | 1 | 1 |
+| 855 | 9311858 | 180 | 667 | 8 | 5 | 3 |
+| 856 | 9311859 | 206 | 555 | 19 | 3 | 2 |
+| 857 | 9311860 | 258 | 1321 | 32 | 11 | 3 |
+| 858 | 9311861 | 207 | 882 | 28 | 8 | 2 |
+| 859 | 9311862 | 345 | 1550 | 37 | 9 | 2 |
+| 860 | 9311863 | 193 | 619 | 17 | 9 | 2 |
+| 861 | 9311864 | 232 | 1247 | 21 | 4 | 1 |
+| 862 | 9311865 | 187 | 942 | 28 | 3 | 1 |
+| 863 | 9311866 | 238 | 1206 | 31 | 1 | 3 |
+| 864 | 9311867 | 271 | 1067 | 25 | 5 | 3 |
+| 865 | 9311868 | 289 | 1575 | 19 | 4 | 2 |
+| 866 | 9311869 | 191 | 798 | 18 | 5 | 2 |
+| 867 | 9311870 | 191 | 628 | 17 | 9 | 2 |
+| 868 | 9311871 | 196 | 1058 | 20 | 5 | 3 |
+| 869 | 9311872 | 241 | 1376 | 21 | 6 | 1 |
+| 870 | 9311873 | 250 | 1315 | 33 | 7 | 4 |
+| 871 | 9311874 | 220 | 1029 | 21 | 5 | 2 |
+| 872 | 9311875 | 207 | 1122 | 20 | 1 | 1 |
+| 873 | 9311876 | 229 | 786 | 18 | 3 | 2 |
+| 874 | 9311877 | 525 | 3248 | 42 | 3 | 2 |
+| 875 | 9311878 | 166 | 679 | 17 | 5 | 2 |
+| 876 | 9311879 | 203 | 905 | 18 | 2 | 2 |
+| 877 | 9311880 | 188 | 638 | 14 | 3 | 2 |
+| 878 | 9311881 | 205 | 970 | 19 | 6 | 2 |
+| 879 | 9311882 | 213 | 830 | 22 | 1 | 1 |
+| 880 | 9311883 | 245 | 607 | 19 | 4 | 1 |
+| 881 | 9311884 | 254 | 1269 | 29 | 4 | 2 |
+| 882 | 9311885 | 199 | 800 | 29 | 5 | 4 |
+| 883 | 9311886 | 252 | 911 | 34 | 12 | 1 |
+| 884 | 9311887 | 216 | 846 | 15 | 2 | 0 |
+| 885 | 9311888 | 171 | 580 | 15 | 1 | 2 |
+| 886 | 9311889 | 191 | 642 | 16 | 8 | 3 |
+| 887 | 9311890 | 179 | 726 | 14 | 2 | 3 |
+| 888 | 9311891 | 196 | 745 | 13 | 11 | 1 |
+| 889 | 9311892 | 236 | 925 | 14 | 3 | 1 |
+| 890 | 9311893 | 236 | 1258 | 43 | 2 | 3 |
+| 891 | 9311894 | 219 | 882 | 26 | 4 | 1 |
+| 892 | 9311895 | 202 | 947 | 22 | 7 | 2 |
+| 893 | 9311896 | 246 | 1339 | 23 | 4 | 1 |
+| 894 | 9311897 | 181 | 788 | 19 | 3 | 1 |
+| 895 | 9311898 | 172 | 671 | 15 | 2 | 2 |
+| 896 | 9311899 | 287 | 1580 | 22 | 13 | 3 |
+| 897 | 9311900 | 208 | 985 | 35 | 7 | 3 |
+| 898 | 9311901 | 242 | 1149 | 40 | 6 | 1 |
+| 899 | 9311902 | 308 | 1511 | 32 | 4 | 2 |
+| 900 | 9311903 | 247 | 1344 | 28 | 3 | 3 |
+| 901 | 9311904 | 251 | 1397 | 23 | 6 | 0 |
+| 902 | 9311905 | 258 | 1215 | 33 | 2 | 1 |
+| 903 | 9311906 | 240 | 1206 | 32 | 1 | 2 |
+| 904 | 9311907 | 227 | 1167 | 22 | 5 | 1 |
+| 905 | 9311908 | 230 | 1050 | 26 | 5 | 2 |
+| 906 | 9311909 | 218 | 1156 | 18 | 0 | 0 |
+| 907 | 9311910 | 196 | 797 | 17 | 1 | 2 |
+| 908 | 9311911 | 216 | 968 | 12 | 6 | 1 |
+| 909 | 9311912 | 190 | 777 | 15 | 5 | 1 |
+| 910 | 9311913 | 208 | 937 | 27 | 8 | 2 |
+| 911 | 9311914 | 297 | 1213 | 28 | 5 | 2 |
+| 912 | 9311915 | 177 | 639 | 22 | 3 | 2 |
+| 913 | 9311916 | 277 | 1461 | 28 | 2 | 3 |
+| 914 | 9311917 | 193 | 837 | 20 | 2 | 2 |
+| 915 | 9311918 | 208 | 659 | 20 | 1 | 1 |
+| 916 | 9311919 | 284 | 1357 | 40 | 6 | 2 |
+| 917 | 9311920 | 190 | 765 | 21 | 3 | 3 |
+| 918 | 9311921 | 253 | 1360 | 30 | 6 | 2 |
+| 919 | 9311922 | 218 | 1055 | 20 | 4 | 0 |
+| 920 | 9311923 | 230 | 1108 | 16 | 10 | 1 |
+| 921 | 9311924 | 200 | 879 | 12 | 2 | 0 |
+| 922 | 9311925 | 208 | 911 | 24 | 12 | 3 |
+| 923 | 9311926 | 234 | 945 | 19 | 2 | 3 |
+| 924 | 9311927 | 223 | 1086 | 27 | 2 | 1 |
+| 925 | 9311928 | 253 | 1125 | 26 | 6 | 0 |
+| 926 | 9311929 | 257 | 1267 | 21 | 3 | 1 |
+| 927 | 9311930 | 195 | 967 | 18 | 4 | 2 |
+| 928 | 9311931 | 226 | 888 | 14 | 7 | 2 |
+| 929 | 9311932 | 204 | 829 | 18 | 2 | 1 |
+| 930 | 9311933 | 242 | 1123 | 21 | 5 | 1 |
+| 931 | 9311934 | 194 | 1022 | 21 | 3 | 2 |
+| 932 | 9311935 | 234 | 1209 | 37 | 10 | 3 |
+| 933 | 9311936 | 250 | 1305 | 27 | 5 | 2 |
+| 934 | 9311937 | 171 | 678 | 7 | 3 | 1 |
+| 935 | 9311938 | 290 | 1696 | 33 | 1 | 0 |
+| 936 | 9311939 | 208 | 860 | 27 | 2 | 2 |
+| 937 | 9311940 | 234 | 957 | 36 | 5 | 5 |
+| 938 | 9311941 | 210 | 1039 | 21 | 3 | 0 |
+| 939 | 9311942 | 196 | 977 | 10 | 7 | 1 |
+| 940 | 9311943 | 264 | 1233 | 23 | 12 | 0 |
+| 941 | 9311944 | 273 | 1376 | 26 | 7 | 0 |
+| 942 | 9311945 | 227 | 1018 | 22 | 4 | 2 |
+| 943 | 9311946 | 197 | 746 | 19 | 6 | 2 |
+| 944 | 9311947 | 240 | 1148 | 14 | 5 | 1 |
+| 945 | 9311948 | 235 | 897 | 21 | 11 | 2 |
+| 946 | 9311949 | 298 | 1478 | 35 | 3 | 2 |
+| 947 | 9311950 | 232 | 695 | 18 | 3 | 2 |
+| 948 | 9311951 | 226 | 931 | 10 | 4 | 3 |
+| 949 | 9311952 | 211 | 1030 | 27 | 3 | 1 |
+| 950 | 9311953 | 193 | 875 | 16 | 5 | 2 |
+| 951 | 9311954 | 267 | 1225 | 16 | 6 | 2 |
+| 952 | 9311955 | 264 | 1283 | 37 | 4 | 3 |
+| 953 | 9311956 | 201 | 525 | 11 | 6 | 3 |
+| 954 | 9311957 | 198 | 996 | 28 | 2 | 2 |
+| 955 | 9311958 | 186 | 830 | 22 | 3 | 2 |
+| 956 | 9311959 | 234 | 939 | 16 | 8 | 2 |
+| 957 | 9311960 | 234 | 950 | 29 | 4 | 2 |
+| 958 | 9311961 | 215 | 918 | 19 | 3 | 3 |
+| 959 | 9311962 | 267 | 1242 | 35 | 1 | 3 |
+| 960 | 9311963 | 259 | 1202 | 34 | 3 | 3 |
+| 961 | 9311964 | 217 | 1039 | 27 | 0 | 1 |
+| 962 | 9311965 | 238 | 1037 | 13 | 1 | 3 |
+| 963 | 9311966 | 198 | 821 | 19 | 3 | 0 |
+| 964 | 9311967 | 161 | 546 | 7 | 5 | 0 |
+| 965 | 9311968 | 214 | 941 | 28 | 8 | 3 |
+| 966 | 9311969 | 175 | 750 | 13 | 3 | 1 |
+| 967 | 9311970 | 180 | 811 | 16 | 5 | 1 |
+| 968 | 9311971 | 213 | 959 | 17 | 6 | 0 |
+| 969 | 9311972 | 278 | 1429 | 30 | 5 | 0 |
+| 970 | 9311973 | 186 | 667 | 19 | 5 | 2 |
+| 971 | 9311974 | 156 | 776 | 12 | 3 | 0 |
+| 972 | 9311975 | 198 | 648 | 13 | 2 | 1 |
+| 973 | 9311976 | 343 | 1593 | 40 | 6 | 2 |
+| 974 | 9311977 | 304 | 1401 | 28 | 13 | 2 |
+| 975 | 9311978 | 270 | 1319 | 18 | 6 | 0 |
+| 976 | 9311979 | 291 | 1572 | 27 | 5 | 1 |
+| 977 | 9311980 | 226 | 1118 | 26 | 10 | 1 |
+| 978 | 9311981 | 200 | 762 | 22 | 3 | 3 |
+| 979 | 9311982 | 202 | 863 | 20 | 2 | 2 |
+| 980 | 9311983 | 256 | 1259 | 21 | 7 | 3 |
+| 981 | 9311984 | 282 | 1553 | 22 | 4 | 1 |
+| 982 | 9311985 | 209 | 974 | 20 | 2 | 2 |
+| 983 | 9311986 | 204 | 912 | 20 | 6 | 3 |
+| 984 | 9311987 | 189 | 822 | 10 | 4 | 3 |
+| 985 | 9311988 | 198 | 776 | 15 | 2 | 0 |
+| 986 | 9311989 | 252 | 1283 | 21 | 4 | 1 |
+| 987 | 9311990 | 223 | 933 | 27 | 10 | 3 |
+| 988 | 9311991 | 181 | 798 | 12 | 4 | 0 |
+| 989 | 9311992 | 195 | 930 | 17 | 7 | 1 |
+| 990 | 9311993 | 228 | 1011 | 21 | 8 | 1 |
+| 991 | 9311994 | 258 | 1403 | 43 | 2 | 2 |
+| 992 | 9311995 | 182 | 820 | 17 | 3 | 1 |
+| 993 | 9311996 | 197 | 826 | 24 | 7 | 2 |
+| 994 | 9311997 | 249 | 1192 | 27 | 9 | 4 |
+| 995 | 9311998 | 210 | 903 | 15 | 6 | 0 |
+| 996 | 9311999 | 342 | 1716 | 34 | 2 | 2 |
+| 997 | 9312000 | 205 | 901 | 25 | 5 | 2 |
+| 998 | 9312001 | 170 | 585 | 12 | 4 | 0 |
+| 999 | 9312002 | 183 | 859 | 21 | 1 | 1 |
 
 ## Throughput
 
-- Turns simulated: 220445 (first play of each game)
-- Aggregate: 188.7 turns/s over 1168.2s wall
+- Turns simulated: 220913 (first play of each game)
+- Aggregate: 253.0 turns/s over 873.3s wall
 - Per game thread: 31.7 turns/s
 
 ## Determinism

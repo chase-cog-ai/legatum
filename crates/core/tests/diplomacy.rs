@@ -2282,6 +2282,19 @@ fn stopping_reparations_is_a_public_betrayal_that_frees_only_the_wronged_side() 
     };
     assert!(!validate_orders(&s, PlayerId(0), &[declare(1)]).is_empty());
     assert!(validate_orders(&s, PlayerId(1), &[declare(0)]).is_empty());
+    // The freed side's War action names next turn, not the old truce end, and the war starts then.
+    assert_eq!(
+        player_view(&s, PlayerId(1))
+            .diplomacy
+            .actions
+            .iter()
+            .find(|a| a.order == declare(0))
+            .unwrap()
+            .effective_turn,
+        s.turn + 1
+    );
+    let (s, _) = step(&s, &[(1, vec![declare(0)])]);
+    assert_eq!(relation(&s).state, RelationState::War);
 }
 
 #[test]

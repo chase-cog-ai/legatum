@@ -1460,6 +1460,9 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
                     d.relation(team, *against).map_or(effective, |r| {
                         if surprise_war(r, state.turn) {
                             state.turn
+                        } else if r.truce_released == Some(team) {
+                            // Freed by stopped reparations: the truce no longer delays it.
+                            effective
                         } else {
                             effective.max(r.guarantee_until)
                         }

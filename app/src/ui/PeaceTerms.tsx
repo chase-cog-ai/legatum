@@ -103,7 +103,7 @@ export function PeaceTermsEditor({ view, to, start, gold, goldField, orders = []
       : lines.length > 0 && <ul className="peace-terms-summary" data-testid="peace-terms-summary">{lines.map((l) => <li key={l.text} className={l.tone}><Amounts text={l.text} /></li>)}</ul>}
     {forecast && <div className={`peace-forecast ${forecast.answer.toLowerCase()}`} role="status" data-testid="peace-forecast">
       <strong>{them} {ANSWER[forecast.answer]}.</strong>
-      {forecast.reasons.length > 0 && <ul>{forecast.reasons.slice(0, 4).map((r) => <li key={r}><Amounts text={r} /></li>)}</ul>}
+      {forecast.reasons.length > 0 && <ul>{forecast.reasons.map((r) => <li key={r}><Amounts text={r} /></li>)}</ul>}
       {forecast.answer === 'Counter' && forecast.counter && <p className="muted">Their terms: {termLines(view, forecast.counter, to, view.team, forecast.counter_gold ?? 0).map((l) => l.text).join('. ') || 'a plain Peace'}.</p>}
       <p className="muted">They answer next turn; the war may look different to them by then.</p>
     </div>}

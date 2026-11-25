@@ -334,6 +334,9 @@ function relationText(relation: Relation, view: PlayerView): string[] {
       ...(relation.declarers.includes(other) && !relation.declarers.includes(view.team) ? [`${empireTitle(view, other)} started it.`] : [])];
   }
   if (relation.state === 'Peace') {
+    const other = relation.a === view.team ? relation.b : relation.a;
+    if (relation.guarantee_until > view.turn && relation.truce_released === view.team)
+      return [`No combat or captures; ${peaceBorders(relation, view)}. ${empireTitle(view, other)} stopped the reparations: you may declare War. They are bound through turn ${relation.guarantee_until - 1}.`];
     return [`No combat or captures; ${peaceBorders(relation, view)}. ${relation.guarantee_until > view.turn
       ? `Peace guaranteed through turn ${relation.guarantee_until - 1}. Earliest War: turn ${relation.guarantee_until}.`
       : 'Declaring War starts it at once.'}`];
@@ -829,7 +832,7 @@ export function DiplomacyPanel() {
               {recentOfferOutcomes(view, reportHistory, seat, s.team).map((o) => <p className={`offer-outcome ${o.kind}`} data-testid="offer-outcome" key={`${o.turn}-${o.text}`}>{o.text}</p>)}
               {/* Public record: an empire that broke an alliance, and how long its victim refuses it. */}
               {betrayalsBy(view, s.team).filter((b) => isTeamAlive(view, b.against)).map((b) => <p className="betrayal-line" key={`${b.against}-${b.turn}`}>
-                Broke an alliance on turn {b.turn}: {b.against === view.team ? 'your team' : empireTitle(view, b.against)} won't ally until turn {b.until}
+                {(view.diplomacy?.relations ?? []).some((r) => r.truce_released === b.against && (r.a === b.by || r.b === b.by)) ? 'Stopped reparations' : 'Broke an alliance'} on turn {b.turn}: {b.against === view.team ? 'your team' : empireTitle(view, b.against)} won't ally until turn {b.until}
               </p>)}
               {isOpen && relation && <div className="empire-detail" id="empire-detail">
                 <div className="relation-head">

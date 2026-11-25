@@ -72,8 +72,8 @@ test('end a turn with combat, close the report, reopen it from Last turn, step b
   let report = await shownReport(page);
   const line = report.locator('.rline', { hasText: 'Your Archer bombarded' });
   await expect(line).toHaveAttribute('data-tone', 'good');
-  await expect(line).toContainText(/from 2 tiles [A-Z]+: −\d+ HP/);
-  await expect(line.locator('.hp-delta.good')).toHaveText(/^−\d+ HP$/);
+  await expect(line).toContainText(/from 2 tiles [A-Z]+: −\d+ health/);
+  await expect(line.locator('.hp-delta.good')).toHaveText(/^−\d+ health$/);
   await report.getByRole('button', { name: 'Close report' }).click();
   await expect(report).toBeHidden();
 

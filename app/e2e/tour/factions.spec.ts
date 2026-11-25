@@ -8,7 +8,7 @@ import { wallsFixture } from '../../src/test/wallsFixture';
 import { stageHeirHolder } from '../vpStage';
 import { forgeHeirFixture } from '../../src/test/forgeHeirFixture';
 import { broadcastCoreSave, freeTechsCoreSave, retireCoreSave, sakokuCoreSave, wildClearedCoreSave, wildCoreSave } from '../../src/test/goalActionsFixture';
-import { SIZES, aim, centred, dismissCelebrations, expectDockWhole, expectRaceWhole, loadFixture, openReport, primaries, selectThing, shot, showMoment, type GameWindow } from './helpers';
+import { SIZES, aim, centred, dismissCelebrations, expectDockWhole, expectRaceWhole, closeLedger, ledgerGoal, loadFixture, openReport, primaries, selectThing, shot, showMoment, type GameWindow } from './helpers';
 
 // Each test starts from its own save, so tests can run on separate workers.
 test.describe.configure({ mode: 'parallel' });
@@ -27,15 +27,14 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await selectThing(page, 'city', forge.forged[0]);
     await page.mouse.move(5, size.height / 2);
     await shot(page, size, '90b-germany-city-with-foundry');
-    await revealSidebar(page, 'standings');
-    await page.locator('.vp-row.mine .vhc-goal-open').first().hover();
-    await expect(page.locator('.vhc-pop .vh-card.k-goal .vh-meter')).toContainText('4 of 5 Ruhr Foundries');
+    await expect((await ledgerGoal(page, { mine: true })).locator('.vh-meter')).toContainText('4 of 5 Ruhr Foundries');
     await shot(page, size, '90c-germany-goal-meter');
+    await closeLedger(page);
     await page.mouse.move(5, size.height / 2);
     await stageHeirHolder(page, { holder: 2, of: 1 });
     await shot(page, size, '90d-race-heir-held-by-rival');
-    await page.locator('.panel.vp .vhc-tok[data-held]').first().hover();
-    await expect(page.locator('.vhc-pop .vh-card.k-goal .vh-held')).toBeVisible();
+    // The Heir's holder scores Byzantium's goal: its line in the Score ledger says who holds him.
+    await expect((await ledgerGoal(page, { name: 'Heir to the Throne' })).locator('.sl-goal-state')).toHaveText(/^Held by /);
     await shot(page, size, '90e-race-heir-card');
   });
 
@@ -56,10 +55,9 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     }
     await page.mouse.move(5, size.height / 2);
     await shot(page, size, '91a-byzantium-heir-card');
-    await revealSidebar(page, 'standings');
-    await page.locator('.vp-row.mine .vhc-goal-open').first().hover();
-    await expect(page.locator('.vhc-pop .vh-card.k-goal .vh-held')).toBeVisible();
+    await expect(await ledgerGoal(page, { mine: true })).toContainText('Nobody holds the Heir now');
     await shot(page, size, '91f-byzantium-heir-goal-card-nobody');
+    await closeLedger(page);
 
     for (const [heir, id] of [['own', '91b-heir-own-map-and-panel'], ['captured', '91c-heir-captured-map-and-panel']] as const) {
       const context = await browser.newContext({ viewport: { width: size.width, height: size.height } });

@@ -1,4 +1,4 @@
-// Luxury tiles (rules 60): six flavour tiles on the map, each with a painted medallion, a small
+// Luxury tiles (rules 61): six flavour tiles on the map, each with a painted medallion, a small
 // tile bonus and one line of history on the tile card. The real WASM core loads the position.
 import { test as base, expect, type Page } from '@playwright/test';
 import { createServer } from 'vite';

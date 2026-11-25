@@ -557,6 +557,8 @@ export interface PlayerPublic {
   army?: number;
   /** Public technological progress: furthest era entered (times 1000) plus technologies known (0 once dead). */
   advancement?: number;
+  /** Public Science per turn, the same total the owner sees in its top bar (0 once dead). */
+  science?: number;
   /** The trailing average of this empire's total yields (Food + Production + Gold + Science). */
   power?: number;
   /** Its Power over the mean living empire's, in percent (negative below it). */
@@ -659,6 +661,8 @@ export interface ResearchView {
   known: TechId[];
   /** Techs this faction skips: known from the start because they give it nothing. Research screens leave them out; `era_total` and `era_known` exclude them. */
   skipped?: TechId[];
+  /** The tech tree's goal: a later technology the engine researches toward whenever the queue runs out. */
+  goal?: TechId | null;
   available: TechOption[];
   catalog: TechOption[];
   unlocks: TechUnlock[];
@@ -1076,6 +1080,7 @@ export type Order =
   | { type: 'BuyItem'; city: CityId; item: ProductionItem }
   | { type: 'SetResearch'; tech: TechId }
   | { type: 'SetResearchQueue'; techs: TechId[] }
+  | { type: 'SetResearchGoal'; tech: TechId | null }
   | { type: 'SetScienceConversion'; to: 'Gold' | 'Food' | 'Production' }
   | { type: 'RangedAttack'; unit: UnitId; target: Hex }
   /** An aircraft in a city's hangar strikes a tile within its range: a Bomber's 5, a Fighter's 3 (core `rules::air`). A striking Fighter does not intercept that turn. */

@@ -83,7 +83,7 @@ checked in `crates/core/src/diplomacy.rs::check_order` (ProposeTreaty and accept
 RespondToProposal, error `diplomacy::NOT_MET`) via `DiplomacyState::met`; views list met teams in
 `DiplomacyView::met`. Saves from before the rule have no record (`contacts: None`) and treat every
 pair as met; tapes before version 5 replay without it (`wasm/src/tape.rs::initial_state`).
- the UI states "You haven't met the X yet" once on that empire's row.
+ the UI states "You haven't met the X yet" once on that empire's row. The turn a team first meets another, each of its human seats gets the first-contact plate (`celebrate/MeetingTakeover.tsx`, from the growth of `DiplomacyView.met` between two views in `moments.ts::meetingsForTurn`; no core event, so loaded games and replays never show it).
 
 **War**: declaring against a team at plain Peace is a **surprise war** — effective immediately,
 same turn, before ranged fire/movement; a unit can be ordered into enemy territory with the

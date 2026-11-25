@@ -13,7 +13,7 @@ export function UnlockDetail({ view, unlock, turns }: { view: PlayerView; unlock
   if (unlock.city_strength) benefits.push(`+${unlock.city_strength} city strength`);
   if (unlock.unit_strength) benefits.push(`${unlock.unit_strength} strength`);
   if (unlock.unit_ranged) benefits.push(`${unlock.unit_ranged} ranged, range ${unlock.unit_range}, ${unlock.unit_moves} moves`);
-  if (unlock.siege_bonus) benefits.push(`+${unlock.siege_bonus} ranged against city HP`);
+  if (unlock.siege_bonus) benefits.push(`+${unlock.siege_bonus} ranged against city health`);
   if (unlock.item.kind === 'Building' && isGreatWork(unlock.item.building)) benefits.push('+2 VP while its tile is held');
   const faction = view.players.find((p) => p.id === view.me)?.faction;
   if (unlock.item.kind === 'Building' && unlock.item.building === 'Agoge') benefits.push(itemDescription(unlock.item, faction));

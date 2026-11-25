@@ -1,4 +1,3 @@
-import { revealSidebar } from './sidebarAssertions';
 // Population is territory (the territory bar, worked/owned counts) and Alliance Gold costs, on the real
 // engine at the user's laptop size (1000x600) and 1440x900. Screenshots go to
 // test-results/borders-alliance/<size>/ (or LEGATUM_SHOTS) for review.
@@ -66,7 +65,6 @@ for (const size of SIZES) {
       // They left our Alliance inside its protected window on turn 8.
       s.diplomacy!.betrayals = [{ by: 1, against: 0, turn: 8, until: 28 }];
       await load(page, coreFixture(s), 12);
-      await revealSidebar(page, 'standings');
       await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
       const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
       await inbox.locator('.empire-pick').first().click();
@@ -77,7 +75,6 @@ for (const size of SIZES) {
     test("an empire you haven't met: the reason once, the Alliance offer clearly disabled", async ({ page }) => {
       const s = diplomacyState(12, { strangers: true });
       await load(page, coreFixture(s), 12);
-      await revealSidebar(page, 'standings');
       await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
       const inbox = page.getByRole('complementary', { name: 'Diplomacy', exact: true });
       await inbox.locator('.empire-pick').first().click();
@@ -99,7 +96,6 @@ for (const size of SIZES) {
       await expect(page.locator('.tip-bubble:not([hidden])')).toContainText('Treaty upkeep: Alliance with');
       await shot(page, size.name, '05-economy-gold');
       await page.keyboard.press('Escape');
-      await revealSidebar(page, 'standings');
       await page.getByRole('button', { name: /^Diplomacy( \(\d+\))?$/ }).click();
       await expect(page.getByRole('complementary', { name: 'Diplomacy', exact: true })).toContainText('Protected until turn 20');
       await shot(page, size.name, '06-diplomacy-allied');

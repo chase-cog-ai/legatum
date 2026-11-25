@@ -2476,19 +2476,6 @@ dialog.settings-modal {
 .vp:not(.open) > * {
   flex: none;
 }
-.vp:not(.open) > .vp-rows {
-  flex: 0 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-.vp-rows {
-  padding: 4px 0 4px;
-}
-/* More rows below (a short window): "N more" in the footer says so and pages them. No fade over the rows: it nibbled the last whole row. */
-.vp:not(.open) > .vp-rows.scrolls {
-  box-shadow: inset 0 -1px 0 var(--rule-2);
-}
 .vp-more {
   margin-right: 12px;
   font: 600 11px/1 var(--sans);
@@ -4114,16 +4101,6 @@ dialog.gameover::backdrop {
   letter-spacing: 0;
   vertical-align: middle;
 }
-.vp-player {
-  position: relative;
-  display: inline-flex;
-  margin-right: 8px;
-}
-.vp-player .player-badge {
-  position: absolute;
-  right: -8px;
-  bottom: -3px;
-}
 .city-list {
   border-bottom: 1px solid var(--rule);
   font-size: 12px;
@@ -4429,7 +4406,6 @@ dialog.gameover::backdrop {
 :root .title-actions .btn.big:disabled {
   color: var(--muted);
 }
-
 
 /* At 14px the one-line build effects clipped their key facts ("costs 1 pop"): wrap instead. */
 

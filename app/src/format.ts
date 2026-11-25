@@ -300,7 +300,7 @@ type Mine = (p: PlayerId) => boolean;
 
 /** A signed HP loss as written in a line ("−35 HP"): bad when it is the viewer's, good when the viewer dealt it. */
 function hpLoss(amount: number, owner: PlayerId, other: PlayerId, mine: Mine): HpMark {
-  return { text: `−${amount} HP`, tone: mine(owner) ? 'bad' : mine(other) ? 'good' : 'neutral' };
+  return { text: `−${amount} health`, tone: mine(owner) ? 'bad' : mine(other) ? 'good' : 'neutral' };
 }
 
 /**
@@ -366,16 +366,16 @@ function battleTone(e: Battle, mine: Mine): Tone {
 }
 
 /** How a city's automatic shot works, for its report line and the forecast. */
-export const CITY_STRIKE_RULE = 'Walled cities fire back: each city with Walls and HP left shoots once per turn, before movement, at the weakest (lowest-HP) visible enemy military unit within 2 tiles. It deals damage but takes none. Cities without Walls cannot fire.';
+export const CITY_STRIKE_RULE = 'Walled cities fire back: each city with Walls and health left shoots once per turn, before movement, at the weakest (least health) visible enemy military unit within 2 tiles. It deals damage but takes none. Cities without Walls cannot fire.';
 
 /** How a city's HP comes back, for its health tooltip, the Guide and the attack forecast. */
 /** The rule behind a city's strength number, with the walls it has (one wording for the city panel and the Cities overview). */
 export function cityStrengthRule(city: Pick<CityView, 'walls' | 'walls_level'>, faction?: Faction, era = 0): string {
   const at = (design: number) => eraScaled(design, era);
-  return `City strength: ${at(10)} + ${at(2)} × population${city.walls ? (faction === 'Switzerland' ? ` + ${at(15)} Alpine Redoubt` : ` + ${at(10)} Walls`) : ''}${(city.walls_level ?? Number(city.walls)) > 1 ? ` + ${at(5)} × ${(city.walls_level ?? 1) - 1} Walls ${(city.walls_level ?? 1) - 1 > 1 ? 'upgrades' : 'upgrade'}` : ''}, less damage. Every part grows with its owner's era. Hits land one at a time. The hit that empties the city's HP carries on to the garrison with the part of its damage the city did not absorb. Later hits strike the garrison in full.`;
+  return `City strength: ${at(10)} + ${at(2)} × population${city.walls ? (faction === 'Switzerland' ? ` + ${at(15)} Alpine Redoubt` : ` + ${at(10)} Walls`) : ''}${(city.walls_level ?? Number(city.walls)) > 1 ? ` + ${at(5)} × ${(city.walls_level ?? 1) - 1} Walls ${(city.walls_level ?? 1) - 1 > 1 ? 'upgrades' : 'upgrade'}` : ''}, less damage. Every part grows with its owner's era. Hits land one at a time. The hit that empties the city's health carries on to the garrison with the part of its damage the city did not absorb. Later hits strike the garrison in full.`;
 }
 
-export const CITY_HEAL_RULE = `A city regains ${CITY_HEAL} HP at the end of each turn, unless it took damage that turn or an enemy military unit is adjacent. Empty to full takes ${CITY_HP / CITY_HEAL} turns.`;
+export const CITY_HEAL_RULE = `A city regains ${CITY_HEAL} health at the end of each turn, unless it took damage that turn or an enemy military unit is adjacent. Empty to full takes ${CITY_HP / CITY_HEAL} turns.`;
 
 /**
  * Your own damaged city's healing, for the city card: how much it regains and how soon it is
@@ -391,7 +391,7 @@ export function cityHealStatus(city: CityView): { blocked: boolean; text: string
 }
 
 /**
- * Whether a known city fires (core `forecast::city_fires`: Walls and HP left), in words for the
+ * Whether a known city fires (core `forecast::city_fires`: Walls and health left), in words for the
  * city panel, tile card and attack forecast.
  */
 export function cityFireStatus(view: PlayerView, city: CityView): { fires: boolean; text: string } {
@@ -399,7 +399,7 @@ export function cityFireStatus(view: PlayerView, city: CityView): { fires: boole
   const wall = faction === 'Switzerland' ? 'Alpine Redoubt' : 'Walls';
   // Core `data::never_walls`: a Mongol city never has Walls, so the status names the rule, not a fix.
   if (!city.walls) return { fires: false, text: faction === 'Mongols' ? "Can't fire: Mongols never build Walls" : `No ${wall}: can't fire` };
-  if (!cityCanFire(city.walls, city.hp)) return { fires: false, text: "0 HP: can't fire" };
+  if (!cityCanFire(city.walls, city.hp)) return { fires: false, text: "0 health: can't fire" };
   return { fires: true, text: `${wall}: fires at units within 2 tiles` };
 }
 
@@ -508,7 +508,7 @@ function battleLine(e: Battle, ctx: ReportContext, mine: Mine): ReportLine {
 
   if (e.ranged) {
     const text = e.defender_hp_after <= 0
-      ? `${atk} bombarded ${def} ${where}${from && `,${from}`}: ${toDef.text}, ${d.kind === 'City' ? 'the city fell to 0 HP' : 'destroyed'}`
+      ? `${atk} bombarded ${def} ${where}${from && `,${from}`}: ${toDef.text}, ${d.kind === 'City' ? 'the city fell to 0 health' : 'destroyed'}`
       : `${atk} bombarded ${def} ${where}${from && `,${from}`}: ${toDef.text} (${e.defender_hp_after} left)`;
     return line('combat', text, { ...base, hp: [toDef] });
   }
@@ -526,7 +526,7 @@ function battleLine(e: Battle, ctx: ReportContext, mine: Mine): ReportLine {
       });
     }
     const name = unitName(ctx, d.unit, d.owner, d.unit_kind);
-    return line('combat', `${atk} hit the retreating ${name}${from} (${toDef.text}); it ${reached ? 'got away' : 'was stopped'} with ${e.defender_hp_after} HP. Needs orders.`, {
+    return line('combat', `${atk} hit the retreating ${name}${from} (${toDef.text}); it ${reached ? 'got away' : 'was stopped'} with ${e.defender_hp_after} health. Needs orders.`, {
       ...base, hp: [toDef],
     });
   }
@@ -538,11 +538,11 @@ function battleLine(e: Battle, ctx: ReportContext, mine: Mine): ReportLine {
     // One attack per order (G18): whoever attacked and left its opponent standing needs orders.
     const mineLeft = mine(e.attacker_owner) ? e.attacker_hp_after : e.defender_hp_after;
     const next = mine(e.attacker_owner) || (e.meeting && mine(d.owner)) ? ' Needs orders.' : '';
-    const left = involved ? ` (${mineLeft} HP left)` : ` (${e.attacker_hp_after} vs ${e.defender_hp_after} HP left)`;
+    const left = involved ? ` (${mineLeft} health left)` : ` (${e.attacker_hp_after} vs ${e.defender_hp_after} health left)`;
     return line('combat', `${atk} ${verb} ${def} ${where}${from && `,${from}`}: ${losses}${left}.${next}`, { ...base, hp });
   }
   const outcome = e.defender_hp_after <= 0
-    ? d.kind === 'City' ? 'The city fell to 0 HP.' : 'The defender was destroyed.'
+    ? d.kind === 'City' ? 'The city fell to 0 health.' : 'The defender was destroyed.'
     : 'The attacker was destroyed.';
   return line('combat', `${atk} ${verb} ${def} ${where}${from && `,${from}`}: ${losses}. ${outcome}`, { ...base, hp });
 }
@@ -1011,7 +1011,7 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
       return line('combat', text, {
         at: e.at, players: [e.owner], weight: mine(e.owner) ? 2 : 1,
         tone: mine(e.owner) ? (fell || lost ? 'bad' : 'good') : 'neutral',
-        details: ['A unit stepping into its own city arrives before an enemy attack on it and becomes the garrison that attack meets: the city\'s HP absorbs first, then the garrison fights.'],
+        details: ['A unit stepping into its own city arrives before an enemy attack on it and becomes the garrison that attack meets: the city\'s health absorbs first, then the garrison fights.'],
       });
     }
     case 'Bounce':
@@ -1041,7 +1041,7 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
       });
     }
     case 'SpartaKillHeal':
-      return line('combat', `Spartan units healed ${e.hp_healed} HP by destroying ${possessive(ctx, e.victim_owner)} ${itemName({ kind: 'Unit', unit: e.unit_kind })}`, {
+      return line('combat', `Spartan units regained ${e.hp_healed} health by destroying ${possessive(ctx, e.victim_owner)} ${itemName({ kind: 'Unit', unit: e.unit_kind })}`, {
         players: [e.player], tone: toneFor(e.player), weight: 2,
       });
     case 'UnitAwakened':
@@ -1647,15 +1647,15 @@ function siegeLines(events: Event[], ctx: ReportContext): ReportLine[] {
   const captured = new Set(events.flatMap((x) => (x.type === 'CityCaptured' ? [x.city] : [])));
   return cityHits(events, mine, (id) => ctx.unitKind(id), ctx.cityHpBefore).map((hit) => {
     const name = ctx.cityName(hit.city);
-    const mark: HpMark = { text: `${hit.before} → ${hit.after} HP`, tone: 'bad' };
+    const mark: HpMark = { text: `${hit.before} → ${hit.after} health`, tone: 'bad' };
     const force = forceText(hit.attackers.map((a) => ({ kind: a.kind, faction: ctx.playerFaction?.(a.owner) })));
-    const fell = captured.has(hit.city) ? ', and it fell' : hit.after <= 0 ? ', and it is at 0 HP' : '';
+    const fell = captured.has(hit.city) ? ', and it fell' : hit.after <= 0 ? ', and it is at 0 health' : '';
     const owners = fromText(hit.attackers.map((a) => a.owner), (id) => ctx.empireOf?.(id) ?? ctx.playerName(id));
     return line('attack', `${name} was attacked: ${mark.text} by ${force}${owners ? ` from ${owners}` : ''}${fell}`, {
       at: ctx.cityPos(hit.city), from: hit.from, hp: [mark], icon: 'ui-siege', weight: 2, tone: 'bad',
       players: [...new Set([ctx.me, ...hit.attackers.map((a) => a.owner)])],
       details: [
-        ...hit.strikes.map((s) => `${cap(unitName(ctx, s.unit, s.owner, s.kind))} ${s.ranged ? 'bombarded' : 'struck'} it for −${s.damage} HP.`),
+        ...hit.strikes.map((s) => `${cap(unitName(ctx, s.unit, s.owner, s.kind))} ${s.ranged ? 'bombarded' : 'struck'} it for −${s.damage} health.`),
         CITY_HEAL_RULE,
       ],
     });
@@ -1696,8 +1696,8 @@ export function formatEvents(events: Event[], ctx: ReportContext): ReportLine[] 
       const force = assaultForce(ctx, group);
       const split = `its counterattack was split, ${counterSplit(group)}`;
       const text = d.kind === 'City'
-        ? `${d.owner === ctx.me ? 'Your city ' : ''}${ctx.cityName(d.city)} ${hpAfter <= 0 ? 'fell to 0 HP under' : 'held against'} a combined assault by ${force}; ${split}${hpAfter > 0 ? ` (${hpAfter} HP left)` : ''}`
-        : `${cap(unitLabel(ctx, d.unit, d.owner, d.unit_kind))} ${hpAfter <= 0 ? 'was destroyed' : 'held'} ${at(ctx, e.at)} ${hpAfter <= 0 ? 'in' : 'against'} a combined assault by ${force}; ${split}${hpAfter > 0 ? ` (${hpAfter} HP left)` : ''}`;
+        ? `${d.owner === ctx.me ? 'Your city ' : ''}${ctx.cityName(d.city)} ${hpAfter <= 0 ? 'fell to 0 health under' : 'held against'} a combined assault by ${force}; ${split}${hpAfter > 0 ? ` (${hpAfter} health left)` : ''}`
+        : `${cap(unitLabel(ctx, d.unit, d.owner, d.unit_kind))} ${hpAfter <= 0 ? 'was destroyed' : 'held'} ${at(ctx, e.at)} ${hpAfter <= 0 ? 'in' : 'against'} a combined assault by ${force}; ${split}${hpAfter > 0 ? ` (${hpAfter} health left)` : ''}`;
       out.push(line('combat', text, {
         at: e.at, from: e.attacker_at ?? null, players: [e.attacker_owner, d.owner], weight: 2,
         tone: mine(e.attacker_owner) && !mine(d.owner) ? 'good' : mine(d.owner) && !mine(e.attacker_owner) ? 'bad' : 'neutral',

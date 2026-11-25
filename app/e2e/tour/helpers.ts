@@ -58,23 +58,65 @@ export async function shot(page: Page, size: Size, name: string) {
   expect.soft(artifacts, artifacts.join('\n')).toEqual([]);
 }
 
-/** Every folded standing can be scrolled fully into view; no inner height cap strands a row. */
+/** Every rivals-table row can be scrolled fully into view; no inner height cap strands a row. */
 export async function expectRaceWhole(page: Page) {
   const sidebar = page.locator('.right-sidebar');
   const scroll = sidebar.locator('.sidebar-scroll');
-  const detail = sidebar.locator('.sidebar-standings');
-  const wasOpen = await detail.evaluate(el => (el as HTMLDetailsElement).open);
   const top = await scroll.evaluate(el => el.scrollTop);
-  if (!wasOpen) await detail.locator('summary').click();
-  for (const row of await sidebar.locator('.vp-row').all()) {
+  for (const row of await sidebar.locator('.rivals .rv-row').all()) {
     await row.evaluate(el => el.scrollIntoView({ block: 'center' }));
     const b = (await row.boundingBox())!, area = (await scroll.boundingBox())!;
     expect(b.y).toBeGreaterThanOrEqual(area.y);
     expect(b.y + b.height).toBeLessThanOrEqual(area.y + area.height + 1);
     expect(await row.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
   }
-  if (!wasOpen) { await detail.locator('summary').evaluate(el => el.scrollIntoView({ block: 'center' })); await detail.locator('summary').click(); }
   await scroll.evaluate((el, top) => { el.scrollTop = top; }, top);
+}
+
+/**
+ * Render only: this seat has met every team. The rivals table shows a rival's Peace or War and its chips only once
+ * you have met it (an unmet rival's row shows only its VP), and some fixtures predate contact.
+ */
+export async function meetEveryone(page: Page) {
+  await page.evaluate(() => {
+    const store = (window as unknown as GameWindow).legatum, s = store.getState();
+    const v = structuredClone(s.views![s.seat]);
+    if (v.diplomacy) v.diplomacy.met = [...new Set(v.players.map((p) => p.team))].filter((t) => t !== v.team);
+    store.setState({ views: s.views!.map((x, i) => (i === s.seat ? v : x)) });
+  });
+  await expect(page.locator('.rivals .rv-row.unmet')).toHaveCount(0);
+}
+
+/** Open the Score ledger from the Victory race (if it is not open already). */
+export async function openLedger(page: Page) {
+  const sheet = page.getByTestId('objective-sheet');
+  if (!await sheet.count()) await page.getByRole('region', { name: 'Victory race', exact: true }).getByRole('button', { name: 'Score ledger', exact: true }).click();
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+/** Close the Score ledger. */
+export async function closeLedger(page: Page) {
+  await page.getByRole('button', { name: 'Close score ledger' }).click();
+  await expect(page.getByTestId('objective-sheet')).toHaveCount(0);
+}
+
+/**
+ * A faction goal's line in the Score ledger (every way to score lives there since the rivals table replaced the
+ * sidebar's VP tokens): opens the ledger and expands the faction-goals row, kept or held, whose list has the goal.
+ * `mine` picks your own goal; otherwise the first line containing `name`.
+ */
+export async function ledgerGoal(page: Page, goal: { mine: true } | { name: string | RegExp }): Promise<Locator> {
+  const sheet = await openLedger(page);
+  for (const id of ['held-goal', 'goal']) {
+    const btn = sheet.locator(`tr[data-row="${id}"] .sl-row-btn`);
+    if (await btn.getAttribute('aria-expanded') !== 'true') await btn.click();
+    const lines = sheet.locator(`#sl-detail-${id} .sl-goals > li`);
+    await expect(lines.first()).toBeVisible();
+    const line = 'mine' in goal ? lines.and(sheet.locator('li.me')) : lines.filter({ hasText: goal.name });
+    if (await line.count()) { await line.first().scrollIntoViewIfNeeded(); return line.first(); }
+  }
+  throw new Error(`no faction goal line for ${JSON.stringify('mine' in goal ? 'mine' : String(goal.name))} in the Score ledger`);
 }
 
 /** The primary stays outside scrolling content, even with expanded turn details. */

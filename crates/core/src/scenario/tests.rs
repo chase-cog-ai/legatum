@@ -444,7 +444,7 @@ fn illegal_edits_are_reported() {
         &|s| {
             s.units.values_mut().next().unwrap().hp = 0;
         },
-        "0 HP",
+        "0 health",
     );
     check(
         &|s| {

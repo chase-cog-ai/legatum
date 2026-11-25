@@ -4193,8 +4193,9 @@ dialog.gameover::backdrop {
 /* The sticky head is a name and three numbers on one line at every window height (1440x900 used to wrap Health onto a second
    line and spend 110 px; astra full review 2026-10-31, section 3). */
 .city-panel .cp-head { padding-top: 4px; padding-bottom: 2px; }
-.city-panel .cp-meta { margin-top: 3px; gap: 3px 10px; font-size: 10px; flex-wrap: nowrap; }
-.city-panel .cp-meta .lbl { font-size: 9px; }
+.city-panel .cp-meta { margin-top: 3px; gap: 3px 6px; font-size: 10px; flex-wrap: nowrap; }
+.city-panel .cp-meta .lbl { margin-right: 0; font-size: 9px; }
+.city-panel .cp-meta .muted { white-space: nowrap; }
 .city-panel .cp-meta b { font-size: 12px; }
 .city-panel .cp-pop { width: 18px; height: 18px; }
 /* A taller window (over 700 px) has the room for a larger head. */

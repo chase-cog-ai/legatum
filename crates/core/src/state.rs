@@ -68,6 +68,13 @@ pub struct GameSetup {
     /// tape and hash is unchanged.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub ai_alliances: bool,
+    /// Deals (rules 61, Sam 2026-11-25): Gold in Peace, Alliance and Open Borders offers, Gold
+    /// gifts to any met empire not at War, and Open Borders as a third treaty
+    /// (`diplomacy::TreatyKind::OpenBorders`). The app turns it on for new games. Off, every
+    /// deal is refused and nothing changes; omitted when false, so every existing setup, save,
+    /// tape and hash is unchanged.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub deals: bool,
 }
 
 impl GameSetup {
@@ -152,6 +159,7 @@ impl GameSetup {
             turn_limit: None,
             legacy_all_war: false,
             ai_alliances: false,
+            deals: false,
             barbarians: true,
             rule_experiments: Default::default(),
         }
@@ -178,6 +186,7 @@ impl GameSetup {
             turn_limit: None,
             legacy_all_war: false,
             ai_alliances: false,
+            deals: false,
             barbarians: true,
             rule_experiments: Default::default(),
         }

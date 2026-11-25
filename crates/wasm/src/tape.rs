@@ -458,6 +458,7 @@ mod tests {
             Order::ProposeTreaty {
                 to: TeamId(3),
                 kind: TreatyKind::Alliance,
+                gold: 0,
             },
             Order::RespondToProposal {
                 proposal: ProposalId(4),

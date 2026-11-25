@@ -32,6 +32,7 @@ fn setup(seed: u64, w: i32, h: i32, players: usize) -> GameSetup {
         ai_alliances: false,
         barbarians: false,
         rule_experiments: Default::default(),
+        deals: false,
     }
 }
 

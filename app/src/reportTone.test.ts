@@ -71,6 +71,8 @@ const CASES: Record<Event['type'], [string, Event, Tone][]> = {
     ['a rival\'s turned', ev({ type: 'CompanyTurned', unit: 'Spearman', owner: 2, origin: 'Sparta', pos: { q: 3, r: 3 } }), 'neutral'],
   ],
   TreatyActivated: [['alliance', ev({ type: 'TreatyActivated', relation: relation({ state: 'Alliance', guarantee_until: 0, security: { id: 3, started_turn: 12, protected_until: 22 } }) }), 'neutral']],
+  BordersOpened: [['open borders', ev({ type: 'BordersOpened', a: 0, b: 2, effective_turn: 12 }), 'neutral']],
+  BordersClosed: [['borders closed', ev({ type: 'BordersClosed', a: 0, b: 2, effective_turn: 12, reason: 'They went to War' }), 'neutral']],
   TreatyEnded: [
     ['your ally left you', ev({ type: 'TreatyEnded', treaty_id: 3, a: 0, b: 2, effective_turn: 12, reason: 'P2 left the Alliance' }), 'bad'],
     ['you left', ev({ type: 'TreatyEnded', treaty_id: 3, a: 0, b: 2, effective_turn: 12, reason: 'P0 & P1 left the Alliance' }), 'neutral'],

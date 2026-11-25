@@ -1,3 +1,4 @@
+import { treatyNoun } from './deals';
 import { RESOURCE_INFO, fixClause, idleCountText, idleEntries, withArticle, withThe } from './resources';
 import { WONDER_INFO, wonderBonusSentence } from './wonders';
 import { diplomaticTeams, offerLabel } from './diplomacy';
@@ -89,6 +90,8 @@ export interface ReportLine {
   hp?: HpMark[];
   /** The line's own medallion icon; the report falls back to its category's. */
   icon?: string;
+  /** A treaty line wears that treaty's emblem in place of the medallion (Open Borders, deals). */
+  treaty?: 'OpenBorders';
   /** A newly earned promotion, shown with the same insignia as its unit. */
   promotion?: { level: number; faction?: Faction };
 }
@@ -718,6 +721,13 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
       return `Peace with ${empire(p.from === ctx.teamId ? p.to : p.from)}`;
     return `${offerLabel(p)} offer ${ctx.teamId === p.to ? `from ${empire(p.from)}` : ctx.teamId === p.from ? `to ${empire(p.to)}` : `from ${empire(p.from)} to ${empire(p.to)}`}`;
   };
+  // Deals: an offer's Gold, from the viewer's side ("they offer 40 Gold", "you ask 40 Gold").
+  const dealGold = (p: { gold?: number; from: number; to: number }) => {
+    const g = p.gold ?? 0;
+    if (!g) return '';
+    const ours = ctx.teamId === p.from;
+    return g > 0 ? ` · ${ours ? 'you pay' : 'they offer'} ${g} Gold` : ` · ${ours ? 'you ask' : 'they ask'} ${-g} Gold`;
+  };
   const peaceWar = (p: { from: number; to: number }) => ctx.teamId === p.from || ctx.teamId === p.to
     ? `your war with ${empire(ctx.teamId === p.from ? p.to : p.from)}`
     : `the war between ${empire(p.from)} and ${empire(p.to)}`;
@@ -767,6 +777,19 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
       return diplomacyLine(`Alliance ${between(r.a, r.b)} signed · begins turn ${r.effective_turn}`, { weight: 2,
         details: [ALLIANCE_SHARES, `Each empire pays ${upkeep}.`,
           ...(until ? [`Protected until turn ${until}: leaving before then costs ${terms ? `${terms.breachCost} Gold` : 'Gold'} and is a betrayal.`] : [])] });
+    }
+    // Deals: Open Borders let each side's units enter the other's land at Peace.
+    case 'BordersOpened': return diplomacyLine(`Open Borders ${between(e.a, e.b)} begin.`, { weight: 2, treaty: 'OpenBorders',
+      details: [[e.a, e.b].includes(ctx.teamId ?? -1) ? 'Your units may enter their land, and theirs may enter yours.' : 'Their units may enter each other’s land.'] });
+    case 'BordersClosed': {
+      // Short, as the opening line: who closed them, or why they lapsed.
+      const ours = [e.a, e.b].includes(ctx.teamId ?? -1);
+      const closed = e.reason.endsWith('closed the borders');
+      const why = closed ? `${rename(e.reason)}.` : e.reason === 'They went to War' ? 'War.'
+        : e.reason.startsWith('They signed an Alliance') ? 'the Alliance includes them.' : 'an empire fell.';
+      const text = closed && ours ? why : `Open Borders ${between(e.a, e.b)} end: ${why}`;
+      return diplomacyLine(text, { weight: 2, treaty: 'OpenBorders',
+        ...(ours && closed ? { details: ['Units already inside may stay, but cannot heal or fortify there.'] } : {}) });
     }
     case 'TreatyEnded': {
       // "<team> left the Alliance": named from the viewer's side. An ally leaving you is bad news.
@@ -902,7 +925,7 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
           'Borders are closed. Units left inside may stay without healing or fortification; each move must approach an exit.'],
       });
     }
-    case 'ProposalCreated': return diplomacyLine(`${offer(e.proposal)} ${ctx.teamId === e.proposal.to ? 'arrived' : 'sent'}${e.proposal.kind === 'Peace' && e.proposal.required_teams?.length ? ` · would end ${peaceWar(e.proposal)}` : ''} · respond by turn ${e.proposal.respond_by}`, { weight: 1, details: peaceDetails(e.proposal), ...(ctx.teamId === e.proposal.to ? { openInboxTeam: e.proposal.from } : {}) });
+    case 'ProposalCreated': return diplomacyLine(`${offer(e.proposal)} ${ctx.teamId === e.proposal.to ? 'arrived' : 'sent'}${dealGold(e.proposal)}${e.proposal.kind === 'Peace' && e.proposal.required_teams?.length ? ` · would end ${peaceWar(e.proposal)}` : ''} · respond by turn ${e.proposal.respond_by}`, { weight: 1, details: peaceDetails(e.proposal), ...(ctx.teamId === e.proposal.to ? { openInboxTeam: e.proposal.from } : {}) });
     case 'ProposalAccepted': case 'ProposalRejected': case 'ProposalWithdrawn': case 'ProposalExpired':
       return diplomacyLine(`${offer(e.proposal)} ${e.type.slice(8).toLowerCase()}${e.type === 'ProposalAccepted' && e.proposal.kind === 'Peace' && e.proposal.required_teams?.length ? ` · ended ${peaceWar(e.proposal)}` : ''} · turn ${e.effective_turn}`, { weight: 1, details: e.type === 'ProposalAccepted' ? peaceDetails(e.proposal, true) : [] });
     case 'ProposalInvalidated': return diplomacyLine(`${offer(e.proposal)} invalidated: ${rename(e.reason)}`, { weight: 1 });
@@ -1270,12 +1293,16 @@ function formatEventLine(e: Event, ctx: ReportContext): ReportLine {
       return line('victory', `${who(ctx, e.captor)} sacked the original capital ${e.name}: +1 VP, kept for good`, {
         players: [e.captor], weight: 2, tone: e.captor === ctx.me ? 'good' : 'neutral',
       });
-    case 'GoldGiven':
+    case 'GoldGiven': {
+      // Deals: a payment follows the accepted offer it pays for ("… 40 Gold for Peace").
+      const before = ctx.events?.[ctx.events.indexOf(e) - 1];
+      const deal = before?.type === 'ProposalAccepted' && before.proposal.gold ? ` for ${treatyNoun(before.proposal.kind)}` : '';
       return line('economy', e.from === ctx.me
-        ? `You gave ${withThe(who(ctx, e.to))} ${e.amount} Gold`
-        : e.to === ctx.me ? `${cap(withThe(who(ctx, e.from)))} gave you ${e.amount} Gold` : `${cap(withThe(who(ctx, e.from)))} gave ${withThe(who(ctx, e.to))} ${e.amount} Gold`, {
+        ? `You gave ${withThe(who(ctx, e.to))} ${e.amount} Gold${deal}`
+        : e.to === ctx.me ? `${cap(withThe(who(ctx, e.from)))} gave you ${e.amount} Gold${deal}` : `${cap(withThe(who(ctx, e.from)))} gave ${withThe(who(ctx, e.to))} ${e.amount} Gold${deal}`, {
         players: [e.from, e.to], weight: 2, tone: e.to === ctx.me ? 'good' : 'neutral',
       });
+    }
     case 'CapitalLost':
       return line('victory', `${who(ctx, e.player)} no longer ${e.player === ctx.me ? 'hold' : 'holds'} the original capital ${e.name}: −1 VP`, {
         at: ctx.cityPos(e.capital), players: [e.player], weight: 2, tone: e.player === ctx.me ? 'bad' : 'neutral',

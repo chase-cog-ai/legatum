@@ -909,6 +909,7 @@ mod tests {
                 Order::ProposeTreaty {
                     to: TeamId(1),
                     kind: TreatyKind::Peace,
+                    gold: 0,
                 },
             ),
             (

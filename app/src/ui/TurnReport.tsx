@@ -9,7 +9,7 @@ import {
 import { EmpireMark } from './EmpireIdentity';
 import { Icon, Kbd, ToneIcon } from './bits';
 import { CATEGORY_ICON } from '../reportIcons';
-import { RingMedallion } from './ringMedallion';
+import { RingMedallion, TreatyEmblem } from './ringMedallion';
 import { StarDivider } from './premium';
 import { useCoarsePointer } from './useCoarsePointer';
 import { Amounts } from './Amounts';
@@ -240,7 +240,7 @@ export function TurnReport({ embedded = false }: { embedded?: boolean }) {
                       }}
                     >
                       <span className="rline-main">
-                        <span className={`rline-tone ${l.tone}`} aria-hidden="true"><RingMedallion icon={l.icon ?? CATEGORY_ICON[l.category]} tone={l.tone} size={26} /></span>
+                        <span className={`rline-tone ${l.tone}`} aria-hidden="true">{l.treaty ? <TreatyEmblem kind={l.treaty} size={26} /> : <RingMedallion icon={l.icon ?? CATEGORY_ICON[l.category]} tone={l.tone} size={26} />}</span>
                         {mark.label && <span className="sr-only">{mark.label}: </span>}
                         {l.empire !== undefined && views && <EmpireMark view={views[seat]} team={l.empire} size={18} />}
                         {l.promotion && <RankMark level={l.promotion.level} faction={l.promotion.faction} compact />}

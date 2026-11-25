@@ -539,7 +539,7 @@ pub fn describe(state: &GameState, order: &Order) -> (String, String) {
             "Diplomacy".into(),
             format!("declare war on {}", team(against)),
         ),
-        Order::ProposeTreaty { to, kind } => (
+        Order::ProposeTreaty { to, kind, .. } => (
             "Diplomacy".into(),
             format!("propose {kind:?} to {}", team(to)),
         ),

@@ -25,6 +25,7 @@ pub(crate) fn test_game(players: &[(Faction, u8)]) -> GameState {
         ai_alliances: false,
         barbarians: false,
         rule_experiments: Default::default(),
+        deals: false,
     };
     let mut state = blank_game(&setup, Map::new(20, 20, Terrain::Grassland));
     // These city/combat fixtures predate diplomacy and explicitly start at War.

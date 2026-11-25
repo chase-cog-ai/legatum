@@ -309,7 +309,8 @@ it('lists empires with mark, faction name, relation and VP, and collapses unusab
   expect(open.textContent).toContain('No combat or captures; closed borders.');
   // Team 1 has an outstanding proposal to us: its offers are one muted line, not disabled buttons.
   expect([...open.querySelectorAll('button')].some((b) => b.textContent?.startsWith('Offer'))).toBe(false);
-  expect(open.querySelector('.diplomacy-unavailable')!.textContent).toMatch(/^Not now: Offer Alliance.*outstanding proposal/);
+  // Its reason says whose answer the offers wait for, and by when (not core's bare "outstanding proposal").
+  expect(open.querySelector('.diplomacy-unavailable')!.textContent).toBe(`Not now: Offer Alliance. ${empireTitle(view, 1)}’${empireTitle(view, 1).endsWith('s') ? '' : 's'} Alliance offer waits for your answer in the Inbox, due turn 3.`);
   act(() => (rows.find((r) => r !== open)!.querySelector('.empire-pick') as HTMLButtonElement).click());
   expect(useGame.getState().diplomacyTeam).not.toBe(1);
 });

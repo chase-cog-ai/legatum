@@ -201,6 +201,8 @@ impl ViewBuilder {
                     peace_cooldowns: vec![],
                     met: vec![],
                     actions: vec![],
+                    deals: false,
+                    open_borders: Default::default(),
                 }
                 .into(),
                 turn: 20,
@@ -736,7 +738,16 @@ pub fn assert_valid(view: &PlayerView, orders: &[Order]) {
             Order::SetAutoFire { .. } => panic!("AI seats do not set human garrison automation"),
             Order::SetCityAutomation { .. } => panic!("AI seats do not delegate city production"),
             Order::BuyTile { .. } => panic!("AI seats do not buy tiles"),
-            Order::GiveGold { .. } => panic!("AI seats do not give Gold"),
+            // Deals (rules 61): Hard's coalition Gold, only with deals on.
+            Order::GiveGold { to, amount } => {
+                assert!(
+                    view.diplomacy.deals,
+                    "AI seats give Gold only with deals on"
+                );
+                assert!(*amount >= 1 && *amount <= view.economy.gold && *to != view.me);
+                let team = view.team_of(*to);
+                assert!(view.diplomacy.met.contains(&team) && !view.teams_at_war(view.team, team));
+            }
             Order::Raze { city } => {
                 let c = own_city(*city);
                 assert!(

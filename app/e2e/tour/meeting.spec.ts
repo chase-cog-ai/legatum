@@ -60,6 +60,35 @@ for (const size of SIZES) test.describe(`first contact ${size.name}`, () => {
     await expect.poll(() => page.evaluate(() => (window as unknown as GameWindow).legatum.getState().meetingPeople)).toBeNull();
   });
 
+  test('a team of two: both portraits, and each column describes both peoples', async ({ page }) => {
+    const { game, turn } = save('Egypt');
+    await loadFixture(page, game, turn);
+    const view = await page.evaluate(() => { const s = (window as unknown as GameWindow).legatum.getState(); return s.views![s.seat]; }) as PlayerView;
+    const before = { ...view, diplomacy: { ...view.diplomacy, met: [] } };
+    const after = { ...view, diplomacy: { ...view.diplomacy, met: [1] } };
+    const [moment] = meetingsForTurn(before, after, 0);
+    // The fixture's empires are each their own team; a card naming two members is what a team of two produces.
+    moment.meeting!.members = [{ id: 1, faction: 'Egypt' }, { id: 2, faction: 'Switzerland' }];
+    const report = { turn: view.turn, hash: '', events: [[]], moments: [[moment]], alarms: [[]], lines: [[]] };
+    await page.evaluate((report) => (window as unknown as GameWindow).legatum.getState().set({ report, alarmSeen: [] }), report);
+    const plate = page.getByTestId('meeting-takeover');
+    await expect(plate).toBeVisible();
+    await expect(plate.locator('.mt-portrait')).toHaveCount(2);
+    for (const col of ['meeting-strengths', 'meeting-prices']) {
+      await expect(plate.getByTestId(col).locator('.mt-people-name')).toHaveText([/Egypt/i, /Switzerland/i]);
+      for (const people of ['Egypt', 'Switzerland']) await expect(plate.getByTestId(col).locator(`[data-people=${people}] .mr`).first()).toBeVisible();
+    }
+    await page.mouse.move(5, size.height / 2);
+    await page.waitForTimeout(2600);
+    // Both peoples fit: every column whole and inside the window.
+    for (const part of await plate.locator('.et-col, .mt-head, .et-foot .btn').all()) {
+      const box = (await part.boundingBox())!;
+      expect(box.y + box.height, 'bottom inside the window').toBeLessThanOrEqual(size.height);
+      if (await part.evaluate((el) => el.classList.contains('et-col'))) expect(await part.evaluate((el) => el.scrollHeight - el.clientHeight), 'nothing is cut inside it').toBeLessThanOrEqual(1);
+    }
+    await shot(page, size, '03-meet-team-of-two');
+  });
+
   test('the sealed letter breaks open', async ({ page }) => {
     const { game, turn } = save('Rome');
     await loadFixture(page, game, turn);

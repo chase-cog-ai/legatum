@@ -105,8 +105,8 @@ it('marks the line bad with an icon and a signed red HP change; clicking it cent
   expect(line.querySelector('.rline-tone')?.textContent).toBe('');
   expect(line.querySelector('.rline-tone .rm.bad .rm-sign .mask-icon')).not.toBeNull();
   expect(line.querySelector('.sr-only')?.textContent).toBe('Bad for you: ');
-  expect(line.querySelector('.hp-delta.bad')?.textContent).toBe('−35 HP');
-  expect(line.textContent).toMatch(/bombarded your Spearman .*, from 2 tiles E: −35 HP \(65 left\)/);
+  expect(line.querySelector('.hp-delta.bad')?.textContent).toBe('−35 health');
+  expect(line.textContent).toMatch(/bombarded your Spearman .*, from 2 tiles E: −35 health \(65 left\)/);
   expect($('.chip[data-category="combat"]')?.textContent).toContain('1 bad');
   act(() => line.querySelector<HTMLButtonElement>('.rline-text')!.click());
   const { focus, reportArrow, report: r } = useGame.getState();

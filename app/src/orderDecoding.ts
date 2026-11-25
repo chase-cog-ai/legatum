@@ -5,7 +5,7 @@ const ORDER_KINDS = new Set<Order['type']>([
   'DeclareWar', 'BreakTreaty', 'ProposeTreaty', 'RespondToProposal', 'WithdrawProposal',
   'SetAutomation', 'SetAutoFire', 'MoveUnit', 'MoveUnitPath', 'SleepUnit', 'SkipUnit', 'FoundCity',
   'DisbandUnit', 'SetProduction', 'SetProductionQueue', 'SetCityAutomation', 'BuyItem', 'HireCompany', 'BuyTile',
-  'SetResearch', 'SetResearchQueue', 'SetScienceConversion', 'RangedAttack', 'AirStrike', 'AirRecon', 'Rebase', 'UpgradeAircraft',
+  'SetResearch', 'SetResearchQueue', 'SetResearchGoal', 'SetScienceConversion', 'RangedAttack', 'AirStrike', 'AirRecon', 'Rebase', 'UpgradeAircraft',
   'UpgradeUnit', 'UpgradeSiege', 'Action', 'GiveGold',
 ]);
 

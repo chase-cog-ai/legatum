@@ -4,8 +4,7 @@
 import { test, expect } from '../fixtures';
 import { coreFixture } from '../../src/test/coreFixture';
 import { goalCitiesFixture, type GoalCityMode } from '../../src/test/goalCitiesFixture';
-import { revealSidebar } from '../sidebarAssertions';
-import { SIZES, aim, dismissCelebrations, frameHall, hexPoint, loadFixture, selectThing, shot, stageHallReport, type GameWindow } from './helpers';
+import { SIZES, aim, dismissCelebrations, frameHall, hexPoint, ledgerGoal, loadFixture, meetEveryone, selectThing, shot, stageHallReport, type GameWindow } from './helpers';
 import type { Browser, Page } from '@playwright/test';
 
 test.describe.configure({ mode: 'parallel' });
@@ -117,9 +116,8 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await expect(page.locator('.moment-card').first()).toContainText('Colonia Victrix');
     await shot(page, size, 'r13-rival-colonia-public-card');
     await dismissCelebrations(page);
-    await revealSidebar(page, 'standings');
-    await page.locator('.panel.vp .vhc-tok[data-held]').first().hover();
-    await expect(page.locator('.vhc-pop .vh-card.k-goal .vh-held')).toContainText('Colonia Victrix');
+    // Rome's goal line in the Score ledger: scored.
+    await expect((await ledgerGoal(page, { name: 'Colonia Victrix' })).locator('.sl-goal-state')).toHaveClass(/done/);
     await shot(page, size, 'r14-rival-colonia-race-row');
   });
 
@@ -160,11 +158,12 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
   test('Egypt seen by a rival: the work under way, then the standing tomb', async ({ page, browser }) => {
     test.setTimeout(150_000);
     const f = await open(page, 'egyptRival');
+    // The fixture's seat has not met Egypt; the tomb chip shows only in a met rival's row.
+    await meetEveryone(page);
     await stageHallReport(page, [{ type: 'TombStarted', player: f.goalSeat, turns: 6 }]);
     await expect(page.locator('.moment-card').first()).toContainText('Royal Tomb');
     await shot(page, size, 'e07-rival-tomb-started-card');
     await dismissCelebrations(page);
-    await revealSidebar(page, 'standings');
     // A short window folds the rows: open them all so Egypt's row and its count show.
     const more = page.locator('.panel.vp').getByRole('button', { name: /more empires?$/ });
     if (await more.isVisible()) await more.click();
@@ -188,9 +187,8 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
       await expect(p.locator('.tilecard')).toContainText('Royal Tomb');
       await shot(p, size, 'e11-rival-tomb-hover');
       await away(p, size.height);
-      await revealSidebar(p, 'standings');
-      await p.locator('.panel.vp .vhc-tok[data-held]').first().hover();
-      await expect(p.locator('.vhc-pop .vh-card.k-goal .vh-held')).toContainText('Royal Tomb');
+      // Egypt's goal line in the Score ledger: the standing tomb scores.
+      await expect((await ledgerGoal(p, { name: 'Royal Tomb' })).locator('.sl-goal-state')).toHaveClass(/done/);
       await shot(p, size, 'e12-rival-tomb-race-row');
     } finally { await context.close(); }
   });
@@ -206,9 +204,8 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await withMode(browser, size, 'coloniaThird', async (p, g) => {
       await frameHall(p, g.coloniaPos, 1.25);
       await shot(p, size, 'r17-third-empire-holds-colonia-banner');
-      await revealSidebar(p, 'standings');
-      await p.locator('.panel.vp .vhc-tok[data-held]').first().hover();
-      await expect(p.locator('.vhc-pop .vh-card.k-goal .vh-held')).toContainText('Colonia Victrix');
+      // Rome's goal line in the Score ledger: held by the third empire.
+      await expect((await ledgerGoal(p, { name: 'Colonia Victrix' })).locator('.sl-goal-state')).toHaveText(/^Held by /);
       await shot(p, size, 'r18-third-empire-holds-colonia-race');
     });
     for (const [mode, name] of [['romeNoSite', 'r19-rome-no-site-lens'], ['romeOffRing', 'r20-rome-veteran-off-ring']] as const) {

@@ -37,7 +37,7 @@ const overlaps = async (page: Page) => (await auditOverlaySlots(page))
   .filter((i) => !/^(map-viewport|counter-flight|map-compass)\b/.test(i.where) && !/^(map-viewport|counter-flight|map-compass):/.test(i.detail));
 
 async function expectOwnRaceRow(page: Page, _options: { allRows: boolean }) {
-  await expect(page.locator('.vp-row')).toHaveCount(8);
+  await expect(page.locator('.rv-row')).toHaveCount(8);
   await expect(page.getByTestId('minimap-canvas')).toBeVisible();
   await expectRaceWhole(page);
 }

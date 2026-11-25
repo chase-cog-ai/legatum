@@ -88,10 +88,10 @@ describe('cities under attack', () => {
     const alarm = citiesUnderAttack(rangers, null)[0];
     expect(alarm.attackers).toHaveLength(2);
     expect(alarm.forecast.turns).toBeNull();
-    expect(alarm.forecast.text).toMatch(/Drops to 0 HP next turn; no melee unit to take it yet/);
+    expect(alarm.forecast.text).toMatch(/Drops to 0 health next turn; no melee unit to take it yet/);
     expect(alarm.cityId).toBe(own);
     const atZero = citiesUnderAttack(variant(view, { keep: 0, hp: 0, add: [{ kind: 'Archer', at: [5, 5] }, { kind: 'Archer', at: [4, 4] }] }), null)[0];
-    expect(atZero.forecast).toMatchObject({ short: 'at 0 HP', text: 'At 0 HP; no melee unit to take it yet' });
+    expect(atZero.forecast).toMatchObject({ short: 'at 0 health', text: 'At 0 health; no melee unit to take it yet' });
   });
 
   it('warns when an army of two or more closes within three tiles, but not for a lone unit', () => {
@@ -169,8 +169,8 @@ describe('the turn report line', () => {
     const ctx = contextFromViews(variant(client.view(0), { hp: 200 }), view);
     const lines = formatEvents(events, ctx);
     expect(lines[0]).toMatchObject({ category: 'attack', tone: 'bad', weight: 2, icon: 'ui-siege' });
-    expect(lines[0].text).toBe('Waypost Seven was attacked: 200 → 120 HP by 3 Spearmen from Byzantium');
-    expect(lines[0].hp).toEqual([{ text: '200 → 120 HP', tone: 'bad' }]);
+    expect(lines[0].text).toBe('Waypost Seven was attacked: 200 → 120 health by 3 Spearmen from Byzantium');
+    expect(lines[0].hp).toEqual([{ text: '200 → 120 health', tone: 'bad' }]);
     expect(lines[0].at).toEqual(view.cities.find((x) => x.name === 'Waypost Seven')!.pos);
     expect(groupLines(lines)[0].category).toBe('attack');
     expect(cityHits(events, (o) => o === 0, () => 'Spearman', () => 200)[0]).toMatchObject({ before: 200, after: 120, lost: 80 });
@@ -186,6 +186,6 @@ describe('the turn report line', () => {
       battle(attackers[2], 10, 50, { attacker: { city: own } as unknown as number, attacker_owner: 0 })];
     const lines = formatEvents(events, contextFromViews(client.view(0), view)).filter((l) => l.category === 'attack');
     expect(lines).toHaveLength(1);
-    expect(lines[0].text).toBe('Waypost Seven was attacked: 120 → 0 HP by a Spearman from Byzantium, and it is at 0 HP');
+    expect(lines[0].text).toBe('Waypost Seven was attacked: 120 → 0 health by a Spearman from Byzantium, and it is at 0 health');
   });
 });

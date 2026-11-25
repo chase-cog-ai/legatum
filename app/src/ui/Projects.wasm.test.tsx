@@ -57,7 +57,7 @@ describe.skipIf(!available)('Bicycle victory routes through the WASM app boundar
     const root = createRoot(container);
     try {
       act(() => root.render(<><CityPanel city={city} view={view} /><VpTrack /></>));
-      expect(container.querySelector('.vp-row.mine')).not.toBeNull();
+      expect(container.querySelector('.rv-row.mine')).not.toBeNull();
       const button = [...container.querySelectorAll<HTMLButtonElement>('.cp-great-works button')].find((b) => b.textContent!.startsWith(BUILDING_NAME[building]))!;
       expect(button.disabled).toBe(false);
       // Build opens the placement; a lit tile clicked on the map makes it the order.

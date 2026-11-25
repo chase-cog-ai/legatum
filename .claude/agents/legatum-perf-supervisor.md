@@ -194,3 +194,7 @@ CI about 15 minutes on 4 cores (after PR #14).
   tasks by cause (`long_draw_ms`, `long_terrain_ms`, `long_engine_ms`): read the split before replaying a game.
   From the cloud, list games at `https://games.playlegatum.com/v1/read/games` with no `Authorization` header (the
   environment adds it) and no empty `cursor=`.
+- 2026-11-25 (user): performance is solved for Chrome and browsers built on it only. Other browsers get the title
+  screen note "Runs best in Chrome" (`app/src/platform/browser.ts`). Do not open work to make Safari or Firefox
+  draw faster, and do not flag their slower games: games with no long-task numbers at all are those browsers
+  (map draw mean 7 to 42 ms against 1 to 2 ms in Chrome on 2026-11-25; not the `?blur=js` fallback).

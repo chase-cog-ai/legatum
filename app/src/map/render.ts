@@ -18,7 +18,7 @@ import type { PathStep } from '../path';
 import { tintedIcon } from '../icons';
 import type { LookId } from '../brand/look';
 import { MAP_STYLES, mapBorderColor, mapPlayerColor, type MapStyle } from './style';
-import { TerrainCache } from './terrain';
+import { TerrainCache, TOWN_OVAL } from './terrain';
 import { getBorderVariant } from './borderVariant';
 import { getTerrainVariant } from './terrainVariant';
 import { BANNER_BOTTOM, CITY_UNIT_DROP, HEX_SIZE, K, PIP_HALF, sealRadius, boundary, centerX, centerY, hexPath, isFar, neighborIndex, tokenHalf, tracePolylines } from './grid';
@@ -34,7 +34,7 @@ import { contractLeft } from '../company';
 import { heirTag } from '../heir';
 import { rankLevel } from '../rankInsignia';
 import { FONTS, type BannerSpec, type GoalSeal, bannerMetersSize, bannerRect, drawBadge, drawBanner, drawBannerMeters, type BannerMeter, barbarianMiniature, drawBarbarianToken, drawContractPip, drawContractTag, drawHeirHalo, drawLabel, drawPip, drawPromotion, drawRankInsignia, drawSprite, drawTag, drawToken, drawTokenHealth, miniatureGeometry, nameSprite, sealSprite, TOKEN_INK, capitalSealRadius, CAPITAL_GILT } from './sprites';
-import { mapFeatureImage } from './mapFeatures';
+import { mapFeatureImage, RUIN_MASS } from './mapFeatures';
 import { BARBARIAN, isBarbarian } from '../barbarians';
 import type { Rect } from './compass';
 import type { LensTile, MapLens } from './lenses';
@@ -61,7 +61,7 @@ import { drawMarchDust, drawMomentFx, drawMomentGround, drawRevealed, revealAt, 
 import { drawAirCandidates, drawAirLabels, drawAirOffscreen, drawAirRings, drawTileCandidates, type AirOverlay } from './airOverlay';
 import { aircraftAsUnit } from '../airWing';
 import { unworkedClaimIndexes } from './unworkedClaims';
-import { cityRing, wallTierOf } from './cityArt';
+import { cityRing, clearOfTown, TOWN_GAP, wallTierOf } from './cityArt';
 
 export { HEX_SIZE } from './grid';
 
@@ -754,6 +754,7 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
   }
 
   // Painted ruins sit on the land beneath counters and banners; remembered art is authored at 60%.
+  const townTiles = new Set(view.cities.map((c) => tileIndex(c.pos, W, view.height)));
   for (let i = 0; i < view.tiles.length; i++) {
     const t = view.tiles[i];
     if (!t.ruin || !t.explored) continue;
@@ -761,7 +762,23 @@ export function draw(ctx: CanvasRenderingContext2D, inp: RenderInput): { pending
     if (p.x < -40 || p.x > w + 40 || p.y < -40 || p.y > h + 40) continue;
     const image = mapFeatureImage('ruin', isFar(hexPx), t.visible, hexPx);
     if (image) {
-      const r = isFar(hexPx) ? Math.max(4, hexPx * 0.3) : Math.max(9, hexPx * 0.88);
+      let r = isFar(hexPx) ? Math.max(4, hexPx * 0.3) : Math.max(9, hexPx * 0.88);
+      // Beside a town, the ruins step back and shrink so they never run into its walls (UI review, PR 129: Cologne).
+      if (!isFar(hexPx)) {
+        const k = hexPx / HEX_SIZE;
+        let ox = 0, oy = 0;
+        for (let e = 0; e < 6; e++) {
+          const j = neighborIndex(i, e, W, view.height);
+          if (j < 0 || !view.tiles[j]?.explored || !townTiles.has(j)) continue;
+          const half = r / k;
+          // From where the ruin stands now (a ruin between two towns moves for each in turn, not twice from its centre).
+          const dx = centerX(i, W) - centerX(j, W) + ox, dy = centerY(i, W) - centerY(j, W) + oy;
+          const out = clearOfTown(dx, dy, half * RUIN_MASS.ha, half * RUIN_MASS.hb, TOWN_OVAL, { gap: TOWN_GAP, maxPush: HEX_SIZE * 0.4, minScale: 0.7 });
+          ox += out.dx - dx; oy += out.dy - dy;
+          r *= out.scale;
+        }
+        p.x += ox * k; p.y += oy * k;
+      }
       ctx.drawImage(image, p.x - r, p.y - r, r * 2, r * 2);
     }
   }

@@ -56,7 +56,7 @@ for (const size of [{ width: 1000, height: 600 }, { width: 1440, height: 900 }])
     await expect(heal).toBeVisible();
     await expect(heal).toBeEnabled();
     await expect(page.locator('.unit-panel .act-reason', { hasText: 'No healing' })).toHaveCount(0);
-    await expect(page.locator('.unit-panel .up-hints')).toContainText('heal up to 10 HP');
+    await expect(page.locator('.unit-panel .up-hints')).toContainText('heal up to 10 health');
     await page.screenshot({ path: testInfo.outputPath(`sparta-heal-${size.width}x${size.height}.png`), animations: 'disabled' });
 
     await page.mouse.move(5, size.height / 2);
@@ -64,7 +64,7 @@ for (const size of [{ width: 1000, height: 600 }, { width: 1440, height: 900 }])
     await page.mouse.move(at.x, at.y);
     const card = page.locator('.forecast');
     await expect(card).toBeVisible();
-    await expect(card).toContainText('A kill heals your surviving attackers +100 HP, shared');
+    await expect(card).toContainText('A kill heals your surviving attackers +100 health, shared');
     await page.screenshot({ path: testInfo.outputPath(`sparta-forecast-${size.width}x${size.height}.png`), animations: 'disabled' });
 
     // Pressing F (the map hover is off the enemy now) queues Fortify, which heals at the normal rate.

@@ -49,7 +49,7 @@ describe('faction content and setup', () => {
     expect(FACTION_INFO.Rome.weakness).toContain('cannot train or buy Settlers');
     expect(itemName({ kind: 'Unit', unit: 'Phalangite' }, 'Rome')).toBe('Legionary');
     expect(itemName({ kind: 'Building', building: 'Walls' }, 'Rome')).toBe('Castrum');
-    expect(itemDescription({ kind: 'Building', building: 'Walls' }, 'Rome')).toContain('50 HP');
+    expect(itemDescription({ kind: 'Building', building: 'Walls' }, 'Rome')).toContain('50 health');
   });
   it('resolves random seats without repeats, respects explicit picks, and is seed deterministic', () => {
     const seed = '18446744073709551615';

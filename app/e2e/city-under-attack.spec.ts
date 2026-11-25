@@ -85,8 +85,8 @@ for (const size of SIZES) test.describe(`city under attack ${size.name}`, () => 
     // 1. This Turn: top of the dock, above everything routine.
     await expect(card).toBeVisible();
     await expect(card).toContainText('Waypost Seven is under attack');
-    await expect(card.locator('.siege-num')).toHaveText('200/200 HP');
-    await expect(card.locator('.siege-who')).toContainText(/3 Spearmen from .+: about \d+ HP a turn/);
+    await expect(card.locator('.siege-num')).toHaveText('200/200 health');
+    await expect(card.locator('.siege-who')).toContainText(/3 Spearmen from .+: about −\d+ health a turn/);
     await expect(card.locator('.siege-forecast')).toHaveText(/^(Falls next turn|Holds about \d+ turns?) unless reinforced$/);
     await expect(card.getByRole('button', { name: 'Go to Waypost Seven' })).toBeVisible();
     const top = await dock.locator('.turn-body').evaluate((body) => [...body.children].find((c) => c.matches('.siege-alerts, .sidebar-turn-more, .seats, .city-list, .orders-box'))?.className);
@@ -142,9 +142,9 @@ for (const size of SIZES) test.describe(`city under attack ${size.name}`, () => 
     const first = report.locator('.report-group').first();
     await expect(first).toHaveAttribute('data-category', 'attack');
     const line = first.locator('.rline').first();
-    await expect(line).toContainText(/Waypost Seven was attacked: 200 → \d+ HP by 3 Spearmen from /);
+    await expect(line).toContainText(/Waypost Seven was attacked: 200 → \d+ health by 3 Spearmen from /);
     await expect(line).toHaveAttribute('data-tone', 'bad');
-    await expect(line.locator('.hp-delta.bad')).toHaveText(/^200 → \d+ HP$/);
+    await expect(line.locator('.hp-delta.bad')).toHaveText(/^200 → \d+ health$/);
     await expect(first.locator('.rline-show-map').first()).toBeVisible();
     await shot(page, size.name, '03-report-first-line');
     await first.locator('.rline-show-map').first().click();
@@ -154,8 +154,8 @@ for (const size of SIZES) test.describe(`city under attack ${size.name}`, () => 
     await page.evaluate(() => (window as unknown as GameWindow).legatum.getState().select(null));
     const next = dock.locator('.siege-card').first();
     await expect(next).toBeVisible();
-    await expect(next.locator('.siege-lost')).toHaveText(/^−\d+ HP last turn$/);
-    await expect(next.locator('.siege-num')).toHaveText(/^\d+\/200 HP$/);
+    await expect(next.locator('.siege-lost')).toHaveText(/^−\d+ last turn$/);
+    await expect(next.locator('.siege-num')).toHaveText(/^\d+\/200 health$/);
     await expect(dock.locator('.cta .cta-label')).toHaveText('City under attack');
     expect(await page.evaluate(() => (window as unknown as GameWindow).legatumMap.siege)).toEqual([setup.own]);
     await page.waitForTimeout(600);
@@ -171,10 +171,10 @@ for (const size of SIZES) test.describe(`city under attack ${size.name}`, () => 
     await expect(card).toBeVisible();
     // A save has no turn report: the card says only what the city's own record says.
     await expect(card.locator('.siege-lost')).toHaveText('Took damage last turn');
-    await expect(card.locator('.siege-num')).toHaveText('120/200 HP');
+    await expect(card.locator('.siege-num')).toHaveText('120/200 health');
     await expect(card.locator('.siege-forecast')).toHaveText('Holds about 2 turns unless reinforced');
     await expect(card.locator('.siege-head')).toContainText(/Waypost Seven is under attack · .+/);
-    await expect(card.locator('.siege-compact-facts')).toHaveText('120/200 HP · Took damage last turn · Falls in 2 turns');
+    await expect(card.locator('.siege-compact-facts')).toHaveText('120/200 health · Took damage last turn · Falls in 2 turns');
     expect(await card.locator('.siege-compact-facts').evaluate((el) => el.scrollWidth <= el.clientWidth), 'the deciding facts fit on the compact line').toBe(true);
     const pos = await cityHex(page, setup.own);
     await page.evaluate(({ hex }) => (window as unknown as GameWindow).legatum.getState().jumpTo(hex), { hex: pos });

@@ -28,7 +28,7 @@ const SAYS: Record<(typeof FACTIONS)[number], string[]> = {
   Aztecs: ['Eagle Warrior replaces Spearman', '(Spearman: 20)'],
   Switzerland: ['(Walls: 100)', '(Walls: +10)', '+50% of its strength against mounted units'],
   India: ['Revenue Office replaces Market', '+3 Gold', 'half the Gold the city makes', 'War Elephant replaces Knight', '(Knight: 42)', 'only India can build it'],
-  Rome: ['50 HP'],
+  Rome: ['50 health'],
   Byzantium: ['(Pikeman: 152)', '(Pikeman: 32)'],
   Germany: ['(Forge: +3)', '(Forge: 0)', 'Panzer replaces Tank', '(Tank: 5)'],
   Celts: ['Gaesatae replaces Phalangite', '+8 strength when attacking.', '−5 strength when defending.'],

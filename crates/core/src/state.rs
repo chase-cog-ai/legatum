@@ -924,6 +924,12 @@ pub struct GameState {
     /// `resolve_turn`). Empty until a turn resolves; public only once the game is finished.
     #[serde(default, skip_serializing_if = "crate::history::GameHistory::is_empty")]
     pub history: crate::history::GameHistory,
+    /// Strategic supply sold by the turn and the offers for it (`supply_trade`).
+    #[serde(
+        default,
+        skip_serializing_if = "crate::supply_trade::SupplyTrades::is_empty"
+    )]
+    pub supply_trades: crate::supply_trade::SupplyTrades,
 }
 
 impl GameState {

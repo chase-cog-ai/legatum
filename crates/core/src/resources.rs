@@ -345,8 +345,14 @@ pub fn deposits(state: &GameState, p: PlayerId) -> Vec<Deposit> {
         .collect()
 }
 
-/// Total supply of `resource` this empire's deposits give.
+/// Total supply of `resource` this empire has: its deposits, plus what it buys and minus what
+/// it sells (`supply_trade`).
 pub fn supplied(state: &GameState, p: PlayerId, resource: Resource) -> i32 {
+    deposits_supply(state, p, resource) + crate::supply_trade::net(state, p, resource)
+}
+
+/// Total supply of `resource` this empire's deposits give.
+pub fn deposits_supply(state: &GameState, p: PlayerId, resource: Resource) -> i32 {
     if !is_strategic(resource) || !known_to(resource, &state.player(p).techs) {
         return 0;
     }
@@ -1172,6 +1178,9 @@ pub fn supply_views(state: &GameState, p: PlayerId) -> Vec<SupplyView> {
                         d.mined,
                     ),
                 );
+            }
+            for (label, amount) in crate::supply_trade::supply_lines(state, p, resource) {
+                supplied.add(label, amount);
             }
             let mut used = Breakdown::default();
             let mut units: BTreeMap<String, i32> = BTreeMap::new();

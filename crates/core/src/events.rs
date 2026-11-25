@@ -417,6 +417,25 @@ pub enum Event {
         to: PlayerId,
         amount: i32,
     },
+    /// The two empires only: a supply offer was sent (`Order::OfferSupply`).
+    SupplyOffered {
+        offer: crate::supply_trade::SupplyOffer,
+    },
+    /// The two empires only: a supply offer was declined (no `reason`), lapsed unanswered, or
+    /// was accepted but could no longer be met.
+    SupplyOfferDeclined {
+        offer: crate::supply_trade::SupplyOffer,
+        reason: Option<String>,
+    },
+    /// The two empires only: a supply trade begins; supply and Gold move from next turn.
+    SupplyTradeStarted {
+        trade: crate::supply_trade::SupplyTrade,
+    },
+    /// The two empires only: a supply trade ended, and why ("War cut it off").
+    SupplyTradeEnded {
+        trade: crate::supply_trade::SupplyTrade,
+        reason: String,
+    },
     /// Public: a Celtic empire burned a rival's original capital in a sack and keeps its 1 VP
     /// for the rest of the game.
     CapitalSacked {

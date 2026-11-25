@@ -198,6 +198,25 @@ pub enum Order {
         to: PlayerId,
         amount: i32,
     },
+    /// Offer another empire a supply trade (`supply_trade`): `amount` of a strategic supply for
+    /// `gold` Gold a turn. You sell when `selling`, and ask to buy otherwise. They answer from
+    /// next turn; a newer offer to the same empire for the same resource replaces this one.
+    OfferSupply {
+        to: PlayerId,
+        selling: bool,
+        resource: crate::resources::Resource,
+        amount: i32,
+        gold: i32,
+    },
+    /// Accept or decline a supply offer made to you. Accepted, the trade runs from next turn.
+    AnswerSupplyOffer {
+        offer: u32,
+        accept: bool,
+    },
+    /// End a running supply trade you are part of, at the end of this turn.
+    EndSupplyTrade {
+        trade: u32,
+    },
 }
 
 /// The one-time actions an empire can order (`Order::Action`). One order variant carries them

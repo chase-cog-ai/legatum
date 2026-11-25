@@ -232,6 +232,7 @@ pub fn validate_orders(state: &GameState, player: PlayerId, orders: &[Order]) ->
     errors.extend(city_errors);
     errors.extend(actions::validate_actions(state, player, orders));
     errors.extend(gifts::validate_gifts(state, player, orders));
+    errors.extend(crate::supply_trade::validate_orders(state, player, orders));
     // An air strike resolves in the same ranged phase, so it sees the same surprise wars.
     errors.extend(air::validate_orders(
         ranged_state.as_ref().unwrap_or(state),
@@ -294,6 +295,10 @@ pub fn resolve_turn(
     let resource_sources = crate::resources::source_counts(&s);
     // 0. Surprise wars at plain Peace begin now, before ranged fire and movement (G20).
     let surprise = crate::diplomacy::declare_surprise_wars(&mut s, &orders, &mut events);
+    // A surprise war cuts supply trades off before anyone fights.
+    if crate::supply_trade::end_broken(&mut s, &mut events) {
+        crate::resources::update_supply(&mut s, &mut events);
+    }
     // 1. Orders (barbarians choose their moves from the same start-of-turn state).
     let barbarian_shots = barbarians::plan_turn(&mut s, &mut events);
     let mut plan = unit_phases_before_cities(&mut s, &orders, &mut events);
@@ -378,6 +383,7 @@ pub fn resolve_turn(
     units::wake_healed(&mut s, &mut events);
     units::finish_automation(&mut s, &plan);
     // 6-10. Cities (including city healing), gold and upkeep, research, borders.
+    crate::supply_trade::end_unpaid(&mut s, &mut events);
     cities::process_cities(&mut s, &mut events);
     // A Company's contract ends after its last turn's upkeep is paid.
     crate::company::expire(&mut s, &mut events);
@@ -395,6 +401,10 @@ pub fn resolve_turn(
     // 11. Scoring, then the next turn.
     scoring::update_with_capture_snapshot(&mut s, &mut events, &capture_vp);
     crate::diplomacy::resolve_boundary(state, &mut s, &orders, &mut events);
+    // Supply trades end, start and are offered once this turn's wars and peaces are known.
+    if crate::supply_trade::resolve(&mut s, &orders, &mut events) {
+        crate::resources::update_supply(&mut s, &mut events);
+    }
     // An attack reveal lasts one planning turn.
     visibility::expire_attack_reveals(&mut s);
     // Newly allied sight must enter observation memory before its sources can disappear.

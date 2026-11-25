@@ -234,6 +234,7 @@ impl ViewBuilder {
                 }
                 .into(),
                 supply: Vec::new(),
+                supply_trade: Default::default(),
                 research: ResearchView {
                     science_conversion: Default::default(),
                     era: 0,
@@ -736,6 +737,9 @@ pub fn assert_valid(view: &PlayerView, orders: &[Order]) {
             Order::SetCityAutomation { .. } => panic!("AI seats do not delegate city production"),
             Order::BuyTile { .. } => panic!("AI seats do not buy tiles"),
             Order::GiveGold { .. } => panic!("AI seats do not give Gold"),
+            Order::OfferSupply { .. }
+            | Order::AnswerSupplyOffer { .. }
+            | Order::EndSupplyTrade { .. } => {}
             Order::Raze { city } => {
                 let c = own_city(*city);
                 assert!(

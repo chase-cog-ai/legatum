@@ -1083,6 +1083,9 @@ pub fn player_income(state: &GameState, p: crate::types::PlayerId) -> PlayerInco
             -interest_cut,
         );
     }
+    for (label, amount) in crate::supply_trade::gold_lines(state, p) {
+        gold.add(label, amount);
+    }
     let treaties = treaty_upkeep(state, p);
     gold.add("Unit upkeep", administration + treaties.total - upkeep);
     for (label, amount) in treaties.parts {

@@ -504,6 +504,30 @@ pub fn describe(state: &GameState, order: &Order) -> (String, String) {
                 legatum_core::scenario::empire_name(state, *to)
             ),
         ),
+        Order::OfferSupply {
+            to,
+            selling,
+            resource,
+            amount,
+            gold,
+        } => (
+            "Empire".into(),
+            format!(
+                "offer to {} {amount} {} {} {} for {gold} Gold a turn",
+                if *selling { "sell" } else { "buy" },
+                legatum_core::resources::name(*resource),
+                if *selling { "to" } else { "from" },
+                legatum_core::scenario::empire_name(state, *to)
+            ),
+        ),
+        Order::AnswerSupplyOffer { offer, accept } => (
+            "Empire".into(),
+            format!(
+                "{} supply offer {offer}",
+                if *accept { "accept" } else { "decline" }
+            ),
+        ),
+        Order::EndSupplyTrade { trade } => ("Empire".into(), format!("end supply trade {trade}")),
         Order::AirStrike { plane, target } => (
             format!("aircraft {}", plane.0),
             format!("strike {}", place(target)),

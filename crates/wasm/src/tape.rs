@@ -128,6 +128,9 @@ impl Tape {
                                     | "SetScienceConversion"
                                     | "SetCityAutomation"
                                     | "GiveGold"
+                                    | "OfferSupply"
+                                    | "AnswerSupplyOffer"
+                                    | "EndSupplyTrade"
                             )
                         );
                         if !known {
@@ -559,10 +562,22 @@ mod tests {
                 to: PlayerId(1),
                 amount: 25,
             },
+            Order::OfferSupply {
+                to: PlayerId(1),
+                selling: true,
+                resource: legatum_core::resources::Resource::Iron,
+                amount: 2,
+                gold: 8,
+            },
+            Order::AnswerSupplyOffer {
+                offer: 3,
+                accept: true,
+            },
+            Order::EndSupplyTrade { trade: 3 },
         ]
     }
 
-    const ORDER_VARIANTS: usize = 32;
+    const ORDER_VARIANTS: usize = 35;
 
     fn variant_index(order: &Order) -> usize {
         match order {
@@ -598,6 +613,9 @@ mod tests {
             Order::AirRecon { .. } => 29,
             Order::BuyTile { .. } => 30,
             Order::GiveGold { .. } => 31,
+            Order::OfferSupply { .. } => 32,
+            Order::AnswerSupplyOffer { .. } => 33,
+            Order::EndSupplyTrade { .. } => 34,
         }
     }
 

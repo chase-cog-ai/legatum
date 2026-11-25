@@ -92,6 +92,7 @@ pub fn blank_game(setup: &GameSetup, map: Map) -> GameState {
         air_recons: Vec::new(),
         air_contacts: Default::default(),
         history: Default::default(),
+        supply_trades: Default::default(),
     }
 }
 

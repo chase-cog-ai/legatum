@@ -344,6 +344,8 @@
   column-gap: 7px;
 }
 .fs-sheet .pc-stat {
+  flex-wrap: wrap;
+  row-gap: 1px;
   white-space: nowrap;
 }
 .fs-lower:not(.one) .fs-cards {

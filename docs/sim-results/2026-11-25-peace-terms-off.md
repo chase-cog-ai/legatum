@@ -1,10 +1,10 @@
 # Simulation: deals-terms-off (2026-11-25)
 
-1000 games, first seed 9311003, brain `scripted`, turn limit off, safety cap 1200, 8 threads, started 2026-11-25T10:36:22Z. Wall time 873.3s.
+1000 games, first seed 9311003, brain `scripted`, turn limit off, safety cap 1200, 6 threads, started 2026-11-25T12:50:23Z. Wall time 1238.5s.
 
-Source checkout at run start: `f1c592a44ea99ddf050062ca3339c6ec98145894`; dirty: no. Map 48×32, 8 initial seats. `first_setup` and exact binary argv are recorded in JSON. Ordinary games use seed + i (wrapping); the strategy tournament schedule is specified below. All games use a deterministic shuffle of the full faction pool, taking eight distinct factions, with any Proxy rotation described below.
+Source checkout at run start: `460d50aaa05846a188340be67e929a2cd5b76b67`; dirty: no. Map 48×32, 8 initial seats. `first_setup` and exact binary argv are recorded in JSON. Ordinary games use seed + i (wrapping); the strategy tournament schedule is specified below. All games use a deterministic shuffle of the full faction pool, taking eight distinct factions, with any Proxy rotation described below.
 
-Command argv: `["./sim","--players","8","--difficulty","hard","--games","1000","--seed","9311003","--out-dir","out","--threads","8","--deals","--ai-params","off.json","--label","deals-terms-off"]`
+Command argv: `["./sim","--players","8","--difficulty","hard","--games","1000","--seed","9311003","--out-dir","out","--threads","6","--deals","--ai-params","off.json","--label","deals-terms-off"]`
 
 ## Overview
 
@@ -1365,8 +1365,8 @@ Each row is one observed first play; unavailable telemetry is shown as n/a. Full
 ## Throughput
 
 - Turns simulated: 220913 (first play of each game)
-- Aggregate: 253.0 turns/s over 873.3s wall
-- Per game thread: 31.7 turns/s
+- Aggregate: 178.4 turns/s over 1238.5s wall
+- Per game thread: 29.8 turns/s
 
 ## Determinism
 

@@ -1825,7 +1825,7 @@ pub(crate) fn log_decisions(
                     rival: top.rival,
                 });
             }
-            Order::ProposeTreaty { to, kind }
+            Order::ProposeTreaty { to, kind, .. }
                 if *kind == TreatyKind::Alliance && *to != threat_team =>
             {
                 log.push(ThreatEvent::Treaty {
@@ -1890,6 +1890,8 @@ mod tests {
             security: None,
             war_id: (state == RelationState::War).then_some(1),
             declarers: declarers.iter().map(|t| TeamId(*t)).collect(),
+            reparations: None,
+            truce_released: None,
         }
     }
 

@@ -893,6 +893,38 @@ pub fn treaty_upkeep(state: &GameState, p: PlayerId) -> Breakdown {
     b
 }
 
+/// Gold this empire pays (negative) or receives each turn as reparations under a signed Peace
+/// (`diplomacy::Reparations`), while the truce lasts and both empires live.
+pub fn reparations(state: &GameState, p: PlayerId) -> Breakdown {
+    let mut b = Breakdown::default();
+    let Some(d) = state.diplomacy.as_ref() else {
+        return b;
+    };
+    for r in d
+        .relations
+        .iter()
+        .filter(|r| r.state == crate::diplomacy::RelationState::Peace)
+    {
+        let Some(due) = r.reparations.as_ref().filter(|due| {
+            state.turn < due.until && state.player(due.from).alive && state.player(due.to).alive
+        }) else {
+            continue;
+        };
+        if due.from == p {
+            b.add(
+                format!("Reparations to {}", state.player(due.to).name),
+                -due.gold,
+            );
+        } else if due.to == p {
+            b.add(
+                format!("Reparations from {}", state.player(due.from).name),
+                due.gold,
+            );
+        }
+    }
+    b
+}
+
 /// Military upkeep, treaty upkeep and any opt-in city administration cost.
 pub fn upkeep(state: &GameState, p: PlayerId) -> i32 {
     upkeep_breakdown(state, p).total
@@ -1087,6 +1119,9 @@ pub fn player_income(state: &GameState, p: crate::types::PlayerId) -> PlayerInco
     gold.add("Unit upkeep", administration + treaties.total - upkeep);
     for (label, amount) in treaties.parts {
         gold.add(format!("Treaty upkeep: {label}"), -amount);
+    }
+    for (label, amount) in reparations(state, p).parts {
+        gold.add(label, amount);
     }
     if state.setup.rule_experiments.city_upkeep {
         gold.add("City administration", -administration);

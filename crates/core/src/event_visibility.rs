@@ -130,8 +130,14 @@ pub fn visible_events(
                 | Event::TreatyActivated { .. }
                 | Event::TreatyEnded { .. }
                 | Event::TreatyBreached { .. }
+                | Event::CityCeded { .. }
+                | Event::ReparationsStopped { .. }
                 | Event::AllianceBetrayed { .. } => true,
                 Event::TreatyPayment { player, .. } => teammates.contains(player),
+                // The Gold is private to the two empires.
+                Event::PeaceGoldPaid { from, to, .. } => {
+                    teammates.contains(from) || teammates.contains(to)
+                }
                 // Gifts only ever move inside a team.
                 Event::GoldGiven { from, .. } => teammates.contains(from),
                 // The Gold is private to the two empires.

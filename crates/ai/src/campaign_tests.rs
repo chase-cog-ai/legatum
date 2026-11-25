@@ -124,6 +124,8 @@ fn hard_sparta_counts_a_two_turn_reinforcement_before_declaring_on_walls() {
             security: None,
             war_id: None,
             declarers: Vec::new(),
+            reparations: None,
+            truce_released: None,
         });
     let mut p = planner(&view);
     p.difficulty = AiDifficulty::Hard;

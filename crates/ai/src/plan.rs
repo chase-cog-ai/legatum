@@ -260,6 +260,8 @@ mod late_capture_value_tests {
             security: None,
             war_id: Some(1),
             declarers: vec![enemy_team],
+            reparations: None,
+            truce_released: None,
         });
         view.players[ME.0 as usize].cities = 1;
         view.players[ENEMY.0 as usize].cities = 3;
@@ -5070,6 +5072,8 @@ mod walled_siege_continuation_tests {
             security: None,
             war_id: Some(1),
             declarers: vec![view.team],
+            reparations: None,
+            truce_released: None,
         });
         let mut planner = crate::fixture::planner(&view, 7);
         planner.difficulty = AiDifficulty::Hard;
@@ -5138,6 +5142,8 @@ mod wall_staging_tests {
             security: None,
             war_id: Some(1),
             declarers: vec![view.team],
+            reparations: None,
+            truce_released: None,
         });
         let mut planner = crate::fixture::planner(&view, 7);
         planner.difficulty = AiDifficulty::Hard;
@@ -5185,6 +5191,8 @@ mod sparta_expedition_tests {
             security: None,
             war_id: None,
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         });
         v.diplomacy.actions.push(DiplomaticAction {
             new_wars: Vec::new(),
@@ -5255,6 +5263,8 @@ mod march_past_reach_tests {
             security: None,
             war_id: None,
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         });
         v.diplomacy.actions.push(DiplomaticAction {
             new_wars: Vec::new(),

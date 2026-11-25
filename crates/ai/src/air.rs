@@ -465,6 +465,8 @@ mod tests {
             security: None,
             war_id: None,
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         }];
         let declaration = [Order::DeclareWar {
             against,

@@ -543,6 +543,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![v.team],
+                reparations: None,
+                truce_released: None,
             });
         let mut p = hard(&v);
         p.decisions = crate::DecisionParams::builtin_for(Faction::Germany);
@@ -842,6 +844,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![v.team],
+                reparations: None,
+                truce_released: None,
             });
         let rome = |v: &PlayerView, early_war: i32, campaign: bool| {
             let mut p = hard(v);

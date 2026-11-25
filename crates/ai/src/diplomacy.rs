@@ -565,6 +565,7 @@ impl Planner<'_> {
                     proposal: p.id,
                     accept: true,
                     explanation: None,
+                    counter: None,
                 };
                 let first = self.treaty_score(other, p.kind, &accept, &open);
                 (std::cmp::Reverse(first.unwrap_or(i32::MIN)), p.id, p)
@@ -577,6 +578,7 @@ impl Planner<'_> {
                 proposal: p.id,
                 accept: true,
                 explanation: None,
+                counter: None,
             };
             let score = if (oath_target == Some(other) && p.kind == TreatyKind::Alliance)
                 || (p.kind == TreatyKind::Peace && !self.wants_peace(other))
@@ -590,6 +592,7 @@ impl Planner<'_> {
                 accept: legal(&accept) && score.is_some_and(|s| s >= 0),
                 explanation: (p.kind == TreatyKind::Alliance)
                     .then(|| self.explain_response(p, score, &accept, &budget)),
+                counter: None,
             };
             if legal(&order) {
                 if matches!(order, Order::RespondToProposal { accept: true, .. })
@@ -613,11 +616,13 @@ impl Planner<'_> {
                 proposal: call.id,
                 accept: true,
                 explanation: None,
+                counter: None,
             };
             let order = Order::RespondToProposal {
                 proposal: call.id,
                 accept: legal(&join) && self.call_value(call.target) >= 0,
                 explanation: None,
+                counter: None,
             };
             if legal(&order) {
                 decisions.push(order);
@@ -667,7 +672,7 @@ impl Planner<'_> {
                     decisions.push(a.order.clone());
                     handled.insert(with);
                 }
-                Order::ProposeTreaty { to, kind } if !handled.contains(&to) => {
+                Order::ProposeTreaty { to, kind, .. } if !handled.contains(&to) => {
                     if oath_target == Some(to) && kind == TreatyKind::Alliance {
                         continue;
                     }
@@ -1648,6 +1653,7 @@ impl Planner<'_> {
         let order = Order::ProposeTreaty {
             to: against,
             kind: TreatyKind::Peace,
+            terms: Default::default(),
         };
         let age = v
             .diplomacy
@@ -2659,6 +2665,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![v.team],
+                reparations: None,
+                truce_released: None,
             });
         let target = v
             .cities
@@ -2750,6 +2758,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![v.team],
+                reparations: None,
+                truce_released: None,
             });
         // Seen once and fogged since: a sighting, not a visible siege.
         v.cities
@@ -2821,6 +2831,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![v.team],
+                reparations: None,
+                truce_released: None,
             });
         let wants_peace = |gene| {
             let mut p = Planner::new(
@@ -2885,6 +2897,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![v.team],
+                reparations: None,
+                truce_released: None,
             });
         let wants_peace = |gene: i32, hold: bool| {
             let mut p = Planner::new(
@@ -2951,6 +2965,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![against],
+                reparations: None,
+                truce_released: None,
             });
         let wants_peace = |gene: i32| {
             let mut p = Planner::new(&v, Knobs::for_faction(Faction::India), Faction::India, 1);
@@ -3003,6 +3019,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![rival],
+                reparations: None,
+                truce_released: None,
             });
         let wants_peace = |gene| {
             let mut p = Planner::new(
@@ -3044,6 +3062,7 @@ mod tests {
         let order = Order::ProposeTreaty {
             to: rival,
             kind: TreatyKind::Peace,
+            terms: Default::default(),
         };
         p.decisions.peace_withdraw_price = 0;
         let flat = p
@@ -3072,6 +3091,7 @@ mod tests {
         let peace = Order::ProposeTreaty {
             to: enemy,
             kind: TreatyKind::Peace,
+            terms: Default::default(),
         };
         let score = |plan: Option<PlanKind>, gene: i32| {
             let mut p = Planner::new(&v, Knobs::new(50, 50, 50, 50, 100), Faction::Celts, 1);
@@ -3151,6 +3171,8 @@ mod tests {
                 security: None,
                 war_id: None,
                 declarers: Vec::new(),
+                reparations: None,
+                truce_released: None,
             });
         v.diplomacy
             .actions
@@ -3208,6 +3230,8 @@ mod tests {
                 security: None,
                 war_id: None,
                 declarers: vec![],
+                reparations: None,
+                truce_released: None,
             });
         let target = |v: &PlayerView, difficulty| {
             let mut p = Planner::new(v, Knobs::new(50, 80, 50, 50, 100), v.faction_of(ME), 1);
@@ -3267,6 +3291,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![TeamId(2)],
+                reparations: None,
+                truce_released: None,
             });
         v.standings = vec![
             TeamStanding {
@@ -3360,6 +3386,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![TeamId(2)],
+                reparations: None,
+                truce_released: None,
             });
         let target = |v: &PlayerView| {
             let mut p = Planner::new(
@@ -3432,6 +3460,8 @@ mod tests {
             security: None,
             war_id: Some(u32::from(a) * 10 + u32::from(b)),
             declarers: vec![TeamId(b)],
+            reparations: None,
+            truce_released: None,
         }
     }
 
@@ -3567,6 +3597,8 @@ mod tests {
             }),
             war_id: None,
             declarers: Vec::new(),
+            reparations: None,
+            truce_released: None,
         };
         v.diplomacy.relations.extend([
             alliance(v.team, TeamId(2)),
@@ -3655,10 +3687,13 @@ mod tests {
                 security: None,
                 war_id: None,
                 declarers: Vec::new(),
+                reparations: None,
+                truce_released: None,
             });
         let order = Order::ProposeTreaty {
             to: rival,
             kind: TreatyKind::Alliance,
+            terms: Default::default(),
         };
         let score = |price: bool| {
             let mut p = Planner::new(&v, Knobs::for_faction(Faction::India), Faction::India, 1);
@@ -3699,6 +3734,8 @@ mod tests {
                 security: None,
                 war_id: None,
                 declarers: Vec::new(),
+                reparations: None,
+                truce_released: None,
             });
         let p = planner_for(&bigger);
         assert_eq!(p.bloc_size_cost(TeamId(3)), p.decisions.bloc_size_penalty);
@@ -3721,6 +3758,7 @@ mod tests {
         let order = Order::ProposeTreaty {
             to: TeamId(3),
             kind: TreatyKind::Alliance,
+            terms: Default::default(),
         };
         let score = |v: &PlayerView, gene| {
             let mut p = Planner::new(v, Knobs::for_faction(Faction::India), Faction::India, 1);

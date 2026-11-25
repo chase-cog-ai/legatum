@@ -204,7 +204,7 @@ fn chronicle_entry(turn: u32, prev: &GameState, s: &GameState, event: &Event) ->
             player: *owner,
             city: name.clone(),
         }),
-        Event::CityCaptured { city, from, to, .. } => {
+        Event::CityCaptured { city, from, to, .. } | Event::CityCeded { city, from, to, .. } => {
             let name = s.cities.get(city).or_else(|| prev.cities.get(city))?;
             Some(Chronicle::Captured {
                 turn,

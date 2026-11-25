@@ -281,6 +281,8 @@ mod tests {
             security: None,
             war_id: None,
             declarers: Vec::new(),
+            reparations: None,
+            truce_released: None,
         });
         view
     }

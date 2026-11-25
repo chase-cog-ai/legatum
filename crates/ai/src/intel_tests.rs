@@ -29,6 +29,8 @@ fn approach() -> PlayerView {
         security: None,
         war_id: None,
         declarers: vec![],
+        reparations: None,
+        truce_released: None,
     });
     view.diplomacy.actions.push(DiplomaticAction {
         new_wars: vec![],

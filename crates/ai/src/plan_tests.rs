@@ -36,6 +36,8 @@ fn hard_strikes_a_massing_field_army_before_it_declares() {
         security: None,
         war_id: None,
         declarers: vec![],
+        reparations: None,
+        truce_released: None,
     });
     view.diplomacy.actions.push(DiplomaticAction {
         new_wars: vec![],
@@ -843,6 +845,8 @@ fn no_new_campaign_is_offered_on_a_stale_picture() {
             security: None,
             war_id: None,
             declarers: Vec::new(),
+            reparations: None,
+            truce_released: None,
         });
         view.diplomacy.actions.push(DiplomaticAction {
             new_wars: Vec::new(),

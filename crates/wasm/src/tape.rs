@@ -457,11 +457,13 @@ mod tests {
             Order::ProposeTreaty {
                 to: TeamId(3),
                 kind: TreatyKind::Alliance,
+                terms: Default::default(),
             },
             Order::RespondToProposal {
                 proposal: ProposalId(4),
                 accept: true,
                 explanation: None,
+                counter: None,
             },
             Order::WithdrawProposal {
                 proposal: ProposalId(5),

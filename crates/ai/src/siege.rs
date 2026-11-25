@@ -588,6 +588,8 @@ mod tests {
             security: None,
             war_id: Some(1),
             declarers: vec![view.team],
+            reparations: None,
+            truce_released: None,
         });
         view
     }

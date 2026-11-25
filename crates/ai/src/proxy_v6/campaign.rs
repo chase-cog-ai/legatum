@@ -145,6 +145,7 @@ impl Plan<'_> {
                     && self.phase == Phase::Consolidate
                     && !self.goal_pending(Faction::Sparta),
                 explanation: None,
+                counter: None,
             };
             if self.legal(&order) {
                 self.orders.push(order);
@@ -158,6 +159,7 @@ impl Plan<'_> {
                 let order = Order::ProposeTreaty {
                     to: p.team,
                     kind: TreatyKind::Peace,
+                    terms: Default::default(),
                 };
                 if p.alive && p.team != v.team && v.at_war(v.me, p.id) && self.legal(&order) {
                     self.orders.push(order);

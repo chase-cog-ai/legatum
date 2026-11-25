@@ -512,6 +512,8 @@ fn peace(v: &mut PlayerView) {
         security: None,
         war_id: None,
         declarers: vec![],
+        reparations: None,
+        truce_released: None,
     }];
     v.diplomacy.actions = vec![DiplomaticAction {
         new_wars: Vec::new(),

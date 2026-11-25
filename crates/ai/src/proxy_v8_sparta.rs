@@ -279,6 +279,8 @@ impl Brain for HumanSpartaBrain {
                             security: None,
                             war_id: None,
                             declarers: vec![view.team],
+                            reparations: None,
+                            truce_released: None,
                         });
                     }
                 }

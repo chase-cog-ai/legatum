@@ -1068,6 +1068,8 @@ mod tests {
             security: None,
             war_id: (state == RelationState::War).then_some(7),
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         }
     }
 
@@ -1283,6 +1285,7 @@ mod tests {
         let order = Order::ProposeTreaty {
             to: third,
             kind: TreatyKind::Alliance,
+            terms: Default::default(),
         };
         let budget = crate::diplomacy::TreatyBudget::of(&v);
         let value = planner(&v, 1).runaway_alliance_value(third);

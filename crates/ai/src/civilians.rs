@@ -3810,6 +3810,8 @@ mod found_now_tests {
                 security: None,
                 war_id: None,
                 declarers: Vec::new(),
+                reparations: None,
+                truce_released: None,
             });
         assert!(
             hard(&v, 10).found_now_capture_percent(settler) <= 10,
@@ -3910,6 +3912,8 @@ mod peace_army_site_tests {
             security: None,
             war_id: None,
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         });
         set_armies(&mut view, &[(ME, 131), (ENEMY, 410)]);
         view
@@ -3972,6 +3976,8 @@ mod peace_army_site_tests {
             security: None,
             war_id: Some(1),
             declarers: vec![TeamId(2)],
+            reparations: None,
+            truce_released: None,
         });
         let mut busy = planner(&view, 7);
         busy.difficulty = AiDifficulty::Hard;

@@ -1,4 +1,4 @@
-use legatum_core::diplomacy::{DiplomacyState, ProposalId, RelationState, TreatyKind};
+use legatum_core::diplomacy::{DiplomacyState, PeaceTerms, ProposalId, RelationState, TreatyKind};
 use legatum_core::game::{blank_game, spawn_unit};
 use legatum_core::state::{City, Map};
 use legatum_core::*;
@@ -40,6 +40,7 @@ fn offer(to: u8) -> Order {
     Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Peace,
+        terms: Default::default(),
     }
 }
 fn response(id: u32, accept: bool) -> Order {
@@ -47,6 +48,7 @@ fn response(id: u32, accept: bool) -> Order {
         proposal: ProposalId(id),
         accept,
         explanation: None,
+        counter: None,
     }
 }
 fn step(s: &GameState, orders: &[(u8, Vec<Order>)]) -> (GameState, Vec<Event>) {
@@ -840,6 +842,7 @@ fn ally_offer(to: u8) -> Order {
     Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Alliance,
+        terms: Default::default(),
     }
 }
 fn alliance(s: &GameState, from: u8, to: u8) -> GameState {
@@ -955,7 +958,8 @@ fn alliance_upkeep_is_a_gold_cost_in_income_and_bankruptcy_forecasts() {
                 a.order,
                 Order::ProposeTreaty {
                     to: TeamId(2),
-                    kind: TreatyKind::Alliance
+                    kind: TreatyKind::Alliance,
+                    ..
                 }
             )
         })
@@ -1915,4 +1919,461 @@ fn a_heal_order_is_refused_in_closed_foreign_land_where_nothing_heals() {
         "{}",
         errs[0].message
     );
+}
+
+// Peace terms: Gold and one city on a Peace offer (rules 60).
+
+fn terms(to: u8, gold: i32, city: Option<CityId>) -> Order {
+    deal(
+        to,
+        PeaceTerms {
+            gold,
+            city,
+            ..Default::default()
+        },
+    )
+}
+fn deal(to: u8, terms: PeaceTerms) -> Order {
+    Order::ProposeTreaty {
+        to: TeamId(to),
+        kind: TreatyKind::Peace,
+        terms,
+    }
+}
+fn gold(s: &GameState, p: u8) -> i32 {
+    s.player(PlayerId(p)).gold
+}
+fn fund(mut s: GameState, amounts: &[i32]) -> GameState {
+    for (p, amount) in s.players.iter_mut().zip(amounts) {
+        p.gold = *amount;
+    }
+    s
+}
+/// Offer `order` from player 0, then player 1 answers; returns the state and the answer turn's
+/// events.
+fn offer_and_answer(s: &GameState, order: Order, accept: bool) -> (GameState, Vec<Event>) {
+    assert_eq!(
+        validate_orders(s, PlayerId(0), std::slice::from_ref(&order)),
+        vec![]
+    );
+    let (s, ev) = step(s, &[(0, vec![order])]);
+    assert!(
+        s.diplomacy.as_ref().unwrap().proposals.len() == 1,
+        "{ev:?}"
+    );
+    let id = proposal_to(&s, 1).id.0;
+    step(&s, &[(1, vec![response(id, accept)])])
+}
+fn peaceful(s: &GameState) -> bool {
+    relation(s).state == RelationState::Peace
+}
+
+#[test]
+fn a_peace_offer_can_carry_gold_either_way_and_it_moves_only_when_signed() {
+    let war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    // The same turns with a plain Peace: the baseline for each treasury.
+    let (plain, _) = offer_and_answer(&war, offer(1), true);
+
+    // The proposer pays.
+    let (s, _) = step(&war, &[(0, vec![terms(1, 120, None)])]);
+    assert_eq!(proposal_to(&s, 1).terms.gold, 120);
+    assert_eq!(
+        (gold(&s, 0), gold(&s, 1)),
+        {
+            let (b, _) = step(&war, &[(0, vec![offer(1)])]);
+            (gold(&b, 0), gold(&b, 1))
+        },
+        "nothing moves while the offer waits"
+    );
+    let (s, events) = step(&s, &[(1, vec![response(1, true)])]);
+    assert!(peaceful(&s));
+    assert_eq!(gold(&s, 0), gold(&plain, 0) - 120);
+    assert_eq!(gold(&s, 1), gold(&plain, 1) + 120);
+    assert!(events.iter().any(|e| matches!(
+        e,
+        Event::PeaceGoldPaid { from, to, gold: 120, .. } if *from == PlayerId(0) && *to == PlayerId(1)
+    )));
+
+    // The proposer asks to be paid.
+    let (s, events) = offer_and_answer(&war, terms(1, -80, None), true);
+    assert!(peaceful(&s));
+    assert_eq!(gold(&s, 0), gold(&plain, 0) + 80);
+    assert_eq!(gold(&s, 1), gold(&plain, 1) - 80);
+    assert!(events.iter().any(|e| matches!(
+        e,
+        Event::PeaceGoldPaid { from, to, gold: 80, .. } if *from == PlayerId(1) && *to == PlayerId(0)
+    )));
+}
+
+#[test]
+fn refusing_or_ignoring_a_peace_with_terms_moves_nothing_and_the_war_goes_on() {
+    let mut war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    city(&mut war, 0, h(3, 4));
+    let town = city(&mut war, 1, h(8, 4));
+    let (plain, _) = offer_and_answer(&war, offer(1), false);
+    let (s, events) = offer_and_answer(&war, terms(1, -200, Some(town)), false);
+    assert!(!peaceful(&s));
+    assert!(
+        events
+            .iter()
+            .any(|e| matches!(e, Event::ProposalRejected { .. }))
+    );
+    assert_eq!(
+        (gold(&s, 0), gold(&s, 1)),
+        (gold(&plain, 0), gold(&plain, 1))
+    );
+    assert_eq!(s.cities[&town].owner, PlayerId(1));
+
+    // Unanswered: it expires like any offer.
+    let (mut s, _) = step(&war, &[(0, vec![terms(1, 200, None)])]);
+    let mut expired = false;
+    for _ in 0..4 {
+        let (next, events) = step(&s, &[]);
+        expired |= events
+            .iter()
+            .any(|e| matches!(e, Event::ProposalExpired { .. }));
+        assert!(
+            !events
+                .iter()
+                .any(|e| matches!(e, Event::PeaceGoldPaid { .. }))
+        );
+        s = next;
+    }
+    assert!(expired && !peaceful(&s));
+}
+
+#[test]
+fn peace_gold_must_be_affordable_when_offered_accepted_and_signed() {
+    let war = fund(establish_war(&game(&[0, 1])), &[100, 50]);
+    assert!(!validate_orders(&war, PlayerId(0), &[terms(1, 101, None)]).is_empty());
+    assert!(validate_orders(&war, PlayerId(0), &[terms(1, 100, None)]).is_empty());
+    assert!(
+        !validate_orders(
+            &war,
+            PlayerId(0),
+            &[terms(1, legatum_core::diplomacy::PEACE_GOLD_MAX + 1, None)]
+        )
+        .is_empty()
+    );
+    // An Alliance offer carries no terms.
+    assert!(
+        !validate_orders(
+            &war,
+            PlayerId(0),
+            &[Order::ProposeTreaty {
+                to: TeamId(1),
+                kind: TreatyKind::Alliance,
+                terms: PeaceTerms {
+                    gold: 10,
+                    ..Default::default()
+                },
+            }]
+        )
+        .is_empty()
+    );
+    // The other side cannot accept a price it cannot pay, but can always refuse it.
+    let (s, _) = step(&war, &[(0, vec![terms(1, -400, None)])]);
+    let s = fund(s, &[100, 50]);
+    let why = validate_orders(&s, PlayerId(1), &[response(1, true)]);
+    assert!(why[0].message.contains("Gold"), "{why:?}");
+    assert!(validate_orders(&s, PlayerId(1), &[response(1, false)]).is_empty());
+
+    // The payer spent the Gold before the signature: no Peace, no payment.
+    let (s, _) = step(&war, &[(0, vec![terms(1, 90, None)])]);
+    let mut s = fund(s, &[0, 50]);
+    s.players[0].gold = -500;
+    let (s, events) = step(&s, &[(1, vec![response(1, true)])]);
+    assert!(!peaceful(&s));
+    assert!(events.iter().any(|e| matches!(
+        e,
+        Event::ProposalInvalidated { reason, .. } if reason.contains("Gold")
+    )));
+    assert!(
+        !events
+            .iter()
+            .any(|e| matches!(e, Event::PeaceGoldPaid { .. }))
+    );
+}
+
+#[test]
+fn a_peace_offer_can_name_one_city_to_hand_over_in_either_direction() {
+    let mut war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    let mine = city(&mut war, 0, h(4, 4));
+    let theirs = city(&mut war, 1, h(10, 4));
+    war.cities.get_mut(&theirs).unwrap().population = 6;
+
+    // The proposer asks for the other side's city, and sweetens it with Gold.
+    let (plain, _) = offer_and_answer(&war, offer(1), true);
+    let (s, events) = offer_and_answer(&war, terms(1, 60, Some(theirs)), true);
+    assert!(peaceful(&s));
+    let c = &s.cities[&theirs];
+    assert_eq!(c.owner, PlayerId(0));
+    assert_eq!(
+        c.population, plain.cities[&theirs].population,
+        "a handed-over city arrives intact"
+    );
+    assert_eq!((c.resistance, c.occupied_from), (0, None));
+    assert_eq!(s.map.get(c.pos).unwrap().owner, Some(PlayerId(0)));
+    assert!(events.iter().any(|e| matches!(
+        e,
+        Event::CityCeded { city, from, to, .. }
+            if *city == theirs && *from == PlayerId(1) && *to == PlayerId(0)
+    )));
+    assert!(
+        events
+            .iter()
+            .any(|e| matches!(e, Event::PeaceGoldPaid { gold: 60, .. }))
+    );
+
+    // The proposer gives up its own city.
+    let (s, _) = offer_and_answer(&war, terms(1, 0, Some(mine)), true);
+    assert!(peaceful(&s));
+    assert_eq!(s.cities[&mine].owner, PlayerId(1));
+    assert_eq!(s.cities[&theirs].owner, PlayerId(1));
+}
+
+#[test]
+fn a_capital_or_a_third_empires_city_cannot_be_named_in_a_peace() {
+    let mut war = establish_war(&game(&[0, 1, 2]));
+    let capital = city(&mut war, 1, h(10, 4));
+    war.cities.get_mut(&capital).unwrap().is_capital = true;
+    let other = city(&mut war, 2, h(13, 4));
+    let why = validate_orders(&war, PlayerId(0), &[terms(1, 0, Some(capital))]);
+    assert!(why[0].message.contains("capital"), "{why:?}");
+    assert!(!validate_orders(&war, PlayerId(0), &[terms(1, 0, Some(other))]).is_empty());
+}
+
+#[test]
+fn a_named_city_that_changed_hands_before_the_signature_voids_the_peace() {
+    let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
+    let town = city(&mut war, 1, h(10, 4));
+    let (mut s, _) = step(&war, &[(0, vec![terms(1, -50, Some(town))])]);
+    // A third empire took it meanwhile.
+    s.cities.get_mut(&town).unwrap().owner = PlayerId(2);
+    let before = (gold(&s, 0), gold(&s, 1));
+    assert!(!validate_orders(&s, PlayerId(1), &[response(1, true)]).is_empty());
+    let (after, events) = step(&s, &[]);
+    assert!(!peaceful(&after));
+    assert!(events.iter().any(|e| matches!(
+        e,
+        Event::ProposalInvalidated { reason, .. } if reason.contains("city")
+    )));
+    assert_eq!(after.cities[&town].owner, PlayerId(2));
+    let (control, _) = step(&s, &[]);
+    assert_eq!(before.0 - gold(&after, 0), before.0 - gold(&control, 0));
+    assert_eq!(before.1 - gold(&after, 1), before.1 - gold(&control, 1));
+}
+
+#[test]
+fn peace_terms_survive_a_save_and_only_the_two_empires_see_them() {
+    let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
+    let town = city(&mut war, 1, h(10, 4));
+    let (s, _) = step(&war, &[(0, vec![terms(1, 75, Some(town))])]);
+    let loaded: GameState = serde_json::from_str(&serde_json::to_string(&s).unwrap()).unwrap();
+    assert_eq!(loaded, s);
+    for p in [0, 1] {
+        let seen = &player_view(&s, PlayerId(p)).diplomacy.proposals[0];
+        assert_eq!(
+            (seen.terms.gold, seen.terms.city, seen.city_from),
+            (75, Some(town), Some(PlayerId(1)))
+        );
+    }
+    assert!(player_view(&s, PlayerId(2)).diplomacy.proposals.is_empty());
+    let (after, events) = step(&s, &[(1, vec![response(1, true)])]);
+    let third = legatum_core::event_visibility::visible_events(
+        &events,
+        &player_view(&s, PlayerId(2)),
+        &player_view(&after, PlayerId(2)),
+    );
+    assert!(!third.iter().any(|e| matches!(
+        e,
+        legatum_core::event_visibility::VisibleEvent::Complete(Event::PeaceGoldPaid { .. })
+    )));
+    assert!(third.iter().any(|e| matches!(
+        e,
+        legatum_core::event_visibility::VisibleEvent::Complete(Event::CityCeded { .. })
+    )));
+}
+
+#[test]
+fn a_peace_can_return_every_captured_city_and_set_a_longer_truce() {
+    let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
+    capital(&mut war, 0, h(2, 2));
+    capital(&mut war, 1, h(13, 2));
+    capital(&mut war, 2, h(13, 9));
+    let taken_by_0 = city(&mut war, 0, h(6, 4));
+    let taken_by_1 = city(&mut war, 1, h(10, 4));
+    let from_third = city(&mut war, 0, h(6, 8));
+    war.cities.get_mut(&taken_by_0).unwrap().occupied_from = Some(PlayerId(1));
+    war.cities.get_mut(&taken_by_1).unwrap().occupied_from = Some(PlayerId(0));
+    war.cities.get_mut(&from_third).unwrap().occupied_from = Some(PlayerId(2));
+    let order = deal(
+        1,
+        PeaceTerms {
+            return_captured: true,
+            truce: 30,
+            ..Default::default()
+        },
+    );
+    let (s, events) = offer_and_answer(&war, order, true);
+    assert!(peaceful(&s));
+    assert_eq!(s.cities[&taken_by_0].owner, PlayerId(1));
+    assert_eq!(s.cities[&taken_by_1].owner, PlayerId(0));
+    assert_eq!(
+        s.cities[&from_third].owner,
+        PlayerId(0),
+        "a third empire's city stays"
+    );
+    assert_eq!(
+        events
+            .iter()
+            .filter(|e| matches!(e, Event::CityCeded { .. }))
+            .count(),
+        2
+    );
+    let r = relation(&s);
+    assert_eq!(r.guarantee_until, r.effective_turn + 30);
+    // The long truce binds both sides: no route to war until it ends.
+    assert!(!validate_orders(&s, PlayerId(0), &[war_order()]).is_empty());
+
+    // With nothing to return, or an unknown length, the offer is refused.
+    let none = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    let bad = |terms| !validate_orders(&none, PlayerId(0), &[deal(1, terms)]).is_empty();
+    assert!(bad(PeaceTerms {
+        return_captured: true,
+        ..Default::default()
+    }));
+    assert!(bad(PeaceTerms {
+        truce: 15,
+        ..Default::default()
+    }));
+}
+fn war_order() -> Order {
+    war(1)
+}
+
+#[test]
+fn reparations_are_a_named_gold_line_each_turn_of_the_truce() {
+    let mut war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    city(&mut war, 0, h(3, 4));
+    city(&mut war, 1, h(10, 4));
+    let (plain, _) = offer_and_answer(&war, offer(1), true);
+    let order = deal(
+        1,
+        PeaceTerms {
+            reparations: -7,
+            ..Default::default()
+        },
+    );
+    let (s, _) = offer_and_answer(&war, order, true);
+    let due = relation(&s).reparations.clone().expect("reparations");
+    assert_eq!((due.from, due.to, due.gold), (PlayerId(1), PlayerId(0), 7));
+    assert_eq!(due.until, relation(&s).guarantee_until);
+    let line = |s: &GameState, p: u8, label: &str| {
+        player_view(s, PlayerId(p))
+            .economy
+            .gold_per_turn
+            .parts
+            .iter()
+            .find(|(l, _)| l.starts_with(label))
+            .map(|(_, v)| *v)
+    };
+    assert_eq!(line(&s, 1, "Reparations to"), Some(-7));
+    assert_eq!(line(&s, 0, "Reparations from"), Some(7));
+    let (a, _) = step(&s, &[]);
+    let (b, _) = step(&plain, &[]);
+    assert_eq!(gold(&a, 0) - gold(&s, 0), gold(&b, 0) - gold(&plain, 0) + 7);
+    assert_eq!(gold(&a, 1) - gold(&s, 1), gold(&b, 1) - gold(&plain, 1) - 7);
+    // They end with the truce.
+    let mut t = s.clone();
+    while t.turn < due.until {
+        t = step(&t, &[]).0;
+    }
+    assert_eq!(line(&t, 1, "Reparations to"), None);
+}
+
+#[test]
+fn stopping_reparations_is_a_public_betrayal_that_frees_only_the_wronged_side() {
+    let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
+    capital(&mut war, 0, h(3, 4));
+    capital(&mut war, 1, h(10, 4));
+    capital(&mut war, 2, h(13, 9));
+    let order = deal(
+        1,
+        PeaceTerms {
+            reparations: 5,
+            truce: 20,
+            ..Default::default()
+        },
+    );
+    let (s, _) = offer_and_answer(&war, order, true);
+    // Only the payer can stop them.
+    assert!(!validate_orders(&s, PlayerId(1), &[leave(0)]).is_empty());
+    assert!(validate_orders(&s, PlayerId(0), &[leave(1)]).is_empty());
+    let (s, events) = step(&s, &[(0, vec![leave(1)])]);
+    assert!(
+        events
+            .iter()
+            .any(|e| matches!(e, Event::ReparationsStopped { gold: 5, .. }))
+    );
+    assert!(events.iter().any(|e| matches!(
+        e,
+        Event::AllianceBetrayed { betrayal } if betrayal.by == TeamId(0) && betrayal.against == TeamId(1)
+    )));
+    assert!(relation(&s).reparations.is_none());
+    assert!(peaceful(&s));
+    // The defaulter is still bound by the truce; the wronged side is not.
+    let declare = |against| Order::DeclareWar {
+        against: TeamId(against),
+        breach: false,
+    };
+    assert!(!validate_orders(&s, PlayerId(0), &[declare(1)]).is_empty());
+    assert!(validate_orders(&s, PlayerId(1), &[declare(0)]).is_empty());
+}
+
+#[test]
+fn a_refusal_may_carry_one_counter_offer() {
+    let mut war = fund(establish_war(&game(&[0, 1])), &[500, 500]);
+    city(&mut war, 0, h(3, 4));
+    city(&mut war, 1, h(10, 4));
+    let (s, _) = step(&war, &[(0, vec![terms(1, -300, None)])]);
+    let counter = |gold| Order::RespondToProposal {
+        proposal: ProposalId(1),
+        accept: false,
+        explanation: None,
+        counter: Some(PeaceTerms {
+            gold,
+            ..Default::default()
+        }),
+    };
+    assert!(validate_orders(&s, PlayerId(1), &[counter(100)]).is_empty());
+    assert!(!validate_orders(&s, PlayerId(1), &[counter(5_000)]).is_empty());
+    let (s, events) = step(&s, &[(1, vec![counter(100)])]);
+    assert!(
+        events
+            .iter()
+            .any(|e| matches!(e, Event::ProposalRejected { .. }))
+    );
+    let back = proposal_to(&s, 0);
+    assert!(back.counter);
+    assert_eq!((back.proposer, back.terms.gold), (PlayerId(1), 100));
+    // No cooldown stands in the way of the answer, and a counter cannot be countered.
+    let again = Order::RespondToProposal {
+        proposal: back.id,
+        accept: false,
+        explanation: None,
+        counter: Some(PeaceTerms::default()),
+    };
+    assert!(!validate_orders(&s, PlayerId(0), &[again]).is_empty());
+    let before = (gold(&s, 0), gold(&s, 1));
+    let (control, _) = step(&s, &[]);
+    let (s, _) = step(&s, &[(0, vec![response(back.id.0, true)])]);
+    assert!(peaceful(&s));
+    assert_eq!(gold(&s, 0) - before.0, gold(&control, 0) - before.0 + 100);
+    assert_eq!(gold(&s, 1) - before.1, gold(&control, 1) - before.1 - 100);
+}
+fn capital(s: &mut GameState, p: u8, at: Hex) -> CityId {
+    let id = city(s, p, at);
+    s.cities.get_mut(&id).unwrap().is_capital = true;
+    id
 }

@@ -544,6 +544,8 @@ mod tests {
             security: None,
             war_id: Some(1),
             declarers: vec![TeamId(ENEMY.0)],
+            reparations: None,
+            truce_released: None,
         });
         let mut assessments = OpponentAssessments::default();
         assessments.update(&view);

@@ -444,6 +444,8 @@ mod tests {
             security: None,
             war_id: None,
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         });
         let mut p = planner(&v, 9);
         p.difficulty = AiDifficulty::Hard;

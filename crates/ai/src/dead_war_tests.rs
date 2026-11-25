@@ -25,6 +25,8 @@ fn relation(a: TeamId, b: TeamId, state: RelationState, since: u32) -> Relation 
         } else {
             Vec::new()
         },
+        reparations: None,
+        truce_released: None,
     }
 }
 

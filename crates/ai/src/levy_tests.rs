@@ -152,6 +152,8 @@ fn it_disbands_a_weak_unit_for_a_clearly_better_one_only_in_quiet_peace() {
                     security: None,
                     war_id: None,
                     declarers: Vec::new(),
+                    reparations: None,
+                    truce_released: None,
                 });
         }
         v

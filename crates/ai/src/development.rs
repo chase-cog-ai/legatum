@@ -309,6 +309,8 @@ mod tests {
             }),
             war_id: None,
             declarers: Vec::new(),
+            reparations: None,
+            truce_released: None,
         });
         let value = |gene| {
             let mut p = Planner::new(

@@ -25,6 +25,7 @@ fn main() {
     let offer = || Order::ProposeTreaty {
         to: TeamId(2),
         kind: TreatyKind::Peace,
+        terms: Default::default(),
     };
     for turn in 1..=12 {
         let orders = match turn {
@@ -46,6 +47,7 @@ fn main() {
                     proposal: ProposalId(1),
                     accept: true,
                     explanation: None,
+                    counter: None,
                 }],
             )]),
             5 | 6 => BTreeMap::from([(PlayerId(0), vec![war()])]),
@@ -55,6 +57,7 @@ fn main() {
                     proposal: ProposalId(2),
                     accept: false,
                     explanation: None,
+                    counter: None,
                 }],
             )]),
             _ => BTreeMap::new(),

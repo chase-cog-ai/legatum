@@ -21,12 +21,22 @@ pub enum Order {
     ProposeTreaty {
         to: TeamId,
         kind: crate::diplomacy::TreatyKind,
+        /// Peace only: what the offer carries besides the Peace (`diplomacy::PeaceTerms`).
+        #[serde(
+            default,
+            skip_serializing_if = "crate::diplomacy::PeaceTerms::is_plain"
+        )]
+        terms: crate::diplomacy::PeaceTerms,
     },
     RespondToProposal {
         proposal: crate::diplomacy::ProposalId,
         accept: bool,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         explanation: Option<crate::diplomacy::DecisionExplanation>,
+        /// With a refusal of a Peace offer: the terms the refuser would sign instead, sent back
+        /// as its own offer. An offer that is itself a counter-offer cannot be countered.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        counter: Option<crate::diplomacy::PeaceTerms>,
     },
     WithdrawProposal {
         proposal: crate::diplomacy::ProposalId,

@@ -177,6 +177,29 @@ pub enum Event {
         treaty_id: Option<u32>,
         effective_turn: u32,
     },
+    /// Gold a signed Peace carried (`diplomacy::PeaceProposal::gold`): `from` paid `to`.
+    PeaceGoldPaid {
+        from: PlayerId,
+        to: PlayerId,
+        gold: i32,
+        effective_turn: u32,
+    },
+    /// The payer stopped the reparations a Peace set (`diplomacy::Reparations`): the truce
+    /// ends and the betrayal is recorded. Public.
+    ReparationsStopped {
+        from: PlayerId,
+        to: PlayerId,
+        gold: i32,
+        effective_turn: u32,
+    },
+    /// A signed Peace handed `city` over (`diplomacy::PeaceProposal::city`). Public, like a
+    /// capture.
+    CityCeded {
+        city: CityId,
+        from: PlayerId,
+        to: PlayerId,
+        effective_turn: u32,
+    },
     /// `betrayal.by` left an Alliance inside its protected window or declared war on its ally.
     AllianceBetrayed {
         betrayal: crate::diplomacy::Betrayal,

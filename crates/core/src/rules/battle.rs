@@ -1390,6 +1390,38 @@ fn end_orders_into_city(state: &mut GameState, city_pos: Hex, captor: PlayerId) 
     }
 }
 
+/// A signed Peace hands the city over (`diplomacy::PeaceProposal::city`). Unlike a capture it
+/// arrives intact: no lost population, no resistance, no occupation lock, no capture payouts.
+/// Its aircraft, stored yields and build queue do not come with it; units stay where they stand.
+pub fn cede_city(state: &mut GameState, city: CityId, to: PlayerId, events: &mut Vec<Event>) {
+    super::air::lose_city_aircraft(state, city, events);
+    let Some(c) = state.cities.get_mut(&city) else {
+        return;
+    };
+    let pos = c.pos;
+    c.owner = to;
+    c.occupied_from = None;
+    c.resistance = 0;
+    c.build_automation = None;
+    c.last_auto_pick = None;
+    c.auto_queued = None;
+    c.food_stored = 0;
+    c.production_stored = 0;
+    c.production_banked.clear();
+    c.producing = None;
+    c.production_queue.clear();
+    c.production_queue_notified.clear();
+    c.wonder_lost = None;
+    c.bought = None;
+    c.is_capital = false;
+    for t in &mut state.map.tiles {
+        if t.city == Some(city) {
+            t.owner = Some(to);
+        }
+    }
+    end_orders_into_city(state, pos, to);
+}
+
 /// A melee attacker took the city: it changes hands and hostile military units are destroyed.
 /// Civilians remain for movement's capture pass.
 pub fn capture_city(

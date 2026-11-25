@@ -27,6 +27,8 @@ fn movement_will_not_stage_units_inside_an_allied_city() {
             security: None,
             war_id: None,
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         });
     let mut plan = HumanPlaybookV7Brain::default().build_plan(&view);
     for unit in view.units.iter().filter(|u| u.owner == ME) {
@@ -63,6 +65,7 @@ fn at_peace(mut view: PlayerView) -> PlayerView {
             Order::ProposeTreaty {
                 to: against,
                 kind: TreatyKind::Peace,
+                terms: Default::default(),
             },
         ] {
             view.diplomacy.actions.push(DiplomaticAction {
@@ -346,6 +349,8 @@ fn a_stalled_war_asks_for_peace_and_moves_the_army_to_another_front() {
             security: None,
             war_id: None,
             declarers: vec![TeamId(0)],
+            reparations: None,
+            truce_released: None,
         });
     let mut brain = conquering();
     let first = brain.orders(&view);
@@ -368,7 +373,8 @@ fn a_stalled_war_asks_for_peace_and_moves_the_army_to_another_front() {
     assert!(
         stalled.contains(&Order::ProposeTreaty {
             to: TeamId(2),
-            kind: TreatyKind::Peace
+            kind: TreatyKind::Peace,
+            terms: Default::default(),
         }),
         "{stalled:?}"
     );

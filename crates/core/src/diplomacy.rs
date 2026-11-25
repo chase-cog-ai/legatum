@@ -58,6 +58,70 @@ impl TreatyKind {
 }
 /// Turns of guaranteed peace after a war ends in a Peace treaty.
 pub const PEACE_TRUCE_TURNS: u32 = 10;
+/// The most Gold a Peace offer may carry, either way.
+pub const PEACE_GOLD_MAX: i32 = 9_999;
+/// The truce lengths a Peace offer may name (the first is the default).
+pub const PEACE_TRUCE_CHOICES: [u32; 3] = [PEACE_TRUCE_TURNS, 20, 30];
+/// The most Gold per turn a Peace offer may carry as reparations, either way.
+pub const PEACE_REPARATIONS_MAX: i32 = 99;
+
+/// What a Peace offer carries besides the Peace itself, written from the proposer's side.
+/// Everything settles when the Peace is signed and nothing moves before; the other side may
+/// refuse, or refuse with one counter-offer.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PeaceTerms {
+    /// Gold the proposer pays the empire that accepts; negative, the accepting empire pays.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub gold: i32,
+    /// One city handed over by whichever of the two empires owns it: the proposer's goes to
+    /// the empire that accepts, the other side's to the proposer. Never a capital.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub city: Option<crate::CityId>,
+    /// Both sides give back every city they hold that they captured from the other
+    /// (`City::occupied_from`).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub return_captured: bool,
+    /// Turns of guaranteed Peace (one of `PEACE_TRUCE_CHOICES`); 0 is the default ten.
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub truce: u32,
+    /// Gold per turn the proposer pays for the length of the truce; negative, the accepting
+    /// empire pays. The payer may stop (`Order::BreakTreaty`), which is a public betrayal
+    /// and ends the truce.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub reparations: i32,
+}
+fn is_zero_u32(n: &u32) -> bool {
+    *n == 0
+}
+impl PeaceTerms {
+    pub fn is_plain(&self) -> bool {
+        *self == Self::default()
+    }
+    pub fn truce_turns(&self) -> u32 {
+        if self.truce == 0 {
+            PEACE_TRUCE_TURNS
+        } else {
+            self.truce
+        }
+    }
+    /// The same deal written from the other side (for a counter-offer that changes one term).
+    pub fn mirrored(&self) -> Self {
+        Self {
+            gold: -self.gold,
+            reparations: -self.reparations,
+            ..self.clone()
+        }
+    }
+}
+
+/// Gold per turn `from` pays `to` under a signed Peace, through turn `until - 1`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Reparations {
+    pub from: PlayerId,
+    pub to: PlayerId,
+    pub gold: i32,
+    pub until: u32,
+}
 /// Turns after an Alliance activates during which leaving it (or declaring war on the ally)
 /// costs the breach Gold and counts as a betrayal.
 pub const ALLIANCE_PROTECTED_TURNS: u32 = 10;
@@ -103,6 +167,13 @@ pub struct Relation {
     #[serde(default)]
     pub security: Option<SecurityTreaty>,
     pub war_id: Option<u32>,
+    /// Peace only: reparations a signed Peace set for its truce.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reparations: Option<Reparations>,
+    /// Peace only: the team a default on reparations freed from the truce. The defaulter
+    /// stays bound until `guarantee_until`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub truce_released: Option<TeamId>,
     /// Both teams for mutual declarations (there is then no defender).
     pub declarers: Vec<TeamId>,
 }
@@ -212,6 +283,15 @@ pub struct PeaceProposal {
     pub created_turn: u32,
     pub respond_by: u32,
     pub relation_version: u32,
+    /// Peace only: what the offer carries. Nothing moves unless the Peace is signed.
+    #[serde(default, skip_serializing_if = "PeaceTerms::is_plain")]
+    pub terms: PeaceTerms,
+    /// The owner of `terms.city` when the offer was made.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub city_from: Option<PlayerId>,
+    /// This offer answers a refused one with changed terms; it cannot be countered again.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub counter: bool,
     /// Peace only: the teams that have agreed so far, the proposer first.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub consents: Vec<TeamId>,
@@ -315,6 +395,8 @@ impl DiplomacyState {
                     security: None,
                     war_id: None,
                     declarers: Vec::new(),
+                    reparations: None,
+                    truce_released: None,
                 });
             }
         }
@@ -838,6 +920,11 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
                 return Err(reason);
             }
         }
+        Order::BreakTreaty { .. }
+            if r.state == RelationState::Peace
+                && r.reparations
+                    .as_ref()
+                    .is_some_and(|p| state.team_of(p.from) == team && state.turn < p.until) => {}
         Order::BreakTreaty { .. } => {
             if r.state != RelationState::Alliance {
                 return Err("No Alliance to leave".into());
@@ -849,8 +936,12 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
                 "Breaking the Alliance",
             )?;
         }
-        Order::ProposeTreaty { kind, .. } => {
+        Order::ProposeTreaty { kind, terms, .. } => {
             check_kind(r, *kind)?;
+            if !terms.is_plain() && *kind != TreatyKind::Peace {
+                return Err("Only a Peace offer can carry terms".into());
+            }
+            check_terms(state, player, other, terms)?;
             if *kind == TreatyKind::Alliance {
                 check_alliance(d, state, team, other, state.turn)?;
                 if let Some(b) = d.refusal(team, other, effective) {
@@ -896,6 +987,36 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
                 return Err("Proposal no longer matches the relationship".into());
             }
             check_kind(rp, p.kind)?;
+            if matches!(order, Order::RespondToProposal { accept: true, .. }) {
+                afford(state, player, -p.terms.gold, "Accepting this Peace")?;
+                if let Some(c) = p.terms.city.and_then(|c| state.cities.get(&c)) {
+                    if c.owner != p.proposer && c.owner != player {
+                        return Err(format!(
+                            "Only {} can hand over {}",
+                            state.player(c.owner).name,
+                            c.name
+                        ));
+                    }
+                    check_cession(state, c, (c.owner == p.proposer).then_some(player))?;
+                }
+            }
+            if let Order::RespondToProposal {
+                accept,
+                counter: Some(terms),
+                ..
+            } = order
+            {
+                if *accept {
+                    return Err("A counter-offer comes with a refusal".into());
+                }
+                if p.kind != TreatyKind::Peace {
+                    return Err("Only a Peace offer can be countered".into());
+                }
+                if p.counter {
+                    return Err("A counter-offer can only be accepted or refused".into());
+                }
+                check_terms(state, player, p.from, terms)?;
+            }
             if matches!(order, Order::RespondToProposal { accept: true, .. })
                 && p.kind == TreatyKind::Alliance
             {
@@ -1063,7 +1184,7 @@ pub struct DiplomaticAction {
     pub also_agree: Vec<TeamId>,
     pub blocked_reason: Option<String>,
 }
-fn is_zero(n: &i32) -> bool {
+pub(crate) fn is_zero(n: &i32) -> bool {
     *n == 0
 }
 
@@ -1189,7 +1310,11 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
             agreement: Agreement::Security,
         });
         for kind in [TreatyKind::Peace, TreatyKind::Alliance] {
-            orders.push(Order::ProposeTreaty { to: other, kind });
+            orders.push(Order::ProposeTreaty {
+                to: other,
+                kind,
+                terms: Default::default(),
+            });
         }
     }
     for p in &proposals {
@@ -1199,6 +1324,7 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
                     proposal: p.id,
                     accept,
                     explanation: None,
+                    counter: None,
                 });
             }
         } else if p.from == team {
@@ -1212,6 +1338,7 @@ pub fn view(state: &GameState, me: PlayerId) -> DiplomacyView {
                 proposal: c.id,
                 accept,
                 explanation: None,
+                counter: None,
             });
         }
     }
@@ -1316,6 +1443,7 @@ fn action_effects(
         Order::ProposeTreaty {
             to,
             kind: TreatyKind::Alliance,
+            ..
         } => {
             let (joins, calls) = d.alliance_wars(alive, team, *to);
             (joins, calls, Vec::new())
@@ -1323,6 +1451,7 @@ fn action_effects(
         Order::ProposeTreaty {
             to,
             kind: TreatyKind::Peace,
+            ..
         } => (
             Vec::new(),
             Vec::new(),
@@ -1614,7 +1743,14 @@ fn end_warring_alliances(
 }
 
 /// End only the named pair's war, with its own ten-turn guarantee.
-fn make_peace(d: &mut DiplomacyState, a: TeamId, b: TeamId, turn: u32) -> Vec<Relation> {
+fn make_peace(
+    d: &mut DiplomacyState,
+    a: TeamId,
+    b: TeamId,
+    turn: u32,
+    truce: u32,
+    reparations: Option<Reparations>,
+) -> Vec<Relation> {
     let mut changed = Vec::new();
     for r in d
         .relations
@@ -1624,7 +1760,9 @@ fn make_peace(d: &mut DiplomacyState, a: TeamId, b: TeamId, turn: u32) -> Vec<Re
         r.state = RelationState::Peace;
         r.security = None;
         r.effective_turn = turn;
-        r.guarantee_until = turn + PEACE_TRUCE_TURNS;
+        r.guarantee_until = turn + truce;
+        r.reparations = reparations.clone();
+        r.truce_released = None;
         r.version += 1;
         r.war_id = None;
         r.declarers.clear();
@@ -1758,11 +1896,50 @@ pub fn resolve_boundary(
                     effective_turn,
                 });
             } else {
-                cooldown(&mut d, &p, effective_turn);
+                let counter = match &order {
+                    Order::RespondToProposal {
+                        counter: Some(terms),
+                        ..
+                    } if p.kind == TreatyKind::Peace && !p.counter => Some(terms.clone()),
+                    _ => None,
+                };
+                if counter.is_none() {
+                    cooldown(&mut d, &p, effective_turn);
+                }
+                let (from, to, version) = (p.to, p.from, p.relation_version);
                 events.push(Event::ProposalRejected {
                     proposal: proposal_for_event(&d, p),
                     effective_turn,
                 });
+                // A refusal with a counter-offer: the refuser's terms go back as its own offer.
+                if let Some(terms) = counter {
+                    d.next_proposal_id += 1;
+                    let city_from = terms
+                        .city
+                        .and_then(|c| after.cities.get(&c))
+                        .map(|c| c.owner);
+                    let p = PeaceProposal {
+                        explanation: None,
+                        id: ProposalId(d.next_proposal_id),
+                        kind: TreatyKind::Peace,
+                        from,
+                        to,
+                        proposer: player,
+                        created_turn: effective_turn,
+                        respond_by: before.turn + 3,
+                        relation_version: version,
+                        terms,
+                        city_from,
+                        counter: true,
+                        consents: vec![from],
+                        needs: Vec::new(),
+                        required_teams: Vec::new(),
+                    };
+                    d.proposals.push(p.clone());
+                    events.push(Event::ProposalCreated {
+                        proposal: proposal_for_event(&d, p),
+                    });
+                }
             }
         } else {
             events.push(Event::OrderFailed {
@@ -1793,6 +1970,38 @@ pub fn resolve_boundary(
     // pay and are recorded as betrayers; war on an ally is always a betrayal.
     let exit_relations = d.clone();
     let mut failed_exits = BTreeSet::new();
+    // Stopping reparations: a public betrayal, and the truce they paid for ends.
+    for (_, team, other, o) in &valid {
+        if !matches!(o, Order::BreakTreaty { .. }) {
+            continue;
+        }
+        let Some(r) = d.relations.iter_mut().find(|r| {
+            r.between(*team, *other)
+                && r.state == RelationState::Peace
+                && r.reparations
+                    .as_ref()
+                    .is_some_and(|p| after.team_of(p.from) == *team)
+        }) else {
+            continue;
+        };
+        let stopped = r.reparations.take().expect("matched above");
+        r.truce_released = Some(*other);
+        r.version += 1;
+        let b = Betrayal {
+            by: *team,
+            against: *other,
+            turn: effective_turn,
+            until: effective_turn + BETRAYAL_TURNS,
+        };
+        d.betrayals.push(b.clone());
+        events.push(Event::ReparationsStopped {
+            from: stopped.from,
+            to: stopped.to,
+            gold: stopped.gold,
+            effective_turn,
+        });
+        events.push(Event::AllianceBetrayed { betrayal: b });
+    }
     for (player, team, other, o) in &valid {
         if !matches!(o, Order::DeclareWar { .. } | Order::BreakTreaty { .. }) {
             continue;
@@ -2020,11 +2229,96 @@ pub fn resolve_boundary(
                     }
                     d.proposals.remove(i);
                     p = proposal_for_event(&d, p);
-                    let ended = make_peace(&mut d, p.from, p.to, effective_turn);
+                    // The terms settle with the signature or the Peace is not signed:
+                    // purchases and captures this turn may have changed what the offer counted on.
+                    let terms = p.terms.clone();
+                    let (payer, payee) = if terms.gold >= 0 {
+                        (p.proposer, player)
+                    } else {
+                        (player, p.proposer)
+                    };
+                    let amount = terms.gold.abs();
+                    let cession = terms.city.map(|c| {
+                        let to = if p.city_from == Some(p.proposer) {
+                            player
+                        } else {
+                            p.proposer
+                        };
+                        let ok = after.cities.get(&c).is_some_and(|city| {
+                            Some(city.owner) == p.city_from
+                                && (city.owner == p.proposer || city.owner == player)
+                                && check_cession(after, city, Some(to)).is_ok()
+                        });
+                        (c, to, ok)
+                    });
+                    let broken = if after.player(payer).gold < amount {
+                        Some(format!(
+                            "{} no longer has the {amount} Gold this Peace costs",
+                            after.player(payer).name
+                        ))
+                    } else if cession.is_some_and(|(_, _, ok)| !ok) {
+                        Some("The city this Peace names can no longer be handed over".into())
+                    } else {
+                        None
+                    };
+                    if let Some(reason) = broken {
+                        events.push(Event::ProposalInvalidated {
+                            reason,
+                            proposal: p,
+                            effective_turn,
+                        });
+                        continue;
+                    }
+                    let truce = terms.truce_turns();
+                    let reparations = (terms.reparations != 0).then(|| {
+                        let (from, to) = if terms.reparations > 0 {
+                            (p.proposer, player)
+                        } else {
+                            (player, p.proposer)
+                        };
+                        Reparations {
+                            from,
+                            to,
+                            gold: terms.reparations.abs(),
+                            until: effective_turn + truce,
+                        }
+                    });
+                    let ended =
+                        make_peace(&mut d, p.from, p.to, effective_turn, truce, reparations);
+                    let (p_from, p_to) = (p.from, p.to);
                     events.push(Event::ProposalAccepted {
                         proposal: p,
                         effective_turn,
                     });
+                    if amount > 0 {
+                        after.player_mut(payer).gold -= amount;
+                        after.player_mut(payee).gold =
+                            crate::validation::credit_gold(after.player(payee).gold, amount);
+                        events.push(Event::PeaceGoldPaid {
+                            from: payer,
+                            to: payee,
+                            gold: amount,
+                            effective_turn,
+                        });
+                    }
+                    let mut handed: Vec<_> = cession.iter().map(|(c, to, _)| (*c, *to)).collect();
+                    if terms.return_captured {
+                        for back in captured_between(after, p_from, p_to) {
+                            if !handed.iter().any(|(c, _)| *c == back.0) {
+                                handed.push(back);
+                            }
+                        }
+                    }
+                    for (city, to) in handed {
+                        let from = after.cities[&city].owner;
+                        crate::rules::battle::cede_city(after, city, to, events);
+                        events.push(Event::CityCeded {
+                            city,
+                            from,
+                            to,
+                            effective_turn,
+                        });
+                    }
                     for relation in ended {
                         events.push(Event::PeaceEstablished { relation });
                     }
@@ -2060,7 +2354,16 @@ pub fn resolve_boundary(
                 events.push(Event::TreatyActivated { relation });
                 signed.push((p_from, p_to));
             }
-            Order::ProposeTreaty { kind, .. } => {
+            Order::ProposeTreaty { kind, terms, .. } => {
+                let terms = if kind == TreatyKind::Peace {
+                    terms
+                } else {
+                    PeaceTerms::default()
+                };
+                let city_from = terms
+                    .city
+                    .and_then(|c| after.cities.get(&c))
+                    .map(|c| c.owner);
                 if d.proposals
                     .iter()
                     .any(|p| pair(p.from, p.to) == pair(team, other))
@@ -2092,6 +2395,9 @@ pub fn resolve_boundary(
                     created_turn: effective_turn,
                     respond_by: before.turn + 3,
                     relation_version: version,
+                    terms,
+                    city_from,
+                    counter: false,
                     consents: if kind == TreatyKind::Peace {
                         vec![team]
                     } else {
@@ -2141,6 +2447,12 @@ pub fn resolve_boundary(
             Some(WAR_ENDS_OFFERS)
         } else if changed.is_some() || d.relation(p.from, p.to).is_none() {
             Some("Relationship changed")
+        } else if p
+            .terms
+            .city
+            .is_some_and(|c| after.cities.get(&c).map(|c| c.owner) != p.city_from)
+        {
+            Some("The city this Peace names changed hands")
         } else {
             None
         };
@@ -2219,6 +2531,82 @@ fn cooldown(d: &mut DiplomacyState, p: &PeaceProposal, turn: u32) {
 }
 
 /// Refuse a diplomatic payment the empire cannot make from its current treasury.
+/// Whether `player` may offer `other` a Peace on these terms.
+fn check_terms(
+    state: &GameState,
+    player: PlayerId,
+    other: TeamId,
+    terms: &PeaceTerms,
+) -> Result<(), String> {
+    if terms.gold.abs() > PEACE_GOLD_MAX {
+        return Err(format!(
+            "A Peace offer carries at most {PEACE_GOLD_MAX} Gold"
+        ));
+    }
+    afford(state, player, terms.gold, "This Peace offer")?;
+    if terms.reparations.abs() > PEACE_REPARATIONS_MAX {
+        return Err(format!(
+            "Reparations are at most {PEACE_REPARATIONS_MAX} Gold a turn"
+        ));
+    }
+    if terms.truce != 0 && !PEACE_TRUCE_CHOICES.contains(&terms.truce) {
+        return Err("A truce lasts 10, 20 or 30 turns".into());
+    }
+    if let Some(city) = terms.city {
+        let c = state
+            .cities
+            .get(&city)
+            .ok_or("That city no longer exists")?;
+        if c.owner != player && state.team_of(c.owner) != other {
+            return Err("A Peace offer can only name your city or theirs".into());
+        }
+        check_cession(state, c, (c.owner != player).then_some(player))?;
+    }
+    if terms.return_captured && captured_between(state, state.team_of(player), other).is_empty() {
+        return Err("Neither side holds a city captured from the other".into());
+    }
+    Ok(())
+}
+/// The cities a "return captured cities" term gives back: each one owned by one of the two
+/// teams and taken from an empire of the other that is still alive, with the empire it
+/// returns to. A city the Celts would receive without having founded it stays.
+pub fn captured_between(state: &GameState, a: TeamId, b: TeamId) -> Vec<(crate::CityId, PlayerId)> {
+    state
+        .cities
+        .values()
+        .filter_map(|c| {
+            let back = c.occupied_from?;
+            let (holder, home) = (state.team_of(c.owner), state.team_of(back));
+            ((holder, home) == (a, b) || (holder, home) == (b, a))
+                .then_some(())
+                .filter(|_| state.player(back).alive && check_cession(state, c, Some(back)).is_ok())
+                .map(|_| (c.id, back))
+        })
+        .collect()
+}
+/// Whether a Peace may hand `c` over, to `to` when the receiver is known. A capital stays with
+/// its empire, and the Celts keep no city they did not found.
+fn check_cession(
+    state: &GameState,
+    c: &crate::state::City,
+    to: Option<PlayerId>,
+) -> Result<(), String> {
+    if c.is_capital {
+        return Err(format!("{} is a capital and cannot be handed over", c.name));
+    }
+    if let Some(to) = to {
+        if state.player(to).faction == crate::Faction::Celts
+            && c.founder != to
+            && !state
+                .setup
+                .rule_experiments
+                .rule_off(crate::experiments::FactionRule::CeltsNoKeep)
+        {
+            return Err("The Celts keep no city they did not found".into());
+        }
+    }
+    Ok(())
+}
 fn afford(state: &GameState, player: PlayerId, cost: i32, what: &str) -> Result<(), String> {
     let gold = state.player(player).gold;
     if gold < cost {
@@ -2282,7 +2670,8 @@ fn check_guarantee(
     state: &GameState,
     other: TeamId,
 ) -> Result<(), String> {
-    if planning_turn < r.guarantee_until {
+    let declarer = if r.a == other { r.b } else { r.a };
+    if planning_turn < r.guarantee_until && r.truce_released != Some(declarer) {
         Err(format!(
             "Peace with {} is guaranteed through turn {}; earliest War: turn {}",
             empire_label(state, other),
@@ -2430,6 +2819,16 @@ pub fn same_action(a: &Order, b: &Order) -> bool {
                 ..
             },
         ) => a == b && aa == ba,
+        // The Gold a Peace offer carries is the proposer's to set: the listed action is the
+        // offer with none.
+        (
+            Order::ProposeTreaty {
+                to: a, kind: ak, ..
+            },
+            Order::ProposeTreaty {
+                to: b, kind: bk, ..
+            },
+        ) => a == b && ak == bk,
         _ => a == b,
     }
 }

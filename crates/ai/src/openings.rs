@@ -1971,6 +1971,8 @@ mod tests {
             security: None,
             war_id: None,
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         }];
         v.diplomacy.actions = vec![DiplomaticAction {
             new_wars: Vec::new(),
@@ -2296,6 +2298,7 @@ mod tests {
             proposal: ProposalId(1),
             accept: true,
             explanation: None,
+            counter: None,
         };
         v.diplomacy.actions.push(DiplomaticAction {
             new_wars: Vec::new(),
@@ -2322,6 +2325,9 @@ mod tests {
             consents: Vec::new(),
             needs: vec![to],
             required_teams: Vec::new(),
+            terms: Default::default(),
+            city_from: None,
+            counter: false,
         });
         let mut ordinary = Planner::new(&v, base().knobs, Faction::Switzerland, 7);
         ordinary.plan_diplomacy();

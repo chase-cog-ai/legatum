@@ -700,6 +700,8 @@ mod tests {
             security: None,
             war_id: None,
             declarers: vec![],
+            reparations: None,
+            truce_released: None,
         });
         v.diplomacy.actions.push(DiplomaticAction {
             new_wars: Vec::new(),

@@ -230,6 +230,7 @@ fn peace_acceptance_is_deterministic_from_public_strength_and_own_city_danger() 
             vec![Order::ProposeTreaty {
                 to: TeamId(0),
                 kind: TreatyKind::Peace,
+                terms: Default::default(),
             }],
         )]),
     );
@@ -247,6 +248,7 @@ fn peace_acceptance_is_deterministic_from_public_strength_and_own_city_danger() 
         proposal: ProposalId(1),
         accept: true,
         explanation: None,
+        counter: None,
     }];
     assert_eq!(legacy_choices(&v), expected);
     assert_eq!(legacy_choices(&v.clone()), expected);
@@ -503,6 +505,7 @@ fn peace_uses_eight_turn_age_ratio_gate_and_five_turn_kind_cooldown() {
     let offer = Order::ProposeTreaty {
         to: TeamId(2),
         kind: TreatyKind::Peace,
+        terms: Default::default(),
     };
     s.turn = 8;
     assert!(!choices(&view(&s)).contains(&offer));
@@ -538,7 +541,8 @@ fn peace_ratio_is_assessed_separately_for_each_opponent() {
         choices(&v),
         vec![Order::ProposeTreaty {
             to: TeamId(2),
-            kind: TreatyKind::Peace
+            kind: TreatyKind::Peace,
+            terms: Default::default(),
         }]
     );
 }
@@ -552,6 +556,7 @@ fn healthy_active_siege_does_not_sign_a_timed_truce() {
     let offer = Order::ProposeTreaty {
         to: TeamId(1),
         kind: TreatyKind::Peace,
+        terms: Default::default(),
     };
     assert!(!choices(&v).contains(&offer)); // A dominant army does not qualify for the 130% peace gate.
     v.cities
@@ -672,6 +677,7 @@ fn alliance_view() -> PlayerView {
             vec![Order::ProposeTreaty {
                 to: TeamId(0),
                 kind: TreatyKind::Alliance,
+                terms: Default::default(),
             }],
         )]),
     );
@@ -811,7 +817,8 @@ fn coalition_ai_offers_alliances_and_leaves_when_the_target_falls_or_the_ally_le
             a.order,
             Order::ProposeTreaty {
                 to: TeamId(1),
-                kind: TreatyKind::Alliance
+                kind: TreatyKind::Alliance,
+                ..
             }
         )
     });
@@ -822,7 +829,8 @@ fn coalition_ai_offers_alliances_and_leaves_when_the_target_falls_or_the_ally_le
         o,
         Order::ProposeTreaty {
             kind: TreatyKind::Alliance,
-            to: TeamId(1)
+            to: TeamId(1),
+            ..
         }
     )));
     let s = allied(25, Some(TeamId(2)));
@@ -884,6 +892,7 @@ fn an_alliance_that_joins_a_war_on_the_visible_leader_needs_a_reachable_target()
             vec![Order::ProposeTreaty {
                 to: TeamId(0),
                 kind: TreatyKind::Alliance,
+                terms: Default::default(),
             }],
         )]),
     );
@@ -925,7 +934,8 @@ fn an_alliance_that_joins_a_war_on_the_visible_leader_needs_a_reachable_target()
                 o,
                 Order::ProposeTreaty {
                     to: TeamId(1),
-                    kind: TreatyKind::Peace
+                    kind: TreatyKind::Peace,
+                    ..
                 }
             ))
     );
@@ -956,6 +966,7 @@ fn an_alliance_into_a_war_nobody_wants_is_refused() {
             vec![Order::ProposeTreaty {
                 to: TeamId(0),
                 kind: TreatyKind::Alliance,
+                terms: Default::default(),
             }],
         )]),
     );
@@ -989,6 +1000,7 @@ fn an_alliance_offer_to_a_peaceful_empire_says_it_would_join_our_war() {
     let offer = Order::ProposeTreaty {
         to: TeamId(2),
         kind: TreatyKind::Alliance,
+        terms: Default::default(),
     };
     let action = v
         .diplomacy
@@ -1055,7 +1067,8 @@ fn joined_coalition_wars_offer_peace_after_the_old_target_falls_behind() {
                 o,
                 Order::ProposeTreaty {
                     to: TeamId(1),
-                    kind: TreatyKind::Peace
+                    kind: TreatyKind::Peace,
+                    ..
                 }
             )
         })

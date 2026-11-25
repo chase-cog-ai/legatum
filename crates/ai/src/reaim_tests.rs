@@ -27,6 +27,8 @@ fn war(v: &mut PlayerView, team: TeamId) {
         security: None,
         war_id: Some(team.0 as u32),
         declarers: vec![v.team],
+        reparations: None,
+        truce_released: None,
     });
 }
 

@@ -32,6 +32,8 @@ fn relation(a: TeamId, b: TeamId, state: RelationState) -> Relation {
         security: None,
         war_id: None,
         declarers: Vec::new(),
+        reparations: None,
+        truce_released: None,
     }
 }
 
@@ -104,16 +106,19 @@ fn siege_persistence_rejects_both_incoming_peace_and_our_own_offer() {
     let offer = Order::ProposeTreaty {
         to: v.team_of(ENEMY),
         kind: TreatyKind::Peace,
+        terms: Default::default(),
     };
     let accept = Order::RespondToProposal {
         proposal: ProposalId(1),
         accept: true,
         explanation: None,
+        counter: None,
     };
     let decline = Order::RespondToProposal {
         proposal: ProposalId(1),
         accept: false,
         explanation: None,
+        counter: None,
     };
     v.diplomacy.actions = vec![
         legal(offer.clone()),
@@ -144,6 +149,9 @@ fn siege_persistence_rejects_both_incoming_peace_and_our_own_offer() {
         consents: Vec::new(),
         needs: vec![to],
         required_teams: Vec::new(),
+        terms: Default::default(),
+        city_from: None,
+        counter: false,
     });
     assert!(diplomacy(&v, &g).contains(&accept));
     g.siege_persistence_weight = 100;

@@ -41,6 +41,8 @@ fn relation(team: u8, state: RelationState) -> Relation {
         } else {
             vec![]
         },
+        reparations: None,
+        truce_released: None,
     }
 }
 

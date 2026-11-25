@@ -50,6 +50,8 @@ fn relation(view: &mut PlayerView, state: RelationState) {
         security: None,
         war_id: (state == RelationState::War).then_some(1),
         declarers: vec![b],
+        reparations: None,
+        truce_released: None,
     });
 }
 
@@ -955,6 +957,7 @@ fn dispatch_maintains_containment_but_allows_peace_when_home_is_overrun() {
     let peace = Order::ProposeTreaty {
         to: TeamId(2),
         kind: TreatyKind::Peace,
+        terms: Default::default(),
     };
     action(&mut view, peace.clone());
     view.turn = (10..50)

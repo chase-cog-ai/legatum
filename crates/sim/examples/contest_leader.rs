@@ -257,6 +257,7 @@ fn run(seed: u64, index: usize, search: &str, cap: u32) -> serde_json::Value {
                     proposal,
                     accept: false,
                     explanation: Some(e),
+                    ..
                 } = o
                     && e.reasons.iter().any(|r| r.contains("empty our treasury"))
                     && let Some(p) = session.state.diplomacy.as_ref().and_then(|d| {
@@ -290,11 +291,13 @@ fn run(seed: u64, index: usize, search: &str, cap: u32) -> serde_json::Value {
                         Order::ProposeTreaty {
                             to,
                             kind: TreatyKind::Alliance,
+                            ..
                         } if st.teams_at_war(*to, l) => offers += 1,
                         Order::RespondToProposal {
                             proposal,
                             accept,
                             explanation,
+                            ..
                         } => {
                             if let Some(p) = st.diplomacy.as_ref().and_then(|d| {
                                 d.proposals

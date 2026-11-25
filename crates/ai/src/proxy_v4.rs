@@ -838,11 +838,13 @@ impl Diplomat<'_> {
                 proposal: p.id,
                 accept: true,
                 explanation: None,
+                counter: None,
             };
             let order = Order::RespondToProposal {
                 proposal: p.id,
                 accept: accept && self.legal(&yes),
                 explanation: None,
+                counter: None,
             };
             if self.legal(&order) {
                 out.push(order);
@@ -859,6 +861,7 @@ impl Diplomat<'_> {
                 proposal: call.id,
                 accept: true,
                 explanation: None,
+                counter: None,
             };
             let join = self.legal(&yes)
                 && (self.progress(call.target) >= 80
@@ -867,6 +870,7 @@ impl Diplomat<'_> {
                 proposal: call.id,
                 accept: join,
                 explanation: None,
+                counter: None,
             };
             if self.legal(&order) {
                 out.push(order);
@@ -880,6 +884,7 @@ impl Diplomat<'_> {
             let alliance = Order::ProposeTreaty {
                 to: team,
                 kind: TreatyKind::Alliance,
+                terms: Default::default(),
             };
             let order = if target == Some(team) {
                 Order::DeclareWar {
@@ -890,6 +895,7 @@ impl Diplomat<'_> {
                 Order::ProposeTreaty {
                     to: team,
                     kind: TreatyKind::Peace,
+                    terms: Default::default(),
                 }
             } else if leave_target == Some(team) {
                 leave(team)
@@ -901,7 +907,7 @@ impl Diplomat<'_> {
             } else {
                 continue;
             };
-            if let Order::ProposeTreaty { to, kind } = &order
+            if let Order::ProposeTreaty { to, kind, .. } = &order
                 && v.diplomacy.peace_cooldowns.iter().any(|c| {
                     c.from == v.team && c.to == *to && c.kind == *kind && v.turn < c.retry_turn
                 })

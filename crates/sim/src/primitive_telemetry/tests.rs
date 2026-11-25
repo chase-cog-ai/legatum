@@ -102,6 +102,8 @@ fn same_turn_declaration_counts_a_surprise_war_settler_loss() {
         security: None,
         war_id: Some(1),
         declarers: vec![s.team_of(enemy)],
+        reparations: None,
+        truce_released: None,
     };
     observer.after(
         &mut counters,
@@ -136,6 +138,8 @@ fn war_battles_are_counted_once_per_declared_war_not_per_shot_or_barbarian_fight
         security: None,
         war_id: Some(1),
         declarers: vec![TeamId(0)],
+        reparations: None,
+        truce_released: None,
     };
     let mut c = Counters::default();
     let mut observer = Observer::default();

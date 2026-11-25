@@ -2811,6 +2811,8 @@ mod tests {
                 security: None,
                 war_id: Some(1),
                 declarers: vec![a],
+                reparations: None,
+                truce_released: None,
             });
         let i = v.index(unseen).unwrap();
         v.tiles[i].visible = false;

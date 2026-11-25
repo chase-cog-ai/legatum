@@ -909,6 +909,7 @@ mod tests {
                 Order::ProposeTreaty {
                     to: TeamId(1),
                     kind: TreatyKind::Peace,
+                    terms: Default::default(),
                 },
             ),
             (
@@ -917,6 +918,7 @@ mod tests {
                     proposal: legatum_core::diplomacy::ProposalId(1),
                     accept: true,
                     explanation: None,
+                    counter: None,
                 },
             ),
         ];

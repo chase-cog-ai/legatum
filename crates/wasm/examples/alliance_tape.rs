@@ -29,11 +29,13 @@ fn main() {
     let offer = |to| Order::ProposeTreaty {
         to: TeamId(to),
         kind: TreatyKind::Alliance,
+        terms: Default::default(),
     };
     let accept = |id| Order::RespondToProposal {
         proposal: ProposalId(id),
         accept: true,
         explanation: None,
+        counter: None,
     };
     let leave = |with| Order::BreakTreaty {
         with: TeamId(with),
@@ -80,6 +82,7 @@ fn main() {
                         proposal: call,
                         accept: true,
                         explanation: None,
+                        counter: None,
                     }],
                 )]
             }

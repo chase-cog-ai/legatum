@@ -1957,10 +1957,7 @@ fn offer_and_answer(s: &GameState, order: Order, accept: bool) -> (GameState, Ve
         vec![]
     );
     let (s, ev) = step(s, &[(0, vec![order])]);
-    assert!(
-        s.diplomacy.as_ref().unwrap().proposals.len() == 1,
-        "{ev:?}"
-    );
+    assert!(s.diplomacy.as_ref().unwrap().proposals.len() == 1, "{ev:?}");
     let id = proposal_to(&s, 1).id.0;
     step(&s, &[(1, vec![response(id, accept)])])
 }
@@ -2165,7 +2162,7 @@ fn a_named_city_that_changed_hands_before_the_signature_voids_the_peace() {
 }
 
 #[test]
-fn peace_terms_survive_a_save_and_only_the_two_empires_see_them() {
+fn peace_terms_survive_a_save_and_stay_private_until_signed() {
     let mut war = fund(establish_war(&game(&[0, 1, 2])), &[500, 500, 0]);
     let town = city(&mut war, 1, h(10, 4));
     let (s, _) = step(&war, &[(0, vec![terms(1, 75, Some(town))])]);
@@ -2185,7 +2182,8 @@ fn peace_terms_survive_a_save_and_only_the_two_empires_see_them() {
         &player_view(&s, PlayerId(2)),
         &player_view(&after, PlayerId(2)),
     );
-    assert!(!third.iter().any(|e| matches!(
+    // Once signed, the terms are public like the Peace itself.
+    assert!(third.iter().any(|e| matches!(
         e,
         legatum_core::event_visibility::VisibleEvent::Complete(Event::PeaceGoldPaid { .. })
     )));

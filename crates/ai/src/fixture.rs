@@ -523,6 +523,7 @@ impl ViewBuilder {
             hp: data::CITY_HP,
             max_hp: data::CITY_HP,
             strength,
+            occupied_from: None,
             capture_bounty: None,
             greece_captive_tech: false,
             greece_captive_at_risk: false,

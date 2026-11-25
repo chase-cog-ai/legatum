@@ -104,7 +104,7 @@ const TREATY_COST_HORIZON: i32 = 10;
 /// Score for each team of the target's side we already fight, when answering a call to arms.
 const CALL_SHARED_ENEMY_BONUS: i32 = 10;
 /// Gold of upkeep that costs the AI one point of treaty score.
-const TREATY_GOLD_PER_POINT: i32 = 10;
+pub(crate) const TREATY_GOLD_PER_POINT: i32 = 10;
 /// Turns of any Gold deficit after upkeep that the treasury must cover.
 const TREATY_RUNWAY_TURNS: i32 = 20;
 
@@ -587,12 +587,37 @@ impl Planner<'_> {
             } else {
                 self.treaty_score(other, p.kind, &accept, &budget)
             };
-            let order = Order::RespondToProposal {
-                proposal: p.id,
-                accept: legal(&accept) && score.is_some_and(|s| s >= 0),
-                explanation: (p.kind == TreatyKind::Alliance)
-                    .then(|| self.explain_response(p, score, &accept, &budget)),
-                counter: None,
+            let order = if p.kind == TreatyKind::Peace
+                && self.decisions.peace_terms > 0
+                && (!p.terms.is_plain() || p.counter)
+            {
+                // Terms are priced on top of the plain Peace's score; the plan's refusal
+                // (`wants_peace`) stands whatever is offered.
+                let base = if self.wants_peace(other) { score } else { None };
+                let verdict = self.peace_verdict(p.proposer, other, &p.terms, base, p.counter);
+                let explanation = Some(legatum_core::diplomacy::DecisionExplanation {
+                    score: Some(verdict.total()),
+                    reasons: verdict.reasons(),
+                });
+                let with = |accept, counter| Order::RespondToProposal {
+                    proposal: p.id,
+                    accept,
+                    explanation: explanation.clone(),
+                    counter,
+                };
+                match verdict.answer {
+                    crate::peace_deal::PeaceAnswer::Accept if legal(&accept) => with(true, None),
+                    crate::peace_deal::PeaceAnswer::Counter(terms) => with(false, Some(terms)),
+                    _ => with(false, None),
+                }
+            } else {
+                Order::RespondToProposal {
+                    proposal: p.id,
+                    accept: legal(&accept) && score.is_some_and(|s| s >= 0),
+                    explanation: (p.kind == TreatyKind::Alliance)
+                        .then(|| self.explain_response(p, score, &accept, &budget)),
+                    counter: None,
+                }
             };
             if legal(&order) {
                 if matches!(order, Order::RespondToProposal { accept: true, .. })
@@ -691,7 +716,16 @@ impl Planner<'_> {
                     }
                     let score = self.treaty_score(to, kind, &a.order, &budget);
                     if let Some(score) = score.filter(|s| *s >= 0) {
-                        offers.push((std::cmp::Reverse(score), to, kind, a.order.clone()));
+                        let mut order = a.order.clone();
+                        if let Order::ProposeTreaty {
+                            kind: TreatyKind::Peace,
+                            terms,
+                            ..
+                        } = &mut order
+                        {
+                            terms.gold = self.peace_sweetener(to);
+                        }
+                        offers.push((std::cmp::Reverse(score), to, kind, order));
                     }
                 }
                 Order::DeclareWar { against, breach } if !handled.contains(&against) => {

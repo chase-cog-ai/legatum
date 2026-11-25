@@ -724,6 +724,10 @@ pub struct CityView {
     /// capture of a city its own founder retakes is not a sack.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub founder: Option<PlayerId>,
+    /// The empire this city was captured from, while its captor holds it (public: captures are
+    /// in the chronicle). A Peace that returns captured cities gives it back to them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub occupied_from: Option<PlayerId>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub capture_bounty: Option<i32>,
     /// This viewer has not yet been paid for capturing this Athenian city.
@@ -804,6 +808,7 @@ impl CityView {
             original_capital: false,
             original_capital_of: None,
             founder: None,
+            occupied_from: None,
             capture_bounty: None,
             greece_captive_tech: false,
             greece_captive_at_risk: false,
@@ -2023,6 +2028,7 @@ pub fn player_view_cached(
             observed.original_capital = c.original_capital;
             observed.original_capital_of = observed.original_capital.then_some(c.founder);
             observed.founder = Some(c.founder);
+            observed.occupied_from = c.occupied_from;
             observed.greece_captive_tech =
                 crate::rules::battle::greece_captive_available(state, c.id, me);
             observed.greece_captive_at_risk = c.owner == me

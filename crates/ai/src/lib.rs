@@ -70,6 +70,7 @@ pub mod openings;
 pub mod operation;
 mod opportunity;
 mod params;
+pub mod peace_deal;
 pub mod plan;
 mod production;
 pub use production::{city_automation_choice, city_automation_choice_with_pipeline};
@@ -152,6 +153,8 @@ mod hollow_tests;
 mod intel_tests;
 #[cfg(test)]
 mod levy_tests;
+#[cfg(test)]
+mod peace_deal_tests;
 #[cfg(test)]
 mod plan_tests;
 #[cfg(test)]

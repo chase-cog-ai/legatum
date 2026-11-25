@@ -58,6 +58,26 @@ pub enum Chronicle {
         from: PlayerId,
         city: String,
     },
+    /// A signed Peace handed the city over.
+    Ceded {
+        turn: u32,
+        by: PlayerId,
+        to: PlayerId,
+        city: String,
+    },
+    /// Gold a signed Peace carried.
+    PeaceGold {
+        turn: u32,
+        from: PlayerId,
+        to: PlayerId,
+        gold: i32,
+    },
+    /// The payer stopped the reparations a Peace set.
+    Defaulted {
+        turn: u32,
+        by: PlayerId,
+        on: PlayerId,
+    },
     Razed {
         turn: u32,
         by: PlayerId,
@@ -204,7 +224,27 @@ fn chronicle_entry(turn: u32, prev: &GameState, s: &GameState, event: &Event) ->
             player: *owner,
             city: name.clone(),
         }),
-        Event::CityCaptured { city, from, to, .. } | Event::CityCeded { city, from, to, .. } => {
+        Event::CityCeded { city, from, to, .. } => {
+            let name = s.cities.get(city).or_else(|| prev.cities.get(city))?;
+            Some(Chronicle::Ceded {
+                turn,
+                by: *from,
+                to: *to,
+                city: name.name.clone(),
+            })
+        }
+        Event::PeaceGoldPaid { from, to, gold, .. } => Some(Chronicle::PeaceGold {
+            turn,
+            from: *from,
+            to: *to,
+            gold: *gold,
+        }),
+        Event::ReparationsStopped { from, to, .. } => Some(Chronicle::Defaulted {
+            turn,
+            by: *from,
+            on: *to,
+        }),
+        Event::CityCaptured { city, from, to, .. } => {
             let name = s.cities.get(city).or_else(|| prev.cities.get(city))?;
             Some(Chronicle::Captured {
                 turn,

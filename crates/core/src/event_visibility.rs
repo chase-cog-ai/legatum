@@ -131,13 +131,11 @@ pub fn visible_events(
                 | Event::TreatyEnded { .. }
                 | Event::TreatyBreached { .. }
                 | Event::CityCeded { .. }
+                // Signed terms are public, like the Peace itself; an open offer is not.
+                | Event::PeaceGoldPaid { .. }
                 | Event::ReparationsStopped { .. }
                 | Event::AllianceBetrayed { .. } => true,
                 Event::TreatyPayment { player, .. } => teammates.contains(player),
-                // The Gold is private to the two empires.
-                Event::PeaceGoldPaid { from, to, .. } => {
-                    teammates.contains(from) || teammates.contains(to)
-                }
                 // Gifts only ever move inside a team.
                 Event::GoldGiven { from, .. } => teammates.contains(from),
                 // The Gold is private to the two empires.

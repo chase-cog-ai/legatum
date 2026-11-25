@@ -86,7 +86,7 @@ export function ambienceFor(terrain: Terrain | null | undefined): Ambience | nul
 }
 
 export type BattleSound = 'bow' | 'arrowHit' | 'clash' | 'hooves' | 'siegeLaunch' | 'siegeHit' | 'death' | 'collapse'
-  | 'gunshot' | 'cannon' | 'shellFire' | 'explosion' | 'aircraft';
+  | 'gunshot' | 'cannon' | 'shellFire' | 'explosion' | 'aircraft' | 'jet';
 /** Battle sound -> its takes (file and gain). A cue's seed picks the take, so a volley does not machine-gun one sample. */
 export const BATTLE_FILES = SOUND_MANIFEST.reduce((all, e) => {
   for (const ev of e.events) {

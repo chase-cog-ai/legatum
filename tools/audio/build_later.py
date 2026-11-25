@@ -8,14 +8,16 @@ licence we may ship (docs/design/sound-sources.md):
                                          debian/copyright: data/default/resources/music/default/*)
   Unknown Horizons music   CC BY-SA 3.0  the Unknown Horizons team (Ubuntu package unknown-horizons 2019.1-7,
                                          debian/copyright: content/*)
+  Warzone 2100 music       CC BY-SA 3.0  LupusMechanicus, the Legacy and Aftermath soundtracks (Ubuntu package
+                                         warzone2100-music 4.4.2-1build3, license.txt in each album folder)
   Unciv sounds             per file      Freesound recordings mirrored in Unciv, licences in its docs/Credits.md
   ESC-50 clips             CC0 only      5 s Freesound clips; per-clip licences in the dataset's LICENSE file
                                          (the dataset as a whole is CC BY-NC, so only clips it marks CC0 are used)
 
 Run (python3 -I), after tools/audio/build_audio.py and tools/audio/import_0ad.py, which rewrite the manifest:
-  python3 -I tools/audio/build_later.py <freecol dir> <unknown-horizons dir> <unciv sounds dir> <esc-50 audio dir>
+  python3 -I tools/audio/build_later.py <freecol dir> <unknown-horizons dir> <unciv sounds dir> <esc-50 audio dir> <warzone2100-music dir>
   node app/scripts/audio-credits.mjs
-The four directories hold the extracted packages and the downloaded files (not in git).
+The five directories hold the extracted packages and the downloaded files (not in git).
 """
 import json, os, pathlib, sys
 import numpy as np
@@ -23,7 +25,7 @@ import numpy as np
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import build_0ad as b  # shared decode, trim, loudness and encode helpers
 
-FREECOL, UH, UNCIV, ESC = (pathlib.Path(p) for p in sys.argv[1:5])
+FREECOL, UH, UNCIV, ESC, WZ = (pathlib.Path(p) for p in sys.argv[1:6])
 AUDIO = pathlib.Path(__file__).resolve().parents[2] / 'app/public/audio'
 TMP = pathlib.Path('/tmp/later-audio'); TMP.mkdir(exist_ok=True)
 SR = b.SR
@@ -37,7 +39,10 @@ UH_CREDIT = f'from Unknown Horizons (https://unknown-horizons.org/), CC BY-SA 3.
 
 # Eras are 1-based (1 Ancient .. 9 Future). The ancient-world music holds the first three; from the
 # Renaissance the age-of-sail pieces take over (a people's opening track stays in rotation all game).
-LATER = [4, 9]
+LATER = [4, 7]
+# The Modern and Future eras have electronic scores of their own (Warzone 2100's community soundtracks).
+MODERN = [8, 9]
+MODERN_CUT_S = 240  # the pieces run 5 to 7 minutes; the first four are kept
 # slug, source file, title, author, licence, credit, mood, peoples, eras
 MUSIC = [
     ('sunrise', FREECOL, 'sunrise', 'Sunrise', FREECOL_BY, 'CC-BY-4.0', FREECOL_CREDIT, 'peace', [], LATER),
@@ -56,6 +61,17 @@ MUSIC = [
     ('sea-fight', UH, 'seafight', 'Sea Fight', 'the Unknown Horizons team', 'CC-BY-SA-3.0', 'by the Unknown Horizons team, ' + UH_CREDIT, 'war', [], LATER),
 ]
 # The 0 A.D. music that belongs to the ancient world only (a people's opening track is exempt in the app).
+WZ_SRC = 'https://archive.ubuntu.com/ubuntu/pool/universe/w/warzone2100/warzone2100-music_4.4.2-1build3_all.deb (usr/share/games/warzone2100/music/albums/%s.opus)'
+WZ_CREDIT = f'by LupusMechanicus, from the Warzone 2100 community soundtracks (https://wz2100.net/), CC BY-SA 3.0 ({BYSA3}), edited for Legatum'
+for slug, name, title, mood in [
+    ('incoming-transmission', 'legacy_soundtrack/track6', 'Incoming Transmission', 'peace'),
+    ('advanced-manufacturing', 'legacy_soundtrack/track8', 'Advanced Manufacturing', 'peace'),
+    ('new-dawn', 'legacy_soundtrack/track12', 'New Dawn', 'peace'),
+    ('undisclosed-location', 'aftermath_soundtrack/track19', 'Undisclosed Location', 'peace'),
+    ('awakened', 'legacy_soundtrack/track11', 'Awakened', 'war'),
+    ('launch-codes', 'aftermath_soundtrack/track27', 'Launch Codes', 'war'),
+]:
+    MUSIC.append((slug, WZ, name, title, 'LupusMechanicus', 'CC-BY-SA-3.0', WZ_CREDIT, mood, [], MODERN))
 ANCIENT_ONLY = [1, 3]
 
 UNCIV_SRC = 'https://raw.githubusercontent.com/yairm210/Unciv/master/android/assets/sounds/%s.mp3'
@@ -72,10 +88,14 @@ FX_TARGET_LUFS = -24.0
 
 
 def music(slug, root, name, title, author, lic, credit, mood, peoples, eras):
-    src = (root / 'usr/share/games/freecol/default/resources/music/default' / f'{name}.ogg') if root == FREECOL else (root / 'usr/share/unknown-horizons/content/audio/music' / f'{name}.ogg')
+    src = {FREECOL: root / 'usr/share/games/freecol/default/resources/music/default' / f'{name}.ogg',
+           UH: root / 'usr/share/unknown-horizons/content/audio/music' / f'{name}.ogg',
+           WZ: root / 'usr/share/games/warzone2100/music/albums' / f'{name}.opus'}[root]
     out = AUDIO / 'music' / f'{slug}.m4a'
     x = b.decode(str(src), 2)
     x, cut_s, cut_e = b.trim(x, -60)
+    cut = root == WZ and len(x) > MODERN_CUT_S * SR
+    if cut: x = b.fade_out(x[:MODERN_CUT_S * SR], 6.0)
     tail_db = b.db(np.sqrt((x[-int(0.3 * SR):] ** 2).mean()))
     faded = tail_db > -45
     if faded: x = b.fade_out(x, 1.5)
@@ -85,13 +105,14 @@ def music(slug, root, name, title, author, lic, credit, mood, peoples, eras):
     b.encode(wav, str(out), 96, 2, f'volume={gain:.2f}dB')
     i1, pk1 = b.measure(str(out))
     mod = (f'leading {cut_s:.2f} s and trailing {cut_e:.2f} s below -60 dBFS trimmed; '
+           + (f'cut to the first {MODERN_CUT_S} s with a 6 s fade-out; ' if cut else '')
            + ('1.5 s fade-out added (the source does not end in silence); ' if faded else '')
            + f'static gain {gain:+.1f} dB toward -20 LUFS with the true peak under -2 dBTP (now {i1} LUFS, {pk1} dBTP); '
-           'transcoded Ogg Vorbis to AAC-LC 96 kb/s stereo .m4a; metadata stripped')
+           'transcoded to AAC-LC 96 kb/s stereo .m4a; metadata stripped')
     why = ('Plays during an empire war' if mood == 'war' else f"Peace music for {', '.join(peoples)}" if peoples else 'Peace music every people hears')
-    why += ', from the Renaissance on.' if eras else '.'
+    why += ', in the Modern and Future eras.' if eras == MODERN else ', from the Renaissance to the World War era.' if eras else '.'
     e = {'file': f'music/{slug}.m4a', 'events': [f'music:{slug}'], 'title': title, 'author': author,
-         'source': (FREECOL_SRC if root == FREECOL else UH_SRC) % name, 'license': lic, 'attribution': f'"{title}" {credit}',
+         'source': {FREECOL: FREECOL_SRC, UH: UH_SRC, WZ: WZ_SRC}[root] % name, 'license': lic, 'attribution': f'"{title}" {credit}',
          'modified': mod, 'rationale': why, 'mood': mood, 'peoples': peoples}
     if eras: e['eras'] = eras
     print(e['file'], round(len(x) / SR, 1), i1, pk1, flush=True)
@@ -138,7 +159,7 @@ def sea():
 
 
 manifest = json.loads((AUDIO / 'manifest.json').read_text())
-mine = {f'music/{m[0]}.m4a' for m in MUSIC} | {f'fx/{f[1]}.m4a' for f in FX} | {'fx/aircraft.m4a', 'ambience/sea.m4a'}
+mine = {f'music/{m[0]}.m4a' for m in MUSIC} | {f'fx/{f[1]}.m4a' for f in FX} | {'fx/aircraft.m4a', 'fx/jet.m4a', 'ambience/sea.m4a'}
 manifest = [e for e in manifest if e['file'] not in mine]
 for e in manifest:
     if '0ad/0ad' in e['source'] and e.get('mood'):
@@ -155,7 +176,12 @@ for group, slug, name, title, author, lic, original, why, cap in FX:
 manifest.append(one_shot('aircraft', 'aircraft', b.decode(str(ESC / '3-193767-A-47.wav'), 1), 4.0, 1, {
     'title': 'VHCL_S_Airplane_Prop_001.wav', 'author': 'conleec',
     'source': f"{ESC_SRC % '3-193767-A-47.wav'} (a clip of {FS % ('conleec', 193767)})",
-    'attribution': '"VHCL_S_Airplane_Prop_001.wav" by conleec (freesound.org), CC0, edited for Legatum', 'license': 'CC0-1.0', 'rationale': 'A biplane or propeller bomber passes on its bombing run.',
+    'attribution': '"VHCL_S_Airplane_Prop_001.wav" by conleec (freesound.org), CC0, edited for Legatum', 'license': 'CC0-1.0', 'rationale': 'A biplane, propeller fighter or propeller bomber passes on its run.',
+}, 'a 5 s clip of the recording from the ESC-50 dataset'))
+manifest.append(one_shot('jet', 'jet', b.decode(str(ESC / '5-235956-A-47.wav'), 1), 4.0, 1, {
+    'title': 'Airliner Flyby.wav', 'author': 'mffm',
+    'source': f"{ESC_SRC % '5-235956-A-47.wav'} (a clip of {FS % ('mffm', 235956)})",
+    'attribution': '"Airliner Flyby.wav" by mffm (freesound.org), CC0, edited for Legatum', 'license': 'CC0-1.0', 'rationale': 'A jet aircraft passes on its run.',
 }, 'a 5 s clip of the recording from the ESC-50 dataset'))
 manifest.append(sea())
 (AUDIO / 'manifest.json').write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n')

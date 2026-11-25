@@ -999,6 +999,9 @@ pub fn check_order(state: &GameState, player: PlayerId, order: &Order) -> Result
                     }
                     check_cession(state, c, (c.owner == p.proposer).then_some(player))?;
                 }
+                if p.terms.return_captured {
+                    returns_own_cities(state, player, p.from)?;
+                }
             }
             if let Order::RespondToProposal {
                 accept,
@@ -2565,6 +2568,9 @@ fn check_terms(
     if terms.return_captured && captured_between(state, state.team_of(player), other).is_empty() {
         return Err("Neither side holds a city captured from the other".into());
     }
+    if terms.return_captured {
+        returns_own_cities(state, player, other)?;
+    }
     Ok(())
 }
 /// The cities a "return captured cities" term gives back: each one owned by one of the two
@@ -2583,6 +2589,23 @@ pub fn captured_between(state: &GameState, a: TeamId, b: TeamId) -> Vec<(crate::
                 .map(|_| (c.id, back))
         })
         .collect()
+}
+/// A teammate's city is its owner's to give: every captured city `player`'s team would return
+/// to `other` under a "return captured cities" term must be `player`'s own.
+fn returns_own_cities(state: &GameState, player: PlayerId, other: TeamId) -> Result<(), String> {
+    let team = state.team_of(player);
+    match captured_between(state, team, other)
+        .into_iter()
+        .filter_map(|(c, _)| state.cities.get(&c))
+        .find(|c| state.team_of(c.owner) == team && c.owner != player)
+    {
+        Some(c) => Err(format!(
+            "Only {} can hand over {}",
+            state.player(c.owner).name,
+            c.name
+        )),
+        None => Ok(()),
+    }
 }
 /// Whether a Peace may hand `c` over, to `to` when the receiver is known. A capital stays with
 /// its empire, and the Celts keep no city they did not found.

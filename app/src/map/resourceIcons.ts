@@ -202,12 +202,12 @@ export function drawCuts3d(ctx: CanvasRenderingContext2D, view: PlayerView, at: 
   for (const c of view.supply_cuts) {
     const p = at(tileIndex(c.hex, view.width, view.height));
     if (!p) continue;
-    const r = Math.max(7, Math.min(13, p.radius * 0.3));
+    const r = Math.max(7, Math.min(18, p.radius * 0.3));
     const x = p.x - p.radius * 0.62, y = p.y - r * 0.4;
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fillStyle = INK[look].paper; ctx.fill();
     ctx.lineWidth = 1.4; ctx.strokeStyle = INK[look].red; ctx.stroke();
-    drawFarMark(ctx, x, y, r * 0.48, c.resource, look);
+    drawFarMark(ctx, x, y, r * 0.52, c.resource, look);
     drawCut(ctx, x, y, r, look);
   }
   ctx.restore();

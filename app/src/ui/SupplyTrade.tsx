@@ -1,4 +1,4 @@
-// Supply sold by the turn (core `supply_trade`, rules 63): an empire with strategic supply to spare
+// Supply sold by the turn (core `supply_trade`, rules 64): an empire with strategic supply to spare
 // sells it to another for Gold each turn. The diplomacy panel lists the offers to answer and the
 // running trades, and each empire's row has the offer form with the forecast of both sides
 // (pillar 5). The core decides what is legal; this file only shows the numbers its view carries.

@@ -233,7 +233,7 @@ says whether it is on.
     them for Gold.
 - **Tests:** `crates/core/tests/deals.rs`.
 
-## Supply sold by the turn (rules 63, `crates/core/src/supply_trade.rs`)
+## Supply sold by the turn (rules 64, `crates/core/src/supply_trade.rs`)
 
 An empire with strategic supply to spare lets another empire use it for Gold each turn. Supply is still not a
 stockpile: a trade moves `amount` of the seller's supply to the buyer for as long as it runs. It is a deal: it needs

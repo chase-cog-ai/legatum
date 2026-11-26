@@ -204,3 +204,32 @@ it('redraws the scene and moving marks through the battle cleanup frame', () => 
   expect(scene.renderer.render).toHaveBeenCalledTimes(3);
   expect(frames.size).toBe(0);
 });
+
+it('renders a stopped unit turning back to rest, then goes idle', () => {
+  frame(0);
+  const fig = new Group();
+  const home = scene.target.clone();
+  fig.position.copy(home);
+  fig.userData.home = home;
+  scene['unitGroups'].set(1, fig);
+  scene.setAnim({ start: 100, duration: 280, paths: new Map([[1, [{ q: 5, r: 4 }, { q: 6, r: 4 }]]]) });
+  frame(100);
+  frame(150);
+  expect(fig.userData.walking).toBe(true);
+  expect(fig.rotation.y).not.toBe(0);
+  frame(450);
+  expect(fig.position).toEqual(home);
+  expect(fig.userData.walking).toBe(false);
+  const facing = Math.abs(fig.rotation.y);
+  const marks = drawMarks.mock.calls.length;
+  expect(facing).toBeGreaterThan(0);
+  expect(frames.size).toBe(1);
+
+  frame(500);
+  expect(Math.abs(fig.rotation.y)).toBeLessThan(facing);
+  expect(scene.renderer.render).toHaveBeenCalledTimes(5);
+  for (let now = 550; now <= 1000; now += 50) frame(now);
+  expect(fig.rotation.y).toBe(0);
+  expect(drawMarks).toHaveBeenCalledTimes(marks);
+  expect(frames.size).toBe(0);
+});

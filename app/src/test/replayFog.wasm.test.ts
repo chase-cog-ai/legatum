@@ -6,8 +6,9 @@ import type { ReplayInfo } from '../replay';
 import type { PlayerView } from '../types';
 import { loadReplayEngine, replayFixture } from './replayFixture';
 
-function mapDigest({ tiles, units, cities, diplomacy }: PlayerView) {
-  return createHash('sha256').update(JSON.stringify({ tiles, units, cities, diplomacy })).digest('hex');
+function mapDigest({ tiles, units, cities, aircraft, players, diplomacy }: PlayerView) {
+  const mapCities = cities.map(({ detail: _detail, ...city }) => city);
+  return createHash('sha256').update(JSON.stringify({ tiles, units, cities: mapCities, aircraft, players, diplomacy })).digest('hex');
 }
 
 it.skipIf(!existsSync(new URL('../wasm-pkg/legatum_bg.wasm', import.meta.url)))('replays the original fog on every fixture turn and redacts unknown turning-point actors', async () => {

@@ -58,8 +58,9 @@ pub mod rules;
 /// 59: Egypt's Chariot Archer replaces its Archer (Sam, 2026-11-25): 3 moves, a shot 40% stronger against the melee line, and Forest or Hills without a road take its whole turn to enter. The Medjay is retired, so Egypt's Spearman is plain (no extra sight). The save shape is unchanged.
 /// 60: The tech tree's research goal: `Order::SetResearchGoal` and `Player::research_goal` (fills an empty research queue toward a later technology). No existing order resolves differently.
 /// 61: Deals (Sam, 2026-11-25), behind GameSetup::deals: Gold in Peace, Alliance and Open Borders offers either way, Gold gifts to any met empire not at War, and Open Borders as a third treaty. The save shape gains optional fields; off, nothing changes.
-/// 63: Luxury tiles (user, 2026-10-22: "flavour only, like natural wonders"): each map seeds up to six named luxuries (Silk, Spices, Wine, Ivory, Incense, Furs), at most one of each, with a small bonus on the worked tile and no empire-wide rule. Maps gain tiles, so tapes change; the save shape only gains `Resource` values.
-pub const RULES_VERSION: u32 = 63;
+/// 63: City upkeep: an empire with up to six cities pays nothing; past that every city it owns (the first six too) costs (cities - 6) Gold a turn, shown as "City upkeep (free up to 6 cities)" in the Gold breakdown. The save shape is unchanged.
+/// 64: Luxury tiles (user, 2026-10-22: "flavour only, like natural wonders"): each map seeds up to six named luxuries (Silk, Spices, Wine, Ivory, Incense, Furs), at most one of each, with a small bonus on the worked tile and no empire-wide rule. Maps gain tiles, so tapes change; the save shape only gains `Resource` values.
+pub const RULES_VERSION: u32 = 64;
 pub mod scenario;
 pub mod scoring;
 pub mod settlement;

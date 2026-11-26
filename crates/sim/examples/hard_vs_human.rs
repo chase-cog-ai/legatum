@@ -1931,7 +1931,7 @@ mod tests {
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege move the win to T170.
         // Breakable Walls (rules 62: a Walls bar in front of city health) leave the seat with no win on this tape.
         // Hard finishing a combat unit under way (keep_unit_build 2, 2026-11-26) leaves two cities at T30 and four at T62.
-        // Luxury tiles (rules 63: six named tiles on the map, each a small bonus on its own tile) leave three cities at T50 and T62.
+        // Luxury tiles (rules 64: six named tiles on the map, each a small bonus on its own tile) leave three cities at T50 and T62.
         assert_eq!(
             first_map_game(true),
             json!({
@@ -1974,7 +1974,7 @@ mod tests {
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege leave the seat with no win on this tape.
         // Breakable Walls (rules 62), with Hard's siege forecast playing longer while a Walls bar stands, give the seat an elimination win at T162.
         // Hard finishing a combat unit under way (keep_unit_build 2, 2026-11-26) leaves two cities at T30, four at T62 and no win.
-        // Luxury tiles (rules 63: six named tiles on the map, each a small bonus on its own tile) leave three cities at T50 and T62 and two VP at T100.
+        // Luxury tiles (rules 64: six named tiles on the map, each a small bonus on its own tile) leave three cities at T50 and T62 and two VP at T100.
         assert_eq!(
             first_map_game(false),
             json!({

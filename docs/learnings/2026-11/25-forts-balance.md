@@ -1,18 +1,24 @@
-# Forts barely move game length and conquest pace in all-AI games (2026-11-25)
+# Forts make all-AI games about 1% longer and do not change conquest pace (2026-11-25)
 
-256 paired eight-empire all-Hard games with barbarians (`legatum-sim --players 8 --difficulty hard --barbarians true --games 256 --seed 7100`), before (upstream master 7aadfc04, rules 62, after Hard learned to finish a combat unit under way) and after Forts (351d65a4, rules 63):
+2,048 paired eight-empire all-Hard games with barbarians (`legatum-sim --players 8 --difficulty hard --barbarians true --games 2048 --seed 7100`), before (upstream master 7aadfc04, rules 62, after Hard learned to finish a combat unit under way) and after Forts (351d65a4, rules 63):
 
 | | Before | With Forts |
 | --- | --- | --- |
-| Game length, mean / median | 225.8 / 226 | 227.9 / 226 |
-| City captures per game | 22.3 | 22.7 |
-| Eliminations per game | 2.24 | 2.29 |
-| War declarations per game | 15.6 | 15.9 |
-| Battles per game | 1,163 | 1,173 |
-| VP hold break rate (of resolved) | 21.6% | 24.1% |
-| Longest game | 338 turns | 500 turns (the turn limit, one game) |
+| Game length, mean / median | 227.5 / 223 | 229.9 / 224 |
+| City captures per game | 22.6 | 22.7 |
+| Eliminations per game | 2.26 | 2.25 |
+| Battles per game | 1,171 | 1,182 |
+| VP hold break rate | 24.8% | 25.5% |
+| Games of 350 turns or more | 22 | 28 |
+| Games of 400 turns or more | 6 | 7 |
+| Games that ran to the turn-500 limit | 2 | 1 |
+| Best / worst faction win rate | 2.91 | 2.80 |
 
-Every difference is within 2% except the hold break rate, and the signs are not the ones the earlier pairs showed (captures up 1.7% here, down 3.2% before), so at 256 games Forts have no measurable effect on conquest pace. The mean game ran 2.1 turns (0.9%) longer, 1.1 turns of it from one game: seed 7148 ran to the 500-turn limit with no winner (the leader on 9 of 10 VP), where without Forts it ended by VP on turn 285. That game had 56 city captures and three eliminations after turn 450, so it was not a frozen front; why nobody took a tenth VP was not investigated, and the longest Fort game in the previous pair was 347 turns. Faction win shares moved within what 256 games can resolve (about 28 wins a faction, so a swing of 10 wins is noise); the faction spread was not measured at the 2,000-game size Pillar 8 asks for.
+Game for game on the same seed, Forts make a game 2.4 turns longer on average (standard error 1.0), about 1%; captures differ by +0.13 a game (standard error 0.19), which is no measurable change. Games that run to the turn-500 limit are not a Fort effect: master has two in these 2,048 (seeds 7793 and 7838), the Fort branch one (seed 7148).
+
+Seed 7148 is the game that reached the limit in the first 256-game pair, where master ends it by VP on turn 285. Nobody ever reached 10 VP in it: the lead changed hands seven times, four wonders and six rival capitals were taken and lost again, and Germany reached 9 VP only on turn 488. Forts were a small part of it: 56 built, 59 moves stopped out of about 33,000, and a Fort bonus in 154 of 3,167 battles. Any change to the rules sends this seed to a different game: with Hard never building a Fort it is master's game exactly (turn 285, Aztecs); with only the stop rule off it ends on turn 255 (Aztecs), with only the defence bonus off on turn 299 (Switzerland), and with both off, so a Fort does nothing, on turn 319 (Celts). A single seed that diverges says nothing about a rule; the tail has to be counted over the whole set.
+
+The first 256 games of this set, read alone, were 225.8 against 227.9 turns, 22.3 against 22.7 captures and a longest game of 338 against 500 turns.
 
 The pair before that (master 1f97d0e6 against a977abfc, before the Hard production change) read 226.6 / 220 against 228.3 / 224 turns, 23.1 against 22.4 captures, 2.04 against 1.96 eliminations and a longest game of 430 against 347 turns.
 

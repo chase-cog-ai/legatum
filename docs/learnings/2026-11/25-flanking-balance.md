@@ -4,18 +4,18 @@ Flanking (rules 64: +2 melee strength per other friendly land military unit next
 
 | Measure | Flanking | `no-flanking` |
 | --- | --- | --- |
-| Game length, mean / median turns | 224.9 / 220 | 228.9 / 222 |
-| City captures per game | 22.1 | 23.1 |
-| Eliminations per game | 2.13 | 2.33 |
-| Battles per game | 1157 | 1175 |
-| Turn-50 leader set goes on to win | 65.0% | 70.0% |
-| VP holds broken, of those started | 21.6% | 19.6% |
-| Sparta win rate per seat (the phalanx stacks with flanking) | 11.4% | 13.6% |
-| Best / worst faction win rate | 20.9% / 6.2% | 17.1% / 8.7% |
+| Game length, mean / median turns | 251.0 / 243 | 243.3 / 238 |
+| City captures per game | 23.2 | 22.4 |
+| Eliminations per game | 2.69 | 2.73 |
+| Battles per game | 1219 | 1172 |
+| Turn-50 leader set goes on to win | 36.0% | 36.5% |
+| VP holds broken, of those started | 23.3% | 21.6% |
+| Sparta win rate per seat (the phalanx stacks with flanking) | 18.2% | 18.2% |
+| Best / worst faction win rate | 20.9% / 1.7% | 22.0% / 2.2% |
 
-These figures are from the branch with master merged through #306 (Hard finishing a combat unit under way, 2026-11-26), commit `8a6de0eb`. The feared effects did not appear: captures and eliminations are slightly lower with flanking, the turn-50 leader wins no more often, and Sparta did not gain. Faction differences of this size are within the noise of about 175 seats each.
+These figures are from the branch with master merged through #319 (city upkeep, rules 63, and Hard Sparta's conquest opening, both 2026-11-26), commit `9deaa15d`. The feared effects did not appear: captures and eliminations are level, the turn-50 leader wins as often, and Sparta wins as often with the rule as without. Games run about eight turns longer with flanking in this cohort. The wide faction spread (India near 2%) is there with and without the rule.
 
-VP holds broken has had no stable direction across three runs of the same seeds as master moved: 20.1% against 31.7% before breakable Walls, 17.1% against 19.3% with them, and 21.6% against 19.6% now.
+VP holds broken has had no stable direction across four runs of the same seeds as master moved: 20.1% against 31.7% before breakable Walls, 17.1% against 19.3% with them, 21.6% against 19.6% after #306, and 23.3% against 21.6% now.
 
 Why it stays small: the bonus is capped at three units, a city and a unit inside one are never flanked (so it does not speed up sieges, where the split counterattack already rewards numbers), and shots gain nothing.
 

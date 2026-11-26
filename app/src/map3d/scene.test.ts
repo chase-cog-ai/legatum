@@ -2,6 +2,7 @@
 import { AnimationMixer, Group, Texture, TextureLoader } from 'three';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { PlayerView, TileView } from '../types';
+import type { CombatPlan } from '../map/combatFx';
 import { MapScene } from './scene';
 
 vi.mock('three', async (original) => ({
@@ -27,7 +28,7 @@ const view = {
 let frames: Map<number, FrameRequestCallback>;
 let scene: MapScene;
 let canvas: HTMLCanvasElement;
-const placeBanners = vi.fn();
+const drawMarks = vi.fn((_now: number) => false);
 const frame = (now = performance.now()) => {
   const callbacks = [...frames.values()];
   frames.clear();
@@ -39,9 +40,10 @@ beforeEach(() => {
   let next = 0;
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { frames.set(++next, callback); return next; });
   vi.stubGlobal('cancelAnimationFrame', (id: number) => frames.delete(id));
-  placeBanners.mockClear();
+  drawMarks.mockReset();
+  drawMarks.mockReturnValue(false);
   canvas = document.createElement('canvas');
-  scene = new MapScene(canvas, placeBanners);
+  scene = new MapScene(canvas, drawMarks);
   scene.resize(800, 600);
   scene.dist = 4;
   scene.target.set(5, 0, 4);
@@ -60,36 +62,36 @@ it('coalesces invalidations and stays idle with offscreen water', () => {
   frame();
   frame();
   expect(scene.renderer.render).toHaveBeenCalledTimes(1);
-  expect(placeBanners).toHaveBeenCalledTimes(1);
+  expect(drawMarks).toHaveBeenCalledTimes(1);
   expect(frames.size).toBe(0);
 
   scene.setOverlays({ hover: { q: 5, r: 4 }, selected: null, route: [] });
   frame();
   expect(scene.renderer.render).toHaveBeenCalledTimes(2);
-  expect(placeBanners).toHaveBeenCalledTimes(1);
+  expect(drawMarks).toHaveBeenCalledTimes(1);
 
   scene.resize(1000, 600);
   frame();
   expect(scene.renderer.render).toHaveBeenCalledTimes(3);
-  expect(placeBanners).toHaveBeenCalledTimes(2);
+  expect(drawMarks).toHaveBeenCalledTimes(2);
   expect(frames.size).toBe(0);
 });
 
-it('keeps frames running for explored water in view, without reprojecting banners', () => {
+it('keeps frames running for explored water in view without redrawing marks', () => {
   scene.target.x = 36;
   scene.placeCamera();
   frame();
   frame();
   frame();
   expect(scene.renderer.render).toHaveBeenCalledTimes(3);
-  expect(placeBanners).toHaveBeenCalledTimes(1);
+  expect(drawMarks).toHaveBeenCalledTimes(1);
   expect(frames.size).toBe(1);
 
   scene.target.x = 5;
   scene.placeCamera();
   frame();
   expect(scene.renderer.render).toHaveBeenCalledTimes(4);
-  expect(placeBanners).toHaveBeenCalledTimes(2);
+  expect(drawMarks).toHaveBeenCalledTimes(2);
   expect(frames.size).toBe(0);
 });
 
@@ -133,7 +135,7 @@ it('redraws after a unit texture loads or WebGL is restored', () => {
   canvas.dispatchEvent(new Event('webglcontextrestored'));
   frame();
   expect(scene.renderer.render).toHaveBeenCalledTimes(3);
-  expect(placeBanners).toHaveBeenCalledTimes(1);
+  expect(drawMarks).toHaveBeenCalledTimes(1);
   expect(frames.size).toBe(0);
 });
 
@@ -154,5 +156,51 @@ it('idles with paused model animation and wakes when motion is enabled', () => {
   scene.setStill(true);
   frame(1_032);
   expect(mixer.time).toBeCloseTo(0.016);
+  expect(frames.size).toBe(0);
+});
+
+it('animates route marks without rendering WebGL and stops when the route clears', () => {
+  frame(0);
+  drawMarks.mockReturnValue(true);
+  scene.invalidateMarks();
+  scene.invalidateMarks();
+  expect(frames.size).toBe(1);
+  frame(16);
+  frame(32);
+  expect(drawMarks).toHaveBeenCalledTimes(3);
+  expect(scene.renderer.render).toHaveBeenCalledTimes(1);
+  expect(frames.size).toBe(1);
+
+  drawMarks.mockReturnValue(false);
+  scene.invalidateMarks();
+  frame(48);
+  expect(drawMarks).toHaveBeenCalledTimes(4);
+  expect(frames.size).toBe(0);
+});
+
+it('redraws the scene and moving marks through the battle cleanup frame', () => {
+  frame(0);
+  const fig = new Group();
+  const home = scene.target.clone();
+  fig.position.copy(home);
+  fig.userData.home = home;
+  scene['unitGroups'].set(1, fig);
+  const plan: CombatPlan = {
+    volley: 0, stepMs: 280, total: 280, shots: [], deaths: [], captures: [],
+    moves: new Map(), ghosts: new Map(), cueDelay: new Map(), hp: new Map(),
+    clashes: [{
+      attacker: 1, defender: null, from: { x: 0, y: 0 }, to: { x: 64, y: 0 }, t: 150,
+      lunge: true, mounted: false, guns: false, atCity: false, hit: false, seed: 1,
+    }],
+  };
+  const anchors: number[] = [];
+  drawMarks.mockImplementation(() => { anchors.push(fig.position.x); return false; });
+  scene.setAnim({ start: 1_000, duration: 280, paths: new Map(), plan });
+  frame(1_150);
+  expect(anchors[0]).not.toBe(home.x);
+  expect(frames.size).toBe(1);
+  frame(1_600);
+  expect(anchors[1]).toBe(home.x);
+  expect(scene.renderer.render).toHaveBeenCalledTimes(3);
   expect(frames.size).toBe(0);
 });

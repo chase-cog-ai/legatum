@@ -73,7 +73,7 @@ export function resourceArtUrl(resource: string, sourceSize: 32 | 64 | 256 = 64)
 
 const images = new Map<string, HTMLImageElement | null>();
 const tinted = new Map<string, HTMLCanvasElement>();
-let onLoad: (() => void) | null = null;
+const loadListeners = new Set<() => void>();
 let loads = 0;
 
 /** Bumped whenever an icon image finishes loading (sprite caches key on it). */
@@ -84,12 +84,13 @@ export function iconEpoch(): number {
 /** Another image set (the painted unit art) finished loading: sprite caches rebuild and the map redraws. */
 export function iconLoaded() {
   loads++;
-  onLoad?.();
+  for (const listener of loadListeners) listener();
 }
 
 /** Called when an icon image finishes loading (the map redraws). */
 export function onIconLoad(cb: () => void) {
-  onLoad = cb;
+  loadListeners.add(cb);
+  return () => { loadListeners.delete(cb); };
 }
 
 function image(name: string): HTMLImageElement | null {

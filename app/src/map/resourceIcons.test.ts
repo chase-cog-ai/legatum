@@ -237,6 +237,14 @@ describe('drawResourceIcons', () => {
     expect(strokes()).toBe(0);
     (v as unknown as { supply_cuts: unknown }).supply_cuts = [{ hex: { q: 1, r: 0 }, resource: 'Iron', owner: 0, by: 1, supply: 3 }];
     expect(strokes()).toBe(2); // the bar: a paper edge, then red
+    // A city banner where the mark would sit moves the mark to the unit's other side.
+    const discX = (avoid: { x: number; y: number; w: number; h: number }[]) => {
+      const { ctx, calls } = recorder();
+      drawCuts3d(ctx, v, at, avoid);
+      return (calls.find((c) => c.name === 'arc')!.args as number[])[0];
+    };
+    expect(discX([])).toBeLessThan(200);
+    expect(discX([{ x: 150, y: 150, w: 40, h: 16 }])).toBeGreaterThan(200);
     (v as unknown as { supply_cuts: unknown }).supply_cuts = [{ hex: { q: 2, r: 0 }, resource: 'Iron', owner: 0, by: 1, supply: 3 }];
     expect(strokes()).toBe(0);
   });

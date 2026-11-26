@@ -296,7 +296,7 @@ export default function Map3DView() {
       unitAt: (u) => sc.unitHead(u.id),
       unitFootAt: (u) => sc.unitFoot(u.id),
     });
-    drawCuts3d(ctx, v, (i) => sc.projectIndex(i, 0.02));
+    drawCuts3d(ctx, v, (i) => sc.projectIndex(i, 0.02), bannerHits.current.flatMap((b) => b.parts));
     drawPickers3d(ctx, sc, v, pickRef.current, mapPlayerColor(v.me), panelRects());
     const rt = routeRef.current;
     if (rt) drawRoute3d(ctx, rt.route.map((hx) => sc.project(hx, 0.02)), rt.steps, rt.attack, performance.now());

@@ -195,15 +195,25 @@ function drawCut(ctx: CanvasRenderingContext2D, x: number, y: number, radius: nu
 }
 
 /** The 3D map's cut deposits, on its flat marks canvas: the resource's mark on a paper disc, struck through in red, left of
- *  the unit that stands there. `at` gives a tile's centre and apparent radius on screen. */
-export function drawCuts3d(ctx: CanvasRenderingContext2D, view: PlayerView, at: (i: number) => { x: number; y: number; radius: number } | null, look: LookId = 'atlas'): void {
+ *  the unit that stands there and clear of the city banners in `avoid`. `at` gives a tile's centre and apparent radius on screen. */
+export function drawCuts3d(ctx: CanvasRenderingContext2D, view: PlayerView, at: (i: number) => { x: number; y: number; radius: number } | null, avoid: readonly { x: number; y: number; w: number; h: number }[] = [], look: LookId = 'atlas'): void {
   if (!view.supply_cuts?.length) return;
   ctx.save();
   for (const c of view.supply_cuts) {
     const p = at(tileIndex(c.hex, view.width, view.height));
     if (!p) continue;
     const r = Math.max(7, Math.min(18, p.radius * 0.3));
-    const x = p.x - p.radius * 0.62, y = p.y - r * 0.4;
+    // Left of the unit; where a city banner is in the way, the first clear spot of: right of the unit, above it, further above.
+    const reach = r + 4;
+    const clear = ([cx, cy]: readonly [number, number]) =>
+      !avoid.some((b) => cx + reach > b.x && cx - reach < b.x + b.w && cy + reach > b.y && cy - reach < b.y + b.h);
+    const spots = [
+      [p.x - p.radius * 0.62, p.y - r * 0.4],
+      [p.x + p.radius * 0.62, p.y - r * 0.4],
+      [p.x, p.y - p.radius - r],
+      [p.x, p.y - p.radius - r * 3],
+    ] as const;
+    const [x, y] = spots.find(clear) ?? spots[0];
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fillStyle = INK[look].paper; ctx.fill();
     ctx.lineWidth = 1.4; ctx.strokeStyle = INK[look].red; ctx.stroke();

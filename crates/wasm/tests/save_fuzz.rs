@@ -77,7 +77,7 @@ fn pick<'a, T>(rng: &mut Rng, items: &'a [T]) -> &'a T {
 #[test]
 fn every_state_of_full_all_hard_games_round_trips_through_save_validation() {
     const EVERY: u32 = 5;
-    const CAP: u32 = 450;
+    const CAP: u32 = 501;
     for seed in [1, 2, 3] {
         let mut setup = GameSetup::all_ai(seed);
         for p in &mut setup.players {

@@ -1,6 +1,6 @@
 # Siege starves the land: an army at War denies the tile it stands on (2026-11-25)
 
-Rules 63 extends `economy::denied_near` (barbarian units and camps) to any land military unit at War with the tile's owner (`economy::besieges`). Nothing else was needed for the starvation loop: the denied Food flows through `city_yields`, `CityDetail::turns_to_starve` and `rules/cities.rs::process_cities`, so the city panel's existing countdown appears on its own. The denial is war-only (camping on tiles at Peace was a known exploit) and has no order and no lasting effect, so it stays clear of pillaging, which is deliberately not in the game.
+Rules 64 extends `economy::denied_near` (barbarian units and camps) to any land military unit at War with the tile's owner (`economy::besieges`). Nothing else was needed for the starvation loop: the denied Food flows through `city_yields`, `CityDetail::turns_to_starve` and `rules/cities.rs::process_cities`, so the city panel's existing countdown appears on its own. The denial is war-only (camping on tiles at Peace was a known exploit) and has no order and no lasting effect, so it stays clear of pillaging, which is deliberately not in the game.
 
 The AI needed no change to answer it: `military.rs::defend` already strikes an enemy within 2 tiles of a home city (`siege_sortie_tests`, Normal and Hard).
 

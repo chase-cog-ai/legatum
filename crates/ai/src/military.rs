@@ -300,6 +300,8 @@ impl Planner<'_> {
         // Gene `rome_opening_finish`: with no city of the victim in sight, look for one.
         self.pass("rome_finish_search");
         self.rome_finish_search(&army);
+        self.pass("sparta_opening_search");
+        self.sparta_opening_search(&army);
         self.pass("avoid_free_damage");
         self.avoid_free_damage(&army);
         if !primitive_escorts
@@ -4698,7 +4700,7 @@ mod siege_sortie_tests {
     use crate::fixture::{ENEMY, ME, ViewBuilder, brain, off};
     use legatum_core::{AiDifficulty, Order, UnitKind};
 
-    /// Rules 63: an army at War on a city's tile takes that tile's yield until it is driven off.
+    /// Rules 64: an army at War on a city's tile takes that tile's yield until it is driven off.
     /// Home units already strike an enemy within two tiles of their city, so the AI clears it.
     #[test]
     fn home_units_sortie_against_an_army_holding_a_city_tile() {

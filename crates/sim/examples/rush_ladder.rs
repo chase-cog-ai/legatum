@@ -29,6 +29,9 @@ const ARMY_AT: [u32; 7] = [10, 20, 30, 40, 50, 60, 75];
 
 struct Args {
     arms: Vec<(String, AiParams)>,
+    /// Per arm: rule experiments (`x.name=value` in `--arm`), applied from the handover turn
+    /// (or from turn 1 without one). Rules, not genes: every seat plays under them.
+    exps: Vec<serde_json::Map<String, Value>>,
     games: u64,
     seed: u64,
     players: usize,
@@ -42,15 +45,33 @@ struct Args {
     /// Play on a recorded game's map and lobby: the human seat becomes Hard and is observed;
     /// `--games` salts the AI brain seeds.
     tape: Option<legatum_core::GameSetup>,
+    /// With `--tape`: replay the recorded orders (the human's and the AIs') for every turn
+    /// before this one, then let the brains play on. Measures how the AI handles a real
+    /// runaway position. The brains still see every replayed turn, so their memory of it holds.
+    handover: u32,
+    recorded: Vec<legatum_wasm::tape::TapeTurn>,
 }
 
-fn arm(spec: &str) -> (String, AiParams) {
+fn arm(spec: &str) -> (String, AiParams, serde_json::Map<String, Value>) {
     let (label, genes) = spec.split_once(':').unwrap_or((spec, ""));
     let mut value = serde_json::to_value(AiParams::builtin()).expect("params json");
+    let mut exps = serde_json::Map::new();
     for kv in genes.split(',').filter(|s| !s.is_empty()) {
         let (k, v) = kv
             .split_once('=')
             .unwrap_or_else(|| panic!("gene {kv}: want name=value"));
+        if let Some(name) = k.strip_prefix("x.") {
+            let parsed: Value = serde_json::from_str(v).unwrap_or(json!(v));
+            exps.insert(
+                name.into(),
+                if v == "1" && name_is_flag(name) {
+                    json!(true)
+                } else {
+                    parsed
+                },
+            );
+            continue;
+        }
         let decisions = value["decisions"]
             .as_object_mut()
             .expect("decisions object");
@@ -63,13 +84,31 @@ fn arm(spec: &str) -> (String, AiParams) {
     let mut p: AiParams = serde_json::from_value(value).expect("params");
     p.name = label.into();
     p.validate().unwrap_or_else(|e| panic!("{label}: {e}"));
-    (label.into(), p)
+    experiments(&exps);
+    (label.into(), p, exps)
+}
+
+/// A boolean experiment (as opposed to a number): `x.city_research=1` means true.
+/// True when the experiment field takes a boolean: `x.flag=1` then means `true`, while numeric
+/// fields such as `city_upkeep_free` keep the number (defaults skip every field when serialized,
+/// so probe by deserializing a `true`).
+fn name_is_flag(name: &str) -> bool {
+    serde_json::from_value::<legatum_core::experiments::RuleExperiments>(json!({ name: true }))
+        .is_ok()
+}
+
+fn experiments(
+    exps: &serde_json::Map<String, Value>,
+) -> legatum_core::experiments::RuleExperiments {
+    serde_json::from_value(Value::Object(exps.clone()))
+        .unwrap_or_else(|e| panic!("rule experiments {exps:?}: {e}"))
 }
 
 fn parse_args() -> Args {
     let mut it = std::env::args().skip(1);
     let mut a = Args {
         arms: Vec::new(),
+        exps: Vec::new(),
         games: 64,
         seed: 1,
         players: 6,
@@ -80,11 +119,17 @@ fn parse_args() -> Args {
         out: None,
         all: false,
         tape: None,
+        handover: 0,
+        recorded: Vec::new(),
     };
     while let Some(flag) = it.next() {
         let mut v = || it.next().unwrap_or_else(|| panic!("{flag} needs a value"));
         match flag.as_str() {
-            "--arm" => a.arms.push(arm(&v())),
+            "--arm" => {
+                let (label, params, exps) = arm(&v());
+                a.arms.push((label, params));
+                a.exps.push(exps);
+            }
             "--games" => a.games = v().parse().expect("--games"),
             "--seed" => a.seed = v().parse().expect("--seed"),
             "--players" => a.players = v().parse().expect("--players"),
@@ -94,19 +139,20 @@ fn parse_args() -> Args {
             "--storm" => a.storm = v().parse().expect("--storm"),
             "--out" => a.out = Some(v()),
             "--all" => a.all = v() == "1",
+            "--handover" => a.handover = v().parse().expect("--handover"),
             "--tape" => {
                 let text = std::fs::read_to_string(v()).expect("read --tape");
-                a.tape = Some(
-                    legatum_wasm::tape::Tape::from_json(&text)
-                        .expect("tape")
-                        .setup,
-                );
+                let tape = legatum_wasm::tape::Tape::from_json(&text).expect("tape");
+                a.tape = Some(tape.setup);
+                a.recorded = tape.turns;
             }
             other => panic!("unknown argument {other}"),
         }
     }
     if a.arms.is_empty() {
-        a.arms.push(arm("base"));
+        let (label, params, exps) = arm("base");
+        a.arms.push((label, params));
+        a.exps.push(exps);
     }
     assert!((3..=8).contains(&a.players));
     a
@@ -140,6 +186,25 @@ fn setup(args: &Args, game_seed: u64) -> (GameSetup, usize) {
     (setup, (game_seed % args.players as u64) as usize)
 }
 
+/// The arm's experiments over the game's own: fields the arm set win.
+fn merge(
+    game: legatum_core::experiments::RuleExperiments,
+    arm: &legatum_core::experiments::RuleExperiments,
+) -> legatum_core::experiments::RuleExperiments {
+    let mut g = serde_json::to_value(game).expect("experiments json");
+    let a = serde_json::to_value(*arm).expect("experiments json");
+    let d =
+        serde_json::to_value(legatum_core::experiments::RuleExperiments::default()).expect("json");
+    if let (Some(g), Some(a)) = (g.as_object_mut(), a.as_object()) {
+        for (k, v) in a {
+            if d.get(k) != Some(v) {
+                g.insert(k.clone(), v.clone());
+            }
+        }
+    }
+    serde_json::from_value(g).expect("experiments")
+}
+
 fn army(state: &legatum_core::GameState, p: PlayerId) -> usize {
     state
         .units_of(p)
@@ -147,14 +212,24 @@ fn army(state: &legatum_core::GameState, p: PlayerId) -> usize {
         .count()
 }
 
-fn play(args: &Args, params: &AiParams, index: u64) -> Value {
+fn play(
+    args: &Args,
+    params: &AiParams,
+    exps: &legatum_core::experiments::RuleExperiments,
+    index: u64,
+) -> Value {
     let game_seed = args.seed + index;
     let (setup, seat_index) = setup(args, game_seed);
     let seat = PlayerId(seat_index as u8);
     let mut state = legatum_core::new_game(&setup);
-    if args.tape.is_some() && index > 0 {
+    let reseed = args.tape.is_some() && index > 0;
+    if reseed && args.handover == 0 {
         // Same map and lobby, fresh dice per salt (as `hill_suite` does).
         state.dice_seed = Some(setup.seed ^ index.wrapping_mul(0xD1CE_0000_9E37_79B9));
+    }
+    let mut mismatches = 0u32;
+    if args.handover == 0 {
+        state.setup.rule_experiments = merge(state.setup.rule_experiments, exps);
     }
     let master = AiParams::builtin();
     let mut brains: Vec<Box<dyn Brain>> = setup
@@ -224,6 +299,12 @@ fn play(args: &Args, params: &AiParams, index: u64) -> Value {
     // Wars declared on the rusher by empires other than the seat, and when.
     let mut joined: BTreeMap<u8, u32> = BTreeMap::new();
     let mut rusher_captures = 0u32;
+    // Every capture of an original capital from its holder: (captor seat, turn).
+    let mut capital_takes: Vec<(u8, u32)> = Vec::new();
+    // After a handover: how the rivals fight the seat (attacks each way, city hits, losses,
+    // rival units pressing the seat's cities, army sizes every 10 turns).
+    let mut front: BTreeMap<&str, i64> = BTreeMap::new();
+    let mut armies: Vec<(u32, usize, usize)> = Vec::new();
     let limit = if args.turns > 0 { args.turns } else { 700 };
     let mut my_capital = None;
     let trace = std::env::var("RL_TRACE").is_ok();
@@ -272,10 +353,87 @@ fn play(args: &Args, params: &AiParams, index: u64) -> Value {
         if let Some(r) = &rusher {
             legatum_wasm::rusher::apply(&mut orders, &state, r);
         }
+        let replaying = state.turn < args.handover;
+        let recorded = if replaying {
+            args.recorded.iter().find(|t| t.turn == state.turn)
+        } else {
+            None
+        };
+        if let Some(t) = recorded {
+            orders = t.orders.clone();
+        }
         let turn = state.turn;
         let (next, events) = legatum_core::resolve_turn(&state, &orders);
         let before = state;
         state = next;
+        if args.handover > 0 && turn >= args.handover {
+            let seat_cities: Vec<_> = before.cities_of(seat).map(|c| c.pos).collect();
+            let pressing = before
+                .units
+                .values()
+                .filter(|u| u.owner != seat && !u.owner.is_barbarian() && is_military(u.kind))
+                .filter(|u| before.teams_at_war(before.team_of(u.owner), my_team))
+                .filter(|u| seat_cities.iter().any(|c| c.distance(u.pos) <= 3))
+                .count();
+            *front.entry("pressing_unit_turns").or_default() += pressing as i64;
+            if (turn - args.handover).is_multiple_of(10) {
+                let rivals: usize = before
+                    .players
+                    .iter()
+                    .filter(|p| p.alive && p.id != seat && !p.id.is_barbarian())
+                    .filter(|p| before.teams_at_war(p.team, my_team))
+                    .map(|p| army(&before, p.id))
+                    .sum();
+                armies.push((turn, army(&before, seat), rivals));
+            }
+            for event in &events {
+                match event {
+                    Event::Battle {
+                        attacker_owner, at, ..
+                    } => {
+                        let defender_seat = before
+                            .cities
+                            .values()
+                            .any(|c| c.pos == *at && c.owner == seat)
+                            || before
+                                .units
+                                .values()
+                                .any(|u| u.pos == *at && u.owner == seat);
+                        let city = before.cities.values().any(|c| c.pos == *at);
+                        if *attacker_owner == seat {
+                            *front.entry("seat_attacks").or_default() += 1;
+                        } else if defender_seat && !attacker_owner.is_barbarian() {
+                            *front.entry("rival_attacks").or_default() += 1;
+                            if city {
+                                *front.entry("rival_city_hits").or_default() += 1;
+                            }
+                        }
+                    }
+                    Event::UnitDestroyed { owner, .. } => {
+                        if *owner == seat {
+                            *front.entry("seat_units_lost").or_default() += 1;
+                        } else if !owner.is_barbarian() {
+                            *front.entry("rival_units_lost").or_default() += 1;
+                        }
+                    }
+                    Event::PeaceEstablished { .. } => {
+                        *front.entry("peaces").or_default() += 1;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if let Some(t) = recorded
+            && state.hash().to_string() != t.hash
+        {
+            mismatches += 1;
+        }
+        if args.handover > 0 && state.turn == args.handover {
+            state.setup.rule_experiments = merge(state.setup.rule_experiments, exps);
+        }
+        if reseed && args.handover > 0 && state.turn == args.handover {
+            state.dice_seed = Some(setup.seed ^ index.wrapping_mul(0xD1CE_0000_9E37_79B9));
+        }
         for event in &events {
             match event {
                 Event::WarDeclared { relation } => {
@@ -299,7 +457,15 @@ fn play(args: &Args, params: &AiParams, index: u64) -> Value {
                     lost += 1;
                     first_lost.get_or_insert(turn);
                 }
-                Event::CityCaptured { from, to, .. } => {
+                Event::CityCaptured { from, to, city, .. } => {
+                    if before
+                        .cities
+                        .get(city)
+                        .is_some_and(|c| c.original_capital && c.owner == *from)
+                        && before.team_of(*from) != before.team_of(*to)
+                    {
+                        capital_takes.push((to.0, turn));
+                    }
                     if *from == seat {
                         lost += 1;
                         first_lost.get_or_insert(turn);
@@ -346,6 +512,11 @@ fn play(args: &Args, params: &AiParams, index: u64) -> Value {
         "first_join": joined.values().min(),
         "rusher_captures": rusher_captures,
         "builds": builds,
+        "mismatches": mismatches,
+        "front": front,
+        "armies": armies,
+        "capital_takes": capital_takes,
+        "winners": state.players.iter().filter(|p| state.finished && Some(p.team) == state.winner).map(|p| p.id.0).collect::<Vec<_>>(),
     })
 }
 
@@ -381,7 +552,7 @@ fn main() {
         .par_iter()
         .filter(|&&(a, i)| !done.contains(&(args.arms[a].0.clone(), args.seed + i)))
         .map(|&(a, i)| {
-            let mut row = play(&args, &args.arms[a].1, i);
+            let mut row = play(&args, &args.arms[a].1, &experiments(&args.exps[a]), i);
             row["arm"] = json!(args.arms[a].0);
             let mut out = out.lock().expect("output lock");
             writeln!(out, "{row}").expect("write");

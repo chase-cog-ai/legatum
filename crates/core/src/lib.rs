@@ -58,8 +58,9 @@ pub mod rules;
 /// 59: Egypt's Chariot Archer replaces its Archer (Sam, 2026-11-25): 3 moves, a shot 40% stronger against the melee line, and Forest or Hills without a road take its whole turn to enter. The Medjay is retired, so Egypt's Spearman is plain (no extra sight). The save shape is unchanged.
 /// 60: The tech tree's research goal: `Order::SetResearchGoal` and `Player::research_goal` (fills an empty research queue toward a later technology). No existing order resolves differently.
 /// 61: Deals (Sam, 2026-11-25), behind GameSetup::deals: Gold in Peace, Alliance and Open Borders offers either way, Gold gifts to any met empire not at War, and Open Borders as a third treaty. The save shape gains optional fields; off, nothing changes.
-/// 63: Siege starves the land: a land military unit standing on a tile owned by an empire it is at War with denies that tile's yield, as a barbarian unit already did (`economy::besieges`). No order and no lasting damage: the yield returns the turn the unit leaves, dies or its empire makes Peace. The save shape is unchanged.
-pub const RULES_VERSION: u32 = 63;
+/// 63: City upkeep: an empire with up to six cities pays nothing; past that every city it owns (the first six too) costs (cities - 6) Gold a turn, shown as "City upkeep (free up to 6 cities)" in the Gold breakdown. The save shape is unchanged.
+/// 64: Siege starves the land: a land military unit standing on a tile owned by an empire it is at War with denies that tile's yield, as a barbarian unit already did (`economy::besieges`). No order and no lasting damage: the yield returns the turn the unit leaves, dies or its empire makes Peace. The save shape is unchanged.
+pub const RULES_VERSION: u32 = 64;
 pub mod scenario;
 pub mod scoring;
 pub mod settlement;

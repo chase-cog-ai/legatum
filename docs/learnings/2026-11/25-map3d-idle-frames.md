@@ -6,3 +6,5 @@
 - After a move, easing the facing back to rest needs WebGL frames even without a model mixer or an active turn; it does not move the marks. Render the last straightened pose before going idle.
 - Advance the water phase only between consecutive frames with water in view. The first frame after an inland pause resumes from the stored phase rather than adding the idle gap.
 - A paused unit mixer keeps its pose without scheduling frames. Enabling motion has to wake the renderer when the model is already loaded.
+- After #312, `MapWater` owns the flat plane and its wet, revealed bounds. Tree wind is separate: check the current tree LOD's instance bounds (including shader sway) on view changes and keep animating only while the trees may be visible and motion is enabled. Late tree geometry and shared textures need to request a redraw even in a still view.
+- The terrain worker invalidates the scene and marks together and completes its ready promise after that scheduled draw. `MapPost` consumes the current color and depth without temporal state; the offscreen draw and fullscreen finish happen in one scheduled frame, and neither pass needs a follow-up.

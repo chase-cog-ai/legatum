@@ -9,11 +9,18 @@ vi.mock('three', async (original) => ({
   ...await original<typeof import('three')>(),
   WebGLRenderer: class {
     shadowMap = {};
+    capabilities: { isWebGL2: boolean };
+    info = { reset: vi.fn(), autoReset: true };
     render = vi.fn();
+    setRenderTarget = vi.fn();
+    getPixelRatio = () => 1;
     setPixelRatio = vi.fn();
     setSize = vi.fn();
     dispose = vi.fn();
-    constructor({ canvas }: { canvas: HTMLCanvasElement }) { this.domElement = canvas; }
+    constructor({ canvas }: { canvas: HTMLCanvasElement }) {
+      this.domElement = canvas;
+      this.capabilities = { isWebGL2: canvas.dataset.post === 'true' };
+    }
     readonly domElement: HTMLCanvasElement;
   },
 }));
@@ -21,7 +28,7 @@ vi.mock('three', async (original) => ({
 const view = {
   width: 38, height: 12, players: [], units: [], cities: [],
   tiles: Array.from({ length: 38 * 12 }, (_, i): TileView => ({
-    terrain: i % 38 >= 34 ? 'Ocean' : 'Plains', explored: true, visible: false, owner: null, ruin: false,
+    terrain: i % 38 >= 34 ? 'Ocean' : 'Desert', explored: true, visible: false, owner: null, ruin: false,
   })),
 } as Pick<PlayerView, 'width' | 'height' | 'players' | 'units' | 'cities' | 'tiles'> as PlayerView;
 
@@ -40,6 +47,7 @@ beforeEach(() => {
   let next = 0;
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { frames.set(++next, callback); return next; });
   vi.stubGlobal('cancelAnimationFrame', (id: number) => frames.delete(id));
+  vi.stubGlobal('Worker', undefined);
   drawMarks.mockReset();
   drawMarks.mockReturnValue(false);
   canvas = document.createElement('canvas');
@@ -75,6 +83,67 @@ it('coalesces invalidations and stays idle with offscreen water', () => {
   expect(scene.renderer.render).toHaveBeenCalledTimes(3);
   expect(drawMarks).toHaveBeenCalledTimes(2);
   expect(frames.size).toBe(0);
+});
+
+it('wakes for a pending cold rebuild and resolves readiness after one complete post-processed draw', async () => {
+  scene.dispose();
+  let finish!: () => void;
+  vi.stubGlobal('Worker', class {
+    onerror!: () => void;
+    postMessage() { finish = () => this.onerror(); }
+    terminate() {}
+  });
+  canvas = document.createElement('canvas');
+  canvas.dataset.post = 'true';
+  scene = new MapScene(canvas, drawMarks);
+  scene.resize(800, 600);
+  scene.dist = 4;
+  scene.target.set(5, 0, 4);
+  scene.placeCamera();
+  scene.setView(view);
+  const ready = vi.fn();
+  const readyFrame = scene.whenReady().then(ready);
+  frame();
+  expect(frames.size).toBe(0);
+  expect(scene.renderer.render).toHaveBeenCalledTimes(2);
+
+  finish();
+  await Promise.resolve();
+  expect(ready).not.toHaveBeenCalled();
+  expect(frames.size).toBe(1);
+  frame();
+  await readyFrame;
+  expect(scene.renderer.render).toHaveBeenCalledTimes(4);
+  expect(scene.renderer.setRenderTarget).toHaveBeenLastCalledWith(null);
+  expect(drawMarks).toHaveBeenCalledTimes(2);
+  expect(ready).toHaveBeenCalledWith(scene.lastBuildProfile.wallToVisibleMs);
+  expect(frames.size).toBe(0);
+});
+
+it('runs visible tree wind without redrawing marks, then idles when motion is paused', () => {
+  scene.setView({ ...view, tiles: view.tiles.map((t, i) => i % 38 < 10 ? { ...t, terrain: 'Forest' } : t) });
+  frame(0);
+  frame(16);
+  expect(scene['windTime']).toBeCloseTo(0.016);
+  expect(scene.renderer.render).toHaveBeenCalledTimes(2);
+  expect(drawMarks).toHaveBeenCalledTimes(1);
+
+  scene.target.x = 23;
+  scene.placeCamera();
+  frame(32);
+  expect(frames.size).toBe(0);
+  scene.target.x = 5;
+  scene.placeCamera();
+  frame(2000);
+  expect(scene['windTime']).toBeCloseTo(0.016);
+  expect(frames.size).toBe(1);
+
+  scene.setStill(true);
+  frame(2016);
+  expect(frames.size).toBe(0);
+  scene.setStill(false);
+  frame(3000);
+  expect(frames.size).toBe(1);
 });
 
 it('keeps frames running for explored water in view without redrawing marks', () => {

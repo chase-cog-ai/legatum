@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PlayerView } from '../types';
 import { BANNER_BOTTOM, CITY_UNIT_DROP, HEX_SIZE, tokenHalf } from './grid';
-import { COAL_MARK, drawFarMark, drawResourceIcons, GAP, medallionSlots, medallionTop, pickSlot, resourceDetail, STACK_LIFT } from './resourceIcons';
+import { COAL_MARK, drawCuts3d, drawFarMark, drawResourceIcons, GAP, medallionSlots, medallionTop, pickSlot, resourceDetail, STACK_LIFT } from './resourceIcons';
 
 const medallionPlacement = (r: number, city: boolean) => medallionSlots(r, city).top;
 import { yieldCluster, yieldIconSize } from './yieldIcons';
@@ -224,5 +224,20 @@ describe('drawResourceIcons', () => {
     const { ctx, calls } = recorder();
     drawResourceIcons(ctx, v, { x: 150, y: 100, zoom: 0.9 }, 800, 600, 2, 'atlas');
     expect(calls.filter((c) => c.name === 'drawImage' || c.name === 'arc')).toEqual([]);
+  });
+
+  it('the 3D map strikes a cut deposit through on its marks canvas, and draws nothing without a cut or off screen', () => {
+    const v = view();
+    const at = (i: number) => (i === 1 ? { x: 200, y: 150, radius: 30 } : null);
+    const strokes = () => {
+      const { ctx, calls } = recorder();
+      drawCuts3d(ctx, v, at);
+      return calls.filter((c) => c.name === 'lineTo').length;
+    };
+    expect(strokes()).toBe(0);
+    (v as unknown as { supply_cuts: unknown }).supply_cuts = [{ hex: { q: 1, r: 0 }, resource: 'Iron', owner: 0, by: 1, supply: 3 }];
+    expect(strokes()).toBe(2); // the bar: a paper edge, then red
+    (v as unknown as { supply_cuts: unknown }).supply_cuts = [{ hex: { q: 2, r: 0 }, resource: 'Iron', owner: 0, by: 1, supply: 3 }];
+    expect(strokes()).toBe(0);
   });
 });

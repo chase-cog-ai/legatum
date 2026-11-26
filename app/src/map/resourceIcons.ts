@@ -194,6 +194,25 @@ function drawCut(ctx: CanvasRenderingContext2D, x: number, y: number, radius: nu
   ctx.restore();
 }
 
+/** The 3D map's cut deposits, on its flat marks canvas: the resource's mark on a paper disc, struck through in red, left of
+ *  the unit that stands there. `at` gives a tile's centre and apparent radius on screen. */
+export function drawCuts3d(ctx: CanvasRenderingContext2D, view: PlayerView, at: (i: number) => { x: number; y: number; radius: number } | null, look: LookId = 'atlas'): void {
+  if (!view.supply_cuts?.length) return;
+  ctx.save();
+  for (const c of view.supply_cuts) {
+    const p = at(tileIndex(c.hex, view.width, view.height));
+    if (!p) continue;
+    const r = Math.max(7, Math.min(13, p.radius * 0.3));
+    const x = p.x - p.radius * 0.62, y = p.y - r * 0.4;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = INK[look].paper; ctx.fill();
+    ctx.lineWidth = 1.4; ctx.strokeStyle = INK[look].red; ctx.stroke();
+    drawFarMark(ctx, x, y, r * 0.48, c.resource, look);
+    drawCut(ctx, x, y, r, look);
+  }
+  ctx.restore();
+}
+
 function drawEmphasis(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, strategic: boolean, owner: number | null, me: number, look: LookId) {
   const ring = emphasisRing(owner, me);
   const color = strategic ? CATEGORY_COLOR.Strategic : CATEGORY_COLOR.Bonus;

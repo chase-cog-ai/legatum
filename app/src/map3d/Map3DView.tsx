@@ -7,6 +7,7 @@ import { isEliminated, useGame } from '../store';
 import { distance, hexEq, tileIndex } from '../hex';
 import { enemyAt, moveSelected, peacefulAt, peacefulRangedAt, rangedEnemyAt, rangedSelected, selectedOwnUnit, warQueuedNow } from '../commands';
 import { pointerIntent, previewDestination } from '../map/intent';
+import { drawCuts3d } from '../map/resourceIcons';
 import { chariotTerrainNote, planTurns, previewRoute, routeDangerText, routeRiskText, type PathStep } from '../path';
 import { useBattlePreview } from '../map/battlePreview';
 import { ForecastCard } from '../ui/ForecastCard';
@@ -293,6 +294,7 @@ export default function Map3DView() {
       unitAt: (u) => sc.unitHead(u.id),
       unitFootAt: (u) => sc.unitFoot(u.id),
     });
+    drawCuts3d(ctx, v, (i) => sc.projectIndex(i, 0.02));
     drawPickers3d(ctx, sc, v, pickRef.current, mapPlayerColor(v.me), panelRects());
     const rt = routeRef.current;
     if (rt) drawRoute3d(ctx, rt.route.map((hx) => sc.project(hx, 0.02)), rt.steps, rt.attack, performance.now());

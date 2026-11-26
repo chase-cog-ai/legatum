@@ -8,7 +8,7 @@ import { emptyGesture, gestureStep, zoomCamera, type GestureEvent } from './gest
 import { onImprovementArtLoad } from './improvementArt';
 import { onLandmarkArtLoad } from './landmarks';
 import { onMapFeatureLoad } from './mapFeatures';
-import { draw, type Camera } from './render';
+import { draw, stepTerrain, type Camera } from './render';
 import { fitReplayCamera, replayBounds } from './replayCamera';
 import { onWonderArtLoad } from './wonderArt';
 
@@ -30,6 +30,10 @@ export function ReplayMap({ view }: { view: PlayerView }) {
     let pending = 0;
     let attempts = 0;
     const profile = replayProfilingEnabled();
+    const continuePaint = () => {
+      if (stepTerrain(scope.current)) paint();
+      else pending = requestAnimationFrame(continuePaint);
+    };
     const paint = () => {
       pending = 0;
       const { view, bounds } = frame.current;
@@ -54,11 +58,14 @@ export function ReplayMap({ view }: { view: PlayerView }) {
         rangedTiles: null, unitPos: new Map(), seatColor: playerColor(view.me), reducedMotion: true,
       });
       if (profile) performance.measure('replay-draw', { start: drawStart, detail: [view.turn - 1, result.pending] });
-      if (result.pending && attempts++ < 90) pending = requestAnimationFrame(paint);
+      el.dataset.terrainReady = String(!result.pending);
+      if (result.pending && attempts++ < 90) pending = requestAnimationFrame(continuePaint);
     };
     const schedule = () => {
       attempts = 0;
-      if (!pending) pending = requestAnimationFrame(paint);
+      el.dataset.terrainReady = 'false';
+      cancelAnimationFrame(pending);
+      pending = requestAnimationFrame(paint);
     };
     repaint.current = schedule;
     const resize = new ResizeObserver(schedule);

@@ -45,7 +45,7 @@ fn run(args: &[&str]) -> (Value, String, TempDir) {
 fn standard_hard_duel_holds_are_consistent_and_never_stall() {
     // 16 games: on the rules-50 tree a Hard duel ends by capitals in about 11 of 12 games
     // (22 of 24 in a 2026-11-22 run), so 8 games held no VP hold win; game 15 of this seed range has one.
-    // Seeds from 100: with flanking (rules 63) seed 2 is a Hard duel that reaches the safety cap.
+    // Seeds from 100: with flanking (rules 64) seed 2 is a Hard duel that reaches the safety cap.
     // Such a stalemate is about 1 duel in 360 with or without the rule (seed 115 without it:
     // `docs/learnings/2026-11/25-flanking-balance.md`).
     let (report, md, _temp) = run(&[

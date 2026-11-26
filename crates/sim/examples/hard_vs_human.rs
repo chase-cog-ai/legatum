@@ -1973,6 +1973,7 @@ mod tests {
         // Walls levels (rules 58) and Hard pricing rival Walls net of its Siege leave the seat with no win on this tape.
         // Breakable Walls (rules 62), with Hard's siege forecast playing longer while a Walls bar stands, give the seat an elimination win at T162.
         // Hard finishing a combat unit under way (keep_unit_build 2, 2026-11-26) leaves two cities at T30, four at T62 and no win.
+        // Flanking (rules 64) keeps the city counts and the seat wins by elimination at T160.
         assert_eq!(
             first_map_game(false),
             json!({
@@ -1981,9 +1982,9 @@ mod tests {
                 "cities_t62": 4,
                 "vp_t100": 0,
                 "vp_t60": 0,
-                "win": false,
-                "win_turn": null,
-                "win_type": null,
+                "win": true,
+                "win_turn": 160,
+                "win_type": "elimination",
             })
         );
     }

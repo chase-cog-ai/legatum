@@ -72,3 +72,31 @@ export function drawForts(ctx: CanvasRenderingContext2D, view: PlayerView, cam: 
   }
   ctx.restore();
 }
+
+/** The 3D map's Forts, on its flat marks canvas: `at` gives a tile's centre and apparent radius on screen. */
+export function drawForts3d(ctx: CanvasRenderingContext2D, view: PlayerView, at: (i: number) => { x: number; y: number; radius: number } | null): void {
+  if (!view.tiles.some((t) => t.fort)) return;
+  ctx.save();
+  for (let i = 0; i < view.tiles.length; i++) {
+    const tile = view.tiles[i];
+    if (!tile.fort || !tile.explored) continue;
+    const p = at(i);
+    if (p) fort(ctx, p.x, p.y, p.radius, tile.visible ? 1 : 0.6);
+  }
+  for (const i of hostileForts(view)) {
+    const p = at(i);
+    if (!p) continue;
+    // The ground is seen at an angle: two rows down the map (three hex radii) give the ring's squash.
+    const below = i + 2 * view.width;
+    const row = at(below < view.tiles.length ? below : i - 2 * view.width);
+    const squash = row && p.radius > 0 ? Math.min(1, Math.abs(row.y - p.y) / (3 * p.radius)) : 0.6;
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, p.radius * 2.45, p.radius * 2.45 * squash, 0, 0, Math.PI * 2);
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = STOP;
+    ctx.globalAlpha = 0.8;
+    ctx.stroke();
+  }
+  ctx.restore();
+}

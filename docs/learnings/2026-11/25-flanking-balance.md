@@ -4,18 +4,18 @@ Flanking (rules 63: +2 melee strength per other friendly land military unit next
 
 | Measure | Flanking | `no-flanking` |
 | --- | --- | --- |
-| Game length, mean / median turns | 224.5 / 219 | 222.3 / 217 |
-| City captures per game | 22.5 | 22.5 |
-| Eliminations per game | 1.95 | 1.94 |
-| Battles per game | 1037 | 1034 |
-| Turn-50 leader set goes on to win | 65.0% | 66.5% |
-| VP holds broken, of those started | 17.1% | 19.3% |
-| Sparta win rate per seat (the phalanx stacks with flanking) | 9.1% | 12.5% |
-| Best / worst faction win rate | 20.2% / 5.6% | 20.8% / 6.4% |
+| Game length, mean / median turns | 224.9 / 220 | 228.9 / 222 |
+| City captures per game | 22.1 | 23.1 |
+| Eliminations per game | 2.13 | 2.33 |
+| Battles per game | 1157 | 1175 |
+| Turn-50 leader set goes on to win | 65.0% | 70.0% |
+| VP holds broken, of those started | 21.6% | 19.6% |
+| Sparta win rate per seat (the phalanx stacks with flanking) | 11.4% | 13.6% |
+| Best / worst faction win rate | 20.9% / 6.2% | 17.1% / 8.7% |
 
-These figures are from the branch with breakable Walls (rules 62) merged, commit `8dd4896e`. The feared effects did not appear: captures and eliminations are level, the turn-50 leader wins about as often, and Sparta did not gain. Faction differences of this size are within the noise of about 175 seats each.
+These figures are from the branch with master merged through #306 (Hard finishing a combat unit under way, 2026-11-26), commit `8a6de0eb`. The feared effects did not appear: captures and eliminations are slightly lower with flanking, the turn-50 leader wins no more often, and Sparta did not gain. Faction differences of this size are within the noise of about 175 seats each.
 
-An earlier run of the same seeds before breakable Walls showed fewer VP holds broken with flanking on (20.1% against 31.7%); with breakable Walls the gap is 17.1% against 19.3%, so that difference did not hold up.
+VP holds broken has had no stable direction across three runs of the same seeds as master moved: 20.1% against 31.7% before breakable Walls, 17.1% against 19.3% with them, and 21.6% against 19.6% now.
 
 Why it stays small: the bonus is capped at three units, a city and a unit inside one are never flanked (so it does not speed up sieges, where the split counterattack already rewards numbers), and shots gain nothing.
 

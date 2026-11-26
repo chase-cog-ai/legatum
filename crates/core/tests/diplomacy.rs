@@ -1925,7 +1925,7 @@ fn a_heal_order_is_refused_in_closed_foreign_land_where_nothing_heals() {
     );
 }
 
-// Peace terms (rules 63): a city, captured cities, the truce, reparations and a counter-offer
+// Peace terms (rules 64): a city, captured cities, the truce, reparations and a counter-offer
 // on a Peace offer, beside the deal's Gold (`tests/deals.rs`).
 
 /// `game` with deals on: terms are part of deals.

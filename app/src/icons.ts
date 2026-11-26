@@ -39,7 +39,7 @@ function resourceImage(resource: string, sourceSize: 32 | 64 | 256): HTMLImageEl
   const url = resourceArtUrl(resource, sourceSize);
   if (!url || typeof Image === 'undefined') { resourceImages.set(key, null); return null; }
   const img = new Image();
-  img.onload = () => { loads++; onLoad?.(); };
+  img.onload = iconLoaded;
   img.src = url;
   resourceImages.set(key, img);
   return null;
@@ -104,10 +104,7 @@ function image(name: string): HTMLImageElement | null {
     return null;
   }
   const img = new Image();
-  img.onload = () => {
-    loads++;
-    onLoad?.();
-  };
+  img.onload = iconLoaded;
   img.src = url;
   images.set(name, img);
   return null;

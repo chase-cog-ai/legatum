@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { Texture, TextureLoader } from 'three';
+import { AnimationMixer, Group, Texture, TextureLoader } from 'three';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { PlayerView, TileView } from '../types';
 import { MapScene } from './scene';
@@ -123,7 +123,7 @@ it('redraws after a unit texture loads or WebGL is restored', () => {
   });
   scene.setView({ ...view,
     tiles: view.tiles.map((t) => ({ ...t, visible: true })),
-    units: [{ id: 1, owner: 0, kind: 'Spearman', pos: { q: 5, r: 4 } } as PlayerView['units'][number]],
+    units: [{ id: 1, owner: 0, kind: 'Scout', pos: { q: 5, r: 4 } } as PlayerView['units'][number]],
   });
   frame();
   expect(frames.size).toBe(0);
@@ -134,5 +134,25 @@ it('redraws after a unit texture loads or WebGL is restored', () => {
   frame();
   expect(scene.renderer.render).toHaveBeenCalledTimes(3);
   expect(placeBanners).toHaveBeenCalledTimes(1);
+  expect(frames.size).toBe(0);
+});
+
+it('idles with paused model animation and wakes when motion is enabled', () => {
+  const mixer = new AnimationMixer(new Group());
+  scene['mixers'].push(mixer);
+  scene.setStill(true);
+  frame(0);
+  expect(mixer.time).toBe(0);
+  expect(frames.size).toBe(0);
+
+  scene.setStill(false);
+  frame(1_000);
+  frame(1_016);
+  expect(mixer.time).toBeCloseTo(0.016);
+  expect(frames.size).toBe(1);
+
+  scene.setStill(true);
+  frame(1_032);
+  expect(mixer.time).toBeCloseTo(0.016);
   expect(frames.size).toBe(0);
 });

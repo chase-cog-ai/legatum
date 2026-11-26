@@ -111,9 +111,10 @@ describe('event -> sound mapping', () => {
     expect(sound.musicPool({ mood: 'peace', people: null })).toEqual(['music/atlas.m4a', 'music/tale-of-warriors.m4a']);
     expect(sound.musicPool({ mood: 'war', people: 'Rome' })).toEqual(['music/war.m4a', 'music/taiko-1.m4a', 'music/taiko-2.m4a']);
     expect(sound.musicPool({ mood: 'title', people: null })).toEqual(['music/atlas.m4a']);
-    // The Aztecs have music of their own, in every era.
-    expect(sound.musicPool({ mood: 'peace', people: 'Aztecs' }).slice(0, 2)).toEqual(['music/el-dorado.m4a', 'music/lost-city.m4a']);
-    expect(sound.musicPool({ mood: 'peace', people: 'Aztecs', era: 7 }).slice(0, 2)).toEqual(['music/el-dorado.m4a', 'music/lost-city.m4a']);
+    // The Aztecs have music of their own, in every era: four pieces in a Mesoamerican style lead, then two New World pieces.
+    const aztec = ['great-pyramids', 'life-in-forest', 'ritual-traps', 'face-to-face', 'el-dorado', 'lost-city'].map((s) => `music/${s}.m4a`);
+    expect(sound.musicPool({ mood: 'peace', people: 'Aztecs' }).slice(0, 6)).toEqual(aztec);
+    expect(sound.musicPool({ mood: 'peace', people: 'Aztecs', era: 7 }).slice(0, 6)).toEqual(aztec);
     // A peace track never plays in war, and the reverse.
     expect(sound.musicPool({ mood: 'peace', people: 'Rome' }).filter((f) => sound.musicPool({ mood: 'war', people: 'Rome' }).includes(f))).toEqual([]);
   });

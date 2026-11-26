@@ -54,6 +54,7 @@ Current rules only, one line each with the date and who. Detail, the user's full
 - When he says stop, stop agents and schedules at once and say what is still running and why (user, 2026-11-21).
 - Promises to him go in `docs/status/tracker.md` in the same turn (user, 2026-10-10).
 - Record as you go: design decisions to the design doc's decisions log; durable learnings to the `docs/learnings.md` digest (each new entry is its own file, `docs/learnings/<YYYY-MM>/<DD>-<slug>.md`); rules to the `legatum-rules` references; preferences to the matching skill.
+- Anything blocked on the user goes on a decision card, never only in a plain message: only a card shows the thread as waiting. A plain-text ask once left a thread looking idle for 15 hours (2026-11-25). The coordinator's catch-up checks every open thread for unanswered asks without a card.
 
 ## Model routing (cheapest model that meets the bar; user, 2026-10-04)
 

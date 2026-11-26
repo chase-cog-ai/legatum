@@ -14,7 +14,9 @@ import { useLandSound } from '../map/useLandSound';
 import { setMapProjector } from '../map/screenPos';
 import { gameplayFocusAllowed, gameplayKeyAllowed } from '../gameplayKeys';
 import { mapPlayerColor } from '../map/style';
-import { feel } from '../feel';
+import { feel, useCombatFx } from '../feel';
+import { motionStill } from '../ui/motion';
+import { useReducedMotion } from '../ui/useReducedMotion';
 import { MapScene } from './scene';
 import { PX } from './world';
 import './map3d.css';
@@ -30,6 +32,10 @@ export default function Map3DView() {
   const mode = useGame((s) => s.mode);
   const focus = useGame((s) => s.focus);
   const pingMode = useGame((s) => s.pingMode);
+  const still = motionStill(useReducedMotion(), useCombatFx((s) => s.enabled));
+  const stillRef = useRef(still);
+  stillRef.current = still;
+  useEffect(() => { if (sceneRef.current) sceneRef.current.still = still; }, [still]);
   const view = views?.[seat] ?? null;
   const [hover, setHover] = useState<Hex | null>(null);
 
@@ -48,6 +54,7 @@ export default function Map3DView() {
     handoff.current = takeMapHandoff(useGame.getState().focus?.seq ?? 0);
     const canvas = canvasRef.current!;
     const sc = new MapScene(canvas);
+    sc.still = stillRef.current;
     sceneRef.current = sc;
     // Tests and local shot scripts reach the scene here (the 2D map exposes `legatumMap` the same way).
     (window as unknown as { legatumMap3d?: MapScene }).legatumMap3d = sc;

@@ -4,11 +4,12 @@
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { Hex, PlayerView, UnitView } from '../types';
 import { fromOffset, toOffset } from '../hex';
 import { neighborIndex } from '../map/grid';
 import { mapPlayerColor } from '../map/style';
-import { mapUnitMiniatureUrl } from '../unitArt';
+import { mapUnitArtSlug, mapUnitMiniatureUrl } from '../unitArt';
 import { BARBARIAN_COLOR } from '../theme';
 import { isBarbarian } from '../barbarians';
 import {
@@ -18,9 +19,15 @@ import {
 
 const PARCH = new THREE.Color('#d9c9a3');
 const UP = new THREE.Vector3(0, 1, 0);
-/** Units with a finished 3D model (app/public/models/units/<slug>.glb); every other kind stands as its painted
- *  miniature. Empty until the designer approves the first model (the Spearman) for the game. */
-const MODELS: Partial<Record<string, string>> = {};
+/** Unit art with a finished 3D model (app/public/models/units/<file>.glb), keyed by the art slug the unit's painting
+ *  uses (mapUnitArtSlug), so a model only stands in for its own painting: a Spartan or Aztec Spearman and a barbarian
+ *  raider keep their own painted figures until they have models. Every other unit stands as its painted miniature.
+ *  Licence and credits of each model: app/public/models/units/PROVENANCE-<file>.md. */
+const MODELS: Partial<Record<string, string>> = { spearman: 'spearman' };
+/** Close-up detail (unit contract v2): a model's LOD0 mesh draws only when the camera is closer than this, and only on
+ *  the figures nearest the view centre (at most LOD0_FIGURES); every other figure draws its light LOD1. */
+const LOD0_DIST = 4;
+const LOD0_FIGURES = 16;
 const MODEL_URL = (slug: string) => `${import.meta.env.BASE_URL}models/units/${slug}.glb`;
 
 export interface Overlays {
@@ -98,6 +105,7 @@ export class MapScene {
       if (Array.isArray(mat)) mat.forEach((x) => x.dispose()); else mat?.dispose();
     });
     for (const t of this.textures.values()) t.dispose();
+    this.env?.dispose();
     this.renderer.dispose();
   }
 
@@ -432,11 +440,45 @@ export class MapScene {
   }
 
   private unitSeq = 0;
+  private env: THREE.Texture | null = null;
+  /** A soft studio light for model materials only (the terrain keeps its own lighting). */
+  private unitEnv(): THREE.Texture {
+    if (!this.env) {
+      const pm = new THREE.PMREMGenerator(this.renderer);
+      this.env = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+      pm.dispose();
+    }
+    return this.env;
+  }
+  private squads: { fig: THREE.Object3D; lod0: THREE.Object3D[]; lod1: THREE.Object3D[]; scale: number; x: number; z: number }[] = [];
+  /** Reduced motion or the Animations switch off (ui/motion.ts motionStill): models hold their pose. */
+  still = false;
+
+  /** Picks each model figure's mesh: LOD0 for the few figures nearest the view centre when the camera is close, else LOD1. */
+  private updateLod() {
+    const p = new THREE.Vector3();
+    const near = this.dist < LOD0_DIST
+      ? new Set(this.squads
+        .map((s) => ({ s, d: s.fig.getWorldPosition(p).distanceToSquared(this.target) }))
+        .sort((a, b) => a.d - b.d).slice(0, LOD0_FIGURES).map((x) => x.s))
+      : new Set();
+    // A squad of small figures reads smaller than one painted miniature, so it grows as the camera pulls back.
+    const grow = 1 + 0.5 * THREE.MathUtils.smoothstep(this.dist, 3, 13);
+    for (const s of this.squads) {
+      s.fig.scale.setScalar(s.scale * grow);
+      s.fig.position.set(s.x * grow, 0, s.z * grow);
+      if (!s.lod0.length || !s.lod1.length) continue; // a model without a LOD1 draws its LOD0 everywhere
+      const hi = near.has(s);
+      for (const m of s.lod0) m.visible = hi;
+      for (const m of s.lod1) m.visible = !hi;
+    }
+  }
   private buildUnits() {
     const view = this.view!, wd = this.world!;
     const seq = ++this.unitSeq;
     for (const o of [...this.units.children]) this.units.remove(o);
     this.mixers = [];
+    this.squads = [];
     const byTile = new Map<number, UnitView[]>();
     for (const u of view.units) {
       const i = tileIndexOf(u.pos, wd.w, wd.h);
@@ -460,11 +502,12 @@ export class MapScene {
         const x = tileX(i, wd.w) + off, z = tileZ(i, wd.w) + (cityAt.has(i) ? 0.2 : 0.05);
         g.position.set(x, Math.max(0, this.heightAt(x, z)), z);
         this.units.add(g);
-        const slug = MODELS[u.kind];
+        const slug = MODELS[mapUnitArtSlug(u, factionOf, barbarian)];
         if (slug) {
           void this.model(slug).then((gltf) => {
             if (!gltf || this.disposed || seq !== this.unitSeq) return;
             this.addSquad(g, gltf, team, i * 7 + k);
+            this.updateLod();
             this.animating = true;
           });
         } else {
@@ -482,7 +525,7 @@ export class MapScene {
   }
 
   /** Unit contract: COLOR_0's red channel is the owner-colour mask (crest, shield rim, cloak trim), not a colour.
-   *  Masked texels take the team colour, keeping the painted albedo's light and dark so the detail survives.
+   *  Masked texels are painted neutral and are multiplied by the team colour, so their light and dark survive.
    *  One material per (source material, team), shared by every figure. */
   private teamMats = new Map<string, THREE.Material>();
   private teamMaterial(src: THREE.MeshStandardMaterial, team: THREE.Color): THREE.Material {
@@ -496,10 +539,8 @@ export class MapScene {
       sh.uniforms.uTeam = uTeam;
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', '#include <common>\nuniform vec3 uTeam;')
-        .replace('#include <color_fragment>', `{
-          float lum = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
-          diffuseColor.rgb = mix(diffuseColor.rgb, uTeam * (0.45 + 1.1 * lum), clamp(vColor.r, 0.0, 1.0));
-        }`);
+        // The contract's operation: masked texels are painted neutral, so multiplying by the team colour tints them and keeps their shading.
+        .replace('#include <color_fragment>', 'diffuseColor.rgb *= mix(vec3(1.0), uTeam, clamp(vColor.r, 0.0, 1.0));');
     };
     mat.customProgramCacheKey = () => 'team-mask';
     this.teamMats.set(key, mat);
@@ -508,7 +549,8 @@ export class MapScene {
 
   private addSquad(g: THREE.Group, gltf: GLTF, team: THREE.Color, seed: number) {
     const box = new THREE.Box3().setFromObject(gltf.scene);
-    const scale = 0.17 / Math.max(0.001, box.max.y - box.min.y);
+    // A figure stands about as tall as a painted miniature (0.3 including its base), so models and sprites read at one size.
+    const scale = 0.26 / Math.max(0.001, box.max.y - box.min.y);
     const idle = gltf.animations.find((a) => a.name === 'idle') ?? gltf.animations[0];
     const SQUAD: [number, number][] = [[0, 0.045], [-0.05, -0.03], [0.05, -0.03]];
     SQUAD.forEach(([sx, sz], f) => {
@@ -516,22 +558,31 @@ export class MapScene {
       fig.scale.setScalar(scale);
       fig.position.set(sx, 0, sz);
       fig.rotation.y = DISPLAY_YAW + (hash2(seed, f) - 0.5) * 0.3;
+      const lod0: THREE.Object3D[] = [], lod1: THREE.Object3D[] = [];
       fig.traverse((o) => {
         const m = o as THREE.Mesh;
         if (!m.isMesh) return;
+        if (/_LOD0$/.test(m.name)) lod0.push(m);
+        else if (/_LOD1$/.test(m.name)) lod1.push(m);
         m.castShadow = true; m.frustumCulled = false;
         if (Array.isArray(m.material)) return;
         if (m.geometry.getAttribute('color')) m.material = this.teamMaterial(m.material as THREE.MeshStandardMaterial, team);
         else if (/crest|aspis/i.test(m.name)) {
+          // A model without the COLOR_0 mask: colour its crest and shield meshes whole.
           const mat = (m.material as THREE.MeshStandardMaterial).clone();
           mat.color = team.clone().lerp(new THREE.Color('#ffffff'), 0.1);
           m.material = mat;
         }
+        // Metal (bronze, the spear head) reflects its surroundings; with nothing to reflect it renders black.
+        const std = m.material as THREE.MeshStandardMaterial;
+        if (std.isMeshStandardMaterial && !std.envMap) { std.envMap = this.unitEnv(); std.envMapIntensity = 0.7; }
       });
       g.add(fig);
+      this.squads.push({ fig, lod0, lod1, scale, x: sx, z: sz });
       if (idle) {
         const mx = new THREE.AnimationMixer(fig);
         const a = mx.clipAction(idle); a.play(); a.time = hash2(seed, f + 9) * idle.duration;
+        mx.update(0); // pose it now, so a still map shows the idle pose, not the bind pose
         this.mixers.push(mx);
       }
     });
@@ -597,6 +648,7 @@ export class MapScene {
     const sh = Math.min(16, Math.max(5, this.dist * 1.1));
     Object.assign(this.sun.shadow.camera, { left: -sh, right: sh, top: sh, bottom: -sh });
     this.sun.shadow.camera.updateProjectionMatrix();
+    this.updateLod();
     this.animating = true;
   }
 
@@ -660,7 +712,7 @@ export class MapScene {
   frame(): boolean {
     const dt = Math.min(0.05, this.clock.getDelta());
     this.uniforms.uTime.value += dt;
-    for (const m of this.mixers) m.update(dt);
+    if (!this.still) for (const m of this.mixers) m.update(dt);
     this.renderer.render(this.scene, this.camera);
     const was = this.animating;
     this.animating = false;

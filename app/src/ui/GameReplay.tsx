@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { isBarbarian } from '../barbarians';
 import { FACTION_INFO } from '../data';
-import { empireOfPlayer, empireTitle, UNKNOWN_EMPIRE } from '../empires';
+import { empireOfPlayer, empireTitle, UNKNOWN_EMPIRE, unmetPlayer, unmetTeam } from '../empires';
 import { ReplayMap } from '../map/ReplayMap';
 import { nextReplayDeadline, playbackTurn, replayProfilingEnabled, replayTurnLabel, type ReplayInfo, type ReplayMoment, type ReplayRequest, type ReplayResponse } from '../replay';
 import type { PlayerView } from '../types';
@@ -11,13 +11,18 @@ import './gameReplay.css';
 const SPEEDS = [1, 2, 4];
 
 function momentLabel(moment: ReplayMoment, view: PlayerView): string {
-  const playerName = (id: number | null) => id === null ? 'An unknown empire' : isBarbarian(id) ? 'Barbarians' : empireOfPlayer(view, id);
-  const teamName = (id: number | null, start = false) => id === null ? (start ? 'An unknown empire' : UNKNOWN_EMPIRE) : empireTitle(view, id);
+  const playerName = (id: number | null) => id === null || unmetPlayer(view, id)
+    ? 'An unknown empire' : isBarbarian(id) ? 'Barbarians' : empireOfPlayer(view, id);
+  const unknownTeam = (id: number | null) => id === null || unmetTeam(view, id);
+  const teamName = (id: number | null, start = false) => id === null || unmetTeam(view, id)
+    ? (start ? 'An unknown empire' : UNKNOWN_EMPIRE) : empireTitle(view, id);
   if (moment.kind === 'founded' || moment.kind === 'captured') {
-    return `${playerName(moment.player)} ${moment.kind} ${moment.city}`;
+    const name = playerName(moment.player);
+    const city = name === 'An unknown empire' && !view.cities.some((c) => c.name === moment.city) ? 'a city' : moment.city;
+    return `${name} ${moment.kind} ${city}`;
   }
   if (moment.kind === 'war') {
-    if (moment.a === null && moment.b === null) return 'Two unknown empires went to war';
+    if (unknownTeam(moment.a) && unknownTeam(moment.b)) return 'Two unknown empires went to war';
     return `${teamName(moment.a, true)} and ${teamName(moment.b)} went to war`;
   }
   if (moment.kind === 'declaredWar') return `${teamName(moment.from, true)} declared war on ${teamName(moment.against)}`;

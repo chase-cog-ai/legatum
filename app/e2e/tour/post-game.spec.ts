@@ -94,7 +94,10 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await expect(replay.getByRole('heading', { name: 'Game replay' })).toBeFocused();
     await expect(atlas).toHaveAttribute('data-turn', '0');
     const vp = atlas.locator('.replay-vp');
+    const moments = replay.getByRole('complementary', { name: 'Turning points' });
     await expect(vp).toHaveText('0 VP');
+    await expect(moments.getByRole('button', { name: /unknown empire/i }).first()).toBeAttached();
+    await expect(moments).not.toContainText(/India|Byzantium|Switzerland/);
     await expect(replay.getByRole('button', { name: 'Previous turn' })).toBeDisabled();
     await shot(page, size, '26r-replay-opening');
     const mapPixels = () => atlas.locator('canvas').evaluate((el) => (el as HTMLCanvasElement).toDataURL());
@@ -109,7 +112,6 @@ for (const size of SIZES) test.describe(`screen tour ${size.name}`, () => {
     await shot(page, size, '26s-replay-ending');
     await slider.press('Home');
     await expect(atlas).toHaveAttribute('data-turn', '0');
-    const moments = replay.getByRole('complementary', { name: 'Turning points' });
     await expect(moments.getByRole('button', { name: /declared war on|went to war/ }).first()).toBeAttached();
     await expect(moments.getByRole('button', { name: /fell$/ }).first()).toBeAttached();
     const capture = moments.getByRole('button', { name: /captured/ }).last();

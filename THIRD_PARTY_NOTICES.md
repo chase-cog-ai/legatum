@@ -1,6 +1,6 @@
 # Third-party notices
 
-Legatum's own code is MIT (`LICENSE`) and its art is CC BY 4.0 (`LICENSE-ART`). It builds on the open-source
+Legatum's own code is MIT (`LICENSE`) and its art is CC BY 4.0 (`LICENSE-ART`), except the 3D map's unit models (CC BY-SA 3.0, see Art below). It builds on the open-source
 components below, each under its own licence. Last audited 2026-11-22 with `cargo metadata` on the Cargo workspace
 and the licence fields of `app/package-lock.json`. No dependency is GPL, LGPL-only or AGPL,
 none is unlicensed, and none comes from git or from a path outside this repository.
@@ -120,8 +120,17 @@ The per-file source, author and processing are in `app/public/audio/CREDITS.md` 
 
 ## Art
 
-All of the art is AI-generated and is licensed as described in `LICENSE-ART`. No third-party artwork is included. Real
-landmarks and historical peoples are shown in generated illustrations; no photographs are used.
+The 2D art is AI-generated and is licensed as described in `LICENSE-ART`. Real landmarks and historical peoples are
+shown in generated illustrations; no photographs are used.
+
+The 3D map's unit models (`app/public/models/units/`) are third-party art adapted for Legatum and are licensed under
+CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/), as `LICENSE-ART` says:
+
+- **Spearman** (`spearman.glb`): "Hoplite Warrior" by Casey DeDore (Sketchfab,
+  https://sketchfab.com/3d-models/hoplite-warrior-62d5291dd0454cb28a29a37056a59013), CC BY 4.0; skeleton and
+  animations from 0 A.D., Copyright Wildfire Games (https://www.wildfiregames.com/), CC BY-SA 3.0. Refitted,
+  re-skinned, re-textured and given a team-colour mask for Legatum; the details are in
+  `app/public/models/units/PROVENANCE-spearman.md`.
 
 ## Notices in distributed builds
 

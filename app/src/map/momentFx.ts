@@ -15,11 +15,10 @@
 import type { BuildingKind, Event, Hex, PlayerView, ProductionItem, Resource } from '../types';
 import { RESOURCE_INFO, STRATEGIC_RESOURCES } from '../resources';
 import { distance, hexEq, hexToPixel, tileIndex } from '../hex';
-import { isGreatWork } from '../data';
+import { isGreatWork, wallTierOf } from '../data';
 import { HEX_SIZE } from './grid';
 import { rnd, type CombatPlan, type Pt } from './combatFx';
 import { sitesOf } from './constructionSites';
-import { wallTierOf } from '../combat';
 
 export interface FxFound { city: number; at: Hex; owner: number; tile: number; t: number; seed: number }
 export interface FxBuild { city: number; at: Hex; tile: number; owner: number; item: ProductionItem; wonder: boolean; walls: boolean; from: number; to: number; t: number; seed: number }

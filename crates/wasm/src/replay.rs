@@ -7,6 +7,7 @@ use crate::{
 };
 use legatum_core::{
     Event, GameState, PlayerId, PlayerView, TeamId, ViewDetail,
+    diplomacy::RelationState,
     event_visibility::{VisibleEvent, event_visibility_view, visible_events},
     player_view_detail, public_view, scoring,
 };
@@ -34,29 +35,32 @@ pub(crate) fn available(session: &Session, player: PlayerId) -> bool {
 enum Moment {
     Founded {
         city: String,
-        player: PlayerId,
+        player: Option<PlayerId>,
     },
     Captured {
         city: String,
-        player: PlayerId,
+        player: Option<PlayerId>,
     },
     War {
-        a: TeamId,
-        b: TeamId,
-        declarer: Option<TeamId>,
+        a: Option<TeamId>,
+        b: Option<TeamId>,
+    },
+    DeclaredWar {
+        from: Option<TeamId>,
+        against: Option<TeamId>,
     },
     Eliminated {
-        player: PlayerId,
+        player: Option<PlayerId>,
     },
     Scored {
         gained: u32,
         total: u32,
     },
     Hold {
-        team: TeamId,
+        team: Option<TeamId>,
     },
     Won {
-        team: TeamId,
+        team: Option<TeamId>,
     },
     Draw,
 }
@@ -65,6 +69,24 @@ enum Moment {
 struct Milestone {
     turn: u32,
     moment: Moment,
+}
+
+fn met_team(view: &PlayerView, team: TeamId) -> Option<TeamId> {
+    (team == view.team
+        || view.diplomacy.met.contains(&team)
+        || view
+            .diplomacy
+            .relations
+            .iter()
+            .any(|r| r.between(view.team, team) && r.state == RelationState::War))
+    .then_some(team)
+}
+
+fn met_player(view: &PlayerView, player: PlayerId) -> Option<PlayerId> {
+    if player.is_barbarian() {
+        return Some(player);
+    }
+    met_team(view, view.players.iter().find(|p| p.id == player)?.team).map(|_| player)
 }
 
 #[derive(Serialize)]
@@ -165,7 +187,7 @@ impl GameReplay {
                                     name, owner, ..
                                 }) => Moment::Founded {
                                     city: name,
-                                    player: owner,
+                                    player: met_player(&after, owner),
                                 },
                                 VisibleEvent::Complete(Event::CityCaptured {
                                     city, to, ..
@@ -177,26 +199,41 @@ impl GameReplay {
                                         .find(|c| c.id == city)?
                                         .name
                                         .clone(),
-                                    player: to,
+                                    player: met_player(&after, to),
                                 },
                                 VisibleEvent::Complete(Event::WarDeclared { relation }) => {
-                                    Moment::War {
-                                        a: relation.a,
-                                        b: relation.b,
-                                        declarer: match relation.declarers.as_slice() {
-                                            [team] => Some(*team),
-                                            _ => None,
+                                    match relation.declarers.as_slice() {
+                                        [team] => Moment::DeclaredWar {
+                                            from: met_team(&after, *team),
+                                            against: met_team(
+                                                &after,
+                                                if *team == relation.a {
+                                                    relation.b
+                                                } else {
+                                                    relation.a
+                                                },
+                                            ),
+                                        },
+                                        _ => Moment::War {
+                                            a: met_team(&after, relation.a),
+                                            b: met_team(&after, relation.b),
                                         },
                                     }
                                 }
                                 VisibleEvent::Complete(Event::PlayerEliminated { player }) => {
-                                    Moment::Eliminated { player }
+                                    Moment::Eliminated {
+                                        player: met_player(&after, player),
+                                    }
                                 }
                                 VisibleEvent::Complete(Event::VictoryHoldStarted {
                                     team, ..
-                                }) => Moment::Hold { team },
+                                }) => Moment::Hold {
+                                    team: met_team(&after, team),
+                                },
                                 VisibleEvent::Complete(Event::GameWon { team, .. }) => {
-                                    Moment::Won { team }
+                                    Moment::Won {
+                                        team: met_team(&after, team),
+                                    }
                                 }
                                 VisibleEvent::Complete(Event::GameDrawn { .. }) => Moment::Draw,
                                 _ => return None,
@@ -299,6 +336,9 @@ mod tests {
             assert!(replay.checkpoints.len() <= MAX_CHECKPOINTS);
             let first = replay.first();
             assert_eq!(first, if partial { 3 } else { 0 });
+            let opening = replay.seek(first).unwrap();
+            assert_eq!(met_player(&opening, PlayerId(1)), None);
+            assert_eq!(met_team(&opening, TeamId(1)), None);
             for i in [0, states.len() - 1, 6, 7, 0] {
                 let view = replay.seek(first + i as u32).unwrap();
                 let state = &states[i];
@@ -311,10 +351,9 @@ mod tests {
             assert!(replay.seek(first + states.len() as u32).is_err());
             assert!(replay.milestones.iter().any(|m| matches!(
                 m.moment,
-                Moment::War {
-                    a: TeamId(0),
-                    b: TeamId(1),
-                    declarer: Some(TeamId(0))
+                Moment::DeclaredWar {
+                    from: Some(TeamId(0)),
+                    against: Some(TeamId(1))
                 }
             )));
             assert!(matches!(

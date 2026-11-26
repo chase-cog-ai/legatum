@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import type { GameSetup, Order, PlayerView } from '../types';
 
-const loadEngine = async () => {
+export const loadReplayEngine = async () => {
   const mod = await import('../wasm-pkg/legatum.js');
   await mod.default({ module_or_path: readFileSync(new URL('../wasm-pkg/legatum_bg.wasm', import.meta.url)) });
   return mod;
 };
 
-export async function replayFixture() {
-  const { Game, advisor_orders, explore_step } = await loadEngine();
+export async function replayFixture(onView?: (view: PlayerView) => void) {
+  const { Game, advisor_orders, explore_step } = await loadReplayEngine();
   const setup = JSON.parse(Game.standard_setup('42', 'Sparta', 'India', 'Ada', 'India')) as GameSetup;
   setup.width = 48;
   setup.height = 32;
@@ -20,6 +20,7 @@ export async function replayFixture() {
   try {
     let raw = game.view(0);
     let view = JSON.parse(raw) as PlayerView;
+    onView?.(view);
     while (!view.finished) {
       const scout = view.units.find((unit) => unit.owner === 0 && unit.kind === 'Scout');
       const step = scout ? JSON.parse(explore_step(raw, scout.id)) as Order | null : null;
@@ -28,6 +29,7 @@ export async function replayFixture() {
       game.end_turn(JSON.stringify({ 0: orders }));
       raw = game.view(0);
       view = JSON.parse(raw) as PlayerView;
+      onView?.(view);
     }
     return { game: game.save(), turn: view.turn };
   } finally {

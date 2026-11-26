@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { isBarbarian } from '../barbarians';
 import { FACTION_INFO } from '../data';
-import { empireOfPlayer, empireTitle } from '../empires';
+import { empireOfPlayer, empireTitle, UNKNOWN_EMPIRE } from '../empires';
 import { ReplayMap } from '../map/ReplayMap';
 import { nextReplayDeadline, playbackTurn, replayProfilingEnabled, replayTurnLabel, type ReplayInfo, type ReplayMoment, type ReplayRequest, type ReplayResponse } from '../replay';
 import type { PlayerView } from '../types';
@@ -10,18 +11,20 @@ import './gameReplay.css';
 const SPEEDS = [1, 2, 4];
 
 function momentLabel(moment: ReplayMoment, view: PlayerView): string {
+  const playerName = (id: number | null) => id === null ? 'An unknown empire' : isBarbarian(id) ? 'Barbarians' : empireOfPlayer(view, id);
+  const teamName = (id: number | null, start = false) => id === null ? (start ? 'An unknown empire' : UNKNOWN_EMPIRE) : empireTitle(view, id);
   if (moment.kind === 'founded' || moment.kind === 'captured') {
-    return `${empireOfPlayer(view, moment.player)} ${moment.kind} ${moment.city}`;
+    return `${playerName(moment.player)} ${moment.kind} ${moment.city}`;
   }
   if (moment.kind === 'war') {
-    if (moment.declarer === null) return `${empireTitle(view, moment.a)} and ${empireTitle(view, moment.b)} went to war`;
-    const target = moment.declarer === moment.a ? moment.b : moment.a;
-    return `${empireTitle(view, moment.declarer)} declared war on ${empireTitle(view, target)}`;
+    if (moment.a === null && moment.b === null) return 'Two unknown empires went to war';
+    return `${teamName(moment.a, true)} and ${teamName(moment.b)} went to war`;
   }
-  if (moment.kind === 'eliminated') return `${empireOfPlayer(view, moment.player)} fell`;
+  if (moment.kind === 'declaredWar') return `${teamName(moment.from, true)} declared war on ${teamName(moment.against)}`;
+  if (moment.kind === 'eliminated') return `${playerName(moment.player)} fell`;
   if (moment.kind === 'scored') return `You gained ${moment.gained} VP (${moment.total} total)`;
   if (moment.kind === 'hold' || moment.kind === 'won') {
-    const name = empireTitle(view, moment.team);
+    const name = teamName(moment.team, true);
     return `${name} ${moment.kind === 'hold' ? 'reached the VP target' : 'won'}`;
   }
   return 'The game ended in a draw';
@@ -153,7 +156,7 @@ export function GameReplay({ player, recording, titleId, onBack }: {
 
   const unavailable = failed || !recording;
   const label = info ? replayTurnLabel(turn, info.first, info.partial) : '';
-  const empire = frame?.view.players.find((p) => p.id === player);
+  const empire = frame?.view.players.find((p) => p.id === frame.view.me);
   const active = frame && info ? (chosenMoment !== undefined && info.milestones[chosenMoment]?.turn === frame.turn
     ? chosenMoment : info.milestones.findLastIndex((m) => m.turn <= frame.turn)) : -1;
 

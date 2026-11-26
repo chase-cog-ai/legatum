@@ -12,6 +12,8 @@
 import type { CityView, PlayerView } from '../types';
 import { sitesOf } from './constructionSites';
 
+export { wallTierOf } from '../data';
+
 export const CITY_ERAS = ['ancient', 'classical', 'medieval', 'renaissance', 'industrial', 'machine', 'modern', 'contemporary', 'future'] as const;
 export const CITY_TIERS = ['hamlet', 'town', 'city', 'metropolis'] as const;
 export type CityTier = (typeof CITY_TIERS)[number];

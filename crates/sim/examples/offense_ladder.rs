@@ -1,13 +1,15 @@
 //! Offense ladder: how hard does one Hard empire rush and conquer its neighbours?
 //!
 //! offense_ladder --arm LABEL[:gene=v,...] [--arm ...] [--games N] [--seed S] [--players 6]
-//!                [--turns T] [--faction Sparta] [--tape TAPE.json] [--out FILE]
+//!                [--turns T] [--faction Sparta] [--tape TAPE.json] [--rule NAME[=VALUE]]
+//!                [--out FILE]
 //!
 //! Game `i` uses seed `S + i`; factions are a seeded draw, the observed seat is `seed % players`
 //! and, with `--faction`, that seat is swapped to the named faction. Only the seat plays the
 //! arm's genes; every other seat plays the built-in Hard AI, so arms are paired game for game.
 //! With `--tape` the recorded map and lobby are used (the human seat is observed, every seat
 //! Hard) and `--games` salts the dice and brain seeds.
+//! `--rule` (repeatable) turns on a rule experiment for the whole table, e.g. `no-city-upkeep`.
 //!
 //! The score is the seat's offence: its first declaration, captures and capitals taken by
 //! turns 30/50/75, rivals it eliminates, its army and cities, and (for full games) win and
@@ -33,6 +35,7 @@ struct Args {
     faction: Option<Faction>,
     out: Option<String>,
     tape: Option<GameSetup>,
+    rules: Vec<String>,
 }
 
 fn arm(spec: &str) -> (String, AiParams) {
@@ -68,6 +71,7 @@ fn parse_args() -> Args {
         faction: None,
         out: None,
         tape: None,
+        rules: Vec::new(),
     };
     while let Some(flag) = it.next() {
         let mut v = || it.next().unwrap_or_else(|| panic!("{flag} needs a value"));
@@ -87,6 +91,7 @@ fn parse_args() -> Args {
                 );
             }
             "--out" => a.out = Some(v()),
+            "--rule" => a.rules.push(v()),
             "--tape" => {
                 let text = std::fs::read_to_string(v()).expect("read --tape");
                 let tape = legatum_wasm::tape::Tape::from_json(&text).expect("tape");
@@ -148,6 +153,13 @@ fn play(args: &Args, params: &AiParams, index: u64) -> Value {
     let (setup, seat_index) = setup(args, game_seed);
     let seat = PlayerId(seat_index as u8);
     let mut state = legatum_core::new_game(&setup);
+    for rule in &args.rules {
+        state
+            .setup
+            .rule_experiments
+            .apply(rule)
+            .unwrap_or_else(|e| panic!("--rule {rule}: {e}"));
+    }
     if args.tape.is_some() && index > 0 {
         state.dice_seed = Some(setup.seed ^ index.wrapping_mul(0xD1CE_0000_9E37_79B9));
     }
@@ -196,6 +208,8 @@ fn play(args: &Args, params: &AiParams, index: u64) -> Value {
     let mut pop_at = BTreeMap::new();
     let mut gold_at = BTreeMap::new();
     let mut techs_at = BTreeMap::new();
+    let mut net_at = BTreeMap::new();
+    let mut city_upkeep_at = BTreeMap::new();
     let mut first_declare = None::<u32>;
     let mut declares: Vec<u32> = Vec::new();
     let mut first_war = None::<u32>;
@@ -216,6 +230,14 @@ fn play(args: &Args, params: &AiParams, index: u64) -> Value {
             );
             gold_at.insert(state.turn, state.player(seat).gold);
             techs_at.insert(state.turn, state.player(seat).techs.len());
+            net_at.insert(
+                state.turn,
+                legatum_core::player_view(&state, seat)
+                    .economy
+                    .gold_per_turn
+                    .total,
+            );
+            city_upkeep_at.insert(state.turn, legatum_core::economy::city_upkeep(&state, seat));
         }
         let orders: BTreeMap<_, _> = state
             .players
@@ -377,6 +399,8 @@ fn play(args: &Args, params: &AiParams, index: u64) -> Value {
         "pop_at": pop_at,
         "gold_at": gold_at,
         "techs_at": techs_at,
+        "net_at": net_at,
+        "city_upkeep_at": city_upkeep_at,
         "cities_end": state.cities_of(seat).count(),
     })
 }

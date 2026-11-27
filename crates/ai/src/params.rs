@@ -452,6 +452,7 @@ decision_params! {
     india_diwan_commit: 0, 0, 1, "Hard India: once every city has an Office, start the Imperial Diwan in a safe productive city, keeping emergency defense and the army minimum first (0: routine production scoring only)";
     india_emergency_defense: 1, 0, 1, "Hard India: allow a troop needed at a threatened city even when its upkeep leaves under ten turns of treasury runway (0: the former unconditional veto)";
     india_prewar_guard: 1, 0, 1, "Hard India: treat a city exposed to a rush-capable neighbour as a funding front before War, so its anticipatory defender is not vetoed by the ten-turn Gold runway (0: only active War and visible armies count)";
+    india_settle_runway: 20, 0, 200, "Hard India: no Settler is trained while one more city's city upkeep would leave the treasury under this many turns of Gold runway; a new city remits nothing before its Revenue Office (0: Settlers ignore city upkeep)";
     india_early_office: 1, 0, 1, "Hard India: start a Revenue Office in a safe provincial city before the opening queue resumes (0: opening queue keeps precedence)";
     india_early_office_min_gold: 3, 1, 6, "Minimum estimated Gold per turn remitted by an early provincial Revenue Office";
     #[serde(alias = "japan_objective_reach")]

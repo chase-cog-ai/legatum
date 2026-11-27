@@ -3289,6 +3289,22 @@ impl Planner<'_> {
         })
     }
 
+    /// Gene `india_settle_runway`: one more city on top of `cities` (held plus Settlers already
+    /// under way) would raise city upkeep past what the treasury carries for the gene's turns.
+    /// A new Indian city remits nothing until its Revenue Office stands, so the new city's own
+    /// Gold is not counted.
+    pub(crate) fn india_settler_unfunded(&self, cities: i32) -> bool {
+        let turns = self.decisions.india_settle_runway;
+        if turns <= 0 || self.faction != Faction::India || self.difficulty != AiDifficulty::Hard {
+            return false;
+        }
+        let rules = self.view().rule_experiments;
+        let added = rules.city_upkeep(cities + 1) - rules.city_upkeep(cities);
+        added > 0
+            && crate::funding::runway_of(self.gold_left, self.planned_net_gold(0) - added)
+                .is_some_and(|r| r < turns as u32)
+    }
+
     /// Gene `troop_runway`: training this troop here would leave fewer than the gene's turns of
     /// Gold runway once its upkeep is paid. A city defending itself is
     /// never held back.
@@ -4567,6 +4583,13 @@ impl Planner<'_> {
                     };
                     let value = if value > 0 {
                         value + self.colony_compound_value(c, opt, best_site.unwrap_or(0), cities)
+                    } else {
+                        value
+                    };
+                    let value = if self.india_settler_unfunded(
+                        cities + t.settler_pipeline - i32::from(item_is_settler(d.producing)),
+                    ) {
+                        0
                     } else {
                         value
                     };
@@ -9247,5 +9270,34 @@ mod unit_concentration_tests {
         assert!(!p.defer_slow_duplicate_unit(&view.cities[1], slow_option));
         p.decisions.unit_concentration_turns = 20;
         assert!(!p.defer_slow_duplicate_unit(&view.cities[1], slow_option));
+    }
+
+    #[test]
+    fn india_trains_no_settler_whose_city_upkeep_the_treasury_cannot_carry() {
+        let mut view = ViewBuilder::new(24, 16)
+            .faction(Faction::India)
+            .city(1, ME, off(6, 6), 3)
+            .gold(60)
+            .build();
+        view.economy.gold_per_turn.total = 2;
+        let mut planner = Planner::new(
+            &view,
+            crate::Knobs::for_faction(Faction::India),
+            Faction::India,
+            7,
+        );
+        planner.difficulty = legatum_core::AiDifficulty::Hard;
+        assert_eq!(planner.decisions.india_settle_runway, 20);
+        // Six cities are free: a sixth city adds no city upkeep.
+        assert!(!planner.india_settler_unfunded(5));
+        // A seventh adds 7 Gold a turn: +2 becomes -5, and 60 Gold lasts 12 turns.
+        assert!(planner.india_settler_unfunded(6));
+        planner.decisions.india_settle_runway = 12;
+        assert!(!planner.india_settler_unfunded(6));
+        planner.decisions.india_settle_runway = 0;
+        assert!(!planner.india_settler_unfunded(6));
+        planner.decisions.india_settle_runway = 20;
+        planner.faction = Faction::Athens;
+        assert!(!planner.india_settler_unfunded(6));
     }
 }

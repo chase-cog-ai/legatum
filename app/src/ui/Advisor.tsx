@@ -65,10 +65,9 @@ export function targetElement(target: Exclude<NonNullable<AdvisorTarget>, { kind
       const cardButton = card && [...card.querySelectorAll<HTMLElement>('button')].find((el) => el.dataset.testid === 'queue-add' || el.textContent?.trim().startsWith('+ Queue'));
       if (cardButton) return cardButton;
       const node = [...(modal?.querySelectorAll<HTMLElement>('.tree-node') ?? [])].find((el) => el.dataset.tech === target.value && visible(el));
-      const nodeButton = node && [...node.querySelectorAll<HTMLElement>('button')].find((el) => el.textContent?.trim().startsWith('+ Queue'));
-      if (nodeButton) return nodeButton;
-      if (node && window.matchMedia?.('(pointer: coarse)').matches) return first('dialog.tech-modal[open] [data-testid="research-view-era"]');
-      return node ?? null;
+      if (node?.classList.contains('asked')) return first('dialog.tech-modal[open] [data-testid="tree-ask-queue"]');
+      return [...(modal?.querySelectorAll<HTMLButtonElement>('[data-testid="tree-queue"]') ?? [])]
+        .find((el) => el.dataset.tech === target.value && visible(el) && !el.disabled && !el.classList.contains('on')) ?? null;
     }
     // The tech tree's node for it, or on the This era view its card's Research now.
     case 'tech': return [...document.querySelectorAll<HTMLElement>('dialog.tech-modal .tree-node')].find((e) => e.dataset.tech === target.value)

@@ -183,8 +183,8 @@ function researchSuggestion(ctx: AdvisorContext, order?: Extract<Order, { type: 
     { instruction: `${ctx.touch ? 'Tap' : 'Click'} Research at the top.`, key: ctx.touch ? undefined : 'T', target: control('research') },
     { instruction: names[0] ? `${ctx.touch ? 'Tap' : 'Click'} ${names[0]}.` : 'Choose a technology.', target: techs[0] ? control('tech', techs[0]) : null },
     ...techs.slice(1).map((tech): AdvisorStep => ({ instruction: ctx.touch
-      ? `Tap This era, then + Queue on ${TECH_NAME[tech]}.`
-      : `Shift-click ${TECH_NAME[tech]} in the tree, or click + Queue.`, target: control('queueTech', tech) })),
+      ? `Tap + Queue on ${TECH_NAME[tech]}.`
+      : `Click + Queue on ${TECH_NAME[tech]}, or Shift-click it in the tree.`, target: control('queueTech', tech) })),
   ];
   return { id: 'research', title, why: order && techs.length ? researchWhy({ type: 'SetResearch', tech: techs[0] }, ctx.view) : RESEARCH_FALLBACK,
     current: ctx.techOpen ? 1 + done : 0, steps };
@@ -242,10 +242,10 @@ export function advisorSuggestion(ctx: AdvisorContext, seen: readonly string[], 
       nextTech &&
       ((ctx.techOpen && queue.length === 1) || (ctx.researchQueueDrained && queue.length === 0))) {
     return { id: 'researchQueue', title: 'Queue your research', acknowledge: true, current: ctx.techOpen ? 1 : 0,
-      why: queue.length ? 'Queue more technologies to keep researching after the current one.' : 'Choose a technology to resume research.',
+      why: queue.length ? 'Queued technologies keep research moving. For a later era, review the earlier technologies before choosing Queue all in order.' : 'Choose a technology to resume research.',
       steps: [{ instruction: `${ctx.touch ? 'Tap' : 'Click'} Research at the top.`, target: control('research') },
-        { instruction: ctx.touch ? `Tap This era, then + Queue on ${TECH_NAME[nextTech]}.`
-          : `Shift-click ${TECH_NAME[nextTech]} in the tree, or click + Queue on ${TECH_NAME[nextTech]}.`, target: control('queueTech', nextTech) }] };
+        { instruction: ctx.touch ? `Tap + Queue on ${TECH_NAME[nextTech]}.`
+          : `Click + Queue on ${TECH_NAME[nextTech]}, or Shift-click it in the tree.`, target: control('queueTech', nextTech) }] };
   }
   const pendingQueue = pendingResearchQueue(orders);
   if (pendingQueue?.length && choice?.type === 'SetResearchQueue' && !skipped.includes('research')) {

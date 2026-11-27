@@ -43,12 +43,31 @@ it('finds the queue strip and each current or future add-to-queue control', () =
   expect(queueTarget('Masonry')?.getAttribute('data-testid')).toBe('queue-add');
   expect(queueTarget('Writing')).toBeNull();
   mounted.rerender(<dialog className="tech-modal tree-mode" open><div className="tree-node" data-tech="Masonry">Masonry</div></dialog>);
-  expect(queueTarget('Masonry')?.className).toBe('tree-node');
-  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener: () => {}, removeEventListener: () => {} }));
-  mounted.rerender(<dialog className="tech-modal tree-mode" open><button data-testid="research-view-era">This era</button><div className="tree-node" data-tech="Masonry">Masonry</div></dialog>);
-  expect(queueTarget('Masonry')?.textContent).toBe('This era');
-  mounted.rerender(<dialog className="tech-modal tree-mode" open><div className="tree-node" data-tech="Masonry"><button>+ Queue Masonry</button></div></dialog>);
-  expect(queueTarget('Masonry')?.textContent).toBe('+ Queue Masonry');
+  expect(queueTarget('Masonry')).toBeNull();
+});
+
+it.each([false, true])('targets real tree queue buttons and the later-era confirmation (touch: %s)', (touch) => {
+  vi.stubGlobal('matchMedia', () => ({ matches: touch, addEventListener: () => {}, removeEventListener: () => {} }));
+  const onQueue = vi.fn();
+  render(<dialog className="tech-modal tree-mode" open><button data-testid="research-view-era">This era</button>
+    <TechTree view={view} faction={view.players.find((p) => p.id === view.me)!.faction} queue={[]} schedule={[]} goal={null} locked={false}
+      onResearchNow={() => {}} onQueue={onQueue} onRemove={() => {}} onGoal={() => {}} /></dialog>);
+  const tech = view.research.available[0].tech;
+  const pick = (value: string) => targetElement({ kind: 'control', name: 'queueTech', value });
+  expect(pick(tech)?.getAttribute('data-testid')).toBe('tree-queue');
+  expect(pick(tech)?.closest('.tree-node')).toBeNull();
+  fireEvent.click(pick(tech)!);
+  expect(onQueue).toHaveBeenCalledWith(tech);
+  onQueue.mockClear();
+  const later = document.querySelector<HTMLElement>('.tree-node.locked');
+  expect(later).toBeTruthy();
+  const laterTech = later!.dataset.tech!;
+  fireEvent.click(pick(laterTech)!);
+  expect(onQueue).not.toHaveBeenCalled();
+  expect(screen.getByTestId('tree-ask').textContent).toContain('Finish');
+  expect(pick(laterTech)).toBe(screen.getByTestId('tree-ask-queue'));
+  fireEvent.click(pick(laterTech)!);
+  expect(onQueue).toHaveBeenCalledWith(laterTech);
 });
 
 it('finds real unit action buttons on mounted panels', () => {
@@ -84,7 +103,7 @@ it('points at the recommended technology: its tree node first, else its era card
   const tech = view.research.available[0].tech;
   const pick = () => targetElement({ kind: 'control', name: 'tech', value: tech });
   const tree = render(<dialog className="tech-modal" open><TechTree view={view} faction={view.players.find((p) => p.id === view.me)!.faction} queue={[]} schedule={[]} goal={null} locked={false}
-    onResearchNow={() => {}} onQueue={() => {}} onGoal={() => {}} /></dialog>);
+    onResearchNow={() => {}} onQueue={() => {}} onRemove={() => {}} onGoal={() => {}} /></dialog>);
   expect(pick()?.classList.contains('tree-node')).toBe(true);
   expect(pick()?.dataset.tech).toBe(tech);
   tree.unmount();

@@ -8,4 +8,4 @@ Also seen in the recording: every eliminated rival (Celts, Mongols, Athens) was 
 
 Partial web recordings (`first_turn` > 1, `initial_state` as a JSON string) replay with `crates/sim/examples/partial_dump.rs RECORD.json OUTDIR`; `game_dump` replays from the setup and cannot read them.
 
-All numbers above were measured on rules 62. City upkeep (rules 63, `26-city-upkeep-catch-up.md`) charges wide empires, and Sparta fell from 14.0% to 9.3% all-AI win rate under it; a Sparta that conquers early will pay it sooner. Re-measured on rules 63 and 64 in `27-sparta-opening-under-city-upkeep.md`: the opening through turn 50 is unchanged, and wins go from 12.5% to 22.0% (paired +9.5 ± 4.0 points, 600 games) instead of 22% to 37%.
+All numbers above were measured on rules 62. City upkeep (rules 63, `26-city-upkeep-catch-up.md`) charges wide empires, and Sparta fell from 14.0% to 9.3% all-AI win rate under it; a Sparta that conquers early will pay it sooner. Re-measured on rules 63 and 64 in `27-sparta-opening-under-city-upkeep.md`: the opening through turn 50 is unchanged, and wins go from 8.7% to 17.5% (paired +8.8 ± 3.6 points, 600 games) instead of 22% to 37%.

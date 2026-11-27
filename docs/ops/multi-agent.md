@@ -9,14 +9,55 @@ How multiple independent coding agents (Claude, ChatGPT/Codex, Gemini) work on `
 - **Draft PR = claim lock.** Claiming work creates a visible Draft PR immediately so every other agent sees what is in flight via `gh pr list`.
 - **Two-key peer merge (`reviewer != author`).** No agent merges its own PR. When Agent A finishes a PR and CI is green, it marks the PR `needs-review` + `author:<A>`. A **different model family** (`B != A`) performs an adversarial code + philosophy/anti-bloat review and merges the PR on GitHub if it passes all gates and is outside the human-only fence.
 
-## Autonomous work loop (priority order)
+## First-time onboarding (when told to follow these instructions)
 
-When an agent is running autonomously and looking for its next action, pull work in this order (finishing and unblocking merges always beats starting new WIP):
+If the maintainer says something like *"read the multi-agent instructions and follow them"*, execute these steps immediately without waiting to be asked:
 
-1. **Review & merge another agent's PR:** `gh pr list --state open --label needs-review` where `author:<other>` != yourself, no `reviewing:*` label is held, and `headRepositoryOwner` is `samcorcos`.
-2. **Address review feedback on your own PR:** `gh pr list --state open --label changes-requested --label author:<self>`.
-3. **Pick up a paused handoff:** `gh issue list --state open --label status:handoff` (or PRs with `status:handoff`).
-4. **Claim new work:** `gh issue list --state open --label agent:ready` in a lane that does not collide with open PRs.
+1. **Identify yourself:** pick your canonical agent ID — `claude`, `chatgpt`, or `gemini` (used for branch prefixes `<agent>/<slug>` and labels `author:<agent>`, `claimed:<agent>`, `reviewing:<agent>`).
+2. **Set up your staggered hourly recurring heartbeat:**
+   - Schedule: `claude` at **`:05`**, `chatgpt` at **`:25`**, `gemini` at **`:45`** every hour.
+   - If your platform provides a tool to create recurring/scheduled tasks or automations (for example, ChatGPT/Codex scheduled tasks or Claude scheduled tasks), **check whether one already exists for `samcorcos/legatum`, and if not, create it automatically** using the Copy-paste heartbeat prompt below with your agent ID filled in.
+   - If your environment has no scheduling tool, do not silently skip it — give the maintainer the exact 2-line setup instructions and pre-filled prompt for your platform so they can enable it in 10 seconds.
+3. **Sync and inspect the board:** run `git fetch origin`, `gh pr list --state open --limit 30`, and `gh issue list --state open --label agent:ready --limit 30`.
+4. **Run your first heartbeat immediately** following the priority order (`1 -> 6`) below, and report back concisely what you scheduled and what action you took (or `idle`).
+
+## Autonomous heartbeat (recurring check)
+
+Because each provider runs independently (no cross-vendor agent calls), run a **recurring hourly check** inside each agent's own scheduler with **staggered minutes** (offset past `:00` to avoid top-of-the-hour scheduler congestion). Two agents rarely inspect GitHub at the same second, and a `needs-review` PR is normally picked up within ~20 minutes:
+
+- **Claude:** every hour at `:05`
+- **ChatGPT / Codex:** every hour at `:25`
+- **Gemini:** every hour at `:45`
+
+On each heartbeat, pull `origin/master` and take the **first actionable item** in this priority order (unblocking merges always beats starting new WIP; if nothing is actionable, exit quietly in seconds with zero PR/issue noise):
+
+1. **Review & merge another agent's PR:** `gh pr list --state open --label needs-review` where `author:<other>` != yourself, no `reviewing:*` label is held, `headRepositoryOwner` is `samcorcos`, and no governance/security fence path is touched.
+2. **Unblock your own PRs:** `gh pr list --state open --label author:<self>` that has `changes-requested`, a failing `ci-ok`, a branch that fell behind `master` and needs updating, or a green ready PR that is missing `needs-review`.
+3. **Recover stale locks:** if any `reviewing:*` lock has had no comment or merge for >2 hours, release `reviewing:*` so another reviewer can pick it up. If a `claimed:*` Draft PR has had no commits or comments for >6 hours, post a brief status note or flag `needs-human` (never overwrite another agent's work silently).
+4. **Pick up a paused handoff:** `gh issue list --state open --label status:handoff` (or PRs with `status:handoff`).
+5. **Claim new work:** `gh issue list --state open --label agent:ready` in a lane that does not collide with open PRs (respecting the `lane:core` 1-PR lock).
+6. **Exit cleanly if idle:** do not invent speculative features or refactors just to stay busy (Pillar 1: anti-bloat). If nothing in 1–5 is actionable, report `idle` and stop.
+
+### How to set this up (reproducing this 3-agent architecture)
+
+Anyone running Claude, ChatGPT/Codex, and Gemini on a GitHub repo can replicate this setup in four steps:
+
+1. **GitHub repository ruleset (`Protect master`):** Enable a branch ruleset on the default branch that blocks deletions and force-pushes, requires a pull request, requires a single aggregated CI status check (`ci-ok` from GitHub Actions), and turns on **Require branches to be up to date before merging** (`strict_required_status_checks_policy: true`). This mechanically prevents two agents from merging back-to-back PRs that were never tested together.
+2. **Claude (`:05` hourly — runs in the cloud):** In `claude.ai` (or Claude Code Desktop), open **Scheduled** -> **New task** -> **Set up manually** (formerly Routines). Attach the `samcorcos/legatum` repo (and any needed connectors), choose **Schedule -> Hourly at `:05`**, and paste the heartbeat prompt below with `claude`.
+3. **ChatGPT / Codex (`:25` hourly):** In the ChatGPT/Codex desktop app, create a **Scheduled task** (formerly Codex Automations) targeting `samcorcos/legatum` set to **Hourly at `:25`** with the heartbeat prompt below using `chatgpt`. Note: desktop scheduled tasks require the machine to stay awake; for laptop-closed execution, schedule `codex cloud exec` or `codex exec` on an always-on host.
+4. **Gemini / Antigravity (`:45` hourly):** In the Antigravity app, open **Automations** (formerly Scheduled Tasks) -> **New automation**, select the `samcorcos/legatum` project, set **Hourly at `:45`**, and paste the heartbeat prompt below with `gemini`. Each run creates a sidebar conversation you can step into if `needs-human` is raised.
+
+### Copy-paste heartbeat prompt (for each agent's recurring schedule)
+
+```text
+Run one autonomous heartbeat on samcorcos/legatum as <claude|chatgpt|gemini>:
+1. git fetch origin && git checkout origin/master (or your branch).
+2. Read docs/ops/multi-agent.md and follow the Autonomous heartbeat priority order (1 -> 6).
+3. Take at most one meaningful task per run (review & merge one PR, fix one PR, continue one handoff, or claim one agent:ready issue).
+4. Follow all 5 peer-merge guardrails strictly (never merge your own PR, forks/outside PRs, or governance/security files).
+5. If nothing in steps 1-5 is actionable, stop immediately and report "idle".
+```
+
 
 ## Pre-flight check (mandatory before starting any task)
 
@@ -109,6 +150,13 @@ Before merging:
 - If a PR still fails peer review after **2 rounds**, stop iterating, swap to `needs-human`, and summarize the disagreement concisely for the maintainer.
 
 ## Other work modes
+
+### Direct maintainer requests (chat -> issue + Draft PR)
+Whenever the maintainer asks an agent directly in chat to make a change to the repository (code, rules, UI, art, tests, or docs — skip this for pure Q&A or read-only research):
+1. Run the pre-flight check (`gh pr list` / `gh issue list`) to verify no other agent is already working on it and that you do not violate the `lane:core` lock.
+2. If no GitHub issue exists yet, **open a concise GitHub Issue first** (using the brief format below) labeled `claimed:<agent>` + `lane:*` (keeping personal details, secrets, and quota/budget numbers out).
+3. Cut branch `<agent>/<slug>` from `origin/master` and open a **Draft PR** immediately with `author:<agent>`, `lane:*`, and `Refs #<issue>` (switching to `Fixes #<issue>` when ready) so the other two agents see the lock via `gh pr list` and can pick up a `status:handoff` or peer-review it.
+4. When done and `ci-ok` is green, mark **Ready for review** and swap `claimed:<agent>` -> `needs-review` (or `needs-human` if it hits the human-only fence).
 
 ### Normal parallel claim (`agent:ready`)
 1. Pick an unclaimed issue in a lane that does not collide with open PRs.

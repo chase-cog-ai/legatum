@@ -554,7 +554,8 @@ fn run(cli: &Cli, threads: usize) -> Result<ExitCode, String> {
     }
     let lobby = lobby_options(cli)?;
     if cli.all_factions
-        && (lobby.players != runner::CENSUS_SEATS || cli.games % runner::CENSUS_CYCLE != 0)
+        && (lobby.players != runner::CENSUS_SEATS
+            || !cli.games.is_multiple_of(runner::CENSUS_CYCLE))
     {
         return Err(format!(
             "--all-factions requires --players {} and --games a multiple of {}",

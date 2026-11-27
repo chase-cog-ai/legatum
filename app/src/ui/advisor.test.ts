@@ -4,6 +4,8 @@ import { advisor_orders } from '../wasm-pkg/legatum.js';
 import { neighbors } from '../hex';
 import type { Order, TechId } from '../types';
 import { TECH_NAME } from '../data';
+import { itemName } from '../data';
+import { ownerName } from '../barbarians';
 import { advisorSuggestion, advisorWhy, practiceKind, PRACTICE_TURNS, readAdvisorPreferences, useAdvisor, type AdvisorContext } from './advisorModel';
 
 async function opening() {
@@ -25,6 +27,34 @@ async function opening() {
 }
 
 describe('one decision at a time', () => {
+  it('teaches the first locked garrison once, using the rival and city names', async () => {
+    const { view, city, unit, ctx } = await opening();
+    view.turn = 5;
+    const seen = ['welcome', 'report', 'howToWin'];
+    expect(advisorSuggestion(ctx(), seen, [])?.id).not.toBe('garrisonLock');
+    const rival = view.players.find((p) => p.team !== view.team)!;
+    unit.pos = city.pos;
+    unit.occupation_lock = rival.id;
+    city.occupation_lock = rival.id;
+    const people = ownerName(view, rival.id);
+    const name = itemName({ kind: 'Unit', unit: unit.kind }, view.players.find((p) => p.id === view.me)!.faction);
+    expect(advisorSuggestion(ctx(), seen, [])).toEqual({
+      id: 'garrisonLock', title: `Your ${name} holds ${city.name}`,
+      why: `Your military units in ${city.name} stay as its garrison until Peace with ${people} or their elimination. ${city.name} builds nothing until then.`,
+      steps: [{ instruction: `Make Peace with ${people} in Diplomacy to free your garrison.`, target: { kind: 'control', name: 'diplomacy', value: undefined } }],
+      current: 0, acknowledge: true,
+    });
+    expect(advisorSuggestion(ctx(), [...seen, 'garrisonLock'], [])?.id).not.toBe('garrisonLock');
+    expect(advisorSuggestion({ ...ctx(), techOpen: true }, seen, [])?.id).not.toBe('garrisonLock');
+    expect(advisorSuggestion(ctx([], { kind: 'unit', id: unit.id }), seen, [])?.id).not.toBe('garrisonLock');
+    expect(advisorSuggestion(ctx([], { kind: 'city', id: city.id }), seen, [])?.id).not.toBe('garrisonLock');
+    expect(advisorSuggestion({ ...ctx([{ type: 'SetResearch', tech: view.research.available[0].tech }]), techOpen: true }, [...seen, 'researchQueue'], [])?.id).toBe('closeResearch');
+    view.actions = { ...view.actions, free_techs: { pending: 1, from: null, choices: [] } };
+    expect(advisorSuggestion({ ...ctx(), turnLabel: 'Choose 1 free technology' }, seen, [])?.id).toBe('answer:freeTechs:');
+    view.actions.free_techs = { pending: 0, from: null, choices: [] };
+    unit.occupation_lock = null;
+    expect(advisorSuggestion(ctx(), seen, [])?.id).not.toBe('garrisonLock');
+  });
   it('welcomes once, then follows turn-one city, unit, research order', async () => {
     const { city, unit, plan, ctx } = await opening();
     expect(advisorSuggestion(ctx(), [], [])?.id).toBe('welcome');
@@ -358,6 +388,31 @@ describe('practice counting', () => {
     expect(readAdvisorPreferences().practice).toEqual({});
     vi.unstubAllGlobals();
   });
+});
+
+it('remembers when each garrison was first seen and clears it on release', async () => {
+  const { view, unit, city } = await opening();
+  const store = new Map<string, string>();
+  vi.stubGlobal('localStorage', { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) });
+  useAdvisor.setState({ locks: {} });
+  const rival = view.players.find((p) => p.team !== view.team)!;
+  unit.pos = city.pos;
+  unit.occupation_lock = rival.id;
+  view.turn = 10;
+  const key = `${unit.id}:${rival.id}`;
+  useAdvisor.getState().observeLocks(view);
+  expect(readAdvisorPreferences().locks).toEqual({ [key]: 10 });
+  view.turn = 19;
+  useAdvisor.getState().observeLocks(view);
+  expect(useAdvisor.getState().locks).toEqual({ [key]: 10 });
+  unit.occupation_lock = null;
+  useAdvisor.getState().observeLocks(view);
+  expect(readAdvisorPreferences().locks).toEqual({});
+  unit.occupation_lock = rival.id;
+  useAdvisor.getState().observeLocks(view);
+  expect(useAdvisor.getState().locks).toEqual({ [key]: 19 });
+  useAdvisor.setState({ locks: {} });
+  vi.unstubAllGlobals();
 });
 
 it('a Settler with no planned order still gets a card when moving is learned', async () => {

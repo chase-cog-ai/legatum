@@ -203,6 +203,7 @@ export interface State {
    * or city of a team at Peace, or (`unit` null) War was chosen from a foreign city's card.
    */
   warPrompt: { seat: Seat; view: PlayerView; unit: number | null; target: Hex | null; team: number; ranged?: boolean; air?: boolean } | null;
+  diplomacyTakeover: { mode: 'offer'; id: number } | { mode: 'terms' | 'war'; team: number } | null;
   /** The own military unit selected just before a foreign city: its card offers "Attack with" it. */
   attacker: number | null;
   /**
@@ -427,6 +428,7 @@ const emptySeats = (n: number) => ({
   endTurnConfirmation: null,
   turnFailure: null,
   warPrompt: null,
+  diplomacyTakeover: null,
   attacker: null,
   notice: null,
   orders: Array.from({ length: n }, (): Order[] => []),
@@ -525,9 +527,6 @@ export async function readAutosave(): Promise<SaveFile | null> {
 let campaign = newCampaignId();
 /** The id of the game on screen, for "Load an earlier turn". */
 export const currentCampaign = () => campaign;
-/** Set for one loadSave by rewindTo: the rewind to record once the earlier turn is open. */
-let pendingRewind: { from: number; prior: Rewind[] } | null = null;
-let resumeCampaign: string | null = null;
 let noticedCampaign: string | null = null;
 let lastPingAt = 0;
 let pingSeq = 0;
@@ -623,23 +622,30 @@ export const useGame = create<State>((set, get) => {
     }
   };
 
-  /** Puts back the orders kept for this turn, silently dropping any the engine now refuses. */
-  const restorePendingOrders = (text: string) => {
+  /** Validates the orders kept for this turn against the loaded client, silently dropping any the engine now refuses. */
+  const parsePendingOrders = (client: GameClient, humans: number[], text: string | null): { orders: Order[][]; errors: OrderError[][] } | null => {
+    if (text === null) return null;
     let kept: unknown;
-    try { kept = JSON.parse(text); } catch { return; }
-    if (!Array.isArray(kept)) return;
-    const { orders, errors, ready } = get();
-    const nextOrders = orders.map((_, seat) => {
+    try { kept = JSON.parse(text); } catch { return null; }
+    if (!Array.isArray(kept)) return null;
+    const validate = (seat: number, orders: Order[]): OrderError[] => {
+      try {
+        return client.validate(humans[seat], orders);
+      } catch (e) {
+        return [{ index: -1, message: String(e) }];
+      }
+    };
+    const nextOrders = humans.map((_, seat) => {
       let list: Order[] = Array.isArray(kept[seat]) ? kept[seat] : [];
       for (let pass = 0; pass < 4 && list.length; pass++) {
-        const bad = validateSeat(seat, list);
+        const bad = validate(seat, list);
         if (!bad.length) break;
         list = bad.some((e) => e.index < 0) ? [] : list.filter((_, i) => !bad.some((e) => e.index === i));
       }
       return list;
     });
-    if (!nextOrders.some((list) => list.length)) return;
-    set({ orders: nextOrders, errors: errors.map((_, seat) => validateSeat(seat, nextOrders[seat])), ready: ready.map(() => false) });
+    if (!nextOrders.some((list) => list.length)) return null;
+    return { orders: nextOrders, errors: humans.map((_, seat) => validate(seat, nextOrders[seat])) };
   };
 
   // The last good save string, to recover after a WASM panic (which leaves the module unusable
@@ -681,7 +687,7 @@ export const useGame = create<State>((set, get) => {
     }
   };
 
-  const afterLoad = (client: GameClient) => {
+  const afterLoad = (client: GameClient, pendingOrdersText: string | null = null) => {
     const previous = get().client;
     if (previous !== client && previous?.archive) {
       try {
@@ -699,6 +705,9 @@ export const useGame = create<State>((set, get) => {
     const humans = humanIds(firstView);
     const views = readViews(client, humans, firstView);
     const hex = capitalOrUnit(views[0]);
+    const seats = emptySeats(humans.length);
+    const restored = parsePendingOrders(client, humans, pendingOrdersText);
+    const initialOrders = restored ? restored.orders : seats.orders;
     set({
       client,
       humans,
@@ -709,7 +718,8 @@ export const useGame = create<State>((set, get) => {
       eliminationTurns: {},
       screen: 'game',
       seat: 0,
-      ...emptySeats(humans.length),
+      ...seats,
+      ...(restored ?? {}),
       selection: null,
       mode: 'normal',
       unlockReopen: null,
@@ -726,15 +736,55 @@ export const useGame = create<State>((set, get) => {
       why: NO_WHY, whyQuestion: null, whyHidden: false, whyRecent: null,
       diplomacyOpen: false,
       diplomacyTeam: null,
+      diplomacyTakeover: null,
       anim: null,
       busy: null,
       error: null,
       focus: hex ? { hex, seq: ++focusSeq } : null,
     });
-    const first = nextUnitNeedingOrders(views[0], [], null);
+    const first = nextUnitNeedingOrders(views[0], initialOrders[0] ?? [], null);
     if (first) get().select({ kind: first.kind, id: first.id }, true);
     startTraining();
     startPlanningAhead();
+  };
+
+  const openSave = async (
+    save: SaveFile,
+    opts: { forkHistory?: boolean; resume?: string | null; rewind?: { from: number; prior: Rewind[] } | null; restoreOrders?: boolean } = {},
+  ) => {
+    const { forkHistory = false, resume = null, rewind = null, restoreOrders = false } = opts;
+    stopResolving();
+    set({ busy: 'Loading…', error: null });
+    try {
+      checkSaveText(save.game);
+      if (!saveHasCurrentRules(save.game)) {
+        // The site may still serve the build that made it: the game continues there, on its own rules.
+        if (await openInOwnBuild(save, resume)) {
+          set({ busy: 'Opening the version this game started on…' });
+          return;
+        }
+        throw new Error(olderRulesMessage(save.playtest));
+      }
+      if (needsOnlineHost(save)) throw new Error('This game has other players. Open Multiplayer and choose Host a saved game; they can then join the newly hosted game and take their former seats.');
+      if (save.client !== 'wasm') throw new Error('This save used the retired TypeScript engine and cannot be loaded by the Rust engine.');
+      const client = await createClient(save.client);
+      measureTurn('loadClient', () => client.load(save.game));
+      if (forkHistory) client.forkArchive?.();
+      // Read pending orders before afterLoad enters screen='game': avoids a window where the UI renders
+      // empty orders or the 400ms persistence timer overwrites saved orders with null before read finishes.
+      const keptOrders = restoreOrders && resume ? await readPendingOrders(resume, client.view(0).turn) : null;
+      campaign = resume ?? newCampaignId();
+      measureTurn('afterLoad', () => afterLoad(client, keptOrders));
+      if (save.why?.enabled) set({ why: { enabled: true, asked: save.why.asked ?? [], last: save.why.last ?? null, skipped: save.why.skipped ?? [], answers: Array.isArray(save.why.answers) ? save.why.answers.slice(-MAX_SAVED_ANSWERS) : [] } });
+      const views = get().views;
+      set({ rewinds: rewind && views ? [...rewind.prior, { at: new Date().toISOString(), from_turn: rewind.from, to_turn: views[0].turn }].slice(-MAX_REWINDS) : saveRewinds(save) });
+      // After a rewind the record goes up at once, so the stored copy loses the turns the player went back from.
+      if (views) measureTurn('loadAutosave', () => writeAutosave(client, views, !!rewind));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      const refusal = isMissingWasmError(message) ? message : loadErrorMessage(e, save.playtest);
+      set({ busy: null, error: get().screen === 'game' ? `${refusal} Your current game is unchanged.` : refusal });
+    }
   };
 
   // The AI empires decide while the player plans: one empire per idle moment (client.planAhead), so End Turn only has
@@ -1304,6 +1354,7 @@ export const useGame = create<State>((set, get) => {
     airHeld: {},
     diplomacyOpen: false,
     diplomacyTeam: null,
+    diplomacyTakeover: null,
     outcomeDismissed: false, outcomeStage: 'reveal',
     defeatDismissed: [],
     eliminationTurns: {},
@@ -1675,62 +1726,17 @@ export const useGame = create<State>((set, get) => {
       }
     },
 
-    loadSave: async (save, forkHistory = false) => {
-      stopResolving();
-      set({ busy: 'Loading…', error: null });
-      const rewind = pendingRewind;
-      pendingRewind = null;
-      try {
-        checkSaveText(save.game);
-        if (!saveHasCurrentRules(save.game)) {
-          // The site may still serve the build that made it: the game continues there, on its own rules.
-          if (await openInOwnBuild(save, resumeCampaign)) {
-            set({ busy: 'Opening the version this game started on…' });
-            return;
-          }
-          throw new Error(olderRulesMessage(save.playtest));
-        }
-        if (needsOnlineHost(save)) throw new Error('This game has other players. Open Multiplayer and choose Host a saved game; they can then join the newly hosted game and take their former seats.');
-        if (save.client !== 'wasm') throw new Error('This save used the retired TypeScript engine and cannot be loaded by the Rust engine.');
-        const client = await createClient(save.client);
-        measureTurn('loadClient', () => client.load(save.game));
-        if (forkHistory) client.forkArchive?.();
-        measureTurn('afterLoad', () => afterLoad(client));
-        if (save.why?.enabled) set({ why: { enabled: true, asked: save.why.asked ?? [], last: save.why.last ?? null, skipped: save.why.skipped ?? [], answers: Array.isArray(save.why.answers) ? save.why.answers.slice(-MAX_SAVED_ANSWERS) : [] } });
-        const views = get().views;
-        set({ rewinds: rewind && views ? [...rewind.prior, { at: new Date().toISOString(), from_turn: rewind.from, to_turn: views[0].turn }].slice(-MAX_REWINDS) : saveRewinds(save) });
-        campaign = resumeCampaign ?? newCampaignId();
-        resumeCampaign = null;
-        // After a rewind the record goes up at once, so the stored copy loses the turns the player went back from.
-        if (views) measureTurn('loadAutosave', () => writeAutosave(client, views, !!rewind));
-      } catch (e) {
-        resumeCampaign = null;
-        const message = e instanceof Error ? e.message : String(e);
-        const refusal = isMissingWasmError(message) ? message : loadErrorMessage(e, save.playtest);
-        set({ busy: null, error: get().screen === 'game' ? `${refusal} Your current game is unchanged.` : refusal });
-      }
-    },
+    loadSave: (save, forkHistory = false) => openSave(save, { forkHistory }),
 
-    continueAutosave: async (record, save) => {
-      resumeCampaign = record.campaign;
-      await get().loadSave(save);
-      resumeCampaign = null;
-      if (get().error || !get().views) return;
-      const turn = get().views![0].turn;
-      const kept = await readPendingOrders(record.campaign, turn);
-      if (kept !== null && get().views?.[0].turn === turn) restorePendingOrders(kept);
-    },
+    continueAutosave: (record, save) => openSave(save, { resume: record.campaign, restoreOrders: true }),
 
     rewindTo: async (target, save) => {
       // Left from the open game, or (from the title) from this game's newest kept turn.
       const live = target === campaign && get().views && get().client?.kind !== 'remote';
       const newest = live ? null : parseAutosave((await listAutosaves()).find((r) => r.campaign === target)?.text ?? null);
       const from = live ? get().views![0].turn : newest?.turn ?? save.turn;
-      pendingRewind = { from, prior: live ? get().rewinds : newest ? saveRewinds(newest) : saveRewinds(save) };
-      resumeCampaign = target;
-      await get().loadSave(save);
-      resumeCampaign = null;
-      pendingRewind = null;
+      const rewind = { from, prior: live ? get().rewinds : newest ? saveRewinds(newest) : saveRewinds(save) };
+      await openSave(save, { resume: target, rewind });
     },
 
     canPing: () => {

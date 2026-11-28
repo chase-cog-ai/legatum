@@ -20,7 +20,7 @@ import type { BattleForecast, CityView, Hex, Order, OrderError, PlayerView, Tech
 
 /** Keep the old key: disabling first-game hints also disables the advisor. */
 export const ADVISOR_KEY = 'legatum.first-game-hints.v2';
-export type AdvisorTarget = { kind: 'tile'; hex: Hex } | { kind: 'control'; name: 'research' | 'turn' | 'race' | 'diplomacy' | 'found' | 'fortify' | 'explore' | 'skip' | 'ranged' | 'build' | 'tech' | 'queueTech' | 'researchQueue' | 'closeResearch' | 'buyTile' | 'buyCity' | 'automate' | 'queueBuild' | 'heal' | 'autoFire' | 'upgrade' | 'airRecon' | 'ping' | 'siege' | 'mapYields' | 'cities'; value?: string } | null;
+export type AdvisorTarget = { kind: 'tile'; hex: Hex } | { kind: 'control'; name: 'research' | 'turn' | 'race' | 'diplomacy' | 'rivalRow' | 'found' | 'fortify' | 'explore' | 'skip' | 'ranged' | 'build' | 'tech' | 'queueTech' | 'researchQueue' | 'closeResearch' | 'buyTile' | 'buyCity' | 'automate' | 'queueBuild' | 'heal' | 'autoFire' | 'upgrade' | 'airRecon' | 'ping' | 'siege' | 'mapYields' | 'cities'; value?: string } | null;
 export interface AdvisorStep { instruction: string; key?: string; target: AdvisorTarget }
 export interface Suggestion { id: string; title: string; why: string; steps: AdvisorStep[]; current: number; acknowledge?: boolean; tip?: boolean }
 export interface AdvisorContext {
@@ -269,7 +269,8 @@ export function advisorSuggestion(ctx: AdvisorContext, seen: readonly string[], 
       const discovery = discoverySuggestion({ ...ctx, orders, errors: [] }, seen, skipped, practice);
       if (discovery?.id === 'airOperations') return discovery;
     }
-    return { id, title: 'Answer this first', why: d.label, current: 0,
+    const peace = d.kind === 'diplomacy' && v.diplomacy.proposals.some((p) => p.id === d.id && (p.kind ?? 'Peace') === 'Peace');
+    return { id, title: peace ? 'Answer the peace talks' : 'Answer this first', why: d.label, current: 0,
       steps: [{ instruction: `${ctx.touch ? 'Tap' : 'Click'} ${ctx.turnLabel ?? d.label}.`, target: control('turn') }] };
   }
   const garrison = ownUnits(v).find((u) => u.occupation_lock != null);

@@ -2,10 +2,11 @@ import { awayLine, awayPlayers } from '../awayPlayers';
 import { TrainingCard } from '../ui/Training';
 import { WhyCard } from '../ui/WhyCard';
 import { CelebrationProvider, MomentLane } from '../celebrate/MomentLane';
+import { PeaceTalks } from '../celebrate/PeaceTalks';
 import { AlarmScreen } from '../celebrate/AlarmScreen';
 import { PeopleIntro } from '../celebrate/PeopleIntro';
 import { lazy, memo, Suspense, useEffect, useState } from 'react';
-import { warmSmallArt } from '../artWarm';
+import { warmDiplomacyArt, warmSmallArt } from '../artWarm';
 import { canUse3d, useMapView } from '../map3d/mapPrefs';
 import { useGame } from '../store';
 import { MapCanvas } from '../map/MapCanvas';
@@ -57,6 +58,7 @@ export function GameErrorToast() {
 const MemoMapCanvas = memo(MapCanvas);
 const MemoTopBar = memo(TopBar);
 const MemoMomentLane = memo(MomentLane);
+const MemoPeaceTalks = memo(PeaceTalks);
 const MemoObjectiveSheet = memo(ObjectiveSheet);
 const MemoTurnReport = memo(TurnReport);
 const MemoDiplomacyPanel = memo(DiplomacyPanel);
@@ -132,6 +134,14 @@ export function GameScreen() {
   const credentialRejected = useGame((s) => s.client?.kind === 'remote' && s.net?.credentialRejected);
 
   useEffect(() => { warmSmallArt(); }, []);
+  useEffect(() => {
+    const warm = (s: ReturnType<typeof useGame.getState>) => {
+      const v = s.views?.[s.seat];
+      if (v) warmDiplomacyArt(v);
+    };
+    warm(useGame.getState());
+    return useGame.subscribe(warm);
+  }, []);
 
   useEffect(() => {
     window.addEventListener('keydown', handleGameKey);
@@ -163,6 +173,7 @@ export function GameScreen() {
       <div className="seat-frame" />
       <MemoTopBar />
       <MemoMomentLane />
+      <MemoPeaceTalks />
       <MemoObjectiveSheet />
       <RightSidebar />
       <SelectionDock />

@@ -203,6 +203,7 @@ export interface State {
    * or city of a team at Peace, or (`unit` null) War was chosen from a foreign city's card.
    */
   warPrompt: { seat: Seat; view: PlayerView; unit: number | null; target: Hex | null; team: number; ranged?: boolean; air?: boolean } | null;
+  diplomacyTakeover: { mode: 'offer'; id: number } | { mode: 'terms' | 'war'; team: number } | null;
   /** The own military unit selected just before a foreign city: its card offers "Attack with" it. */
   attacker: number | null;
   /**
@@ -427,6 +428,7 @@ const emptySeats = (n: number) => ({
   endTurnConfirmation: null,
   turnFailure: null,
   warPrompt: null,
+  diplomacyTakeover: null,
   attacker: null,
   notice: null,
   orders: Array.from({ length: n }, (): Order[] => []),
@@ -726,6 +728,7 @@ export const useGame = create<State>((set, get) => {
       why: NO_WHY, whyQuestion: null, whyHidden: false, whyRecent: null,
       diplomacyOpen: false,
       diplomacyTeam: null,
+      diplomacyTakeover: null,
       anim: null,
       busy: null,
       error: null,
@@ -1304,6 +1307,7 @@ export const useGame = create<State>((set, get) => {
     airHeld: {},
     diplomacyOpen: false,
     diplomacyTeam: null,
+    diplomacyTakeover: null,
     outcomeDismissed: false, outcomeStage: 'reveal',
     defeatDismissed: [],
     eliminationTurns: {},

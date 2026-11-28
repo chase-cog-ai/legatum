@@ -1,0 +1,1759 @@
+{
+  "source_sha256": "75dc3246705a6907212c666f1241c23bc53627b6950e4c264838074a3eb3c47b",
+  "cases": [
+    {
+      "bucket": "short_warning_loss",
+      "seed": 7102,
+      "selected_event": {
+        "attacker_team": 0,
+        "city": 42,
+        "cohort": "visible_within_two",
+        "end": 294,
+        "first_seen": 293,
+        "left_censored": false,
+        "outcome": "lost_to_attacker",
+        "start": 293,
+        "unseen_attacker": false
+      },
+      "baseline": {
+        "arm": "baseline",
+        "seed": 7102,
+        "seat": 4,
+        "faction": "Rome",
+        "finished": true,
+        "won": true,
+        "winners": [
+          4
+        ],
+        "end_turn": 277,
+        "alive": true,
+        "lost": 6,
+        "captured": 12,
+        "capital_lost": null,
+        "cities_end": 14,
+        "vp": 10,
+        "vp_share": 0.4,
+        "mismatches": 0,
+        "late_city_assaults": {
+          "episodes": [
+            {
+              "attacker_team": 5,
+              "city": 29,
+              "cohort": "visible_longer",
+              "end": 139,
+              "first_seen": 113,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 127,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 35,
+              "cohort": "visible_longer",
+              "end": 178,
+              "first_seen": 163,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 176,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 27,
+              "cohort": "visible_longer",
+              "end": 191,
+              "first_seen": 163,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 190,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 32,
+              "cohort": "visible_longer",
+              "end": 203,
+              "first_seen": 163,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 186,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 33,
+              "cohort": "visible_within_two",
+              "end": 212,
+              "first_seen": 169,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 169,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 36,
+              "cohort": "visible_within_two",
+              "end": 268,
+              "first_seen": 263,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 265,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 5,
+              "cohort": "visible_within_two",
+              "end": 277,
+              "first_seen": 150,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 151,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 23,
+              "cohort": "unseen_at_start",
+              "end": 277,
+              "first_seen": null,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 228,
+              "unseen_attacker": true
+            }
+          ],
+          "from_turn": 120,
+          "losses_without_assault": [],
+          "version": 1
+        }
+      },
+      "candidate": {
+        "arm": "candidate",
+        "seed": 7102,
+        "seat": 4,
+        "faction": "Rome",
+        "finished": true,
+        "won": false,
+        "winners": [
+          0
+        ],
+        "end_turn": 325,
+        "alive": true,
+        "lost": 15,
+        "captured": 8,
+        "capital_lost": 323,
+        "cities_end": 4,
+        "vp": 5,
+        "vp_share": 0.1724137931034483,
+        "mismatches": 0,
+        "late_city_assaults": {
+          "episodes": [
+            {
+              "attacker_team": 5,
+              "city": 29,
+              "cohort": "visible_longer",
+              "end": 144,
+              "first_seen": 113,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 127,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 32,
+              "cohort": "visible_longer",
+              "end": 163,
+              "first_seen": 156,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 161,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 36,
+              "cohort": "visible_within_two",
+              "end": 178,
+              "first_seen": 177,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 178,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 9,
+              "cohort": "visible_longer",
+              "end": 191,
+              "first_seen": 161,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 190,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 3,
+              "cohort": "visible_longer",
+              "end": 196,
+              "first_seen": 188,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 194,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 13,
+              "cohort": "visible_longer",
+              "end": 196,
+              "first_seen": 152,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 187,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 38,
+              "cohort": "visible_longer",
+              "end": 201,
+              "first_seen": 163,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 200,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 19,
+              "cohort": "visible_longer",
+              "end": 202,
+              "first_seen": 158,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 199,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 39,
+              "cohort": "visible_longer",
+              "end": 206,
+              "first_seen": 153,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 203,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 16,
+              "cohort": "visible_longer",
+              "end": 215,
+              "first_seen": 189,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 193,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 40,
+              "cohort": "visible_longer",
+              "end": 237,
+              "first_seen": 199,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 237,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 39,
+              "cohort": "visible_longer",
+              "end": 272,
+              "first_seen": 231,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 243,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 0,
+              "city": 42,
+              "cohort": "visible_within_two",
+              "end": 294,
+              "first_seen": 293,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 293,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 16,
+              "cohort": "visible_longer",
+              "end": 296,
+              "first_seen": 284,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 294,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 45,
+              "cohort": "visible_within_two",
+              "end": 302,
+              "first_seen": 296,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 296,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 0,
+              "city": 39,
+              "cohort": "visible_longer",
+              "end": 315,
+              "first_seen": 257,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 315,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 39,
+              "cohort": "visible_within_two",
+              "end": 315,
+              "first_seen": 287,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 288,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 46,
+              "cohort": "visible_longer",
+              "end": 315,
+              "first_seen": 273,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 315,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 0,
+              "city": 5,
+              "cohort": "visible_longer",
+              "end": 322,
+              "first_seen": 316,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 321,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 0,
+              "city": 44,
+              "cohort": "visible_longer",
+              "end": 325,
+              "first_seen": 293,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 323,
+              "unseen_attacker": false
+            }
+          ],
+          "from_turn": 120,
+          "losses_without_assault": [],
+          "version": 1
+        }
+      }
+    },
+    {
+      "bucket": "short_warning_loss",
+      "seed": 7105,
+      "selected_event": {
+        "attacker_team": 3,
+        "city": 38,
+        "cohort": "visible_within_two",
+        "end": 132,
+        "first_seen": 125,
+        "left_censored": false,
+        "outcome": "lost_to_attacker",
+        "start": 126,
+        "unseen_attacker": false
+      },
+      "baseline": {
+        "arm": "baseline",
+        "seed": 7105,
+        "seat": 1,
+        "faction": "Rome",
+        "finished": true,
+        "won": false,
+        "winners": [
+          5
+        ],
+        "end_turn": 282,
+        "alive": true,
+        "lost": 24,
+        "captured": 11,
+        "capital_lost": 281,
+        "cities_end": 3,
+        "vp": 2,
+        "vp_share": 0.09523809523809523,
+        "mismatches": 0,
+        "late_city_assaults": {
+          "episodes": [
+            {
+              "attacker_team": 3,
+              "city": 39,
+              "cohort": "visible_longer",
+              "end": 129,
+              "first_seen": 46,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 127,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 38,
+              "cohort": "visible_within_two",
+              "end": 132,
+              "first_seen": 125,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 126,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 14,
+              "cohort": "visible_longer",
+              "end": 140,
+              "first_seen": 102,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 135,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 29,
+              "cohort": "visible_longer",
+              "end": 155,
+              "first_seen": 139,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 152,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 27,
+              "cohort": "visible_longer",
+              "end": 160,
+              "first_seen": 102,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 159,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 37,
+              "cohort": "visible_longer",
+              "end": 164,
+              "first_seen": 140,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 163,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 44,
+              "cohort": "visible_longer",
+              "end": 188,
+              "first_seen": 184,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 188,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 40,
+              "cohort": "visible_within_two",
+              "end": 209,
+              "first_seen": 206,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 207,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 46,
+              "cohort": "visible_longer",
+              "end": 223,
+              "first_seen": 214,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 217,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 47,
+              "cohort": "visible_longer",
+              "end": 252,
+              "first_seen": 247,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 251,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 24,
+              "cohort": "visible_within_two",
+              "end": 255,
+              "first_seen": 246,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 246,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 41,
+              "cohort": "visible_longer",
+              "end": 258,
+              "first_seen": 158,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 161,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 49,
+              "cohort": "visible_within_two",
+              "end": 262,
+              "first_seen": 261,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 261,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 48,
+              "cohort": "visible_longer",
+              "end": 263,
+              "first_seen": 247,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 256,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 38,
+              "cohort": "visible_longer",
+              "end": 267,
+              "first_seen": 201,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 267,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 43,
+              "cohort": "visible_longer",
+              "end": 268,
+              "first_seen": 222,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 268,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 36,
+              "cohort": "visible_within_two",
+              "end": 275,
+              "first_seen": 271,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 271,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 2,
+              "cohort": "visible_longer",
+              "end": 280,
+              "first_seen": 271,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 278,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 9,
+              "cohort": "visible_longer",
+              "end": 282,
+              "first_seen": 258,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 265,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 15,
+              "cohort": "visible_longer",
+              "end": 282,
+              "first_seen": 216,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 224,
+              "unseen_attacker": false
+            }
+          ],
+          "from_turn": 120,
+          "losses_without_assault": [],
+          "version": 1
+        }
+      },
+      "candidate": {
+        "arm": "candidate",
+        "seed": 7105,
+        "seat": 1,
+        "faction": "Rome",
+        "finished": true,
+        "won": false,
+        "winners": [
+          2
+        ],
+        "end_turn": 371,
+        "alive": true,
+        "lost": 29,
+        "captured": 19,
+        "capital_lost": null,
+        "cities_end": 7,
+        "vp": 7,
+        "vp_share": 0.2413793103448276,
+        "mismatches": 0,
+        "late_city_assaults": {
+          "episodes": [
+            {
+              "attacker_team": 3,
+              "city": 39,
+              "cohort": "visible_longer",
+              "end": 129,
+              "first_seen": 46,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 127,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 38,
+              "cohort": "visible_within_two",
+              "end": 132,
+              "first_seen": 125,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 126,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 14,
+              "cohort": "visible_longer",
+              "end": 140,
+              "first_seen": 102,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 135,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 29,
+              "cohort": "visible_longer",
+              "end": 155,
+              "first_seen": 102,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 152,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 29,
+              "cohort": "visible_within_two",
+              "end": 155,
+              "first_seen": 145,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 145,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 37,
+              "cohort": "visible_within_two",
+              "end": 155,
+              "first_seen": 152,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 154,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 41,
+              "cohort": "visible_longer",
+              "end": 181,
+              "first_seen": 126,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 178,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 43,
+              "cohort": "visible_longer",
+              "end": 189,
+              "first_seen": 177,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 188,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 15,
+              "cohort": "visible_longer",
+              "end": 196,
+              "first_seen": 177,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 195,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 27,
+              "cohort": "visible_longer",
+              "end": 200,
+              "first_seen": 143,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 161,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 27,
+              "cohort": "visible_within_two",
+              "end": 200,
+              "first_seen": 160,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 160,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 37,
+              "cohort": "visible_longer",
+              "end": 204,
+              "first_seen": 189,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 204,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 16,
+              "cohort": "visible_longer",
+              "end": 207,
+              "first_seen": 178,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 202,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 40,
+              "cohort": "visible_within_two",
+              "end": 223,
+              "first_seen": 213,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 213,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 46,
+              "cohort": "visible_within_two",
+              "end": 232,
+              "first_seen": 231,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 232,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 47,
+              "cohort": "visible_longer",
+              "end": 248,
+              "first_seen": 244,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 247,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 32,
+              "cohort": "visible_longer",
+              "end": 260,
+              "first_seen": 239,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 258,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 36,
+              "cohort": "visible_longer",
+              "end": 260,
+              "first_seen": 175,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 194,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 54,
+              "cohort": "visible_longer",
+              "end": 288,
+              "first_seen": 285,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 288,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 13,
+              "cohort": "visible_longer",
+              "end": 305,
+              "first_seen": 282,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 305,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 48,
+              "cohort": "visible_longer",
+              "end": 312,
+              "first_seen": 303,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 310,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 21,
+              "cohort": "unseen_at_start",
+              "end": 346,
+              "first_seen": null,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 334,
+              "unseen_attacker": true
+            },
+            {
+              "attacker_team": 3,
+              "city": 6,
+              "cohort": "visible_longer",
+              "end": 356,
+              "first_seen": 260,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 355,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 32,
+              "cohort": "visible_longer",
+              "end": 357,
+              "first_seen": 309,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 356,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 3,
+              "city": 15,
+              "cohort": "visible_longer",
+              "end": 363,
+              "first_seen": 355,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 361,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 13,
+              "cohort": "unseen_at_start",
+              "end": 369,
+              "first_seen": null,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 363,
+              "unseen_attacker": true
+            },
+            {
+              "attacker_team": 5,
+              "city": 13,
+              "cohort": "visible_longer",
+              "end": 369,
+              "first_seen": 310,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 314,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 54,
+              "cohort": "unseen_at_start",
+              "end": 371,
+              "first_seen": null,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 365,
+              "unseen_attacker": true
+            }
+          ],
+          "from_turn": 120,
+          "losses_without_assault": [],
+          "version": 1
+        }
+      }
+    },
+    {
+      "bucket": "unattributed_loss",
+      "seed": 7110,
+      "selected_event": [
+        286,
+        12,
+        5
+      ],
+      "baseline": {
+        "arm": "baseline",
+        "seed": 7110,
+        "seat": 0,
+        "faction": "Byzantium",
+        "finished": true,
+        "won": true,
+        "winners": [
+          0
+        ],
+        "end_turn": 322,
+        "alive": true,
+        "lost": 2,
+        "captured": 9,
+        "capital_lost": null,
+        "cities_end": 16,
+        "vp": 12,
+        "vp_share": 0.6,
+        "mismatches": 0,
+        "late_city_assaults": {
+          "episodes": [
+            {
+              "attacker_team": 2,
+              "city": 23,
+              "cohort": "visible_longer",
+              "end": 137,
+              "first_seen": 133,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 136,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 35,
+              "cohort": "visible_longer",
+              "end": 256,
+              "first_seen": 171,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 255,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 36,
+              "cohort": "visible_longer",
+              "end": 309,
+              "first_seen": 285,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 289,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 15,
+              "cohort": "visible_longer",
+              "end": 322,
+              "first_seen": 285,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 312,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 34,
+              "cohort": "visible_within_two",
+              "end": 322,
+              "first_seen": 252,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 254,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 34,
+              "cohort": "visible_longer",
+              "end": 322,
+              "first_seen": 210,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 235,
+              "unseen_attacker": false
+            }
+          ],
+          "from_turn": 120,
+          "losses_without_assault": [],
+          "version": 1
+        }
+      },
+      "candidate": {
+        "arm": "candidate",
+        "seed": 7110,
+        "seat": 0,
+        "faction": "Byzantium",
+        "finished": true,
+        "won": false,
+        "winners": [
+          5
+        ],
+        "end_turn": 296,
+        "alive": false,
+        "lost": 6,
+        "captured": 3,
+        "capital_lost": 279,
+        "cities_end": 0,
+        "vp": 5,
+        "vp_share": 0.21739130434782608,
+        "mismatches": 0,
+        "late_city_assaults": {
+          "episodes": [
+            {
+              "attacker_team": 2,
+              "city": 23,
+              "cohort": "visible_longer",
+              "end": 137,
+              "first_seen": 133,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 136,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 35,
+              "cohort": "visible_longer",
+              "end": 244,
+              "first_seen": 195,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 243,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 7,
+              "cohort": "visible_longer",
+              "end": 273,
+              "first_seen": 182,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 250,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 1,
+              "cohort": "visible_longer",
+              "end": 278,
+              "first_seen": 147,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 277,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 33,
+              "cohort": "visible_longer",
+              "end": 278,
+              "first_seen": 230,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 275,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 21,
+              "cohort": "visible_longer",
+              "end": 286,
+              "first_seen": 264,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 285,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 16,
+              "cohort": "visible_within_two",
+              "end": 286,
+              "first_seen": 281,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 283,
+              "unseen_attacker": false
+            }
+          ],
+          "from_turn": 120,
+          "losses_without_assault": [
+            [
+              286,
+              12,
+              5
+            ],
+            [
+              286,
+              28,
+              5
+            ]
+          ],
+          "version": 1
+        }
+      }
+    },
+    {
+      "bucket": "unattributed_loss",
+      "seed": 7149,
+      "selected_event": [
+        264,
+        45,
+        4
+      ],
+      "baseline": {
+        "arm": "baseline",
+        "seed": 7149,
+        "seat": 3,
+        "faction": "Byzantium",
+        "finished": true,
+        "won": false,
+        "winners": [
+          2
+        ],
+        "end_turn": 371,
+        "alive": true,
+        "lost": 14,
+        "captured": 10,
+        "capital_lost": null,
+        "cities_end": 3,
+        "vp": 2,
+        "vp_share": 0.07407407407407407,
+        "mismatches": 0,
+        "late_city_assaults": {
+          "episodes": [
+            {
+              "attacker_team": 4,
+              "city": 29,
+              "cohort": "visible_longer",
+              "end": 144,
+              "first_seen": 112,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 142,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 39,
+              "cohort": "visible_longer",
+              "end": 193,
+              "first_seen": 173,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 192,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 6,
+              "cohort": "visible_longer",
+              "end": 199,
+              "first_seen": 165,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 198,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 20,
+              "cohort": "visible_longer",
+              "end": 202,
+              "first_seen": 167,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 197,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 7,
+              "cohort": "visible_longer",
+              "end": 205,
+              "first_seen": 165,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 203,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 11,
+              "cohort": "visible_within_two",
+              "end": 218,
+              "first_seen": 193,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 194,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 1,
+              "city": 35,
+              "cohort": "visible_longer",
+              "end": 222,
+              "first_seen": 190,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 197,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 35,
+              "cohort": "visible_longer",
+              "end": 222,
+              "first_seen": 165,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 217,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 42,
+              "cohort": "visible_longer",
+              "end": 222,
+              "first_seen": 218,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 221,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 11,
+              "cohort": "visible_longer",
+              "end": 229,
+              "first_seen": 216,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 229,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 30,
+              "cohort": "visible_longer",
+              "end": 250,
+              "first_seen": 165,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 249,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 43,
+              "cohort": "visible_longer",
+              "end": 260,
+              "first_seen": 218,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 240,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 43,
+              "cohort": "visible_within_two",
+              "end": 260,
+              "first_seen": 258,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 258,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 15,
+              "cohort": "visible_within_two",
+              "end": 263,
+              "first_seen": 259,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 261,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 15,
+              "cohort": "visible_longer",
+              "end": 342,
+              "first_seen": 165,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 311,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 32,
+              "cohort": "visible_longer",
+              "end": 342,
+              "first_seen": 165,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 255,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 49,
+              "cohort": "unseen_at_start",
+              "end": 354,
+              "first_seen": null,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 351,
+              "unseen_attacker": true
+            },
+            {
+              "attacker_team": 2,
+              "city": 15,
+              "cohort": "visible_longer",
+              "end": 356,
+              "first_seen": 344,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 350,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 32,
+              "cohort": "unseen_at_start",
+              "end": 361,
+              "first_seen": null,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 359,
+              "unseen_attacker": true
+            },
+            {
+              "attacker_team": 2,
+              "city": 4,
+              "cohort": "unseen_at_start",
+              "end": 371,
+              "first_seen": null,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 346,
+              "unseen_attacker": true
+            },
+            {
+              "attacker_team": 2,
+              "city": 21,
+              "cohort": "unseen_at_start",
+              "end": 371,
+              "first_seen": null,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 370,
+              "unseen_attacker": true
+            },
+            {
+              "attacker_team": 2,
+              "city": 30,
+              "cohort": "visible_longer",
+              "end": 371,
+              "first_seen": 322,
+              "left_censored": false,
+              "outcome": "right_censored",
+              "start": 359,
+              "unseen_attacker": false
+            }
+          ],
+          "from_turn": 120,
+          "losses_without_assault": [],
+          "version": 1
+        }
+      },
+      "candidate": {
+        "arm": "candidate",
+        "seed": 7149,
+        "seat": 3,
+        "faction": "Byzantium",
+        "finished": true,
+        "won": false,
+        "winners": [
+          2
+        ],
+        "end_turn": 288,
+        "alive": false,
+        "lost": 13,
+        "captured": 6,
+        "capital_lost": 261,
+        "cities_end": 0,
+        "vp": 3,
+        "vp_share": 0.12,
+        "mismatches": 0,
+        "late_city_assaults": {
+          "episodes": [
+            {
+              "attacker_team": 4,
+              "city": 29,
+              "cohort": "visible_longer",
+              "end": 144,
+              "first_seen": 112,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 142,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 5,
+              "cohort": "visible_within_two",
+              "end": 164,
+              "first_seen": 162,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 162,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 20,
+              "cohort": "visible_longer",
+              "end": 169,
+              "first_seen": 162,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 169,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 15,
+              "cohort": "visible_longer",
+              "end": 173,
+              "first_seen": 81,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 171,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 30,
+              "cohort": "visible_longer",
+              "end": 217,
+              "first_seen": 166,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 172,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 43,
+              "cohort": "visible_longer",
+              "end": 244,
+              "first_seen": 149,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 242,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 11,
+              "cohort": "visible_longer",
+              "end": 246,
+              "first_seen": 149,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 195,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 40,
+              "cohort": "visible_longer",
+              "end": 246,
+              "first_seen": 189,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 240,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 41,
+              "cohort": "visible_within_two",
+              "end": 246,
+              "first_seen": 244,
+              "left_censored": false,
+              "outcome": "peace",
+              "start": 246,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 41,
+              "cohort": "visible_longer",
+              "end": 259,
+              "first_seen": 244,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 259,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 41,
+              "cohort": "visible_longer",
+              "end": 259,
+              "first_seen": 220,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 258,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 4,
+              "cohort": "visible_longer",
+              "end": 260,
+              "first_seen": 255,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 259,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 46,
+              "cohort": "visible_longer",
+              "end": 261,
+              "first_seen": 53,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 256,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 5,
+              "city": 46,
+              "cohort": "visible_longer",
+              "end": 261,
+              "first_seen": 242,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 260,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 45,
+              "cohort": "visible_longer",
+              "end": 264,
+              "first_seen": 244,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 264,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 15,
+              "cohort": "visible_longer",
+              "end": 265,
+              "first_seen": 149,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 265,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 4,
+              "city": 31,
+              "cohort": "visible_longer",
+              "end": 265,
+              "first_seen": 193,
+              "left_censored": false,
+              "outcome": "other_ownership_end",
+              "start": 259,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 32,
+              "cohort": "visible_longer",
+              "end": 269,
+              "first_seen": 202,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 268,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 42,
+              "cohort": "visible_longer",
+              "end": 269,
+              "first_seen": 259,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 268,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 11,
+              "cohort": "visible_longer",
+              "end": 278,
+              "first_seen": 189,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 271,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 30,
+              "cohort": "visible_longer",
+              "end": 278,
+              "first_seen": 244,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 271,
+              "unseen_attacker": false
+            },
+            {
+              "attacker_team": 2,
+              "city": 35,
+              "cohort": "visible_longer",
+              "end": 278,
+              "first_seen": 215,
+              "left_censored": false,
+              "outcome": "lost_to_attacker",
+              "start": 274,
+              "unseen_attacker": false
+            }
+          ],
+          "from_turn": 120,
+          "losses_without_assault": [
+            [
+              264,
+              45,
+              4
+            ],
+            [
+              278,
+              21,
+              2
+            ],
+            [
+              278,
+              40,
+              2
+            ]
+          ],
+          "version": 1
+        }
+      }
+    }
+  ]
+}

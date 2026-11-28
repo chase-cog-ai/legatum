@@ -28,7 +28,8 @@ beforeEach(() => {
   vi.stubGlobal('localStorage', local);
   useGame.setState(useGame.getInitialState(), true);
 });
-afterEach(() => {
+afterEach(async () => {
+  await autosavesSettled();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -131,6 +132,71 @@ it('orders entered for the turn come back on Continue', async () => {
   expect(useGame.getState().orders[0]).toEqual(entered);
   expect(useGame.getState().errors[0]).toEqual([]);
   expect(useGame.getState().ready[0]).toBe(false);
+});
+
+it('restores pending orders atomically before entering the game screen, even when IndexedDB is slow', async () => {
+  await start();
+  await autosavesSettled();
+  await campaign();
+  orderSomething();
+  const entered = useGame.getState().orders[0];
+  expect(entered).toHaveLength(1);
+  await vi.waitFor(async () => expect(await kept(1)).not.toBeNull(), { timeout: 3000 });
+
+  const [record] = await listAutosaves();
+  const save = parseAutosave(record.text)!;
+  reload();
+
+  // Delay the IndexedDB open() used by readPendingOrders past the 400ms keepOrdersNow debounce:
+  // reproduces both the turn-number-before-orders race and the risk of keepOrdersNow wiping saved orders.
+  const idb = globalThis.indexedDB;
+  const origOpen = idb.open.bind(idb);
+  let releaseOpen: (() => void) | null = null;
+  let delayed = false;
+  const openSpy = vi.spyOn(idb, 'open').mockImplementation((...args) => {
+    const req = origOpen(...args);
+    if (delayed) return req;
+    delayed = true;
+    let userHandler: ((this: IDBRequest<IDBDatabase>, ev: Event) => unknown) | null = null;
+    const hold = function (this: IDBRequest<IDBDatabase>, ev: Event) {
+      releaseOpen = () => { userHandler?.call(this, ev); };
+    };
+    Object.defineProperty(req, 'onsuccess', {
+      configurable: true,
+      get: () => hold,
+      set: (fn) => { userHandler = fn; },
+    });
+    return req;
+  });
+
+  const observed: { turn: number; orders: unknown[] }[] = [];
+  const unsub = useGame.subscribe((state) => {
+    if (state.screen === 'game' && state.views) {
+      observed.push({ turn: state.views[0].turn, orders: state.orders[0] });
+    }
+  });
+
+  const resuming = useGame.getState().continueAutosave(record, save);
+  await vi.waitFor(() => expect(releaseOpen).not.toBeNull(), { timeout: 3000 });
+  await new Promise((r) => setTimeout(r, 500));
+
+  // While pending orders are still being read, the game screen must not have appeared yet.
+  expect(useGame.getState().screen).not.toBe('game');
+  expect(useGame.getState().views).toBeNull();
+  expect(observed).toEqual([]);
+
+  openSpy.mockRestore();
+  releaseOpen!();
+  await resuming;
+  unsub();
+
+  // The very first game-screen state must already contain the restored orders (never a transient []).
+  expect(observed.length).toBeGreaterThan(0);
+  expect(observed[0].orders).toEqual(entered);
+  expect(useGame.getState().orders[0]).toEqual(entered);
+  expect(useGame.getState().errors[0]).toEqual([]);
+  expect(useGame.getState().ready[0]).toBe(false);
+  expect(await kept(1)).not.toBeNull();
 });
 
 it('silently drops the orders the engine now refuses', async () => {

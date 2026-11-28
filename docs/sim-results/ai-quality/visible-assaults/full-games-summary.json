@@ -1,0 +1,280 @@
+{
+  "source_revision": "1f7db8eed96d513a7b1acc70b8ad72c27458a398",
+  "binary_sha256": "e9de9391bb09260a25227752336c358e9818b464f6395f064551640cd0d0ed91",
+  "raw_jsonl_sha256": "41091e45100aa49750f346fc6451e0397deaf5b4494cf6b243fe510387f33826",
+  "numpy_version": "2.3.5",
+  "cohort_observed_loss_fractions": {
+    "visible_within_two": {
+      "definition": "observed attributed losses / all cohort opportunities; not eventual loss probability",
+      "baseline": 0.4666666666666667,
+      "candidate": 0.503731343283582,
+      "paired_bootstrap_difference_95_percentile_interval": [
+        -0.03543294201366433,
+        0.11042412908668467
+      ],
+      "valid_resamples": 20000,
+      "zero_denominator_resamples": 0
+    },
+    "visible_longer": {
+      "definition": "observed attributed losses / all cohort opportunities; not eventual loss probability",
+      "baseline": 0.5895953757225434,
+      "candidate": 0.5765391014975042,
+      "paired_bootstrap_difference_95_percentile_interval": [
+        -0.05089924221194966,
+        0.024414678819202028
+      ],
+      "valid_resamples": 20000,
+      "zero_denominator_resamples": 0
+    },
+    "unseen_at_start": {
+      "definition": "observed attributed losses / all cohort opportunities; not eventual loss probability",
+      "baseline": 0.2972972972972973,
+      "candidate": 0.3181818181818182,
+      "paired_bootstrap_difference_95_percentile_interval": [
+        -0.14069875107665802,
+        0.24220292815798383
+      ],
+      "valid_resamples": 20000,
+      "zero_denominator_resamples": 0
+    },
+    "left_censored": {
+      "definition": "observed attributed losses / all cohort opportunities; not eventual loss probability",
+      "baseline": null,
+      "candidate": null,
+      "paired_bootstrap_difference_95_percentile_interval": null,
+      "valid_resamples": 0,
+      "zero_denominator_resamples": 20000
+    }
+  },
+  "pairs": 300,
+  "seeds": [
+    7101,
+    7400
+  ],
+  "bootstrap_resamples": 20000,
+  "bootstrap_seed": 366,
+  "safety_cap": 700,
+  "win_share": {
+    "completed_pairs": 300,
+    "excluded_unfinished_pairs": 0,
+    "estimand": "win difference conditional on both paired games finishing",
+    "baseline_wins": 46,
+    "candidate_wins": 48,
+    "candidate_minus_baseline_percentage_points": 0.6666666666666667,
+    "paired_bootstrap_95_percentile_interval_pp": [
+      -3.0,
+      4.333333333333334
+    ],
+    "baseline_only_wins": 16,
+    "candidate_only_wins": 18
+  },
+  "per_game_metrics": {
+    "all_city_losses": {
+      "baseline_total": 1788,
+      "candidate_total": 1744,
+      "baseline_mean": 5.96,
+      "candidate_mean": 5.8133333333333335,
+      "candidate_minus_baseline_mean": -0.14666666666666667,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.6433333333333333,
+        0.29
+      ]
+    },
+    "late_assaults": {
+      "baseline_total": 1600,
+      "candidate_total": 1514,
+      "baseline_mean": 5.333333333333333,
+      "candidate_mean": 5.046666666666667,
+      "candidate_minus_baseline_mean": -0.2866666666666667,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.8233333333333334,
+        0.20333333333333334
+      ]
+    },
+    "late_unattributed_losses": {
+      "baseline_total": 29,
+      "candidate_total": 30,
+      "baseline_mean": 0.09666666666666666,
+      "candidate_mean": 0.1,
+      "candidate_minus_baseline_mean": 0.0033333333333333335,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.03666666666666667,
+        0.043333333333333335
+      ]
+    },
+    "right_censored": {
+      "baseline_total": 179,
+      "candidate_total": 143,
+      "baseline_mean": 0.5966666666666667,
+      "candidate_mean": 0.4766666666666667,
+      "candidate_minus_baseline_mean": -0.12,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.26,
+        0.01
+      ]
+    },
+    "left_censored": {
+      "baseline_total": 0,
+      "candidate_total": 0,
+      "baseline_mean": 0.0,
+      "candidate_mean": 0.0,
+      "candidate_minus_baseline_mean": 0.0,
+      "paired_bootstrap_95_percentile_interval": [
+        0.0,
+        0.0
+      ]
+    },
+    "visible_within_two_opportunities": {
+      "baseline_total": 315,
+      "candidate_total": 268,
+      "baseline_mean": 1.05,
+      "candidate_mean": 0.8933333333333333,
+      "candidate_minus_baseline_mean": -0.15666666666666668,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.31,
+        -0.01
+      ]
+    },
+    "visible_within_two_losses": {
+      "baseline_total": 147,
+      "candidate_total": 135,
+      "baseline_mean": 0.49,
+      "candidate_mean": 0.45,
+      "candidate_minus_baseline_mean": -0.04,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.14333333333333334,
+        0.06
+      ]
+    },
+    "visible_longer_opportunities": {
+      "baseline_total": 1211,
+      "candidate_total": 1202,
+      "baseline_mean": 4.036666666666667,
+      "candidate_mean": 4.006666666666667,
+      "candidate_minus_baseline_mean": -0.03,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.38333333333333336,
+        0.3233333333333333
+      ]
+    },
+    "visible_longer_losses": {
+      "baseline_total": 714,
+      "candidate_total": 693,
+      "baseline_mean": 2.38,
+      "candidate_mean": 2.31,
+      "candidate_minus_baseline_mean": -0.07,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.3,
+        0.15666666666666668
+      ]
+    },
+    "unseen_at_start_opportunities": {
+      "baseline_total": 74,
+      "candidate_total": 44,
+      "baseline_mean": 0.24666666666666667,
+      "candidate_mean": 0.14666666666666667,
+      "candidate_minus_baseline_mean": -0.1,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.26666666666666666,
+        0.043333333333333335
+      ]
+    },
+    "unseen_at_start_losses": {
+      "baseline_total": 22,
+      "candidate_total": 14,
+      "baseline_mean": 0.07333333333333333,
+      "candidate_mean": 0.04666666666666667,
+      "candidate_minus_baseline_mean": -0.02666666666666667,
+      "paired_bootstrap_95_percentile_interval": [
+        -0.1,
+        0.03
+      ]
+    },
+    "left_censored_opportunities": {
+      "baseline_total": 0,
+      "candidate_total": 0,
+      "baseline_mean": 0.0,
+      "candidate_mean": 0.0,
+      "candidate_minus_baseline_mean": 0.0,
+      "paired_bootstrap_95_percentile_interval": [
+        0.0,
+        0.0
+      ]
+    },
+    "left_censored_losses": {
+      "baseline_total": 0,
+      "candidate_total": 0,
+      "baseline_mean": 0.0,
+      "candidate_mean": 0.0,
+      "candidate_minus_baseline_mean": 0.0,
+      "paired_bootstrap_95_percentile_interval": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "arms": {
+    "baseline": {
+      "finished": 300,
+      "unfinished_seeds": [],
+      "mean_end_turn": 260.58666666666664,
+      "cohorts": {
+        "visible_within_two": {
+          "lost_to_attacker": 147,
+          "other_ownership_end": 100,
+          "peace": 30,
+          "right_censored": 38
+        },
+        "visible_longer": {
+          "lost_to_attacker": 714,
+          "other_ownership_end": 294,
+          "peace": 87,
+          "right_censored": 116
+        },
+        "unseen_at_start": {
+          "lost_to_attacker": 22,
+          "other_ownership_end": 13,
+          "peace": 14,
+          "right_censored": 25
+        },
+        "left_censored": {
+          "lost_to_attacker": 0,
+          "other_ownership_end": 0,
+          "peace": 0,
+          "right_censored": 0
+        }
+      }
+    },
+    "candidate": {
+      "finished": 300,
+      "unfinished_seeds": [],
+      "mean_end_turn": 258.62,
+      "cohorts": {
+        "visible_within_two": {
+          "lost_to_attacker": 135,
+          "other_ownership_end": 82,
+          "peace": 23,
+          "right_censored": 28
+        },
+        "visible_longer": {
+          "lost_to_attacker": 693,
+          "other_ownership_end": 283,
+          "peace": 122,
+          "right_censored": 104
+        },
+        "unseen_at_start": {
+          "lost_to_attacker": 14,
+          "other_ownership_end": 11,
+          "peace": 8,
+          "right_censored": 11
+        },
+        "left_censored": {
+          "lost_to_attacker": 0,
+          "other_ownership_end": 0,
+          "peace": 0,
+          "right_censored": 0
+        }
+      }
+    }
+  }
+}

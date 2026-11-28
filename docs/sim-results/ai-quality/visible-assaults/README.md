@@ -2,6 +2,8 @@
 
 Issue #366 asks whether late defense reduces city losses after a newly visible army attacks. `rush_ladder` now adds `late_city_assaults` to each game row. This is an observational acceptance tool, not a new AI policy. It never feeds its observations back into orders.
 
+The [300-pair full-game result](full-game-results.md) is now available. It is inconclusive; issue #366 remains open.
+
 ## Metric, version 1
 
 - Observe the measured seat's planning `PlayerView` from the first simulated turn, including recorded-order warmup. Remember the first available sighting of each military unit, keyed by team and unit ID. Units remembered far from the later city still count as previously known; disappearing into fog does not reset their first sighting.
